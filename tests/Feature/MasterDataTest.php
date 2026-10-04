@@ -168,8 +168,8 @@ class MasterDataTest extends TestCase
         $group = AccessGroup::query()->where('name', 'Inventory')->firstOrFail();
         $group->users()->attach([$insider->id, $outsider->id]);
 
-        $this->assertEqualsCanonicalizing(['Main Warehouse', 'Branch B store'], Warehouse::query()->visibleTo($insider)->pluck('name')->all());
-        $this->assertSame(['Main Warehouse'], Warehouse::query()->visibleTo($outsider)->pluck('name')->all());
+        $this->assertEqualsCanonicalizing(['Main Warehouse', 'Branch B store'], Warehouse::query()->where('is_system', false)->visibleTo($insider)->pluck('name')->all());
+        $this->assertSame(['Main Warehouse'], Warehouse::query()->where('is_system', false)->visibleTo($outsider)->pluck('name')->all());
 
         $this->actingAs($outsider);
         $this->get(WarehouseResource::getUrl('index'))->assertOk()->assertSee('Main Warehouse')->assertDontSee('Branch B store');

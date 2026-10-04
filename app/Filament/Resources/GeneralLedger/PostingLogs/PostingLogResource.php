@@ -55,7 +55,7 @@ class PostingLogResource extends ErpResource
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('journalEntry.number')->label('Number')->fontFamily('mono')->placeholder('—'),
                 TextColumn::make('journalEntry.source_number')->label('Trans. No.')->fontFamily('mono')->placeholder('—'),
-                TextColumn::make('document_type')->label('Transaction type')->badge()->color('gray')->formatStateUsing(fn (string $s) => ucfirst(str_replace('_', ' ', $s))),
+                TextColumn::make('document_type')->label('Transaction type')->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
                 TextColumn::make('revision')->label('Rev.')->alignEnd(),
                 TextColumn::make('posted_at')->label('Posted')->formatStateUsing(fn ($state) => Format::dateTime($state))->sortable(),
                 TextColumn::make('postedBy.name')->label('By')->placeholder('System'),

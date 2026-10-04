@@ -7,10 +7,12 @@ namespace App\Filament\Resources\Inventory\Items;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
+use App\Domain\Inventory\StockQuery;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Enums\ItemType;
 use App\Domain\Shared\Format;
+use App\Filament\Pages\Inventory\StockByWarehouse;
 use App\Filament\Resources\Inventory\Items\Pages\CreateItem;
 use App\Filament\Resources\Inventory\Items\Pages\EditItem;
 use App\Filament\Resources\Inventory\Items\Pages\ListItems;
@@ -214,6 +216,7 @@ class ItemResource extends MasterResource
     public static function table(Table $table): Table
     {
         $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
+        $onHand = fn () => once(fn () => StockQuery::onHandMap());
 
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['unit1', 'brand', 'category']))
@@ -224,7 +227,8 @@ class ItemResource extends MasterResource
                 TextColumn::make('name')->label('Item name')->searchable()->sortable()->weight('medium')->wrap(),
                 TextColumn::make('brand.name')->label('Brand')->placeholder('—'),
                 TextColumn::make('category.name')->label('Category')->placeholder('—')->toggleable(),
-                TextColumn::make('stock')->label('Available stock')->state(fn () => Format::quantity(0))->alignEnd()->tooltip('Stock arrives with the inventory module.'),
+                TextColumn::make('stock')->label('Available stock')->state(fn (Item $r) => Format::quantity($onHand()[$r->id] ?? '0'))->alignEnd()
+                    ->url(fn (Item $r) => StockByWarehouse::getUrl(['item' => $r->id])),
                 Rupiah::make('purchase_price')->label('Purchase price')->visible($seesCost),
                 Rupiah::make('sell_price')->label('Selling price'),
                 TextColumn::make('min_stock')->label('Minimum stock')->state(fn (Item $r) => Format::quantity($r->min_stock))->alignEnd(),
