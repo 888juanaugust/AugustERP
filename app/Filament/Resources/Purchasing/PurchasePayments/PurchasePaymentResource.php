@@ -17,6 +17,7 @@ use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
+use App\Filament\Support\GiroActions;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayableFields;
@@ -142,7 +143,7 @@ class PurchasePaymentResource extends ErpResource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['vendor', 'bankAccount']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['vendor', 'bankAccount', 'giro']))
             ->columns([
                 TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
@@ -152,6 +153,7 @@ class PurchasePaymentResource extends ErpResource
                 TextColumn::make('bankAccount.name')->label('Bank'),
                 TextColumn::make('payment_method')->label('Method')->badge()->color('gray'),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
+                TextColumn::make('giro.status')->label('Giro')->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label('Amount paid'),
             ])
             ->defaultSort('trans_date', 'desc')
@@ -161,7 +163,7 @@ class PurchasePaymentResource extends ErpResource
                 SelectFilter::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('vendor_id')->label('Paid to')->relationship('vendor', 'name')->searchable(),
             ])
-            ->recordActions([EditAction::make()]);
+            ->recordActions([EditAction::make(), ...GiroActions::forRecord()]);
     }
 
     public static function getPages(): array

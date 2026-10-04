@@ -101,6 +101,8 @@ class ScreenRouteTest extends TestCase
             // phase 6
             MenuKey::SalesQuotations, MenuKey::SalesOrders, MenuKey::DeliveryOrders, MenuKey::SalesDownPayments, MenuKey::SalesInvoices, MenuKey::SalesReceipts,
             MenuKey::SalesReturns, MenuKey::InvoiceExchanges, MenuKey::PriceAndDiscountAdjustments, MenuKey::SalesmanCommissions, MenuKey::SalesTargets, MenuKey::CheckIns, MenuKey::OrderFulfilment,
+            // phase 7
+            MenuKey::Payments, MenuKey::Receipts, MenuKey::BankTransfers, MenuKey::BankStatements, MenuKey::BankBook, MenuKey::BankReconciliation,
         ] as $key) {
             $this->assertContains($key->value, $built, $key->label());
             $this->assertNotContains($key->value, $placeholders, $key->label().' is a placeholder');

@@ -18,6 +18,7 @@ use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
+use App\Filament\Support\GiroActions;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayableFields;
@@ -146,7 +147,7 @@ class SalesReceiptResource extends ErpResource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['customer', 'bankAccount']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['customer', 'bankAccount', 'giro']))
             ->columns([
                 TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
@@ -156,6 +157,7 @@ class SalesReceiptResource extends ErpResource
                 TextColumn::make('bankAccount.name')->label('Bank'),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
                 IconColumn::make('use_credit')->label('Credit used')->boolean(),
+                TextColumn::make('giro.status')->label('Giro')->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label('Amount received'),
             ])
             ->defaultSort('trans_date', 'desc')
@@ -165,7 +167,7 @@ class SalesReceiptResource extends ErpResource
                 SelectFilter::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('customer_id')->label('Received from')->relationship('customer', 'name')->searchable(),
             ])
-            ->recordActions([EditAction::make()]);
+            ->recordActions([EditAction::make(), ...GiroActions::forRecord()]);
     }
 
     public static function getPages(): array

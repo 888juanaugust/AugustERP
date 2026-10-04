@@ -84,6 +84,8 @@ enum PreferensiKey: string
     case InventoryAccount = 'accounts.inventory';
     case GoodsInTransitAccount = 'accounts.goods_in_transit';
     case RoundingAccount = 'accounts.rounding';
+    case GiroReceivableAccount = 'accounts.giro_receivable';
+    case GiroPayableAccount = 'accounts.giro_payable';
 
     // Other
     case DecimalFormat = 'other.decimal_format';
@@ -119,7 +121,7 @@ enum PreferensiKey: string
             self::ReturnCostAccount, self::TemporaryPaymentAccount, self::ReceivableAccount,
             self::CustomerDownPaymentAccount, self::SalesDiscountAccount, self::PayableAccount,
             self::VendorDownPaymentAccount, self::CostOfSalesAccount, self::InventoryAccount,
-            self::GoodsInTransitAccount, self::RoundingAccount => PreferensiType::Account,
+            self::GoodsInTransitAccount, self::RoundingAccount, self::GiroReceivableAccount, self::GiroPayableAccount => PreferensiType::Account,
             self::AgingRangeDays, self::AgingIntervalDays => PreferensiType::Int,
             self::TransactionExtraColumns, self::ItemExtraColumns, self::ExtraDateColumns => PreferensiType::TextList,
             default => match ($this->tab()) {
@@ -239,6 +241,8 @@ enum PreferensiKey: string
             self::InventoryAccount => 'Inventory',
             self::GoodsInTransitAccount => 'Goods delivered, not yet invoiced',
             self::RoundingAccount => 'Rounding differences',
+            self::GiroReceivableAccount => 'Giros receivable (cheques received, not yet cleared)',
+            self::GiroPayableAccount => 'Giros payable (cheques issued, not yet cleared)',
             self::DecimalFormat => 'Number format',
             self::QuantityDecimals => 'Decimals on quantities',
             self::PriceDecimals => 'Decimals on prices',

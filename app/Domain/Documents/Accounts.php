@@ -55,6 +55,16 @@ final class Accounts
         return (int) ($customer?->sales_return_account_id ?? $item->accountFor('sales_return')?->id ?? Account::query()->where('no', '4200')->value('id'));
     }
 
+    public static function giroReceivable(): int
+    {
+        return (int) app(Preferensi::class)->get(PreferensiKey::GiroReceivableAccount);
+    }
+
+    public static function giroPayable(): int
+    {
+        return (int) app(Preferensi::class)->get(PreferensiKey::GiroPayableAccount);
+    }
+
     public static function salesDiscount(?Customer $customer = null): int
     {
         return (int) ($customer?->sales_discount_account_id ?? app(Preferensi::class)->get(PreferensiKey::SalesDiscountAccount));

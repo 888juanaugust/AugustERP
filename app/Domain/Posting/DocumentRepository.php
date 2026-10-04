@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Posting;
 
 use App\Domain\Audit\Auditor;
+use App\Domain\CashBank\Contracts\GiroSource;
+use App\Domain\CashBank\GiroService;
 use App\Domain\Fulfilment\FulfilmentService;
 use App\Domain\Posting\Contracts\Postable;
 use Carbon\CarbonInterface;
@@ -32,6 +34,7 @@ final class DocumentRepository
     {
         DB::transaction(function () use ($document): void {
             $document->refresh();
+            $this->syncGiro($document);
             if ($document instanceof Postable) {
                 $this->postings->post($document);
             }
@@ -56,6 +59,7 @@ final class DocumentRepository
     {
         DB::transaction(function () use ($document, $before): void {
             $document->refresh();
+            $this->syncGiro($document);
             if ($document instanceof Postable) {
                 $this->postings->post($document);
             }
@@ -80,11 +84,23 @@ final class DocumentRepository
             if ($document instanceof Postable) {
                 $this->postings->unpost($document);
             }
+            if ($document instanceof GiroSource) {
+                $document->giro()->where('status', 'outstanding')->delete();
+            }
             $this->revisions->record($document, 'deleted', $before, null);
             Auditor::log('deleted', $document, $this->number($document), ['before' => $before['header'] ?? null], $this->date($document));
             $document->delete();
             $this->fulfilment->refreshUpstream($document, $sources);
         });
+    }
+
+    /** A receipt or payment by cheque registers its giro before it posts, so the posting follows the giro's state. */
+    private function syncGiro(Model $document): void
+    {
+        if ($document instanceof GiroSource) {
+            app(GiroService::class)->sync($document);
+            $document->unsetRelation('giro');
+        }
     }
 
     public function lockReason(Model $document): ?string
