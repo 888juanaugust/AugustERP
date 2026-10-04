@@ -22,6 +22,7 @@ class Warehouse extends Model implements HasAuditReference
         return [
             'scrap_warehouse' => 'boolean',
             'is_default' => 'boolean',
+            'is_system' => 'boolean',
             'used_all_user' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -50,6 +51,17 @@ class Warehouse extends Model implements HasAuditReference
         return $query->where(fn (Builder $q) => $q
             ->where('used_all_user', true)
             ->orWhereHas('users', fn (Builder $u) => $u->whereKey($user->id)));
+    }
+
+    /** The system warehouse goods sit in between a transfer's send and its receive. */
+    public static function inTransit(): self
+    {
+        return static::query()->firstOrCreate(['name' => 'In Transit'], [
+            'description' => 'Goods sent between warehouses, not yet received. Managed by the system.',
+            'is_system' => true,
+            'used_all_user' => true,
+            'is_active' => true,
+        ]);
     }
 
     public static function default(): ?self

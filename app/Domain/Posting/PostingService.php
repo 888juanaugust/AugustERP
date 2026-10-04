@@ -21,12 +21,21 @@ final class PostingService
     /** @var list<callable(Posting, PostingBuilder): void> extra writers registered by later modules (stock, allocations) */
     private array $writers = [];
 
+    /** @var list<callable(Posting): void> told when a posting is superseded, so caches depending on it refresh */
+    private array $unposters = [];
+
     public function __construct(private readonly PeriodLock $periods) {}
 
     /** @param  callable(Posting, PostingBuilder): void  $writer */
     public function extend(callable $writer): void
     {
         $this->writers[] = $writer;
+    }
+
+    /** @param  callable(Posting): void  $unposter */
+    public function onUnpost(callable $unposter): void
+    {
+        $this->unposters[] = $unposter;
     }
 
     public function post(Postable&Model $document, ?int $userId = null): Posting
@@ -78,6 +87,11 @@ final class PostingService
             foreach ($this->writers as $writer) {
                 $writer($posting, $builder);
             }
+            if ($previous !== null) {
+                foreach ($this->unposters as $unposter) {
+                    $unposter($previous);
+                }
+            }
 
             return $posting;
         });
@@ -94,7 +108,14 @@ final class PostingService
                 $this->periods->assertOpen($active->trans_date, $document->postingNumber());
             }
 
-            return $this->supersede($document->postingKey(), $userId);
+            $previous = $this->supersede($document->postingKey(), $userId);
+            if ($previous !== null) {
+                foreach ($this->unposters as $unposter) {
+                    $unposter($previous);
+                }
+            }
+
+            return $previous;
         });
     }
 

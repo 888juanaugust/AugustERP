@@ -50,6 +50,7 @@ class MasterDataSeeder extends Seeder
 
         PriceCategory::query()->firstOrCreate(['name' => 'General'], ['is_default' => true, 'notes' => 'The price every customer gets unless given another level.']);
 
+        Warehouse::inTransit();
         Warehouse::query()->firstOrCreate(['name' => 'Main Warehouse'], [
             'is_default' => true,
             'used_all_user' => true,

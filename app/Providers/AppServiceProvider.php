@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
+use App\Domain\Inventory\Costing\Recoster;
+use App\Domain\Inventory\StockLedger;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Posting\DocumentGuard;
 use App\Domain\Posting\PostingService;
@@ -25,9 +27,14 @@ use App\Models\GeneralLedger\ExpenseAccrual;
 use App\Models\GeneralLedger\JournalEntry;
 use App\Models\GeneralLedger\JournalVoucher;
 use App\Models\GeneralLedger\Posting;
+use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemBrand;
 use App\Models\Inventory\ItemCategory;
+use App\Models\Inventory\ItemTransfer;
+use App\Models\Inventory\StockMovement;
+use App\Models\Inventory\StockOpnameOrder;
+use App\Models\Inventory\StockOpnameResult;
 use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
 use App\Models\Purchasing\Vendor;
@@ -53,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(MenuRegistry::class);
         $this->app->singleton(PostingService::class);
         $this->app->singleton(DocumentGuard::class);
+        $this->app->singleton(Recoster::class);
     }
 
     public function boot(): void
@@ -93,7 +101,17 @@ class AppServiceProvider extends ServiceProvider
             'account_opening_balance' => AccountOpeningBalance::class,
             'journal_voucher' => JournalVoucher::class,
             'expense_accrual' => ExpenseAccrual::class,
+            'stock_movement' => StockMovement::class,
+            'inventory_adjustment' => InventoryAdjustment::class,
+            'item_transfer' => ItemTransfer::class,
+            'stock_opname_order' => StockOpnameOrder::class,
+            'stock_opname_result' => StockOpnameResult::class,
         ]);
+
+        // The stock ledger writes the movements every posting declares.
+        $postings = $this->app->make(PostingService::class);
+        $postings->extend(fn ($posting, $builder) => $this->app->make(StockLedger::class)->write($posting, $builder));
+        $postings->onUnpost(fn ($posting) => $this->app->make(StockLedger::class)->unwrite($posting));
 
         // Every ability on a model resolves through the access matrix: the
         // model's screen (MenuRegistry) and the right the ability maps to.

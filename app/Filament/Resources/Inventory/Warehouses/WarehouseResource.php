@@ -59,7 +59,7 @@ class WarehouseResource extends MasterResource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => self::visibleToCurrentUser($query->with('users')))
+            ->modifyQueryUsing(fn ($query) => self::visibleToCurrentUser($query->with('users')->where('is_system', false)))
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
                 TextColumn::make('address')->label('Address')->limit(60)->placeholder('—'),

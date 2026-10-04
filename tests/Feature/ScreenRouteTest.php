@@ -77,6 +77,8 @@ class ScreenRouteTest extends TestCase
             MenuKey::Employees, MenuKey::Contacts, MenuKey::ItemsAndServices, MenuKey::Units, MenuKey::ItemCategories, MenuKey::ItemBrands, MenuKey::Warehouses,
             // phase 3
             MenuKey::ChartOfAccounts, MenuKey::JournalVouchers, MenuKey::ExpenseAccruals, MenuKey::AccountHistory, MenuKey::MonthEndProcess, MenuKey::JournalActivityLog,
+            // phase 4
+            MenuKey::InventoryAdjustments, MenuKey::ItemTransfers, MenuKey::StockOpnameOrders, MenuKey::StockOpnameResults, MenuKey::StockByWarehouse, MenuKey::MinimumStock,
         ] as $key) {
             $this->assertContains($key->value, $built, $key->label());
             $this->assertNotContains($key->value, $placeholders, $key->label().' is a placeholder');
@@ -85,6 +87,7 @@ class ScreenRouteTest extends TestCase
         $this->assertEqualsCanonicalizing([
             MenuKey::PrintLayouts->value, MenuKey::TransactionApprovers->value,
             MenuKey::Budgets->value, MenuKey::BudgetMonitor->value, MenuKey::BudgetTransfers->value, MenuKey::PayrollEntries->value,
+            MenuKey::OrderFulfilment->value,
         ], $placeholders);
     }
 }

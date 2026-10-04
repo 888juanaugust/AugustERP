@@ -1,0 +1,152 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\Inventory\InventoryAdjustments;
+
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
+use App\Domain\Access\MenuKey;
+use App\Domain\Numbering\TransactionType;
+use App\Domain\Shared\Enums\AccountType;
+use App\Domain\Shared\Format;
+use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\CreateInventoryAdjustment;
+use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\EditInventoryAdjustment;
+use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\ListInventoryAdjustments;
+use App\Filament\Support\Columns\Tanggal;
+use App\Filament\Support\DocumentListFilters;
+use App\Filament\Support\ErpResource;
+use App\Filament\Support\LineItemFields;
+use App\Filament\Support\NumberFields;
+use App\Models\Company\Branch;
+use App\Models\GeneralLedger\Account;
+use App\Models\Inventory\InventoryAdjustment;
+use App\Models\Inventory\Warehouse;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+
+/** Inventory Adjustments: quantity in or out, or a value correction, per item and warehouse. */
+class InventoryAdjustmentResource extends ErpResource
+{
+    protected static ?string $model = InventoryAdjustment::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedAdjustmentsVertical;
+
+    protected static ?string $modelLabel = 'Inventory adjustment';
+
+    protected static ?string $recordTitleAttribute = 'number';
+
+    public static function menuKey(): MenuKey
+    {
+        return MenuKey::InventoryAdjustments;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
+
+        return $schema->components([
+            Section::make()
+                ->columns(3)
+                ->schema([
+                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    NumberFields::make(TransactionType::InventoryAdjustment, 'Adjustment No.'),
+                    Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false)
+                        ->default(fn () => Branch::default()?->id),
+                ]),
+            Tabs::make('adjustment')->tabs([
+                Tab::make(__('fields.lines'))->schema([
+                    Repeater::make('lines')
+                        ->hiddenLabel()
+                        ->relationship()
+                        ->orderColumn('sort')
+                        ->table([
+                            TableColumn::make('Item'),
+                            TableColumn::make('Type'),
+                            TableColumn::make('Quantity')->alignment(Alignment::End),
+                            TableColumn::make('Unit'),
+                            TableColumn::make('Unit cost')->alignment(Alignment::End),
+                            TableColumn::make('Warehouse'),
+                            TableColumn::make('Memo'),
+                        ])
+                        ->schema([
+                            LineItemFields::item(stockedOnly: true),
+                            Select::make('adjustment_type')->options(['quantity' => 'Quantity', 'value' => 'Value'])->default('quantity')->required()->native(false)->live(),
+                            LineItemFields::quantity()->placeholder('negative = out')->disabled(fn (Get $get) => $get('adjustment_type') === 'value')->dehydrated(),
+                            LineItemFields::unit(),
+                            TextInput::make('unit_cost')->numeric()->default(0)->prefix('Rp')
+                                ->disabled(fn (Get $get) => ! $seesCost || $get('adjustment_type') === 'value')->dehydrated(),
+                            Select::make('warehouse_id')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false)
+                                ->default(fn () => Warehouse::default()?->id),
+                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('total_cost')->label('Value change')->numeric()->default(0)->prefix('Rp')
+                                ->visible(fn (Get $get) => $get('adjustment_type') === 'value'),
+                            Select::make('adjustment_account_id')->label('Adjustment account')->options(fn () => Account::options(AccountType::CostOfSales, AccountType::Expense, AccountType::OtherExpense, AccountType::OtherIncome, AccountType::Equity))->searchable()->native(false)->placeholder('Inventory Adjustments (default)'),
+                            LineItemFields::baseQuantity(),
+                        ])
+                        ->minItems(1)
+                        ->defaultItems(1)
+                        ->addActionLabel('Add line')
+                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::normaliseLine($data))
+                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::normaliseLine($data)),
+                ]),
+                Tab::make(__('fields.other_info'))->schema([
+                    Textarea::make('description')->label(__('fields.description'))->rows(3),
+                ]),
+            ]),
+        ])->columns(1);
+    }
+
+    private static function normaliseLine(array $data): array
+    {
+        $data = LineItemFields::fillBaseQuantities([$data])[0];
+        if (($data['adjustment_type'] ?? 'quantity') === 'value') {
+            $data['quantity'] = 0;
+            $data['base_quantity'] = 0;
+            $data['unit_cost'] = 0;
+        } else {
+            $data['total_cost'] = 0;
+        }
+
+        return $data;
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('fields.trans_date')),
+                TextColumn::make('description')->label(__('fields.description'))->limit(60)->placeholder('—'),
+                TextColumn::make('lines_count')->label('Lines')->counts('lines')->alignEnd(),
+                IconColumn::make('is_opening')->label('Opening')->boolean()->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->defaultSort('trans_date', 'desc')
+            ->filters([DocumentListFilters::dateRange()])
+            ->recordActions([EditAction::make()->hidden(fn (InventoryAdjustment $r) => $r->is_opening)]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListInventoryAdjustments::route('/'),
+            'create' => CreateInventoryAdjustment::route('/create'),
+            'edit' => EditInventoryAdjustment::route('/{record}/edit'),
+        ];
+    }
+}
