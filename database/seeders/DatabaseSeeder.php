@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             FobSeeder::class,
             DocumentSeriesSeeder::class,
             AccessGroupSeeder::class,
+            MasterDataSeeder::class,
         ]);
     }
 }

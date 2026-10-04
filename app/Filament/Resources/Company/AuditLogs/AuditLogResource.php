@@ -104,16 +104,16 @@ class AuditLogResource extends ErpResource
                         DatePicker::make('trans_until')->label('until')->native(false)->displayFormat(Format::DATE_INPUT),
                     ])
                     ->query(fn (Builder $q, array $data) => $q
-                        ->when($data['trans_from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))
-                        ->when($data['trans_until'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '<=', $d))),
+                        ->when($data['trans_from'] ?? null, fn ($query, $d) => $query->whereDate('trans_date', '>=', $d))
+                        ->when($data['trans_until'] ?? null, fn ($query, $d) => $query->whereDate('trans_date', '<=', $d))),
                 Filter::make('created_at')
                     ->schema([
                         DatePicker::make('from')->label('Logged from')->native(false)->displayFormat(Format::DATE_INPUT),
                         DatePicker::make('until')->label('until')->native(false)->displayFormat(Format::DATE_INPUT),
                     ])
                     ->query(fn (Builder $q, array $data) => $q
-                        ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '>=', $d))
-                        ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('created_at', '<=', $d))),
+                        ->when($data['from'] ?? null, fn ($query, $d) => $query->whereDate('created_at', '>=', $d))
+                        ->when($data['until'] ?? null, fn ($query, $d) => $query->whereDate('created_at', '<=', $d))),
                 SelectFilter::make('document_type')->label('Transaction type')
                     ->options(fn () => collect(array_keys(Relation::morphMap()))->mapWithKeys(fn (string $k) => [$k => self::typeLabel($k)])->sort()->all()),
                 SelectFilter::make('user_id')->label('User')->options(fn () => User::query()->orderBy('name')->pluck('name', 'id')),

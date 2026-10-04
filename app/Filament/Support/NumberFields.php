@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Support;
+
+use App\Domain\Numbering\NumberGenerator;
+use App\Domain\Numbering\TransactionType;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Utilities\Get;
+
+/**
+ * The reference system's number block on every master and document form: a
+ * number drawn from a series when saved, or typed by hand when the switch is
+ * on. On edit the number is shown as it is.
+ */
+final class NumberFields
+{
+    public static function make(TransactionType $type, string $label = 'Number'): Group
+    {
+        $generator = app(NumberGenerator::class);
+
+        return Group::make([
+            Toggle::make('manual_number')
+                ->label('Enter the number by hand')
+                ->default(false)
+                ->live()
+                ->dehydrated(false)
+                ->visibleOn('create'),
+            Select::make('series_id')
+                ->label($label.' format')
+                ->options(fn () => $generator->seriesFor($type, auth()->user())->pluck('name', 'id'))
+                ->default(fn () => $generator->defaultSeries($type, auth()->user())?->id)
+                ->native(false)
+                ->required(fn (Get $get, string $operation) => $operation === 'create' && ! $get('manual_number'))
+                ->visible(fn (Get $get, string $operation) => $operation === 'create' && ! $get('manual_number')),
+            TextInput::make('number')
+                ->label($label)
+                ->maxLength(40)
+                ->unique(ignoreRecord: true)
+                ->required(fn (Get $get, string $operation) => $operation === 'edit' || $get('manual_number'))
+                ->visible(fn (Get $get, string $operation) => $operation === 'edit' || $get('manual_number'))
+                ->disabled(fn (string $operation) => $operation === 'edit'),
+        ])->columns(1);
+    }
+}
