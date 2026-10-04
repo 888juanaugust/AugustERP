@@ -1,7 +1,7 @@
 {
   "name": "referensi-scan",
   "private": true,
-  "description": "Read-only structural scan of REFERENSI Online: menus, forms, reports, preferences, rendered into docs/referensi and the functional spec in docs/spec. Not part of the application.",
+  "description": "Read-only structural study of the reference system (REFERENSI Online): menus, forms, reports, preferences, rendered into docs/referensi and the functional spec in docs/spec. Not part of the application.",
   "type": "module",
   "engines": {
     "node": ">=20"

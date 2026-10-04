@@ -84,9 +84,9 @@ export async function render(scanFile, outDir) {
     const scan = JSON.parse(await fs.readFile(scanFile, 'utf8'));
     await fs.mkdir(path.join(outDir, 'modul'), { recursive: true });
 
-    const menu = ['# Menu REFERENSI', '', `Dipindai ${scan.scannedAt ?? '—'}. Setiap entri menu adalah rute hash di aplikasi REFERENSI Online.`, ''];
-    const reports = ['# Laporan REFERENSI', ''];
-    const prefs = ['# Preferensi REFERENSI', '', 'Saklar dan angka seperti tersetel di database yang dipindai.', ''];
+    const menu = ['# Menu sistem referensi', '', `Dipelajari ${scan.scannedAt ?? '—'}. Setiap entri menu adalah rute hash di aplikasi sistem referensi.`, ''];
+    const reports = ['# Laporan sistem referensi', ''];
+    const prefs = ['# Preferensi sistem referensi', '', 'Saklar dan angka seperti tersetel di database yang dipelajari.', ''];
 
     for (const [moduleLabel, mod] of Object.entries(scan.modules ?? {})) {
         menu.push(`- **${moduleLabel}**${mod.key ? ` (\`${mod.key}\`)` : ''}`);
@@ -118,7 +118,7 @@ export async function render(scanFile, outDir) {
     }
 
     if (scan.blockedRequests?.length) {
-        menu.push('', '## Permintaan yang ditolak pemindai', '', 'Bukti bahwa tidak ada yang tersimpan ke REFERENSI selama pemindaian:', '');
+        menu.push('', '## Permintaan yang ditolak pemindai', '', 'Bukti bahwa tidak ada yang tersimpan ke sistem referensi selama studi:', '');
         for (const b of scan.blockedRequests) menu.push(`- \`${b}\``);
     }
 

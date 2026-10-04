@@ -25,6 +25,13 @@ export const READ_WORDS =
  * host through a single-sign-on form POST (/idp/sso): a session step, not a
  * write to the books.
  */
+/**
+ * An action that begins with a read verb is a read whatever follows:
+ * search-bank-transfer.do and search-print-layout.do look up records and
+ * layouts; they do not transfer or print. Checked before the write words.
+ */
+export const READ_PREFIX = /^(list|search|get|find|load|lookup|detail|count|init|check)[-_]/i;
+
 export const SESSION_WORDS = /(login|signin|sign-in|auth|oauth|token|session|open-?db|db-?list|switch-?db|database|\bsso\b|\bidp\b)/i;
 
 /** Hosts the scan may talk to at all for anything but plain GETs. */
@@ -82,6 +89,10 @@ export function classifyRequest({ method, url, resourceType = '' }, { allowPost 
 
     if (verb === 'POST' && allowPost.includes(parsed.pathname)) {
         return { allow: true, reason: 'allow-listed' };
+    }
+
+    if (READ_PREFIX.test(action) && !WRITE_WORDS.test(safeDecode(parsed.search))) {
+        return { allow: true, reason: 'read-prefix' };
     }
 
     // Checked before every allow rule below, so "token", "database" or

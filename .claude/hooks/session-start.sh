@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Gets a Claude Code cloud session to the point where the app and the REFERENSI
-# scanner both run: the local PostgreSQL 16 cluster with the role and databases
+# Gets a Claude Code cloud session to the point where the app and the reference
+# study tool both run: the local PostgreSQL 16 cluster with the role and databases
 # phpunit.xml expects, Redis, Composer and npm dependencies, and the browser's
 # trust in the session proxy. Idempotent; every step that depends on the
 # network fails soft, because the environment's egress policy decides what is
@@ -49,9 +49,9 @@ if [ -f composer.json ]; then
   [ -f .env ] || { cp .env.example .env && php artisan key:generate -q; }
 fi
 
-# --- The REFERENSI scanner ----------------------------------------------------
+# --- The reference study tool ------------------------------------------------
 if [ -f tools/referensi-scan/package.json ]; then
-  (cd tools/referensi-scan && npm ci --no-audit --no-fund -q 2>/dev/null) || say "npm ci for the scanner failed"
+  (cd tools/referensi-scan && npm ci --no-audit --no-fund -q 2>/dev/null) || say "npm ci for the study tool failed"
 fi
 
 # The pre-installed Chromium trusts certificates through NSS, and the
@@ -62,7 +62,7 @@ if [ -n "${SSL_CERT_FILE:-}" ] && [ -f "$SSL_CERT_FILE" ]; then
   if ! command -v certutil >/dev/null 2>&1; then
     export DEBIAN_FRONTEND=noninteractive
     (apt-get update -qq >/dev/null 2>&1 && apt-get install -y -qq libnss3-tools >/dev/null 2>&1) \
-      || say "libnss3-tools not installed; the scanner's browser will not trust the proxy"
+      || say "libnss3-tools not installed; the study tool's browser will not trust the proxy"
   fi
   if command -v certutil >/dev/null 2>&1; then
     mkdir -p "$HOME/.pki/nssdb"

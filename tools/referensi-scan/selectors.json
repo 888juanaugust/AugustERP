@@ -10,9 +10,10 @@
   "_allowPost": "All seen in recon on the app host after opening the database. db-update-progress.do: the app polling whether REFERENSI's own schema upgrade of the opened database has finished (the name says update, the call reads a percentage). init.do: the app's client bootstrap that loads the menu and session for the browser. dashboard.do: loads the home screen's figures. company/news-page.do: the news feed on the home screen. Nothing in the books changes.",
   "stubPost": [
     "/referensi/company/set-time-zone-offset.do",
-    "/referensi/update-global-search.do"
+    "/referensi/update-global-search.do",
+    "/referensi/customer/pos-trans-failed.do"
   ],
-  "_stubPost": "Refused like any write, but answered locally with an empty success instead of an aborted request, because the app retries each failure every few seconds and raises a modal each time, which stops the crawl. set-time-zone-offset.do would store the browser's clock offset for date display; update-global-search.do refreshes the client's search index. Neither reaches REFERENSI.",
+  "_stubPost": "Refused like any write, but answered locally with an empty success instead of an aborted request, because the app retries each failure every few seconds and raises a modal each time, which stops the crawl. set-time-zone-offset.do would store the browser's clock offset for date display; update-global-search.do refreshes the client's search index. Neither reaches REFERENSI. customer/pos-trans-failed.do: the sales-receipt screen asking after failed point-of-sale syncs; this database has no POS.",
   "login": {
     "email": [
       "#account",

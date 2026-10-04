@@ -2,8 +2,13 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "august/erp",
     "type": "project",
-    "description": "August's ERP: a replica of REFERENSI Online's functions, to be modified and re-skinned. Spec in docs/spec, scanned from REFERENSI by tools/referensi-scan.",
-    "keywords": ["erp", "akuntansi", "referensi", "laravel", "filament"],
+    "description": "August's ERP: accounting, inventory, purchasing, sales, cash and bank, fixed assets, tax and reports for an Indonesian trading business. The spec is in docs/spec.",
+    "keywords": [
+        "erp",
+        "akuntansi",
+        "laravel",
+        "filament"
+    ],
     "license": "proprietary",
     "require": {
         "php": "^8.3",

@@ -1,5 +1,8 @@
 # referensi-scan
 
+The study tool. This is the one place in the repository that names the product it logs
+into; everywhere else it is *sistem referensi* (see the footprint rule in CLAUDE.md).
+
 A read-only scan of the business's REFERENSI Online database. It writes down what
 REFERENSI *is* — every menu entry and its route, every list's columns and filters,
 every new-record form's fields (with REFERENSI's own field names), line grids, tabs,
@@ -7,7 +10,7 @@ buttons, report and preference switch — so that `docs/spec/` can say, screen b
 screen, what August's ERP must do to match it.
 
 **Not part of the application.** Laravel never loads it and the Laravel CI does not
-run it; `.github/workflows/scanner.yml` runs its own tests.
+run it; `.github/workflows/scanner.yml` runs its own tests and the privacy check.
 
 ## What it will and will not do
 
