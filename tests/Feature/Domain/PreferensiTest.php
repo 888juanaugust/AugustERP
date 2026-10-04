@@ -28,7 +28,7 @@ class PreferensiTest extends TestCase
         $this->assertCount(count(PreferensiKey::cases()), array_merge(...array_map(fn (PreferensiTab $t) => $t->keys(), PreferensiTab::cases())));
     }
 
-    public function test_defaults_match_the_studied_database(): void
+    public function test_the_defaults_are_what_a_trading_company_starts_with(): void
     {
         $prefs = app(Preferensi::class);
 

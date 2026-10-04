@@ -8,10 +8,9 @@ use App\Filament\Modul;
 
 /**
  * Every screen of the product, one case each, in the order the standard's
- * menus list them. The value is the screen's route key from the study (the vendor
- * prefix stripped), which is also the key of its rights in the access matrix and
- * of its English name in lang/en/menu.php. Generated from docs/referensi/scan.json;
- * regenerate rather than edit by hand.
+ * menus list them. The value is the screen's stable key: the key of its rights
+ * in the access matrix and of its names in lang/<locale>/menu.php. Never
+ * rename a value; stored rights refer to it.
  */
 enum MenuKey: string
 {
