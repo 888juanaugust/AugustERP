@@ -98,6 +98,9 @@ class ScreenRouteTest extends TestCase
             // phase 5
             MenuKey::PurchaseRequisitions, MenuKey::VendorPrices, MenuKey::PurchaseOrders, MenuKey::GoodsReceipts, MenuKey::PurchaseDownPayments, MenuKey::PurchaseInvoices,
             MenuKey::PurchasePayments, MenuKey::PurchaseReturns, MenuKey::VendorClaims, MenuKey::PaymentOrders, MenuKey::VendorTransfers,
+            // phase 6
+            MenuKey::SalesQuotations, MenuKey::SalesOrders, MenuKey::DeliveryOrders, MenuKey::SalesDownPayments, MenuKey::SalesInvoices, MenuKey::SalesReceipts,
+            MenuKey::SalesReturns, MenuKey::InvoiceExchanges, MenuKey::PriceAndDiscountAdjustments, MenuKey::SalesmanCommissions, MenuKey::SalesTargets, MenuKey::CheckIns, MenuKey::OrderFulfilment,
         ] as $key) {
             $this->assertContains($key->value, $built, $key->label());
             $this->assertNotContains($key->value, $placeholders, $key->label().' is a placeholder');
@@ -106,7 +109,7 @@ class ScreenRouteTest extends TestCase
         $this->assertEqualsCanonicalizing([
             MenuKey::PrintLayouts->value, MenuKey::TransactionApprovers->value,
             MenuKey::Budgets->value, MenuKey::BudgetMonitor->value, MenuKey::BudgetTransfers->value, MenuKey::PayrollEntries->value,
-            MenuKey::OrderFulfilment->value,
+            MenuKey::ECommerceLinks->value,
         ], $placeholders);
     }
 }

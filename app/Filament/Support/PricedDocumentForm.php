@@ -11,10 +11,12 @@ use App\Domain\Inventory\Units\UnitConverter;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
+use App\Models\Company\Employee;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\Warehouse;
+use App\Models\Sales\Customer;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Filament\Forms\Components\DatePicker;
@@ -63,7 +65,7 @@ final class PricedDocumentForm
     /**
      * @param  list<Component>  $before  components shown above the grid (a Pull action, say)
      */
-    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?\Closure $priceResolver = null): Tab
+    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?\Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null): Tab
     {
         $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
         $columns = [TableColumn::make('Item')];
@@ -77,6 +79,9 @@ final class PricedDocumentForm
         }
         if ($warehouse) {
             $columns[] = TableColumn::make('Warehouse');
+        }
+        if ($salesman) {
+            $columns[] = TableColumn::make('Salesperson');
         }
         if ($processed) {
             $columns[] = TableColumn::make('Processed')->alignment(Alignment::End);
@@ -96,8 +101,9 @@ final class PricedDocumentForm
             LineItemFields::quantity()->minValue(0.0001),
             LineItemFields::unit(),
         ];
+        $pricesEditable ??= ! $salesman || app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ChangeSellingPrice);
         if ($prices) {
-            $fields[] = TextInput::make('unit_price')->numeric()->default(0)->live(onBlur: true)->prefix('Rp');
+            $fields[] = TextInput::make('unit_price')->numeric()->default(0)->live(onBlur: true)->prefix('Rp')->readOnly(! $pricesEditable);
             $fields[] = TextInput::make('discount_percent')->numeric()->default(0)->minValue(0)->maxValue(100)->live(onBlur: true);
             $fields[] = Placeholder::make('amount_preview')->hiddenLabel()->content(fn (Get $get) => Format::number(self::lineAmount($get)));
             $fields[] = Select::make('tax_code_id')->options(fn () => TaxCode::query()->where('is_active', true)->orderBy('description')->pluck('description', 'id'))->native(false)->live();
@@ -111,6 +117,10 @@ final class PricedDocumentForm
         if ($warehouse) {
             $fields[] = Select::make('warehouse_id')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->native(false)->required()
                 ->default(fn () => Warehouse::default()?->id);
+        }
+        if ($salesman) {
+            $fields[] = Select::make('salesman_id')->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->native(false)
+                ->default(fn (Get $get) => $get('../../customer_id') ? Customer::query()->find($get('../../customer_id'))?->salesman_id : null);
         }
         if ($processed) {
             $fields[] = TextInput::make('processed_quantity')->numeric()->disabled()->dehydrated(false)->default(0);
@@ -267,6 +277,9 @@ final class PricedDocumentForm
                 'source_line_type' => $sourceLineType,
                 'source_line_id' => $line->id,
             ];
+            if (isset($line->salesman_id)) {
+                $row['salesman_id'] = $line->salesman_id;
+            }
             if ($withPrices) {
                 $row['unit_price'] = (string) ($line->unit_price ?? 0);
                 $row['discount_percent'] = (string) ($line->discount_percent ?? 0);

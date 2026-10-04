@@ -1,0 +1,179 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\Sales\SalesReceipts;
+
+use App\Domain\Access\MenuKey;
+use App\Domain\Documents\PaymentMethod;
+use App\Domain\Numbering\TransactionType;
+use App\Domain\Settlement\SettlementService;
+use App\Domain\Shared\Enums\AccountType;
+use App\Domain\Shared\Format;
+use App\Filament\Resources\Sales\SalesReceipts\Pages\CreateSalesReceipt;
+use App\Filament\Resources\Sales\SalesReceipts\Pages\EditSalesReceipt;
+use App\Filament\Resources\Sales\SalesReceipts\Pages\ListSalesReceipts;
+use App\Filament\Support\Columns\Rupiah;
+use App\Filament\Support\Columns\Tanggal;
+use App\Filament\Support\CustomerFields;
+use App\Filament\Support\DocumentListFilters;
+use App\Filament\Support\ErpResource;
+use App\Filament\Support\LineTotals;
+use App\Filament\Support\NumberFields;
+use App\Filament\Support\PayableFields;
+use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\ReceivableFields;
+use App\Models\GeneralLedger\Account;
+use App\Models\Sales\SalesReceipt;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Support\Str;
+
+/** Sales Receipts: money in from a customer against open invoices and down payments, credit notes with "use credit", a discount or write-off per line. */
+class SalesReceiptResource extends ErpResource
+{
+    protected static ?string $model = SalesReceipt::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
+
+    protected static ?string $modelLabel = 'Sales receipt';
+
+    protected static ?string $recordTitleAttribute = 'number';
+
+    public static function menuKey(): MenuKey
+    {
+        return MenuKey::SalesReceipts;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make()->columns(3)->schema([
+                CustomerFields::select(fillsTerms: false, label: 'Received from'),
+                Select::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
+                Select::make('payment_method')->label('Payment method')->options(PaymentMethod::class)->default(PaymentMethod::BankTransfer)->required()->native(false)->live(),
+                DatePicker::make('trans_date')->label('Payment date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
+                Placeholder::make('amount_preview')->label('Amount received')->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
+                Toggle::make('use_credit')->label('Use credit notes')->live()->inline(false),
+                TextInput::make('cheque_no')->label('Cheque / giro No.')->maxLength(40)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
+                DatePicker::make('cheque_date')->label('Cheque date')->native(false)->displayFormat(Format::DATE_INPUT)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
+            ]),
+            Tabs::make('receipt')->tabs([
+                Tab::make('Invoices')->schema([
+                    Action::make('pullOpen')
+                        ->label('Pull every open document')
+                        ->icon('heroicon-m-arrow-down-tray')
+                        ->color('gray')
+                        ->visible(fn (Get $get) => (bool) $get('customer_id'))
+                        ->action(function (Set $set, Get $get): void {
+                            $rows = [];
+                            foreach (ReceivableFields::openFor((int) $get('customer_id'), (bool) $get('use_credit')) as $key => $open) {
+                                $rows[(string) Str::uuid()] = ['receivable_key' => $key, 'amount' => $open['balance'], 'discount' => 0];
+                            }
+                            $set('lines', $rows);
+                            Notification::make()->title(count($rows).' open document(s) pulled')->success()->send();
+                        }),
+                    Repeater::make('lines')
+                        ->hiddenLabel()
+                        ->relationship()
+                        ->orderColumn('sort')
+                        ->table([
+                            TableColumn::make('Invoice'),
+                            TableColumn::make('Open balance')->alignment(Alignment::End),
+                            TableColumn::make('Pay')->alignment(Alignment::End),
+                            TableColumn::make('Discount')->alignment(Alignment::End),
+                            TableColumn::make('Discount account'),
+                        ])
+                        ->schema([
+                            Select::make('receivable_key')
+                                ->options(fn (Get $get) => ReceivableFields::openFor((int) $get('../../customer_id'), (bool) $get('../../use_credit'))->map(fn ($o) => $o['label'])->all())
+                                ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
+                                ->required()->native(false)->live()
+                                ->afterStateUpdated(fn (Set $set, $state) => $set('amount', $state && ($doc = PayableFields::resolve($state)) ? app(SettlementService::class)->balance($doc) : 0)),
+                            Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
+                            PricedDocumentForm::money('amount', 'Pay')->required()->live(onBlur: true),
+                            PricedDocumentForm::money('discount', 'Discount')->live(onBlur: true),
+                            Select::make('discount_account_id')->options(fn () => Account::options(AccountType::Revenue, AccountType::OtherExpense, AccountType::Expense))->native(false)->placeholder('Sales Discounts'),
+                            Hidden::make('receivable_type'),
+                            Hidden::make('receivable_id'),
+                        ])
+                        ->minItems(1)->defaultItems(0)->live()
+                        ->addActionLabel('Add document')
+                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => $data + ['receivable_key' => ($data['receivable_type'] ?? '').':'.($data['receivable_id'] ?? '')])
+                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::splitKey($data))
+                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::splitKey($data)),
+                ]),
+                Tab::make(__('fields.other_info'))->schema([
+                    Textarea::make('description')->label(__('fields.description'))->rows(3),
+                ]),
+            ]),
+        ])->columns(1);
+    }
+
+    private static function splitKey(array $data): array
+    {
+        [$type, $id] = array_pad(explode(':', (string) ($data['receivable_key'] ?? ''), 2), 2, null);
+        $data['receivable_type'] = $type;
+        $data['receivable_id'] = (int) $id;
+        unset($data['receivable_key']);
+
+        return $data;
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['customer', 'bankAccount']))
+            ->columns([
+                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('fields.trans_date')),
+                TextColumn::make('cheque_no')->label('Cheque No.')->placeholder('—')->toggleable(),
+                Tanggal::make('cheque_date')->label('Cheque date')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
+                TextColumn::make('bankAccount.name')->label('Bank'),
+                TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
+                IconColumn::make('use_credit')->label('Credit used')->boolean(),
+                Rupiah::make('amount')->label('Amount received'),
+            ])
+            ->defaultSort('trans_date', 'desc')
+            ->filters([
+                DocumentListFilters::dateRange(),
+                SelectFilter::make('payment_method')->label('Method')->options(PaymentMethod::class),
+                SelectFilter::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank)),
+                SelectFilter::make('customer_id')->label('Received from')->relationship('customer', 'name')->searchable(),
+            ])
+            ->recordActions([EditAction::make()]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListSalesReceipts::route('/'),
+            'create' => CreateSalesReceipt::route('/create'),
+            'edit' => EditSalesReceipt::route('/{record}/edit'),
+        ];
+    }
+}

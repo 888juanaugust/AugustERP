@@ -58,10 +58,28 @@ use App\Models\Purchasing\Vendor;
 use App\Models\Purchasing\VendorCategory;
 use App\Models\Purchasing\VendorClaim;
 use App\Models\Purchasing\VendorPrice;
+use App\Models\Sales\CheckIn;
 use App\Models\Sales\Customer;
 use App\Models\Sales\CustomerCategory;
+use App\Models\Sales\Delivery;
+use App\Models\Sales\DeliveryLine;
 use App\Models\Sales\DiscountCategory;
+use App\Models\Sales\InvoiceExchange;
+use App\Models\Sales\InvoiceExchangeLine;
 use App\Models\Sales\PriceCategory;
+use App\Models\Sales\SalesDownPayment;
+use App\Models\Sales\SalesInvoice;
+use App\Models\Sales\SalesInvoiceLine;
+use App\Models\Sales\SalesmanCommission;
+use App\Models\Sales\SalesOrder;
+use App\Models\Sales\SalesOrderLine;
+use App\Models\Sales\SalesQuotation;
+use App\Models\Sales\SalesQuotationLine;
+use App\Models\Sales\SalesReceipt;
+use App\Models\Sales\SalesReturn;
+use App\Models\Sales\SalesReturnLine;
+use App\Models\Sales\SalesTarget;
+use App\Models\Sales\SellingPriceAdjustment;
 use App\Models\Settings\AccessGroup;
 use App\Models\Settings\DocumentSeries;
 use App\Models\Settlement\PaymentAllocation;
@@ -144,6 +162,24 @@ class AppServiceProvider extends ServiceProvider
             'purchase_return_line' => PurchaseReturnLine::class,
             'vendor_claim' => VendorClaim::class,
             'payment_order' => PaymentOrder::class,
+            'sales_quotation' => SalesQuotation::class,
+            'sales_quotation_line' => SalesQuotationLine::class,
+            'sales_order' => SalesOrder::class,
+            'sales_order_line' => SalesOrderLine::class,
+            'delivery' => Delivery::class,
+            'delivery_line' => DeliveryLine::class,
+            'sales_down_payment' => SalesDownPayment::class,
+            'sales_invoice' => SalesInvoice::class,
+            'sales_invoice_line' => SalesInvoiceLine::class,
+            'sales_receipt' => SalesReceipt::class,
+            'sales_return' => SalesReturn::class,
+            'sales_return_line' => SalesReturnLine::class,
+            'invoice_exchange' => InvoiceExchange::class,
+            'invoice_exchange_line' => InvoiceExchangeLine::class,
+            'selling_price_adjustment' => SellingPriceAdjustment::class,
+            'salesman_commission' => SalesmanCommission::class,
+            'sales_target' => SalesTarget::class,
+            'check_in' => CheckIn::class,
         ]);
 
         // The stock ledger writes the movements every posting declares.
@@ -166,6 +202,10 @@ class AppServiceProvider extends ServiceProvider
         $fulfilment->register(PurchaseOrderLine::class, GoodsReceiptLine::class);
         $fulfilment->register(PurchaseOrderLine::class, PurchaseInvoiceLine::class);
         $fulfilment->register(GoodsReceiptLine::class, PurchaseInvoiceLine::class);
+        $fulfilment->register(SalesQuotationLine::class, SalesOrderLine::class);
+        $fulfilment->register(SalesOrderLine::class, DeliveryLine::class);
+        $fulfilment->register(SalesOrderLine::class, SalesInvoiceLine::class);
+        $fulfilment->register(DeliveryLine::class, SalesInvoiceLine::class);
 
         // Every ability on a model resolves through the access matrix: the
         // model's screen (MenuRegistry) and the right the ability maps to.

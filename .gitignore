@@ -28,3 +28,6 @@ yarn-error.log
 # request logs and screenshots of live screens. Never committed.
 /tools/referensi-scan/.state
 /tools/referensi-scan/node_modules
+
+# Local services
+/dump.rdb

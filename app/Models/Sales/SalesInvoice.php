@@ -1,0 +1,140 @@
+<?php
+
+namespace App\Models\Sales;
+
+use App\Domain\Documents\Accounts;
+use App\Domain\Documents\PricedDocument;
+use App\Domain\Inventory\Costing\CostEngine;
+use App\Domain\Posting\Contracts\Postable;
+use App\Domain\Posting\PostingBuilder;
+use App\Domain\Posting\PostsToLedger;
+use App\Models\Company\Branch;
+use App\Models\Company\PaymentTerm;
+use App\Models\Inventory\StockMovement;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+/**
+ * Sales Invoice: the bill to the customer. Lines pulled from deliveries move
+ * their cost from Goods Delivered, Not Invoiced to cost of goods sold; direct
+ * lines take the goods out themselves. Revenue and VAT out per line, charges
+ * to their accounts, down payments deducted gross, the rest receivable.
+ */
+class SalesInvoice extends Model implements Postable
+{
+    use PostsToLedger, PricedDocument;
+
+    protected $guarded = [];
+
+    protected function casts(): array
+    {
+        return ['trans_date' => 'date', 'ship_date' => 'date', 'due_date' => 'date', 'nsfp_filed_at' => 'datetime', 'taxable' => 'boolean', 'inclusive_tax' => 'boolean', 'is_printed' => 'boolean',
+            'subtotal' => 'integer', 'discount_amount' => 'integer', 'charges_total' => 'integer', 'dpp_total' => 'integer', 'tax_total' => 'integer', 'total' => 'integer',
+            'down_payment_total' => 'integer', 'paid_amount' => 'integer'];
+    }
+
+    public function lines(): HasMany
+    {
+        return $this->hasMany(SalesInvoiceLine::class)->orderBy('sort');
+    }
+
+    public function charges(): HasMany
+    {
+        return $this->hasMany(SalesInvoiceCharge::class)->orderBy('sort');
+    }
+
+    public function downPayments(): HasMany
+    {
+        return $this->hasMany(SalesInvoiceDownPayment::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function paymentTerm(): BelongsTo
+    {
+        return $this->belongsTo(PaymentTerm::class);
+    }
+
+    public function refreshTotal(): void
+    {
+        $this->refreshPricedTotal();
+        $dp = (int) $this->downPayments()->sum('amount');
+        $this->forceFill([
+            'down_payment_total' => $dp,
+            'due_date' => $this->due_date ?? ($this->payment_term_id ? PaymentTerm::query()->find($this->payment_term_id)?->dueDate($this->trans_date) : $this->trans_date),
+        ])->saveQuietly();
+        foreach ($this->downPayments()->with('downPayment')->get() as $use) {
+            $use->downPayment?->refreshStatus();
+        }
+        $this->forceFill(['status' => $this->payment_status === 'paid' ? 'processed' : 'pending'])->saveQuietly();
+    }
+
+    public function balance(): int
+    {
+        return $this->total - $this->down_payment_total - $this->paid_amount;
+    }
+
+    public function buildPostings(PostingBuilder $builder): void
+    {
+        $engine = app(CostEngine::class);
+        $customer = $this->customer;
+        $transit = Accounts::goodsDeliveredNotInvoiced();
+
+        foreach ($this->lines()->with(['item.category', 'taxCode'])->get() as $line) {
+            $net = $line->netAmount();
+            $builder->credit(Accounts::sales($line->item, $customer), $net, $line->memo);
+            if ((int) $line->tax_amount > 0) {
+                $builder->credit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out');
+            }
+
+            if (! $line->item->item_type->isStocked()) {
+                continue;
+            }
+            if ($line->source_line_type === 'delivery_line' && $line->source_line_id) {
+                // Cost moves from in-transit to cost of goods sold, in proportion to what this invoice takes of the delivery line.
+                $deliveryLine = DeliveryLine::query()->find($line->source_line_id);
+                $cost = $deliveryLine ? StockMovement::query()->active()->where('source_line_type', 'delivery_line')->where('source_line_id', $deliveryLine->id)->sum('total_cost') : 0;
+                $share = $deliveryLine && ! BigDecimal::of((string) $deliveryLine->base_quantity)->isZero()
+                    ? BigDecimal::of((int) $cost)->multipliedBy((string) $line->base_quantity)->dividedBy((string) $deliveryLine->base_quantity, 0, RoundingMode::HalfUp)->toInt()
+                    : 0;
+                $builder->debit(Accounts::costOfSales($line->item, $customer), $share, $line->memo);
+                $builder->credit($transit, $share, $line->memo);
+            } else {
+                $cost = $engine->issueCost($line->item_id, $line->warehouse_id, $this->trans_date, (string) $line->base_quantity);
+                $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => (string) $line->base_quantity,
+                    'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'sales_invoice_line', 'source_line_id' => $line->id]);
+                $builder->debit(Accounts::costOfSales($line->item, $customer), $cost['total_cost'], $line->memo);
+                $builder->credit(Accounts::inventory($line->item), $cost['total_cost'], $line->memo);
+            }
+        }
+
+        foreach ($this->charges as $charge) {
+            $builder->credit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges');
+        }
+
+        $dpTotal = 0;
+        foreach ($this->downPayments()->with('downPayment.taxCode')->get() as $use) {
+            $dp = $use->downPayment;
+            $applied = (int) $use->amount;
+            $net = $dp->total > 0 ? BigDecimal::of($applied)->multipliedBy($dp->subtotal)->dividedBy($dp->total, 0, RoundingMode::HalfUp)->toInt() : $applied;
+            $builder->debit(Accounts::customerDownPayment($customer), $net, "Down payment {$dp->number} deducted");
+            if ($applied - $net !== 0) {
+                $builder->debit(Accounts::vatOut($dp->taxCode), $applied - $net, "VAT on down payment {$dp->number}");
+            }
+            $dpTotal += $applied;
+        }
+
+        $builder->debit(Accounts::receivable($customer), (int) $this->total - $dpTotal, $this->description ?? $this->number);
+    }
+}
