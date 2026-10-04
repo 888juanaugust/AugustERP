@@ -99,14 +99,14 @@ class Calendar extends ErpPage
     {
         return [
             Action::make('addNote')
-                ->label('New note')
+                ->label(__('New note'))
                 ->icon('heroicon-m-plus')
                 ->color('primary')
                 ->visible(fn (): bool => static::canUpdate())
                 ->schema([
-                    TextInput::make('title')->label('Title')->required()->maxLength(200),
-                    DatePicker::make('starts_on')->label('Date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                    Textarea::make('notes')->label('Notes')->rows(3),
+                    TextInput::make('title')->label(__('Title'))->required()->maxLength(200),
+                    DatePicker::make('starts_on')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    Textarea::make('notes')->label(__('Notes'))->rows(3),
                 ])
                 ->action(function (array $data): void {
                     CalendarEvent::query()->create([
@@ -116,11 +116,11 @@ class Calendar extends ErpPage
                         'created_by' => auth()->id(),
                     ]);
                     $this->moveTo(CarbonImmutable::parse($data['starts_on']));
-                    Notification::make()->title('Note added')->success()->send();
+                    Notification::make()->title(__('Note added'))->success()->send();
                 }),
-            Action::make('today')->label('Today')->color('gray')->action(fn () => $this->today()),
-            Action::make('previous')->label('Previous month')->icon('heroicon-m-chevron-left')->color('gray')->iconButton()->action(fn () => $this->previousMonth()),
-            Action::make('next')->label('Next month')->icon('heroicon-m-chevron-right')->color('gray')->iconButton()->action(fn () => $this->nextMonth()),
+            Action::make('today')->label(__('Today'))->color('gray')->action(fn () => $this->today()),
+            Action::make('previous')->label(__('Previous month'))->icon('heroicon-m-chevron-left')->color('gray')->iconButton()->action(fn () => $this->previousMonth()),
+            Action::make('next')->label(__('Next month'))->icon('heroicon-m-chevron-right')->color('gray')->iconButton()->action(fn () => $this->nextMonth()),
         ];
     }
 }

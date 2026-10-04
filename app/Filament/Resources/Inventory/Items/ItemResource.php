@@ -68,55 +68,55 @@ class ItemResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Item')
+            Section::make(__('Item'))
                 ->columns(3)
                 ->schema([
-                    TextInput::make('name')->label('Item name')->required()->maxLength(200)->columnSpan(2),
+                    TextInput::make('name')->label(__('Item name'))->required()->maxLength(200)->columnSpan(2),
                     NumberFields::make(TransactionType::Item, 'Item code'),
-                    Select::make('item_type')->label('Item type')->options(ItemType::class)->default(ItemType::Inventory)->required()->native(false)->live(),
-                    TextInput::make('upc_no')->label('UPC / barcode')->maxLength(50),
-                    Select::make('unit1_id')->label('Base unit')->relationship('unit1', 'name')->preload()->required()->native(false)
+                    Select::make('item_type')->label(__('Item type'))->options(ItemType::class)->default(ItemType::Inventory)->required()->native(false)->live(),
+                    TextInput::make('upc_no')->label(__('UPC / barcode'))->maxLength(50),
+                    Select::make('unit1_id')->label(__('Base unit'))->relationship('unit1', 'name')->preload()->required()->native(false)
                         ->default(fn () => Unit::query()->where('name', 'PCS')->value('id')),
-                    Select::make('brand_id')->label('Brand')->relationship('brand', 'name')->preload()->searchable()->native(false),
-                    Select::make('category_id')->label('Category')->relationship('category', 'name')->preload()->searchable()->native(false)
+                    Select::make('brand_id')->label(__('Brand'))->relationship('brand', 'name')->preload()->searchable()->native(false),
+                    Select::make('category_id')->label(__('Category'))->relationship('category', 'name')->preload()->searchable()->native(false)
                         ->default(fn () => ItemCategory::query()->where('is_default', true)->value('id')),
                     self::activeToggle()->inline(false),
                 ]),
             Tabs::make('item')
                 ->persistTabInQueryString()
                 ->tabs([
-                    Tab::make('Sales / Purchasing')->schema([
+                    Tab::make(__('Sales / Purchasing'))->schema([
                         Grid::make(3)->schema([
-                            TextInput::make('default_discount')->label('Default discount (%)')->numeric()->minValue(0)->maxValue(100)->default(0),
+                            TextInput::make('default_discount')->label(__('Default discount (%)'))->numeric()->minValue(0)->maxValue(100)->default(0),
                             self::money('sell_price', 'Selling price per base unit'),
-                            TextInput::make('min_sell_qty')->label('Minimum sale quantity')->numeric()->minValue(0)->default(0),
-                            Toggle::make('use_wholesale_price')->label('Apply wholesale price / discount')->inline(false),
-                            Select::make('substitute_item_id')->label('Substitute item')
+                            TextInput::make('min_sell_qty')->label(__('Minimum sale quantity'))->numeric()->minValue(0)->default(0),
+                            Toggle::make('use_wholesale_price')->label(__('Apply wholesale price / discount'))->inline(false),
+                            Select::make('substitute_item_id')->label(__('Substitute item'))
                                 ->relationship('substitute', 'name', fn ($query, ?Item $record) => $query->when($record, fn ($query) => $query->whereKeyNot($record->getKey())))
                                 ->searchable()->native(false)->columnSpan(2),
-                            Select::make('preferred_vendor_id')->label('Preferred vendor')->relationship('preferredVendor', 'name', fn ($query) => $query->where('is_active', true))->searchable()->preload()->native(false),
-                            Select::make('vendor_unit_id')->label('Purchase unit')->relationship('vendorUnit', 'name')->preload()->native(false),
+                            Select::make('preferred_vendor_id')->label(__('Preferred vendor'))->relationship('preferredVendor', 'name', fn ($query) => $query->where('is_active', true))->searchable()->preload()->native(false),
+                            Select::make('vendor_unit_id')->label(__('Purchase unit'))->relationship('vendorUnit', 'name')->preload()->native(false),
                             self::money('purchase_price', 'Purchase price'),
-                            TextInput::make('min_purchase_qty')->label('Minimum purchase quantity')->numeric()->minValue(0)->default(0),
-                            TextInput::make('min_stock')->label('Minimum stock')->numeric()->minValue(0)->default(0),
+                            TextInput::make('min_purchase_qty')->label(__('Minimum purchase quantity'))->numeric()->minValue(0)->default(0),
+                            TextInput::make('min_stock')->label(__('Minimum stock'))->numeric()->minValue(0)->default(0),
                         ]),
-                        Fieldset::make('Tax')->columns(3)->schema([
-                            TextInput::make('item_tax_code')->label('e-Tax goods code')->maxLength(20)->placeholder('e.g. 110000'),
-                            Select::make('tax1_id')->label('VAT')->relationship('tax1', 'description', fn ($query) => $query->where('is_active', true))->preload()->native(false)
+                        Fieldset::make(__('Tax'))->columns(3)->schema([
+                            TextInput::make('item_tax_code')->label(__('e-Tax goods code'))->maxLength(20)->placeholder(__('e.g. 110000')),
+                            Select::make('tax1_id')->label(__('VAT'))->relationship('tax1', 'description', fn ($query) => $query->where('is_active', true))->preload()->native(false)
                                 ->default(fn () => TaxCode::default()?->id),
-                            Select::make('tax3_id')->label('Withholding tax')->relationship('tax3', 'description', fn ($query) => $query->where('is_active', true))->preload()->native(false),
+                            Select::make('tax3_id')->label(__('Withholding tax'))->relationship('tax3', 'description', fn ($query) => $query->where('is_active', true))->preload()->native(false),
                         ]),
                     ]),
-                    Tab::make('Units')->schema([
+                    Tab::make(__('Units'))->schema([
                         Repeater::make('units')
-                            ->label('Other units')
-                            ->helperText('The base unit counts as 1; a carton of 12 pieces has ratio 12.')
+                            ->label(__('Other units'))
+                            ->helperText(__('The base unit counts as 1; a carton of 12 pieces has ratio 12.'))
                             ->relationship()
                             ->orderColumn('sort')
                             ->table([
-                                TableColumn::make('Unit'),
-                                TableColumn::make('Contains (base units)'),
-                                TableColumn::make('Selling price'),
+                                TableColumn::make(__('Unit')),
+                                TableColumn::make(__('Contains (base units)')),
+                                TableColumn::make(__('Selling price')),
                             ])
                             ->schema([
                                 Select::make('unit_id')->relationship('unit', 'name')->required()->native(false)->distinct(),
@@ -126,43 +126,43 @@ class ItemResource extends MasterResource
                             ->addActionLabel('Add unit')
                             ->defaultItems(0),
                     ]),
-                    Tab::make('Prices')->schema([
+                    Tab::make(__('Prices'))->schema([
                         Repeater::make('prices')
-                            ->label('Selling price per price category')
+                            ->label(__('Selling price per price category'))
                             ->relationship()
                             ->orderColumn('sort')
                             ->table([
-                                TableColumn::make('Price category'),
-                                TableColumn::make('Unit'),
-                                TableColumn::make('Price'),
+                                TableColumn::make(__('Price category')),
+                                TableColumn::make(__('Unit')),
+                                TableColumn::make(__('Price')),
                             ])
                             ->schema([
                                 Select::make('price_category_id')->relationship('priceCategory', 'name')->required()->native(false),
-                                Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder('Base unit'),
+                                Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
                                 self::money('price', 'Price'),
                             ])
                             ->addActionLabel('Add price')
                             ->defaultItems(0),
                     ]),
-                    Tab::make('Stock')
+                    Tab::make(__('Stock'))
                         ->visible(fn (Get $get) => ($get('item_type') ?? ItemType::Inventory->value) === ItemType::Inventory->value || $get('item_type') === ItemType::Inventory)
                         ->schema([
                             Repeater::make('openingStocks')
-                                ->label('Opening stock at the data start date')
-                                ->helperText('Posted as the opening adjustment by the inventory module; after that, stock moves only through documents.')
+                                ->label(__('Opening stock at the data start date'))
+                                ->helperText(__('Posted as the opening adjustment by the inventory module; after that, stock moves only through documents.'))
                                 ->relationship()
                                 ->orderColumn('sort')
                                 ->table([
-                                    TableColumn::make('Date'),
-                                    TableColumn::make('Quantity'),
-                                    TableColumn::make('Unit'),
-                                    TableColumn::make('Unit cost'),
-                                    TableColumn::make('Warehouse'),
+                                    TableColumn::make(__('Date')),
+                                    TableColumn::make(__('Quantity')),
+                                    TableColumn::make(__('Unit')),
+                                    TableColumn::make(__('Unit cost')),
+                                    TableColumn::make(__('Warehouse')),
                                 ])
                                 ->schema([
                                     DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
                                     TextInput::make('quantity')->numeric()->required(),
-                                    Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder('Base unit'),
+                                    Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
                                     TextInput::make('unit_cost')->numeric()->prefix(Format::symbol())->default(0)
                                         ->disabled(fn () => ! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost))->dehydrated(),
                                     Select::make('warehouse_id')->relationship('warehouse', 'name', fn ($query) => $query->where('is_active', true))->required()->native(false),
@@ -170,43 +170,43 @@ class ItemResource extends MasterResource
                                 ->addActionLabel('Add opening stock')
                                 ->defaultItems(0),
                         ]),
-                    Tab::make('Components')
+                    Tab::make(__('Components'))
                         ->visible(fn (Get $get) => $get('item_type') === ItemType::Group->value || $get('item_type') === ItemType::Group)
                         ->schema([
                             Repeater::make('components')
-                                ->label('Items in this group')
+                                ->label(__('Items in this group'))
                                 ->relationship()
                                 ->orderColumn('sort')
                                 ->table([
-                                    TableColumn::make('Item'),
-                                    TableColumn::make('Quantity'),
-                                    TableColumn::make('Unit'),
+                                    TableColumn::make(__('Item')),
+                                    TableColumn::make(__('Quantity')),
+                                    TableColumn::make(__('Unit')),
                                 ])
                                 ->schema([
                                     Select::make('item_id')->relationship('item', 'name', fn ($query) => $query->where('item_type', '!=', ItemType::Group->value))->searchable()->required()->native(false),
                                     TextInput::make('quantity')->numeric()->required()->default(1),
-                                    Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder('Base unit'),
+                                    Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
                                 ])
                                 ->addActionLabel('Add component')
                                 ->defaultItems(0),
                         ]),
-                    Tab::make('Accounts')->schema([
+                    Tab::make(__('Accounts'))->schema([
                         Grid::make(2)->schema([
-                            Select::make('inventory_account_id')->label('Inventory')->options(fn () => Account::options(AccountType::Inventory))->searchable()->native(false)->placeholder("The category's"),
-                            Select::make('sales_account_id')->label('Sales')->options(fn () => Account::options(AccountType::Revenue))->searchable()->native(false)->placeholder("The category's"),
-                            Select::make('cogs_account_id')->label('Cost of goods sold')->options(fn () => Account::options(AccountType::CostOfSales))->searchable()->native(false)->placeholder("The category's"),
-                            Select::make('sales_return_account_id')->label('Sales returns')->options(fn () => Account::options(AccountType::Revenue))->searchable()->native(false)->placeholder("The category's"),
-                            Select::make('purchase_return_account_id')->label('Purchase returns')->options(fn () => Account::options(AccountType::Inventory, AccountType::CostOfSales))->searchable()->native(false)->placeholder("The category's"),
+                            Select::make('inventory_account_id')->label(__('Inventory'))->options(fn () => Account::options(AccountType::Inventory))->searchable()->native(false)->placeholder(__('The category\'s')),
+                            Select::make('sales_account_id')->label(__('Sales'))->options(fn () => Account::options(AccountType::Revenue))->searchable()->native(false)->placeholder(__('The category\'s')),
+                            Select::make('cogs_account_id')->label(__('Cost of goods sold'))->options(fn () => Account::options(AccountType::CostOfSales))->searchable()->native(false)->placeholder(__('The category\'s')),
+                            Select::make('sales_return_account_id')->label(__('Sales returns'))->options(fn () => Account::options(AccountType::Revenue))->searchable()->native(false)->placeholder(__('The category\'s')),
+                            Select::make('purchase_return_account_id')->label(__('Purchase returns'))->options(fn () => Account::options(AccountType::Inventory, AccountType::CostOfSales))->searchable()->native(false)->placeholder(__('The category\'s')),
                         ]),
                     ]),
-                    Tab::make('Other')->schema([
-                        Select::make('branch_id')->label('Used in branch')->relationship('branch', 'name')->preload()->native(false),
+                    Tab::make(__('Other'))->schema([
+                        Select::make('branch_id')->label(__('Used in branch'))->relationship('branch', 'name')->preload()->native(false),
                         Textarea::make('notes')->label(__('fields.memo'))->rows(2),
                         Grid::make(4)->schema([
-                            TextInput::make('length_cm')->label('Length (cm)')->numeric()->minValue(0),
-                            TextInput::make('width_cm')->label('Width (cm)')->numeric()->minValue(0),
-                            TextInput::make('height_cm')->label('Height (cm)')->numeric()->minValue(0),
-                            TextInput::make('weight_gr')->label('Weight (g)')->numeric()->minValue(0),
+                            TextInput::make('length_cm')->label(__('Length (cm)'))->numeric()->minValue(0),
+                            TextInput::make('width_cm')->label(__('Width (cm)'))->numeric()->minValue(0),
+                            TextInput::make('height_cm')->label(__('Height (cm)'))->numeric()->minValue(0),
+                            TextInput::make('weight_gr')->label(__('Weight (g)'))->numeric()->minValue(0),
                         ]),
                     ]),
                 ]),
@@ -221,24 +221,24 @@ class ItemResource extends MasterResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['unit1', 'brand', 'category']))
             ->columns([
-                TextColumn::make('number')->label('Item code')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('item_type')->label('Type')->badge()->color('gray'),
+                TextColumn::make('number')->label(__('Item code'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('item_type')->label(__('Type'))->badge()->color('gray'),
                 TextColumn::make('unit1.name')->label(__('fields.unit')),
-                TextColumn::make('name')->label('Item name')->searchable()->sortable()->weight('medium')->wrap(),
-                TextColumn::make('brand.name')->label('Brand')->placeholder('—'),
-                TextColumn::make('category.name')->label('Category')->placeholder('—')->toggleable(),
-                TextColumn::make('stock')->label('Available stock')->state(fn (Item $r) => Format::quantity($onHand()[$r->id] ?? '0'))->alignEnd()
+                TextColumn::make('name')->label(__('Item name'))->searchable()->sortable()->weight('medium')->wrap(),
+                TextColumn::make('brand.name')->label(__('Brand'))->placeholder('—'),
+                TextColumn::make('category.name')->label(__('Category'))->placeholder('—')->toggleable(),
+                TextColumn::make('stock')->label(__('Available stock'))->state(fn (Item $r) => Format::quantity($onHand()[$r->id] ?? '0'))->alignEnd()
                     ->url(fn (Item $r) => StockByWarehouse::getUrl(['item' => $r->id])),
-                Rupiah::make('purchase_price')->label('Purchase price')->visible($seesCost),
-                Rupiah::make('sell_price')->label('Selling price'),
-                TextColumn::make('min_stock')->label('Minimum stock')->state(fn (Item $r) => Format::quantity($r->min_stock))->alignEnd(),
+                Rupiah::make('purchase_price')->label(__('Purchase price'))->visible($seesCost),
+                Rupiah::make('sell_price')->label(__('Selling price')),
+                TextColumn::make('min_stock')->label(__('Minimum stock'))->state(fn (Item $r) => Format::quantity($r->min_stock))->alignEnd(),
             ])
             ->defaultSort('number')
             ->filters([
                 self::activeFilter(),
-                SelectFilter::make('item_type')->label('Item type')->options(ItemType::class)->multiple(),
-                SelectFilter::make('category_id')->label('Category')->relationship('category', 'name'),
-                SelectFilter::make('brand_id')->label('Brand')->relationship('brand', 'name'),
+                SelectFilter::make('item_type')->label(__('Item type'))->options(ItemType::class)->multiple(),
+                SelectFilter::make('category_id')->label(__('Category'))->relationship('category', 'name'),
+                SelectFilter::make('brand_id')->label(__('Brand'))->relationship('brand', 'name'),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

@@ -23,26 +23,26 @@ class ManageAccountingPeriods extends ManageRecords
 
         return [
             Action::make('close')
-                ->label('Close a month')
+                ->label(__('Close a month'))
                 ->icon('heroicon-m-lock-closed')
                 ->visible(fn () => AccountingPeriodResource::canCreate())
                 ->schema([
-                    Select::make('month')->label('Month')
+                    Select::make('month')->label(__('Month'))
                         ->options(collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => date('F', mktime(0, 0, 0, $m, 1))])->all())
                         ->default(fn () => $lock->nextToClose()->month)->required()->native(false),
-                    Select::make('year')->label('Year')
+                    Select::make('year')->label(__('Year'))
                         ->options(collect(range((int) date('Y') - 6, (int) date('Y')))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())
                         ->default(fn () => $lock->nextToClose()->year)->required()->native(false),
                     Textarea::make('notes')->label(__('fields.memo'))->rows(2),
                 ])
-                ->modalDescription(fn () => 'Months close in order. The next month to close is '.$lock->nextToClose()->format('F Y').'. Nothing dated in a closed month can be added, changed or deleted.')
+                ->modalDescription(fn () => __('Months close in order. The next month to close is :month. Nothing dated in a closed month can be added, changed or deleted.', ['month' => $lock->nextToClose()->format('F Y')]))
                 ->action(function (array $data) use ($lock): void {
                     try {
                         $period = $lock->close((int) $data['year'], (int) $data['month'], auth()->id(), $data['notes'] ?? null);
                         Auditor::log('period_closed', $period, $period->label());
-                        Notification::make()->title($period->label().' closed')->success()->send();
+                        Notification::make()->title(__(':period closed', ['period' => $period->label()]))->success()->send();
                     } catch (\RuntimeException $e) {
-                        Notification::make()->title('Cannot close')->body($e->getMessage())->danger()->send();
+                        Notification::make()->title(__('Cannot close'))->body($e->getMessage())->danger()->send();
                     }
                 }),
         ];

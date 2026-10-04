@@ -16,7 +16,7 @@ class SalesBySalesperson extends ReportPage
 
     public static function title(): string
     {
-        return 'Sales by Salesperson';
+        return __('Sales by Salesperson');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class SalesBySalesperson extends ReportPage
 
     public static function description(): string
     {
-        return 'Invoiced sales per salesperson in the period: invoices, quantity, amount, VAT and total.';
+        return __('Invoiced sales per salesperson in the period: invoices, quantity, amount, VAT and total.');
     }
 
     protected function rows(): array

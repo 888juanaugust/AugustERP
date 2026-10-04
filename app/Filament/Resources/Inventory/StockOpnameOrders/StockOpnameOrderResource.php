@@ -48,24 +48,24 @@ class StockOpnameOrderResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Order')
+            Section::make(__('Order'))
                 ->columns(3)
                 ->schema([
-                    DatePicker::make('trans_date')->label('Order date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('trans_date')->label(__('Order date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                     NumberFields::make(TransactionType::StockOpnameOrder, 'Order No.'),
-                    DatePicker::make('start_date')->label('Count starts')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                    TextInput::make('person_charged')->label('Person in charge')->required()->maxLength(100),
-                    Select::make('users')->label('Counted by')->relationship('users', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))->multiple()->preload()->required()->native(false),
-                    Select::make('warehouse_id')->label('Warehouse')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false),
+                    DatePicker::make('start_date')->label(__('Count starts'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    TextInput::make('person_charged')->label(__('Person in charge'))->required()->maxLength(100),
+                    Select::make('users')->label(__('Counted by'))->relationship('users', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))->multiple()->preload()->required()->native(false),
+                    Select::make('warehouse_id')->label(__('Warehouse'))->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false),
                     Textarea::make('description')->label(__('fields.description'))->rows(2)->columnSpanFull(),
                 ]),
-            Section::make('Items to count')
-                ->description('Leave a filter empty to count everything.')
+            Section::make(__('Items to count'))
+                ->description(__('Leave a filter empty to count everything.'))
                 ->columns(3)
                 ->schema([
-                    Select::make('itemCategories')->label('Item categories')->relationship('itemCategories', 'name')->multiple()->preload()->native(false),
-                    Select::make('vendors')->label('Preferred vendors')->relationship('vendors', 'name')->multiple()->preload()->searchable()->native(false),
-                    Select::make('brands')->label('Brands')->relationship('brands', 'name')->multiple()->preload()->native(false),
+                    Select::make('itemCategories')->label(__('Item categories'))->relationship('itemCategories', 'name')->multiple()->preload()->native(false),
+                    Select::make('vendors')->label(__('Preferred vendors'))->relationship('vendors', 'name')->multiple()->preload()->searchable()->native(false),
+                    Select::make('brands')->label(__('Brands'))->relationship('brands', 'name')->multiple()->preload()->native(false),
                 ]),
         ])->columns(1);
     }
@@ -75,21 +75,21 @@ class StockOpnameOrderResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('warehouse'))
             ->columns([
-                Tanggal::make('trans_date')->label('Order date'),
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('start_date')->label('Count starts'),
-                TextColumn::make('warehouse.name')->label('Warehouse'),
+                Tanggal::make('trans_date')->label(__('Order date')),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('start_date')->label(__('Count starts')),
+                TextColumn::make('warehouse.name')->label(__('Warehouse')),
                 TextColumn::make('status')->label(__('fields.status'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))
                     ->color(fn (string $state) => match ($state) {
                         'counted' => 'success', 'closed' => 'gray', default => 'info'
                     }),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('person_charged')->label('Person in charge'),
+                TextColumn::make('person_charged')->label(__('Person in charge')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('status')->options(['open' => 'Open', 'counted' => 'Counted', 'closed' => 'Closed']),
+                SelectFilter::make('status')->options(['open' => __('Open'), 'counted' => __('Counted'), 'closed' => __('Closed')]),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()->hidden(fn (StockOpnameOrder $r) => $r->results()->exists())]);
     }

@@ -70,19 +70,19 @@ class PurchasePaymentResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                VendorFields::select(fillsTerms: false)->label('Paid to'),
-                Select::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
-                Select::make('payment_method')->label('Payment method')->options(PaymentMethod::class)->default(PaymentMethod::BankTransfer)->required()->native(false)->live(),
-                DatePicker::make('trans_date')->label('Payment date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                VendorFields::select(fillsTerms: false)->label(__('Paid to')),
+                Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
+                Select::make('payment_method')->label(__('Payment method'))->options(PaymentMethod::class)->default(PaymentMethod::BankTransfer)->required()->native(false)->live(),
+                DatePicker::make('trans_date')->label(__('Payment date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
-                Placeholder::make('amount_preview')->label('Amount paid')->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
-                TextInput::make('cheque_no')->label('Cheque / giro No.')->maxLength(40)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
-                DatePicker::make('cheque_date')->label('Cheque date')->native(false)->displayFormat(Format::DATE_INPUT)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
+                Placeholder::make('amount_preview')->label(__('Amount paid'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
+                TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
+                DatePicker::make('cheque_date')->label(__('Cheque date'))->native(false)->displayFormat(Format::DATE_INPUT)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
             ]),
             Tabs::make('payment')->tabs([
-                Tab::make('Invoices')->schema([
+                Tab::make(__('Invoices'))->schema([
                     Action::make('pullOpen')
-                        ->label('Pull every open document')
+                        ->label(__('Pull every open document'))
                         ->icon('heroicon-m-arrow-down-tray')
                         ->color('gray')
                         ->visible(fn (Get $get) => (bool) $get('vendor_id'))
@@ -92,18 +92,18 @@ class PurchasePaymentResource extends ErpResource
                                 $rows[(string) Str::uuid()] = ['payable_key' => $key, 'amount' => $open['balance'], 'discount' => 0];
                             }
                             $set('lines', $rows);
-                            Notification::make()->title(count($rows).' open document(s) pulled')->success()->send();
+                            Notification::make()->title(__(':count open document(s) pulled', ['count' => count($rows)]))->success()->send();
                         }),
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Document'),
-                            TableColumn::make('Open balance')->alignment(Alignment::End),
-                            TableColumn::make('Pay')->alignment(Alignment::End),
-                            TableColumn::make('Discount')->alignment(Alignment::End),
-                            TableColumn::make('Discount account'),
+                            TableColumn::make(__('Document')),
+                            TableColumn::make(__('Open balance'))->alignment(Alignment::End),
+                            TableColumn::make(__('Pay'))->alignment(Alignment::End),
+                            TableColumn::make(__('Discount'))->alignment(Alignment::End),
+                            TableColumn::make(__('Discount account')),
                         ])
                         ->schema([
                             Select::make('payable_key')
@@ -114,7 +114,7 @@ class PurchasePaymentResource extends ErpResource
                             Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
                             PricedDocumentForm::money('amount', 'Pay')->required()->live(onBlur: true)->minValue(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) && method_exists($doc, 'isCredit') && $doc->isCredit() ? null : 0),
                             PricedDocumentForm::money('discount', 'Discount')->live(onBlur: true),
-                            Select::make('discount_account_id')->options(fn () => Account::options(AccountType::CostOfSales, AccountType::OtherIncome, AccountType::OtherExpense))->native(false)->placeholder('Purchase Discounts'),
+                            Select::make('discount_account_id')->options(fn () => Account::options(AccountType::CostOfSales, AccountType::OtherIncome, AccountType::OtherExpense))->native(false)->placeholder(__('Purchase Discounts')),
                             Hidden::make('payable_type'),
                             Hidden::make('payable_id'),
                         ])
@@ -146,23 +146,23 @@ class PurchasePaymentResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['vendor', 'bankAccount', 'giro']))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                TextColumn::make('cheque_no')->label('Cheque No.')->placeholder('—')->toggleable(),
-                Tanggal::make('cheque_date')->label('Cheque date')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('cheque_no')->label(__('Cheque No.'))->placeholder('—')->toggleable(),
+                Tanggal::make('cheque_date')->label(__('Cheque date'))->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
-                TextColumn::make('bankAccount.name')->label('Bank'),
-                TextColumn::make('payment_method')->label('Method')->badge()->color('gray'),
+                TextColumn::make('bankAccount.name')->label(__('Bank')),
+                TextColumn::make('payment_method')->label(__('Method'))->badge()->color('gray'),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('giro.status')->label('Giro')->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
-                Rupiah::make('amount')->label('Amount paid'),
+                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
+                Rupiah::make('amount')->label(__('Amount paid')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('payment_method')->label('Method')->options(PaymentMethod::class),
-                SelectFilter::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank)),
-                SelectFilter::make('vendor_id')->label('Paid to')->relationship('vendor', 'name')->searchable(),
+                SelectFilter::make('payment_method')->label(__('Method'))->options(PaymentMethod::class),
+                SelectFilter::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank)),
+                SelectFilter::make('vendor_id')->label(__('Paid to'))->relationship('vendor', 'name')->searchable(),
             ])
             ->recordActions([EditAction::make(), ...GiroActions::forRecord(), PrintAction::make()]);
     }

@@ -57,15 +57,15 @@ class VatReturn extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(5)->schema([
-                    DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    Select::make('kind')->label('Show')
-                        ->options([TaxFiling::OUT => 'VAT out (sales)', TaxFiling::IN => 'VAT in (purchases)', 'both' => 'Both'])
+                    DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    Select::make('kind')->label(__('Show'))
+                        ->options([TaxFiling::OUT => __('VAT out (sales)'), TaxFiling::IN => __('VAT in (purchases)'), 'both' => __('Both')])
                         ->default(TaxFiling::OUT)->native(false)->selectablePlaceholder(false)->live(),
-                    Select::make('document_code')->label('Document kind')
+                    Select::make('document_code')->label(__('Document kind'))
                         ->options(TaxDocumentCode::options(TaxDocumentCode::forCustomers()))
-                        ->placeholder('All kinds')->nullable()->native(false)->live(),
-                    TextInput::make('search')->label('Search')->placeholder('Number, serial or name')->live(onBlur: true),
+                        ->placeholder(__('All kinds'))->nullable()->native(false)->live(),
+                    TextInput::make('search')->label(__('Search'))->placeholder(__('Number, serial or name'))->live(onBlur: true),
                 ]),
             ])
             ->statePath('filters');
@@ -81,26 +81,26 @@ class VatReturn extends ErpPage implements HasTable
         return $table
             ->records(fn () => collect($this->rows()))
             ->columns([
-                TextColumn::make('kind')->label('Tax'),
-                TextColumn::make('serial')->label('Tax invoice No.')->fontFamily('mono'),
-                TextColumn::make('number')->label('Transaction No.')->fontFamily('mono'),
-                TextColumn::make('trans_date')->label('Date')->formatStateUsing(fn ($state): string => $state ? Format::date($state) : ''),
-                TextColumn::make('document')->label('Document kind'),
-                TextColumn::make('description')->label('Description')->limit(40),
+                TextColumn::make('kind')->label(__('Tax')),
+                TextColumn::make('serial')->label(__('Tax invoice No.'))->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Transaction No.'))->fontFamily('mono'),
+                TextColumn::make('trans_date')->label(__('Date'))->formatStateUsing(fn ($state): string => $state ? Format::date($state) : ''),
+                TextColumn::make('document')->label(__('Document kind')),
+                TextColumn::make('description')->label(__('Description'))->limit(40),
                 self::money('dpp', 'Tax base (DPP)'),
                 self::money('tax', 'VAT'),
-                TextColumn::make('party')->label('Customer / Vendor'),
+                TextColumn::make('party')->label(__('Customer / Vendor')),
             ])
             ->paginated(false)
             ->recordClasses(fn (array $record): ?string => ($record['is_total'] ?? false) ? 'ae-report-total' : null)
-            ->emptyStateHeading('Nothing in this period');
+            ->emptyStateHeading(__('Nothing in this period'));
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('export')
-                ->label('Export to Excel')
+                ->label(__('Export to Excel'))
                 ->icon('heroicon-m-arrow-down-tray')
                 ->color('gray')
                 ->action(fn (): BinaryFileResponse => ExcelExport::download(

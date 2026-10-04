@@ -44,41 +44,41 @@ class UserResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Account')
+            Section::make(__('Account'))
                 ->columns(2)
                 ->schema([
-                    TextInput::make('name')->label('Name')->required()->maxLength(100),
-                    TextInput::make('email')->label('Email')->email()->required()->maxLength(150)->unique(ignoreRecord: true),
-                    TextInput::make('phone')->label('Mobile number')->tel()->maxLength(30),
+                    TextInput::make('name')->label(__('Name'))->required()->maxLength(100),
+                    TextInput::make('email')->label(__('Email'))->email()->required()->maxLength(150)->unique(ignoreRecord: true),
+                    TextInput::make('phone')->label(__('Mobile number'))->tel()->maxLength(30),
                     TextInput::make('password')
-                        ->label('Password')
+                        ->label(__('Password'))
                         ->password()
                         ->revealable()
                         ->required(fn (string $operation) => $operation === 'create')
                         ->dehydrated(fn ($state) => filled($state))
                         ->minLength(8)
-                        ->helperText(fn (string $operation) => $operation === 'edit' ? 'Leave blank to keep the current password.' : null),
+                        ->helperText(fn (string $operation) => $operation === 'edit' ? __('Leave blank to keep the current password.') : null),
                     Radio::make('access_type')
-                        ->label('Access type')
+                        ->label(__('Access type'))
                         ->options([
-                            'operator' => 'Operator: limited to the rights of their access groups',
-                            'administrator' => 'Administrator: every screen, every right',
+                            'operator' => __('Operator: limited to the rights of their access groups'),
+                            'administrator' => __('Administrator: every screen, every right'),
                         ])
                         ->default('operator')
                         ->required(),
                     Toggle::make('is_active')->label(__('fields.is_active'))->default(true)->inline(false),
                 ]),
             Tabs::make('access')->tabs([
-                Tab::make('Access groups')->schema([
+                Tab::make(__('Access groups'))->schema([
                     CheckboxList::make('accessGroups')
-                        ->label('Groups')
+                        ->label(__('Groups'))
                         ->relationship('accessGroups', 'name', fn ($query) => $query->orderBy('name'))
                         ->columns(3),
                 ]),
-                Tab::make('Branches')->schema([
+                Tab::make(__('Branches'))->schema([
                     CheckboxList::make('branches')
-                        ->label('May work in these branches')
-                        ->helperText('A branch open to all users needs no entry here.')
+                        ->label(__('May work in these branches'))
+                        ->helperText(__('A branch open to all users needs no entry here.'))
                         ->relationship('branches', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
                         ->columns(3),
                 ]),
@@ -90,12 +90,12 @@ class UserResource extends ErpResource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('Name')->searchable()->sortable(),
-                TextColumn::make('phone')->label('Mobile number')->placeholder('—'),
-                TextColumn::make('email')->label('Email')->searchable(),
-                IconColumn::make('two_factor')->label('2FA')->state(fn (User $record) => $record->hasTwoFactor())->boolean(),
+                TextColumn::make('name')->label(__('Name'))->searchable()->sortable(),
+                TextColumn::make('phone')->label(__('Mobile number'))->placeholder('—'),
+                TextColumn::make('email')->label(__('Email'))->searchable(),
+                IconColumn::make('two_factor')->label(__('2FA'))->state(fn (User $record) => $record->hasTwoFactor())->boolean(),
                 TextColumn::make('access_type')
-                    ->label('Access type')
+                    ->label(__('Access type'))
                     ->badge()
                     ->formatStateUsing(fn (string $state) => ucfirst($state))
                     ->color(fn (string $state) => $state === 'administrator' ? 'primary' : 'gray'),
@@ -103,8 +103,8 @@ class UserResource extends ErpResource
             ])
             ->defaultSort('name')
             ->filters([
-                SelectFilter::make('access_type')->label('Access type')->options(['operator' => 'Operator', 'administrator' => 'Administrator']),
-                TernaryFilter::make('is_active')->label('Active'),
+                SelectFilter::make('access_type')->label(__('Access type'))->options(['operator' => __('Operator'), 'administrator' => __('Administrator')]),
+                TernaryFilter::make('is_active')->label(__('Active')),
             ])
             ->recordActions([
                 EditAction::make(),

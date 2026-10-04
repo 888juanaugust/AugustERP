@@ -16,7 +16,7 @@ class ListSalesOrders extends ListDocuments
 
     public function getTabs(): array
     {
-        return ['awaiting' => Tab::make('Awaiting approval')
+        return ['awaiting' => Tab::make(__('Awaiting approval'))
             ->badge(fn () => SalesOrder::query()->where('approval_status', SalesOrder::AWAITING)->count())
             ->modifyQueryUsing(fn (Builder $query) => $query->where('approval_status', SalesOrder::AWAITING)),
         ] + parent::getTabs();

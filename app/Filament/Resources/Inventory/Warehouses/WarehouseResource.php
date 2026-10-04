@@ -39,17 +39,17 @@ class WarehouseResource extends MasterResource
     {
         return $schema->components([
             Tabs::make('warehouse')->tabs([
-                Tab::make('General')->schema([
+                Tab::make(__('General'))->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100)->unique(ignoreRecord: true),
-                    Textarea::make('description')->label('Description')->rows(2),
-                    TextInput::make('pic')->label('Person in charge')->maxLength(100),
+                    Textarea::make('description')->label(__('Description'))->rows(2),
+                    TextInput::make('pic')->label(__('Person in charge'))->maxLength(100),
                     Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->native(false)->preload(),
-                    Toggle::make('scrap_warehouse')->label('Use as the warehouse for damaged goods')->inline(false),
-                    Toggle::make('is_default')->label('Default warehouse')->inline(false),
+                    Toggle::make('scrap_warehouse')->label(__('Use as the warehouse for damaged goods'))->inline(false),
+                    Toggle::make('is_default')->label(__('Default warehouse'))->inline(false),
                     self::activeToggle()->inline(false),
                 ]),
-                Tab::make('Other info')->schema([
-                    Textarea::make('address')->label('Address')->rows(3),
+                Tab::make(__('Other info'))->schema([
+                    Textarea::make('address')->label(__('Address'))->rows(3),
                 ]),
                 self::usersTab(),
             ]),
@@ -62,10 +62,10 @@ class WarehouseResource extends MasterResource
             ->modifyQueryUsing(fn ($query) => self::visibleToCurrentUser($query->with('users')->where('is_system', false)))
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('address')->label('Address')->limit(60)->placeholder('—'),
+                TextColumn::make('address')->label(__('Address'))->limit(60)->placeholder('—'),
                 TextColumn::make('branch.name')->label(__('fields.branch'))->placeholder('—'),
                 self::usersColumn(),
-                IconColumn::make('scrap_warehouse')->label('Damaged goods')->boolean(),
+                IconColumn::make('scrap_warehouse')->label(__('Damaged goods'))->boolean(),
                 self::activeColumn(),
             ])
             ->defaultSort('name')

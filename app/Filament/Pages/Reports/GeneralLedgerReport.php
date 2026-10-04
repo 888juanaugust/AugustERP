@@ -23,7 +23,7 @@ class GeneralLedgerReport extends ReportPage
 
     public static function title(): string
     {
-        return 'General Ledger';
+        return __('General Ledger');
     }
 
     public static function group(): string
@@ -33,7 +33,7 @@ class GeneralLedgerReport extends ReportPage
 
     public static function description(): string
     {
-        return 'Every posting of every account in the period, with running balances.';
+        return __('Every posting of every account in the period, with running balances.');
     }
 
     protected function defaultFilters(): array
@@ -44,7 +44,7 @@ class GeneralLedgerReport extends ReportPage
     protected function extraFilters(): array
     {
         return [
-            Select::make('account_id')->label('Account')->options(fn () => Account::options())->placeholder('All accounts')->searchable()->native(false)->nullable()->live(),
+            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->placeholder(__('All accounts'))->searchable()->native(false)->nullable()->live(),
         ];
     }
 

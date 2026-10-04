@@ -21,11 +21,11 @@ enum Hak: string
     public function label(): string
     {
         return match ($this) {
-            self::View => 'View',
-            self::Create => 'Create',
-            self::Update => 'Edit',
-            self::Delete => 'Delete',
-            self::Print => 'Print',
+            self::View => __('View'),
+            self::Create => __('Create'),
+            self::Update => __('Edit'),
+            self::Delete => __('Delete'),
+            self::Print => __('Print'),
         };
     }
 

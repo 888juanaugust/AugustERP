@@ -14,6 +14,6 @@ class ListEmployees extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New employee')];
+        return [CreateAction::make()->label(__('New employee'))];
     }
 }

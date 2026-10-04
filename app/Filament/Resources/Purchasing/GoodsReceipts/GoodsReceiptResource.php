@@ -49,8 +49,8 @@ class GoodsReceiptResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(VendorFields::select()->label('Received from'), TransactionType::GoodsReceipt, 'Form No.', [
-                TextInput::make('receive_number')->label("Vendor's delivery note No.")->maxLength(60),
+            PricedDocumentForm::header(VendorFields::select()->label(__('Received from')), TransactionType::GoodsReceipt, 'Form No.', [
+                TextInput::make('receive_number')->label(__('Vendor\'s delivery note No.'))->maxLength(60),
             ]),
             Tabs::make('receipt')->tabs([
                 PricedDocumentForm::linesTab(
@@ -71,8 +71,8 @@ class GoodsReceiptResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('vendor'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('receive_number')->label('Delivery note No.')->placeholder('—'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('receive_number')->label(__('Delivery note No.'))->placeholder('—'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
@@ -82,10 +82,10 @@ class GoodsReceiptResource extends ErpResource
                     }),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label('Received from')->relationship('vendor', 'name')->searchable()])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('Received from'))->relationship('vendor', 'name')->searchable()])
             ->recordActions([
                 EditAction::make(),
-                Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('primary')
+                Action::make('invoice')->label(__('Invoice'))->icon('heroicon-m-document-text')->color('primary')
                     ->visible(fn (GoodsReceipt $record) => in_array($record->status, ['pending', 'partial'], true) && PurchaseInvoiceResource::canCreate())
                     ->url(fn (GoodsReceipt $record) => PurchaseInvoiceResource::getUrl('create', ['source' => 'receipt:'.$record->id])),
                 PrintAction::make(),

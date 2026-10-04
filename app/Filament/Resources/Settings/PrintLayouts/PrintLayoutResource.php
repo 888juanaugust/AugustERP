@@ -60,20 +60,20 @@ class PrintLayoutResource extends MasterResource
                 ->columns(3)
                 ->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100),
-                    Select::make('transaction_type')->label('Document')->options(self::documentOptions())->required()->searchable()->native(false),
-                    Toggle::make('is_default')->label('Default for this document')->inline(false),
+                    Select::make('transaction_type')->label(__('Document'))->options(self::documentOptions())->required()->searchable()->native(false),
+                    Toggle::make('is_default')->label(__('Default for this document'))->inline(false),
                 ]),
             Tabs::make('layout')->tabs([
-                Tab::make('Layout')->schema([
+                Tab::make(__('Layout'))->schema([
                     Grid::make(4)->schema([
-                        Select::make('settings.paper')->label('Paper')
-                            ->options(['A4' => 'A4', 'A5' => 'A5', 'Letter' => 'Letter', 'Continuous 9.5"' => 'Continuous 9.5"'])
+                        Select::make('settings.paper')->label(__('Paper'))
+                            ->options(['A4' => __('A4'), 'A5' => __('A5'), 'Letter' => __('Letter'), 'Continuous 9.5"' => __('Continuous 9.5"')])
                             ->default(PrintLayout::DEFAULTS['paper'])->required()->native(false),
-                        Select::make('settings.orientation')->label('Orientation')
-                            ->options(['portrait' => 'Portrait', 'landscape' => 'Landscape'])
+                        Select::make('settings.orientation')->label(__('Orientation'))
+                            ->options(['portrait' => __('Portrait'), 'landscape' => __('Landscape')])
                             ->default(PrintLayout::DEFAULTS['orientation'])->required()->native(false),
-                        TextInput::make('settings.title')->label('Heading (blank = document name)')->maxLength(100),
-                        TextInput::make('settings.copies')->label('Copies')->numeric()->minValue(1)->maxValue(9)->default(PrintLayout::DEFAULTS['copies']),
+                        TextInput::make('settings.title')->label(__('Heading (blank = document name)'))->maxLength(100),
+                        TextInput::make('settings.copies')->label(__('Copies'))->numeric()->minValue(1)->maxValue(9)->default(PrintLayout::DEFAULTS['copies']),
                     ]),
                     Grid::make(5)->schema([
                         self::show('show_logo', 'Company logo'),
@@ -87,7 +87,7 @@ class PrintLayoutResource extends MasterResource
                         self::show('show_tax', 'Tax column'),
                         self::show('show_notes', 'Notes'),
                     ]),
-                    Textarea::make('settings.footer')->label('Footer text')->rows(3),
+                    Textarea::make('settings.footer')->label(__('Footer text'))->rows(3),
                 ]),
                 self::usersTab(),
             ]),
@@ -100,14 +100,14 @@ class PrintLayoutResource extends MasterResource
             ->modifyQueryUsing(fn ($query) => $query->with('users'))
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('transaction_type')->label('Document')->sortable()
+                TextColumn::make('transaction_type')->label(__('Document'))->sortable()
                     ->formatStateUsing(fn (string $state): string => TransactionType::tryFrom($state)?->getLabel() ?? $state),
                 IconColumn::make('is_default')->label(__('fields.is_default'))->boolean(),
                 self::usersColumn(),
             ])
             ->defaultSort('name')
             ->filters([
-                SelectFilter::make('transaction_type')->label('Document')->options(self::documentOptions()),
+                SelectFilter::make('transaction_type')->label(__('Document'))->options(self::documentOptions()),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

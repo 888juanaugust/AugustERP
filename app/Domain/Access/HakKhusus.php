@@ -21,16 +21,16 @@ enum HakKhusus: string
     public function label(): string
     {
         return match ($this) {
-            self::SeeCost => 'See item cost and margins',
-            self::ChangeSellingPrice => 'Change the selling price on a document',
-            self::SeeCreditData => 'See customer credit data',
-            self::OverrideCreditLimit => 'Save a document over the credit limit',
-            self::OpenClosedPeriod => 'Reopen a closed period',
-            self::BackdateTransactions => 'Save a transaction dated before today',
+            self::SeeCost => __('See item cost and margins'),
+            self::ChangeSellingPrice => __('Change the selling price on a document'),
+            self::SeeCreditData => __('See customer credit data'),
+            self::OverrideCreditLimit => __('Save a document over the credit limit'),
+            self::OpenClosedPeriod => __('Reopen a closed period'),
+            self::BackdateTransactions => __('Save a transaction dated before today'),
             self::EditOthersTransactions => "Edit other users' transactions",
-            self::DeletePostedTransactions => 'Delete a posted transaction',
-            self::ApproveTransactions => 'Approve transactions',
-            self::ExportData => 'Export lists and reports',
+            self::DeletePostedTransactions => __('Delete a posted transaction'),
+            self::ApproveTransactions => __('Approve transactions'),
+            self::ExportData => __('Export lists and reports'),
         };
     }
 }

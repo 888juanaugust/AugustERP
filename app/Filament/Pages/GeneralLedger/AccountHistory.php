@@ -53,9 +53,9 @@ class AccountHistory extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(3)->schema([
-                    Select::make('account_id')->label('Account')->options(fn () => Account::options())->searchable()->native(false)->live(),
-                    DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->native(false)->live(),
+                    DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
                 ]),
             ])
             ->statePath('filters');
@@ -72,16 +72,16 @@ class AccountHistory extends ErpPage implements HasTable
             ->records(fn () => $this->rows())
             ->columns([
                 TextColumn::make('trans_date')->label(__('fields.trans_date')),
-                TextColumn::make('source_number')->label('Source No.')->fontFamily('mono'),
-                TextColumn::make('source_type')->label('Transaction type')->badge()->color('gray'),
+                TextColumn::make('source_number')->label(__('Source No.'))->fontFamily('mono'),
+                TextColumn::make('source_type')->label(__('Transaction type'))->badge()->color('gray'),
                 TextColumn::make('description')->label(__('fields.description'))->limit(50),
-                TextColumn::make('amount')->label('Movement')->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('side')->label('Type'),
-                TextColumn::make('balance')->label('Balance')->alignEnd()->weight('medium')->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('amount')->label(__('Movement'))->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('side')->label(__('Type')),
+                TextColumn::make('balance')->label(__('Balance'))->alignEnd()->weight('medium')->extraCellAttributes(['class' => 'ae-money']),
             ])
             ->paginated(false)
-            ->emptyStateHeading('Pick an account')
-            ->emptyStateDescription('The ledger of the account between the two dates, with its running balance.');
+            ->emptyStateHeading(__('Pick an account'))
+            ->emptyStateDescription(__('The ledger of the account between the two dates, with its running balance.'));
     }
 
     /** @return Collection<int, array<string, mixed>> */

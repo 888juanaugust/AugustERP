@@ -57,24 +57,24 @@ class AssetTransferResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('trans_date')->label('Date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 NumberFields::make(TransactionType::AssetTransfer, 'Transfer No.'),
-                Select::make('from_location_id')->label('From location')->options(fn () => AssetLocation::options())->required()->native(false)->live(),
-                Select::make('to_location_id')->label('To location')->options(fn () => AssetLocation::options())->required()->native(false)
+                Select::make('from_location_id')->label(__('From location'))->options(fn () => AssetLocation::options())->required()->native(false)->live(),
+                Select::make('to_location_id')->label(__('To location'))->options(fn () => AssetLocation::options())->required()->native(false)
                     ->different('from_location_id')
                     ->validationMessages(['different' => 'Pick two different locations.']),
             ]),
             Tabs::make('transfer')->tabs([
-                Tab::make('Asset details')->schema([
+                Tab::make(__('Asset details'))->schema([
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Asset code'),
-                            TableColumn::make('Asset name'),
-                            TableColumn::make('Quantity')->alignment(Alignment::End),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Asset code')),
+                            TableColumn::make(__('Asset name')),
+                            TableColumn::make(__('Quantity'))->alignment(Alignment::End),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('fixed_asset_id')
@@ -98,8 +98,8 @@ class AssetTransferResource extends ErpResource
                         ->live()
                         ->addActionLabel('Add asset'),
                 ]),
-                Tab::make('Other info')->schema([
-                    Textarea::make('description')->label('Notes')->rows(3),
+                Tab::make(__('Other info'))->schema([
+                    Textarea::make('description')->label(__('Notes'))->rows(3),
                 ]),
             ]),
         ])->columns(1);
@@ -110,17 +110,17 @@ class AssetTransferResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['fromLocation', 'toLocation']))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Date'),
-                TextColumn::make('description')->label('Notes')->limit(40)->placeholder('—'),
-                TextColumn::make('fromLocation.name')->label('From'),
-                TextColumn::make('toLocation.name')->label('To'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Date')),
+                TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
+                TextColumn::make('fromLocation.name')->label(__('From')),
+                TextColumn::make('toLocation.name')->label(__('To')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('from_location_id')->label('From')->options(fn () => AssetLocation::options()),
-                SelectFilter::make('to_location_id')->label('To')->options(fn () => AssetLocation::options()),
+                SelectFilter::make('from_location_id')->label(__('From'))->options(fn () => AssetLocation::options()),
+                SelectFilter::make('to_location_id')->label(__('To'))->options(fn () => AssetLocation::options()),
             ])
             ->recordActions([EditAction::make()]);
     }

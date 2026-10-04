@@ -16,7 +16,7 @@ class BankMutations extends ReportPage
 
     public static function title(): string
     {
-        return 'Cash & Bank Mutations';
+        return __('Cash & Bank Mutations');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class BankMutations extends ReportPage
 
     public static function description(): string
     {
-        return 'Opening balance, money in, money out and closing balance of every cash and bank account over the period.';
+        return __('Opening balance, money in, money out and closing balance of every cash and bank account over the period.');
     }
 
     protected function rows(): array

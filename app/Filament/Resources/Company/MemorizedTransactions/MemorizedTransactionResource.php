@@ -72,8 +72,8 @@ class MemorizedTransactionResource extends MasterResource
     {
         return $schema->components([
             TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100),
-            Select::make('transaction_type')->label('Document')->options(self::typeOptions())->disabled()->dehydrated(false),
-            Toggle::make('used_all_user')->label('All users')->default(true)->live(),
+            Select::make('transaction_type')->label(__('Document'))->options(self::typeOptions())->disabled()->dehydrated(false),
+            Toggle::make('used_all_user')->label(__('All users'))->default(true)->live(),
             CheckboxList::make('users')
                 ->label(__('fields.users'))
                 ->relationship('users', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
@@ -89,17 +89,17 @@ class MemorizedTransactionResource extends MasterResource
             ->modifyQueryUsing(fn ($query) => $query->with('users'))
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('transaction_type')->label('Document')->sortable()
+                TextColumn::make('transaction_type')->label(__('Document'))->sortable()
                     ->formatStateUsing(fn (string $state): string => self::typeLabel($state)),
                 self::usersColumn(),
             ])
             ->defaultSort('name')
             ->filters([
-                SelectFilter::make('transaction_type')->label('Document')->options(self::typeOptions()),
+                SelectFilter::make('transaction_type')->label(__('Document'))->options(self::typeOptions()),
             ])
             ->recordActions([
                 Action::make('use')
-                    ->label('Use')
+                    ->label(__('Use'))
                     ->icon('heroicon-m-document-duplicate')
                     ->color('primary')
                     ->url(fn (MemorizedTransaction $record): ?string => self::useUrl($record))

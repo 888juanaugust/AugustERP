@@ -14,6 +14,6 @@ class ManageSalesTargets extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New target')];
+        return [CreateAction::make()->label(__('New target'))];
     }
 }

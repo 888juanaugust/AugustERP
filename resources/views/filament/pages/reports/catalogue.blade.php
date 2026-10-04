@@ -1,9 +1,9 @@
 <x-filament-panels::page>
     <div class="max-w-md">
         <x-filament::input.wrapper>
-            <x-filament::input type="search" wire:model.live.debounce.300ms="search" placeholder="Find a report" />
+            <x-filament::input type="search" wire:model.live.debounce.300ms="search" placeholder="{{ __('Find a report') }}" />
         </x-filament::input.wrapper>
-        <p class="mt-2 text-sm text-gray-500">Figures are computed from the journal and the stock ledger each time; nothing is stored.</p>
+        <p class="mt-2 text-sm text-gray-500">{{ __('Figures are computed from the journal and the stock ledger each time; nothing is stored.') }}</p>
     </div>
 
     @php($groups = $this->groups())
@@ -23,6 +23,6 @@
             </div>
         </div>
     @empty
-        <p class="text-sm text-gray-500">No report matches.</p>
+        <p class="text-sm text-gray-500">{{ __('No report matches.') }}</p>
     @endforelse
 </x-filament-panels::page>

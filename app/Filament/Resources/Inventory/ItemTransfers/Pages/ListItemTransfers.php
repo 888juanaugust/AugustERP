@@ -14,6 +14,6 @@ class ListItemTransfers extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New transfer')];
+        return [CreateAction::make()->label(__('New transfer'))];
     }
 }

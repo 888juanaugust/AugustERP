@@ -71,11 +71,11 @@ class FixedAssetResource extends ErpResource
             Section::make()
                 ->columns(3)
                 ->schema([
-                    TextInput::make('name')->label('Name')->required()->maxLength(255),
-                    DatePicker::make('trans_date')->label('Purchase date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today())->live(),
-                    DatePicker::make('usage_date')->label('In use from')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    TextInput::make('name')->label(__('Name'))->required()->maxLength(255),
+                    DatePicker::make('trans_date')->label(__('Purchase date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today())->live(),
+                    DatePicker::make('usage_date')->label(__('In use from'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                     NumberFields::make(TransactionType::FixedAsset, 'Asset code'),
-                    Select::make('asset_category_id')->label('Asset category')
+                    Select::make('asset_category_id')->label(__('Asset category'))
                         ->options(fn () => AssetCategory::query()->active()->orderBy('name')->pluck('name', 'id'))
                         ->required()->native(false)->live()
                         ->afterStateUpdated(function (Set $set, $state, string $operation): void {
@@ -92,47 +92,47 @@ class FixedAssetResource extends ErpResource
                             $set('depreciation_method', $category->depreciation_method?->value);
                             $set('useful_life_months', $category->useful_life_months);
                         }),
-                    Toggle::make('intangible')->label('Intangible asset')->inline(false),
-                    Select::make('depreciation_method')->label('Depreciation method')->options(DepreciationMethod::class)->default(DepreciationMethod::StraightLine)->required()->native(false),
-                    TextInput::make('quantity')->label('Quantity')->numeric()->default(1)->required()->minValue(0.0001),
-                    TextInput::make('useful_life_months')->label('Useful life (months)')->numeric()->integer()->required()->default(48)->minValue(0),
+                    Toggle::make('intangible')->label(__('Intangible asset'))->inline(false),
+                    Select::make('depreciation_method')->label(__('Depreciation method'))->options(DepreciationMethod::class)->default(DepreciationMethod::StraightLine)->required()->native(false),
+                    TextInput::make('quantity')->label(__('Quantity'))->numeric()->default(1)->required()->minValue(0.0001),
+                    TextInput::make('useful_life_months')->label(__('Useful life (months)'))->numeric()->integer()->required()->default(48)->minValue(0),
                     PricedDocumentForm::money('salvage_value', 'Salvage value'),
                 ]),
             Tabs::make('asset')
                 ->persistTabInQueryString()
                 ->tabs([
-                    Tab::make('General')->columns(3)->schema([
+                    Tab::make(__('General'))->columns(3)->schema([
                         self::accountSelect('asset_account_id', 'Asset account', AccountType::FixedAsset, AccountType::OtherCurrentAsset),
                         self::accountSelect('accumulated_depreciation_account_id', 'Accumulated depreciation account', AccountType::AccumulatedDepreciation),
                         self::accountSelect('depreciation_expense_account_id', 'Depreciation expense account', AccountType::Expense, AccountType::OtherExpense),
                     ]),
-                    Tab::make('Other info')->columns(2)->schema([
-                        Select::make('location_id')->label('Initial location')
+                    Tab::make(__('Other info'))->columns(2)->schema([
+                        Select::make('location_id')->label(__('Initial location'))
                             ->options(fn () => AssetLocation::options())
                             ->native(false)
                             ->createOptionForm([
-                                TextInput::make('name')->label('Name')->required()->maxLength(100),
-                                TextInput::make('address')->label('Address')->maxLength(255),
+                                TextInput::make('name')->label(__('Name'))->required()->maxLength(100),
+                                TextInput::make('address')->label(__('Address'))->maxLength(255),
                             ])
                             ->createOptionUsing(fn (array $data) => AssetLocation::query()->create($data + ['is_active' => true])->id),
-                        Textarea::make('notes')->label('Notes')->rows(3)->columnSpanFull(),
-                        Toggle::make('fiscal')->label('Fiscal asset')->live()->inline(false),
-                        Select::make('fiscal_asset_category_id')->label('Fiscal asset group')
+                        Textarea::make('notes')->label(__('Notes'))->rows(3)->columnSpanFull(),
+                        Toggle::make('fiscal')->label(__('Fiscal asset'))->live()->inline(false),
+                        Select::make('fiscal_asset_category_id')->label(__('Fiscal asset group'))
                             ->options(fn () => FiscalAssetCategory::query()->orderBy('name')->pluck('name', 'id'))
                             ->native(false)
                             ->visible(fn (Get $get): bool => (bool) $get('fiscal')),
-                        Select::make('branch_id')->label('Branch')->relationship('branch', 'name')->native(false)->default(fn () => Branch::default()?->id),
+                        Select::make('branch_id')->label(__('Branch'))->relationship('branch', 'name')->native(false)->default(fn () => Branch::default()?->id),
                     ]),
-                    Tab::make('Expenditure accounts')->schema([
+                    Tab::make(__('Expenditure accounts'))->schema([
                         Repeater::make('expenditures')
                             ->hiddenLabel()
                             ->relationship()
                             ->orderColumn('sort')
                             ->table([
-                                TableColumn::make('Account'),
-                                TableColumn::make('Description'),
-                                TableColumn::make('Date'),
-                                TableColumn::make('Amount')->alignment(Alignment::End),
+                                TableColumn::make(__('Account')),
+                                TableColumn::make(__('Description')),
+                                TableColumn::make(__('Date')),
+                                TableColumn::make(__('Amount'))->alignment(Alignment::End),
                             ])
                             ->schema([
                                 Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
@@ -144,7 +144,7 @@ class FixedAssetResource extends ErpResource
                             ->defaultItems(1)
                             ->live()
                             ->addActionLabel('Add expenditure'),
-                        Placeholder::make('cost_preview')->label('Total cost')->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('expenditures'), 'amount'))),
+                        Placeholder::make('cost_preview')->label(__('Total cost'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('expenditures'), 'amount'))),
                     ]),
                 ]),
         ])->columns(1);
@@ -160,36 +160,36 @@ class FixedAssetResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['category', 'location']))
             ->columns([
-                TextColumn::make('number')->label('Asset code')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('name')->label('Name')->searchable()->sortable()->weight('medium')->wrap(),
-                Tanggal::make('trans_date')->label('Purchase date'),
-                TextColumn::make('category.name')->label('Category'),
-                TextColumn::make('location.name')->label('Location')->placeholder('—'),
-                TextColumn::make('quantity')->label('Qty')->alignEnd()->formatStateUsing(fn ($state): string => Format::quantity($state)),
-                Rupiah::make('cost')->label('Total cost'),
-                TextColumn::make('book_value')->label('Book value')
+                TextColumn::make('number')->label(__('Asset code'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('name')->label(__('Name'))->searchable()->sortable()->weight('medium')->wrap(),
+                Tanggal::make('trans_date')->label(__('Purchase date')),
+                TextColumn::make('category.name')->label(__('Category')),
+                TextColumn::make('location.name')->label(__('Location'))->placeholder('—'),
+                TextColumn::make('quantity')->label(__('Qty'))->alignEnd()->formatStateUsing(fn ($state): string => Format::quantity($state)),
+                Rupiah::make('cost')->label(__('Total cost')),
+                TextColumn::make('book_value')->label(__('Book value'))
                     ->state(fn (FixedAsset $record): int => $record->bookValue())
                     ->formatStateUsing(fn ($state): string => Format::number((int) $state))
                     ->alignEnd()
                     ->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('status')->label('Status')->badge()
+                TextColumn::make('status')->label(__('Status'))->badge()
                     ->formatStateUsing(fn (string $state): string => $state === FixedAsset::ACTIVE ? 'In use' : 'Disposed')
                     ->color(fn (string $state): string => $state === FixedAsset::ACTIVE ? 'success' : 'gray'),
             ])
             ->defaultSort('number')
             ->filters([
-                SelectFilter::make('asset_category_id')->label('Asset category')->relationship('category', 'name'),
-                SelectFilter::make('location_id')->label('Location')->relationship('location', 'name'),
+                SelectFilter::make('asset_category_id')->label(__('Asset category'))->relationship('category', 'name'),
+                SelectFilter::make('location_id')->label(__('Location'))->relationship('location', 'name'),
             ])
             ->recordActions([
                 EditAction::make(),
                 Action::make('schedule')
-                    ->label('Depreciation')
+                    ->label(__('Depreciation'))
                     ->icon('heroicon-m-table-cells')
                     ->color('gray')
                     ->modalHeading(fn (FixedAsset $record): string => "Depreciation of {$record->number}")
                     ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Close')
+                    ->modalCancelActionLabel(__('Close'))
                     ->modalContent(fn (FixedAsset $record) => view('filament.resources.fixed-assets.schedule', [
                         'rows' => $record->depreciations()->get(),
                         'asset' => $record,

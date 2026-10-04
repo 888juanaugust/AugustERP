@@ -45,7 +45,7 @@ class AssetsByLocation extends ErpPage implements HasTable
     {
         return $schema->components([
             Section::make()->schema([
-                Select::make('fixed_asset_id')->label('Find an asset')
+                Select::make('fixed_asset_id')->label(__('Find an asset'))
                     ->searchable()
                     ->getSearchResultsUsing(fn (string $search) => FixedAsset::query()->active()
                         ->where(fn ($query) => $query->where('number', 'ilike', "%{$search}%")->orWhere('name', 'ilike', "%{$search}%"))
@@ -66,13 +66,13 @@ class AssetsByLocation extends ErpPage implements HasTable
         return $table
             ->records(fn () => $this->rows())
             ->columns([
-                TextColumn::make('name')->label('Location')->weight('medium'),
-                TextColumn::make('address')->label('Address')->limit(60)->placeholder('—'),
-                TextColumn::make('quantity')->label('Quantity')->alignEnd(),
-                TextColumn::make('assets')->label('Assets')->limit(80)->placeholder('—'),
+                TextColumn::make('name')->label(__('Location'))->weight('medium'),
+                TextColumn::make('address')->label(__('Address'))->limit(60)->placeholder('—'),
+                TextColumn::make('quantity')->label(__('Quantity'))->alignEnd(),
+                TextColumn::make('assets')->label(__('Assets'))->limit(80)->placeholder('—'),
             ])
             ->paginated(false)
-            ->emptyStateHeading('No assets yet');
+            ->emptyStateHeading(__('No assets yet'));
     }
 
     /** @return Collection<int, array<string, mixed>> */

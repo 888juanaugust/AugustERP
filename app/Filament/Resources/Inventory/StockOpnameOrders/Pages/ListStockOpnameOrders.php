@@ -14,6 +14,6 @@ class ListStockOpnameOrders extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New count order')];
+        return [CreateAction::make()->label(__('New count order'))];
     }
 }

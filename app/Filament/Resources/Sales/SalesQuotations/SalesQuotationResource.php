@@ -62,7 +62,7 @@ class SalesQuotationResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('customer'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
@@ -73,10 +73,10 @@ class SalesQuotationResource extends ErpResource
                 Rupiah::make('total')->label(__('fields.total')),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('customer_id')->label('Ordered by')->relationship('customer', 'name')->searchable(), TernaryFilter::make('is_printed')->label(__('fields.is_printed'))])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('customer_id')->label(__('Ordered by'))->relationship('customer', 'name')->searchable(), TernaryFilter::make('is_printed')->label(__('fields.is_printed'))])
             ->recordActions([
                 EditAction::make(),
-                Action::make('order')->label('Create order')->icon('heroicon-m-arrow-right-circle')->color('primary')
+                Action::make('order')->label(__('Create order'))->icon('heroicon-m-arrow-right-circle')->color('primary')
                     ->visible(fn (SalesQuotation $record) => in_array($record->status, ['pending', 'partial'], true) && SalesOrderResource::canCreate())
                     ->url(fn (SalesQuotation $record) => SalesOrderResource::getUrl('create', ['source' => $record->id])),
                 PrintAction::make(),

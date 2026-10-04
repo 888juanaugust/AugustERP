@@ -58,39 +58,39 @@ class VendorResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('General')
+            Section::make(__('General'))
                 ->columns(3)
                 ->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(150)->columnSpan(2),
                     NumberFields::make(TransactionType::Vendor, 'Vendor ID'),
-                    Select::make('category_id')->label('Category')->relationship('category', 'name')->preload()->searchable()->native(false)
+                    Select::make('category_id')->label(__('Category'))->relationship('category', 'name')->preload()->searchable()->native(false)
                         ->default(fn () => VendorCategory::query()->where('is_default', true)->value('id')),
-                    Select::make('vendor_type_id')->label('Vendor type')->relationship('vendorType', 'name')->preload()->native(false),
-                    Select::make('branch_id')->label('Used in branch')->relationship('branch', 'name')->preload()->native(false)->required()
+                    Select::make('vendor_type_id')->label(__('Vendor type'))->relationship('vendorType', 'name')->preload()->native(false),
+                    Select::make('branch_id')->label(__('Used in branch'))->relationship('branch', 'name')->preload()->native(false)->required()
                         ->default(fn () => Branch::default()?->id),
-                    TextInput::make('work_phone')->label('Work phone')->tel()->maxLength(30),
-                    TextInput::make('mobile_phone')->label('Mobile')->tel()->maxLength(30),
-                    TextInput::make('whatsapp')->label('WhatsApp')->tel()->maxLength(30),
-                    TextInput::make('email')->label('Email')->email()->maxLength(150),
-                    TextInput::make('fax')->label('Fax')->maxLength(30),
-                    TextInput::make('website')->label('Website')->maxLength(150),
-                    Toggle::make('service_seller')->label('Individual service provider (subject to income tax Art. 21)')->inline(false)->columnSpan(2),
+                    TextInput::make('work_phone')->label(__('Work phone'))->tel()->maxLength(30),
+                    TextInput::make('mobile_phone')->label(__('Mobile'))->tel()->maxLength(30),
+                    TextInput::make('whatsapp')->label(__('WhatsApp'))->tel()->maxLength(30),
+                    TextInput::make('email')->label(__('Email'))->email()->maxLength(150),
+                    TextInput::make('fax')->label(__('Fax'))->maxLength(30),
+                    TextInput::make('website')->label(__('Website'))->maxLength(150),
+                    Toggle::make('service_seller')->label(__('Individual service provider (subject to income tax Art. 21)'))->inline(false)->columnSpan(2),
                     self::activeToggle()->inline(false),
                 ]),
             Tabs::make('vendor')
                 ->persistTabInQueryString()
                 ->tabs([
-                    Tab::make('Address')->schema([AddressFields::make('bill', 'Payment address')]),
-                    Tab::make('Contacts')->schema([
+                    Tab::make(__('Address'))->schema([AddressFields::make('bill', 'Payment address')]),
+                    Tab::make(__('Contacts'))->schema([
                         Repeater::make('contacts')
                             ->hiddenLabel()
                             ->relationship()
                             ->orderColumn('sort')
                             ->table([
-                                TableColumn::make('Full name'),
-                                TableColumn::make('Position'),
-                                TableColumn::make('Email'),
-                                TableColumn::make('Mobile'),
+                                TableColumn::make(__('Full name')),
+                                TableColumn::make(__('Position')),
+                                TableColumn::make(__('Email')),
+                                TableColumn::make(__('Mobile')),
                             ])
                             ->schema([
                                 TextInput::make('name')->required()->maxLength(150),
@@ -101,22 +101,22 @@ class VendorResource extends MasterResource
                             ->addActionLabel('Add contact')
                             ->defaultItems(0),
                     ]),
-                    Tab::make('Purchasing')->schema([
+                    Tab::make(__('Purchasing'))->schema([
                         Grid::make(2)->schema([
-                            TextInput::make('default_purchase_disc')->label('Default discount (%)')->numeric()->minValue(0)->maxValue(100)->default(0),
+                            TextInput::make('default_purchase_disc')->label(__('Default discount (%)'))->numeric()->minValue(0)->maxValue(100)->default(0),
                             Select::make('payment_term_id')->label(__('fields.payment_term'))->relationship('paymentTerm', 'name', fn ($query) => $query->where('is_active', true))->preload()->native(false),
-                            Textarea::make('default_invoice_desc')->label('Default invoice description')->rows(2)->columnSpanFull(),
-                            Select::make('payable_account_id')->label('Payable account')->options(fn () => Account::options(AccountType::AccountsPayable))->searchable()->native(false),
-                            Select::make('down_payment_account_id')->label('Down payment account')->options(fn () => Account::options(AccountType::OtherCurrentAsset))->searchable()->native(false),
+                            Textarea::make('default_invoice_desc')->label(__('Default invoice description'))->rows(2)->columnSpanFull(),
+                            Select::make('payable_account_id')->label(__('Payable account'))->options(fn () => Account::options(AccountType::AccountsPayable))->searchable()->native(false),
+                            Select::make('down_payment_account_id')->label(__('Down payment account'))->options(fn () => Account::options(AccountType::OtherCurrentAsset))->searchable()->native(false),
                         ]),
                         Repeater::make('bankAccounts')
-                            ->label('Bank accounts')
+                            ->label(__('Bank accounts'))
                             ->relationship()
                             ->orderColumn('sort')
                             ->table([
-                                TableColumn::make('Account number'),
-                                TableColumn::make('Account holder'),
-                                TableColumn::make('Bank'),
+                                TableColumn::make(__('Account number')),
+                                TableColumn::make(__('Account holder')),
+                                TableColumn::make(__('Bank')),
                             ])
                             ->schema([
                                 TextInput::make('bank_account')->required()->maxLength(50),
@@ -126,29 +126,29 @@ class VendorResource extends MasterResource
                             ->addActionLabel('Add bank account')
                             ->defaultItems(0),
                     ]),
-                    Tab::make('Tax')->schema([
-                        Toggle::make('default_inc_tax')->label('Invoice totals include tax by default')->default(true),
+                    Tab::make(__('Tax'))->schema([
+                        Toggle::make('default_inc_tax')->label(__('Invoice totals include tax by default'))->default(true),
                         Grid::make(2)->schema([
-                            Select::make('wp_type')->label('Tax ID type')->options(WpType::class)->native(false),
-                            TextInput::make('wp_number')->label('Tax ID number')->maxLength(30),
-                            TextInput::make('wp_name')->label('Taxpayer name')->maxLength(150),
-                            TextInput::make('nitku')->label('Business location ID (NITKU)')->maxLength(30),
-                            Select::make('document_code')->label('Transaction type')->options(TaxDocumentCode::options(TaxDocumentCode::forVendors()))->native(false),
+                            Select::make('wp_type')->label(__('Tax ID type'))->options(WpType::class)->native(false),
+                            TextInput::make('wp_number')->label(__('Tax ID number'))->maxLength(30),
+                            TextInput::make('wp_name')->label(__('Taxpayer name'))->maxLength(150),
+                            TextInput::make('nitku')->label(__('Business location ID (NITKU)'))->maxLength(30),
+                            Select::make('document_code')->label(__('Transaction type'))->options(TaxDocumentCode::options(TaxDocumentCode::forVendors()))->native(false),
                         ]),
-                        Toggle::make('tax_same_as_bill')->label('Tax address is the payment address')->default(true)->live(),
+                        Toggle::make('tax_same_as_bill')->label(__('Tax address is the payment address'))->default(true)->live(),
                         AddressFields::make('tax', 'Tax address')->visible(fn (Get $get) => ! $get('tax_same_as_bill')),
                     ]),
-                    Tab::make('Opening balance')->schema([
+                    Tab::make(__('Opening balance'))->schema([
                         Repeater::make('openingBalances')
                             ->hiddenLabel()
                             ->relationship()
                             ->orderColumn('sort')
                             ->table([
-                                TableColumn::make('Date'),
-                                TableColumn::make('Amount'),
-                                TableColumn::make('Payment term'),
-                                TableColumn::make('Number'),
-                                TableColumn::make('Description'),
+                                TableColumn::make(__('Date')),
+                                TableColumn::make(__('Amount')),
+                                TableColumn::make(__('Payment term')),
+                                TableColumn::make(__('Number')),
+                                TableColumn::make(__('Description')),
                             ])
                             ->schema([
                                 DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
@@ -160,8 +160,8 @@ class VendorResource extends MasterResource
                             ->addActionLabel('Add open bill')
                             ->defaultItems(0),
                     ]),
-                    Tab::make('Other')->schema([
-                        Toggle::make('use_bill_number')->label('The vendor puts its own invoice number on bills')->inline(false),
+                    Tab::make(__('Other'))->schema([
+                        Toggle::make('use_bill_number')->label(__('The vendor puts its own invoice number on bills'))->inline(false),
                         Textarea::make('notes')->label(__('fields.memo'))->rows(3),
                     ]),
                 ]),
@@ -174,17 +174,17 @@ class VendorResource extends MasterResource
             ->modifyQueryUsing(fn ($query) => $query->with(['category', 'vendorType', 'branch']))
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable()->weight('medium'),
-                TextColumn::make('number')->label('Vendor ID')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('category.name')->label('Category')->placeholder('—'),
-                TextColumn::make('vendorType.name')->label('Type')->placeholder('—'),
+                TextColumn::make('number')->label(__('Vendor ID'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('category.name')->label(__('Category'))->placeholder('—'),
+                TextColumn::make('vendorType.name')->label(__('Type'))->placeholder('—'),
                 TextColumn::make('branch.name')->label(__('fields.branch'))->placeholder('—'),
-                TextColumn::make('balance')->label('Balance')->state(fn () => Format::rupiah(0))->alignEnd()
-                    ->tooltip('Open payables arrive with the purchasing module.'),
+                TextColumn::make('balance')->label(__('Balance'))->state(fn () => Format::rupiah(0))->alignEnd()
+                    ->tooltip(__('Open payables arrive with the purchasing module.')),
             ])
             ->defaultSort('name')
             ->filters([
                 self::activeFilter(),
-                SelectFilter::make('category_id')->label('Category')->relationship('category', 'name'),
+                SelectFilter::make('category_id')->label(__('Category'))->relationship('category', 'name'),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

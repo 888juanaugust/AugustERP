@@ -57,7 +57,7 @@ class PurchaseRequisitionResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                Select::make('requisition_type')->label('Request type')->options(['buy' => 'Buy items', 'send' => 'Send items'])->default('buy')->required()->native(false),
+                Select::make('requisition_type')->label(__('Request type'))->options(['buy' => __('Buy items'), 'send' => __('Send items')])->default('buy')->required()->native(false),
                 NumberFields::make(TransactionType::PurchaseRequisition),
             ]),
             Tabs::make('requisition')->tabs([
@@ -67,12 +67,12 @@ class PurchaseRequisitionResource extends ErpResource
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Item'),
-                            TableColumn::make('Quantity')->alignment(Alignment::End),
-                            TableColumn::make('Unit'),
-                            TableColumn::make('Requested for'),
-                            TableColumn::make('Estimated price')->alignment(Alignment::End),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Item')),
+                            TableColumn::make(__('Quantity'))->alignment(Alignment::End),
+                            TableColumn::make(__('Unit')),
+                            TableColumn::make(__('Requested for')),
+                            TableColumn::make(__('Estimated price'))->alignment(Alignment::End),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             LineItemFields::item(),
@@ -98,21 +98,21 @@ class PurchaseRequisitionResource extends ErpResource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                TextColumn::make('requisition_type')->label('Request type')->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'buy' ? 'Buy items' : 'Send items'),
+                TextColumn::make('requisition_type')->label(__('Request type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'buy' ? 'Buy items' : 'Send items'),
                 TextColumn::make('description')->label(__('fields.description'))->limit(50)->placeholder('—'),
                 TextColumn::make('status')->label(__('fields.status'))->badge()->formatStateUsing(fn (string $state) => __('status.fulfilment.'.$state))
                     ->color(fn (string $state) => match ($state) {
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
-                Rupiah::make('estimated_total')->label('Estimated total'),
+                Rupiah::make('estimated_total')->label(__('Estimated total')),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('requisition_type')->label('Request type')->options(['buy' => 'Buy items', 'send' => 'Send items'])])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('requisition_type')->label(__('Request type'))->options(['buy' => __('Buy items'), 'send' => __('Send items')])])
             ->recordActions([
                 EditAction::make(),
-                Action::make('order')->label('Create order')->icon('heroicon-m-arrow-right-circle')->color('primary')
+                Action::make('order')->label(__('Create order'))->icon('heroicon-m-arrow-right-circle')->color('primary')
                     ->visible(fn (PurchaseRequisition $record) => in_array($record->status, ['pending', 'partial'], true) && PurchaseOrderResource::canCreate())
                     ->url(fn (PurchaseRequisition $record) => PurchaseOrderResource::getUrl('create', ['source' => $record->id])),
             ]);

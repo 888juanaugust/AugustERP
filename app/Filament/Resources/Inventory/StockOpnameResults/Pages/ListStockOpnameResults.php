@@ -14,6 +14,6 @@ class ListStockOpnameResults extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New count result')];
+        return [CreateAction::make()->label(__('New count result'))];
     }
 }

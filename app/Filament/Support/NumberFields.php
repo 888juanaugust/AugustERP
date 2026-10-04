@@ -25,7 +25,7 @@ final class NumberFields
 
         return Group::make([
             Toggle::make('manual_number')
-                ->label('Enter the number by hand')
+                ->label(__('Enter the number by hand'))
                 ->default(false)
                 ->live()
                 ->dehydrated(false)

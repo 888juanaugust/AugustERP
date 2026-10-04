@@ -43,12 +43,12 @@ class EditAccessGroup extends EditRecord
         return [
             // The reference system's "Salin Hak": take another group's matrix as the starting point.
             Action::make('copyRights')
-                ->label('Copy rights from…')
+                ->label(__('Copy rights from…'))
                 ->icon('heroicon-o-document-duplicate')
                 ->visible(fn () => AccessGroupResource::canEdit($this->record))
                 ->schema([
                     Select::make('source_id')
-                        ->label('Copy the rights of')
+                        ->label(__('Copy the rights of'))
                         ->options(fn () => AccessGroup::query()->whereKeyNot($this->record->getKey())->orderBy('name')->pluck('name', 'id'))
                         ->required()
                         ->native(false),
@@ -56,7 +56,7 @@ class EditAccessGroup extends EditRecord
                 ->action(function (array $data): void {
                     $this->record->copyRightsFrom(AccessGroup::query()->findOrFail($data['source_id']));
                     $this->fillForm();
-                    Notification::make()->title('Rights copied')->success()->send();
+                    Notification::make()->title(__('Rights copied'))->success()->send();
                 }),
             DeleteAction::make(),
         ];

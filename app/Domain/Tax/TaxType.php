@@ -20,13 +20,13 @@ enum TaxType: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Vat => 'Value Added Tax (PPN)',
-            self::LuxuryTax => 'Luxury Goods Tax (PPnBM)',
-            self::IncomeTax4_2 => 'Income Tax Art. 4(2)',
-            self::IncomeTax15 => 'Income Tax Art. 15',
-            self::IncomeTax21 => 'Income Tax Art. 21',
-            self::IncomeTax22 => 'Income Tax Art. 22',
-            self::IncomeTax23 => 'Income Tax Art. 23',
+            self::Vat => __('Value Added Tax (PPN)'),
+            self::LuxuryTax => __('Luxury Goods Tax (PPnBM)'),
+            self::IncomeTax4_2 => __('Income Tax Art. 4(2)'),
+            self::IncomeTax15 => __('Income Tax Art. 15'),
+            self::IncomeTax21 => __('Income Tax Art. 21'),
+            self::IncomeTax22 => __('Income Tax Art. 22'),
+            self::IncomeTax23 => __('Income Tax Art. 23'),
         };
     }
 

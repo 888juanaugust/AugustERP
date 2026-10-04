@@ -33,7 +33,7 @@ final class PullAction
             ->visible(fn (Get $get) => (bool) $get($partyField))
             ->schema(fn (Get $get) => [
                 CheckboxList::make('sources')
-                    ->label('Open documents')
+                    ->label(__('Open documents'))
                     ->options(collect($documents($get))->mapWithKeys(fn ($doc) => [$doc->id => $doc->number.' · '.Format::date($doc->trans_date).($doc->description ? " · {$doc->description}" : '')])->all())
                     ->required()
                     ->bulkToggleable(),
@@ -48,7 +48,7 @@ final class PullAction
                     }
                 }
                 $set('lines', $existing);
-                Notification::make()->title($added ? "{$added} line(s) pulled" : 'Nothing left to pull')->success()->send();
+                Notification::make()->title($added ? __(':count line(s) pulled', ['count' => $added]) : __('Nothing left to pull'))->success()->send();
             });
     }
 }

@@ -60,7 +60,7 @@ class PurchaseDownPaymentResource extends ErpResource
                 NumberFields::make(TransactionType::PurchaseInvoice, 'Form No.'),
             ]),
             Tabs::make('down-payment')->tabs([
-                Tab::make('Down payment')->columns(2)->schema([
+                Tab::make(__('Down payment'))->columns(2)->schema([
                     PricedDocumentForm::money('amount', 'Down payment')->required()->minValue(1),
                     Select::make('tax_code_id')->label(__('fields.tax_code'))->options(fn () => TaxCode::query()->where('is_active', true)->pluck('description', 'id'))->default(fn () => TaxCode::default()?->id)->native(false),
                     Toggle::make('taxable')->label(__('fields.taxable'))->default(true),
@@ -69,7 +69,7 @@ class PurchaseDownPaymentResource extends ErpResource
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     VendorFields::bankAccount(),
-                    Textarea::make('to_address')->label('Address')->rows(2),
+                    Textarea::make('to_address')->label(__('Address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),
                 ]),
             ]),
@@ -81,7 +81,7 @@ class PurchaseDownPaymentResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('vendor'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
@@ -90,14 +90,14 @@ class PurchaseDownPaymentResource extends ErpResource
                     ->color(fn (string $state) => match ($state) {
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
-                TextColumn::make('age')->label('Age (days)')->state(fn (PurchaseDownPayment $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
+                TextColumn::make('age')->label(__('Age (days)'))->state(fn (PurchaseDownPayment $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
                 Rupiah::make('total')->label(__('fields.total')),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable(), SelectFilter::make('payment_status')->label('Payment')->options(['unpaid' => 'Unpaid', 'partial' => 'Partially paid', 'paid' => 'Paid'])])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable(), SelectFilter::make('payment_status')->label(__('Payment'))->options(['unpaid' => __('Unpaid'), 'partial' => __('Partially paid'), 'paid' => __('Paid')])])
             ->recordActions([
                 EditAction::make(),
-                Action::make('pay')->label('Pay')->icon('heroicon-m-banknotes')->color('primary')
+                Action::make('pay')->label(__('Pay'))->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (PurchaseDownPayment $record) => $record->payment_status !== 'paid' && PurchasePaymentResource::canCreate())
                     ->url(fn (PurchaseDownPayment $record) => PurchasePaymentResource::getUrl('create', ['source' => 'purchase_down_payment:'.$record->id])),
             ]);

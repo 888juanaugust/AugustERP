@@ -54,9 +54,9 @@ class BankBook extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(3)->schema([
-                    Select::make('bank_account_id')->label('Cash / Bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
-                    DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    Select::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
+                    DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
                 ]),
             ])
             ->statePath('filters');
@@ -72,19 +72,19 @@ class BankBook extends ErpPage implements HasTable
         return $table
             ->records(fn () => $this->rows())
             ->columns([
-                TextColumn::make('trans_date')->label('Date'),
-                TextColumn::make('source_number')->label('Source No.')->fontFamily('mono'),
-                TextColumn::make('cheque_no')->label('Cheque No.')->fontFamily('mono'),
-                TextColumn::make('source_type')->label('Transaction type')->badge()->color('gray'),
-                TextColumn::make('description')->label('Description')->limit(50),
-                TextColumn::make('amount')->label('Movement')->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('side')->label('Type'),
-                TextColumn::make('balance')->label('Balance')->alignEnd()->weight('medium')->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('reconciled')->label('Reconciled')->alignCenter(),
+                TextColumn::make('trans_date')->label(__('Date')),
+                TextColumn::make('source_number')->label(__('Source No.'))->fontFamily('mono'),
+                TextColumn::make('cheque_no')->label(__('Cheque No.'))->fontFamily('mono'),
+                TextColumn::make('source_type')->label(__('Transaction type'))->badge()->color('gray'),
+                TextColumn::make('description')->label(__('Description'))->limit(50),
+                TextColumn::make('amount')->label(__('Movement'))->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('side')->label(__('Type')),
+                TextColumn::make('balance')->label(__('Balance'))->alignEnd()->weight('medium')->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('reconciled')->label(__('Reconciled'))->alignCenter(),
             ])
             ->paginated(false)
-            ->emptyStateHeading('Pick a cash or bank account')
-            ->emptyStateDescription('Its movements between the two dates with the running balance, the cheque number and the document behind each line.');
+            ->emptyStateHeading(__('Pick a cash or bank account'))
+            ->emptyStateDescription(__('Its movements between the two dates with the running balance, the cheque number and the document behind each line.'));
     }
 
     /** @return Collection<int, array<string, mixed>> */

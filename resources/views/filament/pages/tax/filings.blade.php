@@ -1,16 +1,16 @@
 <div class="space-y-3 text-sm">
     @if ($filings->isEmpty())
-        <p class="text-gray-500 dark:text-gray-400">No exports yet</p>
+        <p class="text-gray-500 dark:text-gray-400">{{ __('No exports yet') }}</p>
     @else
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700">
-                    <th class="text-left py-1">Date/time</th>
-                    <th class="text-left py-1">Period</th>
-                    <th class="text-left py-1">File name</th>
-                    <th class="text-right py-1">Documents</th>
-                    <th class="text-right py-1">DPP</th>
-                    <th class="text-right py-1">VAT</th>
+                    <th class="text-left py-1">{{ __('Date/time') }}</th>
+                    <th class="text-left py-1">{{ __('Period') }}</th>
+                    <th class="text-left py-1">{{ __('File name') }}</th>
+                    <th class="text-right py-1">{{ __('Documents') }}</th>
+                    <th class="text-right py-1">{{ __('DPP') }}</th>
+                    <th class="text-right py-1">{{ __('VAT') }}</th>
                 </tr>
             </thead>
             <tbody>

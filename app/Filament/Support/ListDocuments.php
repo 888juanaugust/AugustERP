@@ -29,7 +29,7 @@ abstract class ListDocuments extends ListRecords
     public function getTabs(): array
     {
         $model = static::getResource()::getModel();
-        $tabs = ['all' => Tab::make('All')];
+        $tabs = ['all' => Tab::make(__('All'))];
         foreach ($this->statuses() as $value => $label) {
             $tabs[$value] = Tab::make($label)
                 ->badge(fn () => $model::query()->where($this->statusColumn, $value)->count())
@@ -41,6 +41,6 @@ abstract class ListDocuments extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New '.strtolower(static::getResource()::getModelLabel()))];
+        return [CreateAction::make()->label(__('New :record', ['record' => strtolower(static::getResource()::getModelLabel())]))];
     }
 }

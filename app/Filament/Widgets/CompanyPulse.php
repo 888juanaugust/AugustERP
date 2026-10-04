@@ -42,18 +42,18 @@ class CompanyPulse extends StatsOverviewWidget
         $openPayables = PurchaseInvoice::query()->where('payment_status', '!=', 'paid')->count();
 
         return [
-            Stat::make('Sales this month', Money::rupiah($thisMonth))
-                ->description($change === null ? 'nothing invoiced last month' : ($change >= 0 ? '+' : '').$change.' % vs last month')
+            Stat::make(__('Sales this month'), Money::rupiah($thisMonth))
+                ->description($change === null ? __('nothing invoiced last month') : __(':change % vs last month', ['change' => ($change >= 0 ? '+' : '').$change]))
                 ->descriptionIcon($change === null ? 'heroicon-m-minus' : ($change >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down'))
                 ->color($change === null ? 'gray' : ($change >= 0 ? 'success' : 'danger')),
-            Stat::make('Receivables outstanding', Money::rupiah($sum(AccountType::AccountsReceivable)))
-                ->description($openReceivables.' invoice(s) open'.($overdue ? ", {$overdue} overdue" : ''))
+            Stat::make(__('Receivables outstanding'), Money::rupiah($sum(AccountType::AccountsReceivable)))
+                ->description(__(':count invoice(s) open', ['count' => $openReceivables]).($overdue ? __(', :count overdue', ['count' => $overdue]) : ''))
                 ->color($overdue ? 'warning' : 'gray'),
-            Stat::make('Payables outstanding', Money::rupiah($sum(AccountType::AccountsPayable)))
-                ->description($openPayables.' bill(s) open')
+            Stat::make(__('Payables outstanding'), Money::rupiah($sum(AccountType::AccountsPayable)))
+                ->description(__(':count bill(s) open', ['count' => $openPayables]))
                 ->color('gray'),
-            Stat::make('Cash and bank', Money::rupiah($sum(AccountType::CashBank)))
-                ->description('all accounts, today')
+            Stat::make(__('Cash and bank'), Money::rupiah($sum(AccountType::CashBank)))
+                ->description(__('all accounts, today'))
                 ->color('primary'),
         ];
     }

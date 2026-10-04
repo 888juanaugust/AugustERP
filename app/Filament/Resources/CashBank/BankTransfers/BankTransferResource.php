@@ -60,36 +60,36 @@ class BankTransferResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('trans_date')->label('Date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 NumberFields::make(TransactionType::BankTransfer, 'Transfer No.'),
-                Select::make('from_bank_account_id')->label('From cash / bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)->live(),
+                Select::make('from_bank_account_id')->label(__('From cash / bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)->live(),
                 PricedDocumentForm::money('amount', 'Amount transferred')->required()->live(onBlur: true),
-                Select::make('to_bank_account_id')->label('To cash / bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)
+                Select::make('to_bank_account_id')->label(__('To cash / bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)
                     ->different('from_bank_account_id')
                     ->validationMessages(['different' => 'Pick two different accounts.']),
-                Textarea::make('description')->label('Notes')->rows(2)->columnSpanFull(),
+                Textarea::make('description')->label(__('Notes'))->rows(2)->columnSpanFull(),
             ]),
             Tabs::make('transfer')->tabs([
-                Tab::make('Transfer fees')->schema([
+                Tab::make(__('Transfer fees'))->schema([
                     Repeater::make('fees')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Account'),
-                            TableColumn::make('Charged to'),
-                            TableColumn::make('Amount')->alignment(Alignment::End),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Account')),
+                            TableColumn::make(__('Charged to')),
+                            TableColumn::make(__('Amount'))->alignment(Alignment::End),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense))->searchable()->required()->native(false),
-                            Select::make('charged_to')->options(['from' => 'The sending account', 'to' => 'The receiving account'])->default('from')->required()->native(false),
+                            Select::make('charged_to')->options(['from' => __('The sending account'), 'to' => __('The receiving account')])->default('from')->required()->native(false),
                             PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->defaultItems(0)->live()
                         ->addActionLabel('Add fee'),
-                    Placeholder::make('fees_total_preview')->label('Fees total')->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('fees'), 'amount'))),
+                    Placeholder::make('fees_total_preview')->label(__('Fees total'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('fees'), 'amount'))),
                 ]),
             ]),
         ])->columns(1);
@@ -100,19 +100,19 @@ class BankTransferResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['fromBankAccount', 'toBankAccount']))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Date'),
-                TextColumn::make('fromBankAccount.name')->label('From'),
-                TextColumn::make('toBankAccount.name')->label('To'),
-                TextColumn::make('description')->label('Notes')->limit(40)->placeholder('—'),
-                Rupiah::make('amount')->label('Amount'),
-                Rupiah::make('fees_total')->label('Fees'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Date')),
+                TextColumn::make('fromBankAccount.name')->label(__('From')),
+                TextColumn::make('toBankAccount.name')->label(__('To')),
+                TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
+                Rupiah::make('amount')->label(__('Amount')),
+                Rupiah::make('fees_total')->label(__('Fees')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('from_bank_account_id')->label('From')->options(fn () => Account::options(AccountType::CashBank)),
-                SelectFilter::make('to_bank_account_id')->label('To')->options(fn () => Account::options(AccountType::CashBank)),
+                SelectFilter::make('from_bank_account_id')->label(__('From'))->options(fn () => Account::options(AccountType::CashBank)),
+                SelectFilter::make('to_bank_account_id')->label(__('To'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
             ->recordActions([EditAction::make(), PrintAction::make()]);
     }

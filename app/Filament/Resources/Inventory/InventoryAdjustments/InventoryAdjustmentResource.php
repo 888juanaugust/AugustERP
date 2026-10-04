@@ -77,27 +77,27 @@ class InventoryAdjustmentResource extends ErpResource
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Item'),
-                            TableColumn::make('Type'),
-                            TableColumn::make('Quantity')->alignment(Alignment::End),
-                            TableColumn::make('Unit'),
-                            TableColumn::make('Unit cost')->alignment(Alignment::End),
-                            TableColumn::make('Warehouse'),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Item')),
+                            TableColumn::make(__('Type')),
+                            TableColumn::make(__('Quantity'))->alignment(Alignment::End),
+                            TableColumn::make(__('Unit')),
+                            TableColumn::make(__('Unit cost'))->alignment(Alignment::End),
+                            TableColumn::make(__('Warehouse')),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             LineItemFields::item(stockedOnly: true),
-                            Select::make('adjustment_type')->options(['quantity' => 'Quantity', 'value' => 'Value'])->default('quantity')->required()->native(false)->live(),
-                            LineItemFields::quantity()->placeholder('negative = out')->disabled(fn (Get $get) => $get('adjustment_type') === 'value')->dehydrated(),
+                            Select::make('adjustment_type')->options(['quantity' => __('Quantity'), 'value' => __('Value')])->default('quantity')->required()->native(false)->live(),
+                            LineItemFields::quantity()->placeholder(__('negative = out'))->disabled(fn (Get $get) => $get('adjustment_type') === 'value')->dehydrated(),
                             LineItemFields::unit(),
                             TextInput::make('unit_cost')->numeric()->default(0)->prefix(Format::symbol())
                                 ->disabled(fn (Get $get) => ! $seesCost || $get('adjustment_type') === 'value')->dehydrated(),
                             Select::make('warehouse_id')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false)
                                 ->default(fn () => Warehouse::default()?->id),
                             TextInput::make('memo')->maxLength(255),
-                            TextInput::make('total_cost')->label('Value change')->numeric()->default(0)->prefix(Format::symbol())
+                            TextInput::make('total_cost')->label(__('Value change'))->numeric()->default(0)->prefix(Format::symbol())
                                 ->visible(fn (Get $get) => $get('adjustment_type') === 'value'),
-                            Select::make('adjustment_account_id')->label('Adjustment account')->options(fn () => Account::options(AccountType::CostOfSales, AccountType::Expense, AccountType::OtherExpense, AccountType::OtherIncome, AccountType::Equity))->searchable()->native(false)->placeholder('Inventory Adjustments (default)'),
+                            Select::make('adjustment_account_id')->label(__('Adjustment account'))->options(fn () => Account::options(AccountType::CostOfSales, AccountType::Expense, AccountType::OtherExpense, AccountType::OtherIncome, AccountType::Equity))->searchable()->native(false)->placeholder(__('Inventory Adjustments (default)')),
                             LineItemFields::baseQuantity(),
                         ])
                         ->minItems(1)
@@ -131,11 +131,11 @@ class InventoryAdjustmentResource extends ErpResource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(60)->placeholder('—'),
-                TextColumn::make('lines_count')->label('Lines')->counts('lines')->alignEnd(),
-                IconColumn::make('is_opening')->label('Opening')->boolean()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('lines_count')->label(__('Lines'))->counts('lines')->alignEnd(),
+                IconColumn::make('is_opening')->label(__('Opening'))->boolean()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange()])

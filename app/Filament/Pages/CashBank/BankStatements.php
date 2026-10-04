@@ -59,9 +59,9 @@ class BankStatements extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(3)->schema([
-                    Select::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
-                    DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
+                    DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
                 ]),
             ])
             ->statePath('filters');
@@ -77,49 +77,49 @@ class BankStatements extends ErpPage implements HasTable
         return $table
             ->records(fn () => $this->rows())
             ->columns([
-                TextColumn::make('trans_date')->label('Date'),
-                TextColumn::make('description')->label('Description')->limit(60),
-                TextColumn::make('amount')->label('Movement')->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('side')->label('Type'),
-                TextColumn::make('balance')->label('Balance')->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('matched')->label('Matched')->alignCenter(),
+                TextColumn::make('trans_date')->label(__('Date')),
+                TextColumn::make('description')->label(__('Description'))->limit(60),
+                TextColumn::make('amount')->label(__('Movement'))->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('side')->label(__('Type')),
+                TextColumn::make('balance')->label(__('Balance'))->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('matched')->label(__('Matched'))->alignCenter(),
             ])
             ->paginated(false)
-            ->emptyStateHeading('Pick a bank')
-            ->emptyStateDescription('Import the bank\'s CSV export, then match it against the book on the Bank Reconciliation screen.');
+            ->emptyStateHeading(__('Pick a bank'))
+            ->emptyStateDescription(__('Import the bank\'s CSV export, then match it against the book on the Bank Reconciliation screen.'));
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('import')
-                ->label('Import statement')
+                ->label(__('Import statement'))
                 ->icon('heroicon-m-arrow-up-tray')
                 ->color('primary')
                 ->visible(fn () => static::canUpdate())
                 ->schema([
-                    Select::make('bank_account_id')->label('Bank')
+                    Select::make('bank_account_id')->label(__('Bank'))
                         ->options(fn () => Account::options(AccountType::CashBank))
                         ->searchable()->native(false)->required()
                         ->default(fn () => $this->filters['bank_account_id'] ?? null),
-                    FileUpload::make('file')->label('CSV file')
+                    FileUpload::make('file')->label(__('CSV file'))
                         ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel'])
                         ->disk('local')
                         ->directory('bank-statements')
                         ->required()
                         ->storeFileNamesIn('file_name')
-                        ->helperText('A header row with a date column, a description, and an amount column (or debit and credit columns); a balance and a reference when the bank gives them.'),
+                        ->helperText(__('A header row with a date column, a description, and an amount column (or debit and credit columns); a balance and a reference when the bank gives them.')),
                 ])
                 ->action(function (array $data): void {
                     try {
                         $path = Storage::disk('local')->path((string) $data['file']);
                         $statement = app(StatementImporter::class)->import((int) $data['bank_account_id'], $path, $data['file_name'] ?? null);
                     } catch (\RuntimeException $e) {
-                        Notification::make()->title('Cannot import')->body($e->getMessage())->danger()->persistent()->send();
+                        Notification::make()->title(__('Cannot import'))->body($e->getMessage())->danger()->persistent()->send();
 
                         return;
                     }
-                    Notification::make()->title("{$statement->line_count} lines imported from {$statement->source_file_name}")->success()->send();
+                    Notification::make()->title(__(':line_count lines imported from :source_file_name', ['line_count' => $statement->line_count, 'source_file_name' => $statement->source_file_name]))->success()->send();
                     $this->filters['bank_account_id'] = $statement->bank_account_id;
                     $this->filters['from'] = $statement->from_date?->toDateString();
                     $this->filters['until'] = $statement->to_date?->toDateString();

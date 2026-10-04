@@ -28,7 +28,7 @@ class CreateItem extends CreateRecord
         try {
             app(OpeningStockPoster::class)->postFor($this->record);
         } catch (\RuntimeException $e) {
-            Notification::make()->title('Opening stock not posted')->body($e->getMessage())->danger()->persistent()->send();
+            Notification::make()->title(__('Opening stock not posted'))->body($e->getMessage())->danger()->persistent()->send();
         }
     }
 }

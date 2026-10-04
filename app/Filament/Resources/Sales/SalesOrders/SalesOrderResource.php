@@ -74,7 +74,7 @@ class SalesOrderResource extends ErpResource
     public static function approveAction(): Action
     {
         return Action::make('approve')
-            ->label('Approve')
+            ->label(__('Approve'))
             ->icon('heroicon-m-check-badge')
             ->color('success')
             ->requiresConfirmation()
@@ -83,9 +83,9 @@ class SalesOrderResource extends ErpResource
             ->action(function (SalesOrder $record): void {
                 try {
                     app(OrderApproval::class)->approve($record, auth()->user());
-                    Notification::make()->title("{$record->number} approved")->success()->send();
+                    Notification::make()->title(__(':number approved', ['number' => $record->number]))->success()->send();
                 } catch (\RuntimeException $e) {
-                    Notification::make()->title('Cannot approve')->body($e->getMessage())->danger()->persistent()->send();
+                    Notification::make()->title(__('Cannot approve'))->body($e->getMessage())->danger()->persistent()->send();
                 }
             });
     }
@@ -93,17 +93,17 @@ class SalesOrderResource extends ErpResource
     public static function rejectAction(): Action
     {
         return Action::make('reject')
-            ->label('Reject')
+            ->label(__('Reject'))
             ->icon('heroicon-m-x-circle')
             ->color('danger')
-            ->schema([Textarea::make('reason')->label('Reason')->required()->rows(2)])
+            ->schema([Textarea::make('reason')->label(__('Reason'))->required()->rows(2)])
             ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(OrderApproval::class)->canApprove($record, auth()->user()))
             ->action(function (SalesOrder $record, array $data): void {
                 try {
                     app(OrderApproval::class)->reject($record, auth()->user(), $data['reason']);
-                    Notification::make()->title("{$record->number} rejected")->warning()->send();
+                    Notification::make()->title(__(':number rejected', ['number' => $record->number]))->warning()->send();
                 } catch (\RuntimeException $e) {
-                    Notification::make()->title('Cannot reject')->body($e->getMessage())->danger()->send();
+                    Notification::make()->title(__('Cannot reject'))->body($e->getMessage())->danger()->send();
                 }
             });
     }
@@ -113,11 +113,11 @@ class SalesOrderResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('customer'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('approval_status')->label('Approval')->badge()->formatStateUsing(fn (string $state) => ucfirst($state))
+                TextColumn::make('approval_status')->label(__('Approval'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))
                     ->color(fn (string $state) => match ($state) {
                         'approved' => 'success', 'rejected' => 'danger', default => 'warning'
                     }),
@@ -130,18 +130,18 @@ class SalesOrderResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('customer_id')->label('Ordered by')->relationship('customer', 'name')->searchable(),
-                SelectFilter::make('approval_status')->label('Approval')->options(['awaiting' => 'Awaiting approval', 'approved' => 'Approved', 'rejected' => 'Rejected']),
+                SelectFilter::make('customer_id')->label(__('Ordered by'))->relationship('customer', 'name')->searchable(),
+                SelectFilter::make('approval_status')->label(__('Approval'))->options(['awaiting' => __('Awaiting approval'), 'approved' => __('Approved'), 'rejected' => __('Rejected')]),
                 TernaryFilter::make('is_printed')->label(__('fields.is_printed')),
             ])
             ->recordActions([
                 EditAction::make(),
                 self::approveAction(),
                 self::rejectAction(),
-                Action::make('deliver')->label('Deliver')->icon('heroicon-m-truck')->color('primary')
+                Action::make('deliver')->label(__('Deliver'))->icon('heroicon-m-truck')->color('primary')
                     ->visible(fn (SalesOrder $record) => $record->isApproved() && in_array($record->status, ['pending', 'partial'], true) && DeliveryResource::canCreate())
                     ->url(fn (SalesOrder $record) => DeliveryResource::getUrl('create', ['source' => $record->id])),
-                Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('gray')
+                Action::make('invoice')->label(__('Invoice'))->icon('heroicon-m-document-text')->color('gray')
                     ->visible(fn (SalesOrder $record) => $record->isApproved() && in_array($record->status, ['pending', 'partial'], true) && SalesInvoiceResource::canCreate())
                     ->url(fn (SalesOrder $record) => SalesInvoiceResource::getUrl('create', ['source' => 'order:'.$record->id])),
                 PrintAction::make(),

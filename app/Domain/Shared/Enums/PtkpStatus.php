@@ -23,8 +23,8 @@ enum PtkpStatus: string implements HasLabel
         [$status, $dependants] = explode('/', $this->value);
         $married = $status === 'K' ? 'Married' : 'Single';
         $dep = match ($dependants) {
-            '0' => 'no dependants',
-            '1' => '1 dependant',
+            '0' => __('no dependants'),
+            '1' => __('1 dependant'),
             default => "{$dependants} dependants",
         };
 

@@ -11,12 +11,12 @@
             'period' => 'bg-gray-100 text-gray-700',
         ];
         $legend = [
-            'receivable' => 'Invoice due from a customer',
-            'payable' => 'Invoice to pay',
-            'giro' => 'Giro maturing',
-            'recurring' => 'Recurring transaction',
-            'note' => 'Note',
-            'period' => 'Month end',
+            'receivable' => __('Invoice due from a customer'),
+            'payable' => __('Invoice to pay'),
+            'giro' => __('Giro maturing'),
+            'recurring' => __('Recurring transaction'),
+            'note' => __('Note'),
+            'period' => __('Month end'),
         ];
     @endphp
 

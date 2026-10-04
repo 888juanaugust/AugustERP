@@ -18,10 +18,10 @@ enum ResetRule: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::None => 'Never reset',
-            self::Daily => 'Reset every day',
-            self::Monthly => 'Reset every month',
-            self::Yearly => 'Reset every year',
+            self::None => __('Never reset'),
+            self::Daily => __('Reset every day'),
+            self::Monthly => __('Reset every month'),
+            self::Yearly => __('Reset every year'),
         };
     }
 

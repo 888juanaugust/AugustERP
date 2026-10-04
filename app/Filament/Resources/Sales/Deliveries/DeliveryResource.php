@@ -69,7 +69,7 @@ class DeliveryResource extends ErpResource
                 Tab::make(__('fields.other_info'))->columns(2)->schema([
                     TextInput::make('po_number')->label(__('fields.po_number'))->maxLength(60),
                     Select::make('fob_id')->label(__('fields.fob'))->relationship('fob', 'name')->preload()->native(false),
-                    Textarea::make('to_address')->label('Address')->rows(2),
+                    Textarea::make('to_address')->label(__('Address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),
                     Hidden::make('taxable')->default(true),
                     Hidden::make('inclusive_tax')->default(false),
@@ -83,7 +83,7 @@ class DeliveryResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['customer', 'shipment']))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
                 TextColumn::make('shipment.name')->label(__('fields.shipment'))->placeholder('—'),
@@ -96,12 +96,12 @@ class DeliveryResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('customer_id')->label('Ship to')->relationship('customer', 'name')->searchable(),
+                SelectFilter::make('customer_id')->label(__('Ship to'))->relationship('customer', 'name')->searchable(),
                 SelectFilter::make('shipment_id')->label(__('fields.shipment'))->relationship('shipment', 'name'),
             ])
             ->recordActions([
                 EditAction::make(),
-                Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('primary')
+                Action::make('invoice')->label(__('Invoice'))->icon('heroicon-m-document-text')->color('primary')
                     ->visible(fn (Delivery $record) => in_array($record->status, ['pending', 'partial'], true) && SalesInvoiceResource::canCreate())
                     ->url(fn (Delivery $record) => SalesInvoiceResource::getUrl('create', ['source' => 'delivery:'.$record->id])),
                 PrintAction::make(),

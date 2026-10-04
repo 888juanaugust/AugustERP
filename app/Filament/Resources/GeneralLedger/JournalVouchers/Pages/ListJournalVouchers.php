@@ -37,7 +37,7 @@ class ListJournalVouchers extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New journal voucher')];
+        return [CreateAction::make()->label(__('New journal voucher'))];
     }
 
     public function table(Table $table): Table
@@ -45,22 +45,22 @@ class ListJournalVouchers extends ListRecords
         return $table
             ->query(fn () => JournalEntry::query()->active()->withSum('lines', 'debit'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('source_number')->label('Trans. No.')->fontFamily('mono')->placeholder('—'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('source_number')->label(__('Trans. No.'))->fontFamily('mono')->placeholder('—'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                TextColumn::make('source_type')->label('Transaction type')->badge()->color('gray')->formatStateUsing(fn (string $state) => self::typeLabel($state)),
+                TextColumn::make('source_type')->label(__('Transaction type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => self::typeLabel($state)),
                 TextColumn::make('description')->label(__('fields.description'))->limit(60)->placeholder('—'),
                 Rupiah::make('lines_sum_debit')->label(__('fields.total')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
-                SelectFilter::make('source_type')->label('Transaction type')
+                SelectFilter::make('source_type')->label(__('Transaction type'))
                     ->options(fn () => collect(array_keys(Relation::morphMap()))->mapWithKeys(fn (string $k) => [$k => self::typeLabel($k)])->sort()->all())
                     ->multiple(),
                 Filter::make('trans_date')
                     ->schema([
-                        DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT),
                     ])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))
@@ -69,22 +69,22 @@ class ListJournalVouchers extends ListRecords
             ->persistFiltersInSession()
             ->recordActions([
                 Action::make('edit')
-                    ->label('Edit')
+                    ->label(__('Edit'))
                     ->icon('heroicon-m-pencil-square')
                     ->visible(fn (JournalEntry $record) => $record->source_type === 'journal_voucher' && JournalVoucherResource::canEdit($record->posting->document))
                     ->url(fn (JournalEntry $record) => JournalVoucherResource::getUrl('edit', ['record' => $record->posting->document_id])),
                 Action::make('view')
-                    ->label('Lines')
+                    ->label(__('Lines'))
                     ->icon('heroicon-m-eye')
                     ->slideOver()
                     ->modalHeading(fn (JournalEntry $record) => "Journal {$record->number}")
                     ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Close')
+                    ->modalCancelActionLabel(__('Close'))
                     ->schema(fn (JournalEntry $record) => [
                         TextEntry::make('trans_date')->label(__('fields.trans_date'))->state(Format::date($record->trans_date)),
                         TextEntry::make('description')->label(__('fields.description'))->state($record->description ?: '—'),
                         RepeatableEntry::make('lines')
-                            ->label('Lines')
+                            ->label(__('Lines'))
                             ->state($record->lines()->with('account')->get()->map(fn ($l) => [
                                 'account' => $l->account->displayName(),
                                 'debit' => $l->debit ? Format::number($l->debit) : '',
@@ -92,20 +92,20 @@ class ListJournalVouchers extends ListRecords
                                 'memo' => $l->memo,
                             ])->all())
                             ->schema([
-                                TextEntry::make('account')->label('Account'),
-                                TextEntry::make('debit')->label('Debit'),
-                                TextEntry::make('credit')->label('Credit'),
-                                TextEntry::make('memo')->label('Memo'),
+                                TextEntry::make('account')->label(__('Account')),
+                                TextEntry::make('debit')->label(__('Debit')),
+                                TextEntry::make('credit')->label(__('Credit')),
+                                TextEntry::make('memo')->label(__('Memo')),
                             ])
                             ->columns(4),
                     ]),
                 Action::make('memorize')
-                    ->label('Memorize')
+                    ->label(__('Memorize'))
                     ->icon('heroicon-m-bookmark')
                     ->color('gray')
                     ->visible(fn (JournalEntry $record) => $record->source_type === 'journal_voucher' && $record->posting?->document !== null)
                     ->schema([
-                        TextInput::make('name')->label('Template name')->required()->maxLength(100)->default(fn (JournalEntry $record) => $record->description ?: $record->source_number),
+                        TextInput::make('name')->label(__('Template name'))->required()->maxLength(100)->default(fn (JournalEntry $record) => $record->description ?: $record->source_number),
                     ])
                     ->action(function (array $data, JournalEntry $record): void {
                         $voucher = $record->posting->document;
@@ -120,10 +120,10 @@ class ListJournalVouchers extends ListRecords
                             'used_all_user' => true,
                             'created_by' => auth()->id(),
                         ]);
-                        Notification::make()->title("{$data['name']} memorized")->success()->send();
+                        Notification::make()->title(__(':name memorized', ['name' => $data['name']]))->success()->send();
                     }),
                 Action::make('print')
-                    ->label('Print')
+                    ->label(__('Print'))
                     ->icon('heroicon-m-printer')
                     ->color('gray')
                     ->url(fn (JournalEntry $record): ?string => $record->posting?->document && ($alias = Printable::aliasOf($record->posting->document)) ? route('filament.admin.print', ['alias' => $alias, 'id' => $record->posting->document->getKey()]) : null, shouldOpenInNewTab: true)

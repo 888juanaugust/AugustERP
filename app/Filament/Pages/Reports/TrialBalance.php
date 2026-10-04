@@ -16,7 +16,7 @@ class TrialBalance extends ReportPage
 
     public static function title(): string
     {
-        return 'Trial Balance';
+        return __('Trial Balance');
     }
 
     public static function group(): string

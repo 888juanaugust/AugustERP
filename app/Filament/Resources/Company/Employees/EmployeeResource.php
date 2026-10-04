@@ -54,56 +54,56 @@ class EmployeeResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Personal data')
+            Section::make(__('Personal data'))
                 ->columns(3)
                 ->schema([
-                    Select::make('salutation')->label('Salutation')->options(['Mr' => 'Mr', 'Mrs' => 'Mrs', 'Ms' => 'Ms'])->native(false),
-                    TextInput::make('name')->label('Full name')->required()->maxLength(150)->columnSpan(2),
-                    TextInput::make('nik_no')->label('National ID (NIK)')->maxLength(30),
-                    TextInput::make('email')->label('Email')->email()->maxLength(150),
-                    TextInput::make('mobile_phone')->label('Mobile')->tel()->maxLength(30),
-                    TextInput::make('work_phone')->label('Work phone')->tel()->maxLength(30),
-                    TextInput::make('home_phone')->label('Home phone')->tel()->maxLength(30),
-                    TextInput::make('whatsapp')->label('WhatsApp')->tel()->maxLength(30),
-                    TextInput::make('website')->label('Website')->maxLength(150),
-                    TextInput::make('nationality')->label('Nationality')->maxLength(60)->default('Indonesia'),
+                    Select::make('salutation')->label(__('Salutation'))->options(['Mr' => __('Mr'), 'Mrs' => __('Mrs'), 'Ms' => __('Ms')])->native(false),
+                    TextInput::make('name')->label(__('Full name'))->required()->maxLength(150)->columnSpan(2),
+                    TextInput::make('nik_no')->label(__('National ID (NIK)'))->maxLength(30),
+                    TextInput::make('email')->label(__('Email'))->email()->maxLength(150),
+                    TextInput::make('mobile_phone')->label(__('Mobile'))->tel()->maxLength(30),
+                    TextInput::make('work_phone')->label(__('Work phone'))->tel()->maxLength(30),
+                    TextInput::make('home_phone')->label(__('Home phone'))->tel()->maxLength(30),
+                    TextInput::make('whatsapp')->label(__('WhatsApp'))->tel()->maxLength(30),
+                    TextInput::make('website')->label(__('Website'))->maxLength(150),
+                    TextInput::make('nationality')->label(__('Nationality'))->maxLength(60)->default('Indonesia'),
                 ]),
-            Section::make('Employment')
+            Section::make(__('Employment'))
                 ->columns(3)
                 ->schema([
                     NumberFields::make(TransactionType::Employee, 'Employee ID'),
-                    TextInput::make('position')->label('Position')->maxLength(100),
-                    DatePicker::make('join_date')->label('Join date')->native(false)->displayFormat(Format::DATE_INPUT),
+                    TextInput::make('position')->label(__('Position'))->maxLength(100),
+                    DatePicker::make('join_date')->label(__('Join date'))->native(false)->displayFormat(Format::DATE_INPUT),
                     Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false),
-                    Toggle::make('is_salesman')->label('Salesperson: may be named on sales documents')->inline(false),
+                    Toggle::make('is_salesman')->label(__('Salesperson: may be named on sales documents'))->inline(false),
                     self::activeToggle()->inline(false),
                     Textarea::make('notes')->label(__('fields.memo'))->rows(2)->columnSpanFull(),
                 ]),
             Tabs::make('employee')->tabs([
-                Tab::make('Address')->schema([AddressFields::make('', 'Home address')]),
-                Tab::make('Income tax')->schema([
-                    Toggle::make('withhold_income_tax')->label('Withhold income tax (Art. 21)')->live(),
+                Tab::make(__('Address'))->schema([AddressFields::make('', 'Home address')]),
+                Tab::make(__('Income tax'))->schema([
+                    Toggle::make('withhold_income_tax')->label(__('Withhold income tax (Art. 21)'))->live(),
                     Grid::make(2)
                         ->visible(fn (Get $get) => (bool) $get('withhold_income_tax'))
                         ->schema([
-                            TextInput::make('npwp_no')->label('Tax ID (NPWP)')->maxLength(30),
-                            Select::make('work_status')->label('Employment status')->options(WorkStatus::class)->native(false),
-                            Select::make('tax_status')->label('Non-taxable income status (PTKP)')->options(PtkpStatus::class)->native(false),
+                            TextInput::make('npwp_no')->label(__('Tax ID (NPWP)'))->maxLength(30),
+                            Select::make('work_status')->label(__('Employment status'))->options(WorkStatus::class)->native(false),
+                            Select::make('tax_status')->label(__('Non-taxable income status (PTKP)'))->options(PtkpStatus::class)->native(false),
                             Grid::make(2)->schema([
-                                Select::make('start_month_payment')->label('Tax counted from month')
+                                Select::make('start_month_payment')->label(__('Tax counted from month'))
                                     ->options(collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => date('F', mktime(0, 0, 0, $m, 1))])->all())->native(false),
-                                Select::make('start_year_payment')->label('year')
+                                Select::make('start_year_payment')->label(__('year'))
                                     ->options(collect(range((int) date('Y') - 5, (int) date('Y') + 1))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())->native(false),
                             ]),
-                            TextInput::make('previous_income')->label('Income earned before joining')->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
-                            TextInput::make('previous_tax')->label('Tax withheld before joining')->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
+                            TextInput::make('previous_income')->label(__('Income earned before joining'))->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
+                            TextInput::make('previous_tax')->label(__('Tax withheld before joining'))->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
                         ]),
                 ]),
-                Tab::make('Salary account')->schema([
+                Tab::make(__('Salary account'))->schema([
                     Grid::make(3)->schema([
-                        Select::make('bank_id')->label('Bank')->relationship('bank', 'name')->preload()->searchable()->native(false),
-                        TextInput::make('bank_account')->label('Account number')->maxLength(50),
-                        TextInput::make('bank_account_name')->label('Account holder')->maxLength(150),
+                        Select::make('bank_id')->label(__('Bank'))->relationship('bank', 'name')->preload()->searchable()->native(false),
+                        TextInput::make('bank_account')->label(__('Account number'))->maxLength(50),
+                        TextInput::make('bank_account_name')->label(__('Account holder'))->maxLength(150),
                     ]),
                 ]),
             ]),
@@ -115,19 +115,19 @@ class EmployeeResource extends MasterResource
         return $table
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable()->weight('medium'),
-                TextColumn::make('position')->label('Position')->placeholder('—'),
-                TextColumn::make('email')->label('Email')->placeholder('—'),
-                TextColumn::make('mobile_phone')->label('Mobile')->placeholder('—'),
-                TextColumn::make('number')->label('Employee ID')->fontFamily('mono')->searchable(),
-                TextColumn::make('tax_status')->label('PTKP')->placeholder('—')->formatStateUsing(fn ($state) => $state instanceof PtkpStatus ? $state->value : ''),
-                TextColumn::make('work_status')->label('Employment')->placeholder('—'),
-                IconColumn::make('is_salesman')->label('Sales')->boolean(),
+                TextColumn::make('position')->label(__('Position'))->placeholder('—'),
+                TextColumn::make('email')->label(__('Email'))->placeholder('—'),
+                TextColumn::make('mobile_phone')->label(__('Mobile'))->placeholder('—'),
+                TextColumn::make('number')->label(__('Employee ID'))->fontFamily('mono')->searchable(),
+                TextColumn::make('tax_status')->label(__('PTKP'))->placeholder('—')->formatStateUsing(fn ($state) => $state instanceof PtkpStatus ? $state->value : ''),
+                TextColumn::make('work_status')->label(__('Employment'))->placeholder('—'),
+                IconColumn::make('is_salesman')->label(__('Sales'))->boolean(),
             ])
             ->defaultSort('name')
             ->filters([
                 self::activeFilter(),
-                TernaryFilter::make('is_salesman')->label('Salesperson'),
-                SelectFilter::make('work_status')->label('Employment status')->options(WorkStatus::class),
+                TernaryFilter::make('is_salesman')->label(__('Salesperson')),
+                SelectFilter::make('work_status')->label(__('Employment status'))->options(WorkStatus::class),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

@@ -57,12 +57,12 @@ class BudgetMonitor extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(4)->schema([
-                    TextInput::make('year')->label('Year')->numeric()->minValue(2000)->maxValue(2100)->default(today()->year)->live(),
-                    Select::make('month')->label('Month')->options(Months::options())->placeholder('Whole year')->nullable()->native(false)->live(),
-                    Select::make('account_id')->label('Account')
+                    TextInput::make('year')->label(__('Year'))->numeric()->minValue(2000)->maxValue(2100)->default(today()->year)->live(),
+                    Select::make('month')->label(__('Month'))->options(Months::options())->placeholder(__('Whole year'))->nullable()->native(false)->live(),
+                    Select::make('account_id')->label(__('Account'))
                         ->options(fn () => Account::options(AccountType::Revenue, AccountType::CostOfSales, AccountType::Expense, AccountType::OtherIncome, AccountType::OtherExpense))
-                        ->placeholder('All accounts')->nullable()->searchable()->native(false)->live(),
-                    Select::make('branch_id')->label('Branch')->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id')->all())->placeholder('All branches')->nullable()->native(false)->live(),
+                        ->placeholder(__('All accounts'))->nullable()->searchable()->native(false)->live(),
+                    Select::make('branch_id')->label(__('Branch'))->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id')->all())->placeholder(__('All branches'))->nullable()->native(false)->live(),
                 ]),
             ])
             ->statePath('filters');
@@ -78,12 +78,12 @@ class BudgetMonitor extends ErpPage implements HasTable
         return $table
             ->records(fn () => $this->rows())
             ->columns([
-                TextColumn::make('no')->label('No.')->fontFamily('mono'),
-                TextColumn::make('name')->label('Account'),
+                TextColumn::make('no')->label(__('No.'))->fontFamily('mono'),
+                TextColumn::make('name')->label(__('Account')),
                 self::money('budget', 'Budget'),
                 self::money('actual', 'Used'),
                 self::money('remaining', 'Remaining'),
-                TextColumn::make('used_percent')->label('Used %')->alignEnd()
+                TextColumn::make('used_percent')->label(__('Used %'))->alignEnd()
                     ->formatStateUsing(fn ($state): string => $state === null ? '—' : Format::quantity($state, 1).' %')
                     ->color(fn ($state): ?string => match (true) {
                         $state === null => null,
@@ -94,8 +94,8 @@ class BudgetMonitor extends ErpPage implements HasTable
             ])
             ->recordClasses(fn (array $record): ?string => ($record['is_total'] ?? false) ? 'ae-report-total' : null)
             ->paginated(false)
-            ->emptyStateHeading('No budget and no movement')
-            ->emptyStateDescription('Set a budget for the period, or pick a year and month that have postings.');
+            ->emptyStateHeading(__('No budget and no movement'))
+            ->emptyStateDescription(__('Set a budget for the period, or pick a year and month that have postings.'));
     }
 
     private static function money(string $name, string $label): TextColumn

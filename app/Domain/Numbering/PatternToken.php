@@ -21,13 +21,13 @@ enum PatternToken: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Year => 'Year (2026)',
-            self::ShortYear => 'Year, short (26)',
-            self::Month => 'Month (10)',
-            self::RomanMonth => 'Month, Roman (X)',
-            self::Day => 'Day (17)',
-            self::Counter => 'Counter',
-            self::Text => 'Separator text',
+            self::Year => __('Year (2026)'),
+            self::ShortYear => __('Year, short (26)'),
+            self::Month => __('Month (10)'),
+            self::RomanMonth => __('Month, Roman (X)'),
+            self::Day => __('Day (17)'),
+            self::Counter => __('Counter'),
+            self::Text => __('Separator text'),
         };
     }
 

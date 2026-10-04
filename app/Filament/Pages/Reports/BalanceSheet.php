@@ -16,7 +16,7 @@ class BalanceSheet extends ReportPage
 
     public static function title(): string
     {
-        return 'Balance Sheet';
+        return __('Balance Sheet');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class BalanceSheet extends ReportPage
 
     public static function description(): string
     {
-        return 'Assets, liabilities and equity as at the end of the period, current and non-current, with the income to date.';
+        return __('Assets, liabilities and equity as at the end of the period, current and non-current, with the income to date.');
     }
 
     protected function rows(): array

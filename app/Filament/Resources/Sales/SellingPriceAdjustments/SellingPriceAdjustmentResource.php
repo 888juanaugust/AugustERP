@@ -57,11 +57,11 @@ class SellingPriceAdjustmentResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                Select::make('price_category_id')->label('Price category')->relationship('priceCategory', 'name')->preload()->required()->native(false),
-                Select::make('sales_adjustment_type')->label('Adjustment type')->options(['price' => 'Price', 'discount' => 'Discount (%)'])->default('price')->required()->native(false)->live(),
+                Select::make('price_category_id')->label(__('Price category'))->relationship('priceCategory', 'name')->preload()->required()->native(false),
+                Select::make('sales_adjustment_type')->label(__('Adjustment type'))->options(['price' => __('Price'), 'discount' => __('Discount (%)')])->default('price')->required()->native(false)->live(),
                 NumberFields::make(TransactionType::PriceAdjustment),
-                DatePicker::make('trans_date')->label('Effective from')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                DatePicker::make('end_date')->label('Ends on')->native(false)->displayFormat(Format::DATE_INPUT),
+                DatePicker::make('trans_date')->label(__('Effective from'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('end_date')->label(__('Ends on'))->native(false)->displayFormat(Format::DATE_INPUT),
                 Toggle::make('is_active')->label(__('fields.is_active'))->default(true)->inline(false),
             ]),
             Tabs::make('adjustment')->tabs([
@@ -70,7 +70,7 @@ class SellingPriceAdjustmentResource extends ErpResource
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
-                        ->table([TableColumn::make('Item'), TableColumn::make('Unit'), TableColumn::make('New value')->alignment(Alignment::End)])
+                        ->table([TableColumn::make(__('Item')), TableColumn::make(__('Unit')), TableColumn::make(__('New value'))->alignment(Alignment::End)])
                         ->schema([
                             LineItemFields::item(),
                             LineItemFields::unit(),
@@ -91,20 +91,20 @@ class SellingPriceAdjustmentResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('priceCategory'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Effective from'),
-                TextColumn::make('priceCategory.name')->label('Price category'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Effective from')),
+                TextColumn::make('priceCategory.name')->label(__('Price category')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                Tanggal::make('end_date')->label('Ends on')->placeholder('—'),
-                TextColumn::make('sales_adjustment_type')->label('Adjustment type')->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'price' ? 'Price' : 'Discount (%)'),
+                Tanggal::make('end_date')->label(__('Ends on'))->placeholder('—'),
+                TextColumn::make('sales_adjustment_type')->label(__('Adjustment type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'price' ? 'Price' : 'Discount (%)'),
                 IconColumn::make('is_active')->label(__('fields.is_active'))->boolean(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange('trans_date', 'Effective'),
                 TernaryFilter::make('is_active')->label(__('fields.is_active')),
-                SelectFilter::make('price_category_id')->label('Price category')->relationship('priceCategory', 'name'),
-                SelectFilter::make('sales_adjustment_type')->label('Adjustment type')->options(['price' => 'Price', 'discount' => 'Discount (%)']),
+                SelectFilter::make('price_category_id')->label(__('Price category'))->relationship('priceCategory', 'name'),
+                SelectFilter::make('sales_adjustment_type')->label(__('Adjustment type'))->options(['price' => __('Price'), 'discount' => __('Discount (%)')]),
             ])
             ->recordActions([EditAction::make()]);
     }

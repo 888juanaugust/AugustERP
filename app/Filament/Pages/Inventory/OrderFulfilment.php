@@ -39,20 +39,20 @@ class OrderFulfilment extends ErpPage implements HasTable
             ->records(fn () => $this->rows())
             ->columns([
                 TextColumn::make('customer')->label(__('fields.customer'))->weight('medium'),
-                TextColumn::make('number')->label('Order No.')->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Order No.'))->fontFamily('mono'),
                 TextColumn::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('ship_date')->label(__('fields.ship_date')),
-                TextColumn::make('delivered')->label('Delivered')->alignEnd(),
-                TextColumn::make('deliverable')->label('Can ship now')->alignEnd()->color(fn ($state) => str_starts_with((string) $state, '0') ? 'danger' : 'success'),
+                TextColumn::make('delivered')->label(__('Delivered'))->alignEnd(),
+                TextColumn::make('deliverable')->label(__('Can ship now'))->alignEnd()->color(fn ($state) => str_starts_with((string) $state, '0') ? 'danger' : 'success'),
             ])
             ->recordActions([
-                Action::make('deliver')->label('Deliver')->icon('heroicon-m-truck')
+                Action::make('deliver')->label(__('Deliver'))->icon('heroicon-m-truck')
                     ->visible(fn () => DeliveryResource::canCreate())
                     ->url(fn (array $record) => DeliveryResource::getUrl('create', ['source' => $record['id']])),
             ])
             ->paginated(false)
-            ->emptyStateHeading('Every approved order has shipped')
-            ->emptyStateDescription('Approved orders with lines still to deliver appear here.');
+            ->emptyStateHeading(__('Every approved order has shipped'))
+            ->emptyStateDescription(__('Approved orders with lines still to deliver appear here.'));
     }
 
     /** @return Collection<int, array<string, mixed>> */

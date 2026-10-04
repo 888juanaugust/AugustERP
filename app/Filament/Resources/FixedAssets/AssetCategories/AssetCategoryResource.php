@@ -37,12 +37,12 @@ class AssetCategoryResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('Name')->required()->maxLength(100)->unique(ignoreRecord: true),
-            Select::make('asset_account_id')->label('Asset account')->options(fn () => Account::options(AccountType::FixedAsset, AccountType::OtherCurrentAsset))->searchable()->required()->native(false),
-            Select::make('accumulated_depreciation_account_id')->label('Accumulated depreciation account')->options(fn () => Account::options(AccountType::AccumulatedDepreciation))->searchable()->required()->native(false),
-            Select::make('depreciation_expense_account_id')->label('Depreciation expense account')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense))->searchable()->required()->native(false),
-            Select::make('depreciation_method')->label('Depreciation method')->options(DepreciationMethod::class)->default(DepreciationMethod::StraightLine)->required()->native(false),
-            TextInput::make('useful_life_months')->label('Useful life (months)')->numeric()->integer()->minValue(0)->default(48)->required(),
+            TextInput::make('name')->label(__('Name'))->required()->maxLength(100)->unique(ignoreRecord: true),
+            Select::make('asset_account_id')->label(__('Asset account'))->options(fn () => Account::options(AccountType::FixedAsset, AccountType::OtherCurrentAsset))->searchable()->required()->native(false),
+            Select::make('accumulated_depreciation_account_id')->label(__('Accumulated depreciation account'))->options(fn () => Account::options(AccountType::AccumulatedDepreciation))->searchable()->required()->native(false),
+            Select::make('depreciation_expense_account_id')->label(__('Depreciation expense account'))->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense))->searchable()->required()->native(false),
+            Select::make('depreciation_method')->label(__('Depreciation method'))->options(DepreciationMethod::class)->default(DepreciationMethod::StraightLine)->required()->native(false),
+            TextInput::make('useful_life_months')->label(__('Useful life (months)'))->numeric()->integer()->minValue(0)->default(48)->required(),
             self::activeToggle(),
         ]);
     }
@@ -52,11 +52,11 @@ class AssetCategoryResource extends MasterResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('assetAccount'))
             ->columns([
-                TextColumn::make('name')->label('Name')->searchable()->sortable()->weight('medium'),
-                TextColumn::make('assetAccount.name')->label('Asset account')->placeholder('—'),
-                TextColumn::make('depreciation_method')->label('Method')->badge()->color('gray')
+                TextColumn::make('name')->label(__('Name'))->searchable()->sortable()->weight('medium'),
+                TextColumn::make('assetAccount.name')->label(__('Asset account'))->placeholder('—'),
+                TextColumn::make('depreciation_method')->label(__('Method'))->badge()->color('gray')
                     ->formatStateUsing(fn ($state) => $state instanceof DepreciationMethod ? $state->getLabel() : $state),
-                TextColumn::make('useful_life_months')->label('Life (months)')->alignEnd()->sortable(),
+                TextColumn::make('useful_life_months')->label(__('Life (months)'))->alignEnd()->sortable(),
                 self::activeColumn(),
             ])
             ->defaultSort('name')

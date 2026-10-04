@@ -14,6 +14,6 @@ class ListDocumentSeries extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New format')];
+        return [CreateAction::make()->label(__('New format'))];
     }
 }

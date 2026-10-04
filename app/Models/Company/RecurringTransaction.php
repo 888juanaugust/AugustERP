@@ -14,9 +14,17 @@ class RecurringTransaction extends Model
 {
     use RecordsActivity;
 
-    public const TYPES = ['journal_voucher' => 'Journal voucher', 'cash_payment' => 'Payment', 'cash_receipt' => 'Receipt'];
+    /** @return array<string, string> document kind → label */
+    public static function types(): array
+    {
+        return ['journal_voucher' => __('Journal voucher'), 'cash_payment' => __('Payment'), 'cash_receipt' => __('Receipt')];
+    }
 
-    public const FREQUENCIES = ['weekly' => 'Every week', 'monthly' => 'Every month', 'yearly' => 'Every year'];
+    /** @return array<string, string> frequency → label */
+    public static function frequencies(): array
+    {
+        return ['weekly' => __('Every week'), 'monthly' => __('Every month'), 'yearly' => __('Every year')];
+    }
 
     protected $guarded = [];
 

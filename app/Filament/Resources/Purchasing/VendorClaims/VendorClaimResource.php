@@ -55,7 +55,7 @@ class VendorClaimResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                Select::make('claim_type')->label('Claim type')->options(['send' => 'Send goods to the vendor', 'receive' => 'Receive goods from the vendor'])->default('send')->required()->native(false),
+                Select::make('claim_type')->label(__('Claim type'))->options(['send' => __('Send goods to the vendor'), 'receive' => __('Receive goods from the vendor')])->default('send')->required()->native(false),
                 VendorFields::select(),
                 NumberFields::make(TransactionType::VendorClaim, 'Claim No.'),
                 DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
@@ -66,7 +66,7 @@ class VendorClaimResource extends ErpResource
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
-                        ->table([TableColumn::make('Item'), TableColumn::make('Quantity')->alignment(Alignment::End), TableColumn::make('Unit'), TableColumn::make('Memo')])
+                        ->table([TableColumn::make(__('Item')), TableColumn::make(__('Quantity'))->alignment(Alignment::End), TableColumn::make(__('Unit')), TableColumn::make(__('Memo'))])
                         ->schema([
                             LineItemFields::item(),
                             LineItemFields::quantity()->minValue(0.0001),
@@ -79,7 +79,7 @@ class VendorClaimResource extends ErpResource
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data])[0]),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
-                    Textarea::make('to_address')->label("Vendor's address")->rows(2),
+                    Textarea::make('to_address')->label(__('Vendor\'s address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),
                 ]),
             ]),
@@ -91,24 +91,24 @@ class VendorClaimResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('vendor'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                TextColumn::make('claim_type')->label('Claim type')->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'send' ? 'Send goods' : 'Receive goods'),
+                TextColumn::make('claim_type')->label(__('Claim type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'send' ? 'Send goods' : 'Receive goods'),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('status')->label('Delivery status')->badge()->formatStateUsing(fn (string $state) => __('status.fulfilment.'.$state))
+                TextColumn::make('status')->label(__('Delivery status'))->badge()->formatStateUsing(fn (string $state) => __('status.fulfilment.'.$state))
                     ->color(fn (string $state) => $state === 'processed' ? 'success' : 'info'),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('status')->label('Claim status')->options(['pending' => 'Pending', 'processed' => 'Settled']),
-                SelectFilter::make('claim_type')->label('Claim type')->options(['send' => 'Send goods', 'receive' => 'Receive goods']),
+                SelectFilter::make('status')->label(__('Claim status'))->options(['pending' => __('Pending'), 'processed' => __('Settled')]),
+                SelectFilter::make('claim_type')->label(__('Claim type'))->options(['send' => __('Send goods'), 'receive' => __('Receive goods')]),
                 SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable(),
             ])
             ->recordActions([
                 EditAction::make(),
-                Action::make('settle')->label('Mark settled')->icon('heroicon-m-check')->color('success')->requiresConfirmation()
+                Action::make('settle')->label(__('Mark settled'))->icon('heroicon-m-check')->color('success')->requiresConfirmation()
                     ->visible(fn (VendorClaim $record) => $record->status === 'pending' && static::canEdit($record))
                     ->action(fn (VendorClaim $record) => $record->update(['status' => 'processed'])),
             ]);

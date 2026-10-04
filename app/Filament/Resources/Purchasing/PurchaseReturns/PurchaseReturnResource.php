@@ -55,9 +55,9 @@ class PurchaseReturnResource extends ErpResource
     {
         return $schema->components([
             PricedDocumentForm::header(VendorFields::select(), TransactionType::PurchaseReturn, 'Return No.', [
-                Select::make('return_type')->label('Return from')->options(['invoice' => 'Invoice', 'receipt' => 'Receipt', 'none' => 'No invoice', 'down_payment' => 'Down payment'])->default('invoice')->required()->native(false)->live()
+                Select::make('return_type')->label(__('Return from'))->options(['invoice' => __('Invoice'), 'receipt' => __('Receipt'), 'none' => __('No invoice'), 'down_payment' => __('Down payment')])->default('invoice')->required()->native(false)->live()
                     ->afterStateUpdated(fn (Set $set) => $set('source_key', null)),
-                Select::make('source_key')->label('Document')
+                Select::make('source_key')->label(__('Document'))
                     ->options(function (Get $get) {
                         $vendor = (int) $get('vendor_id');
                         if (! $vendor) {
@@ -121,14 +121,14 @@ class PurchaseReturnResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('vendor'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
-                TextColumn::make('return_type')->label('Return from')->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
+                TextColumn::make('return_type')->label(__('Return from'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('payment_status')->label('Credit used')->badge()
+                TextColumn::make('payment_status')->label(__('Credit used'))->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
-                        'paid' => 'Used', 'partial' => 'Partly used', default => 'Open'
+                        'paid' => __('Used'), 'partial' => __('Partly used'), default => __('Open')
                     })
                     ->color(fn (string $state) => match ($state) {
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'

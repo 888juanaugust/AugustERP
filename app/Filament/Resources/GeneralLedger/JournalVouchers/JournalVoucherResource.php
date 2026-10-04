@@ -66,16 +66,16 @@ class JournalVoucherResource extends ErpResource
                         ->default(fn () => Branch::default()?->id),
                 ]),
             Tabs::make('voucher')->tabs([
-                Tab::make('Journal lines')->schema([
+                Tab::make(__('Journal lines'))->schema([
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Account'),
-                            TableColumn::make('Debit')->alignment(Alignment::End),
-                            TableColumn::make('Credit')->alignment(Alignment::End),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Account')),
+                            TableColumn::make(__('Debit'))->alignment(Alignment::End),
+                            TableColumn::make(__('Credit'))->alignment(Alignment::End),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
@@ -101,7 +101,7 @@ class JournalVoucherResource extends ErpResource
                         ->hiddenLabel()
                         ->content(fn (Get $get): string => 'Debit '.Format::rupiah(LineTotals::sum($get('lines'), 'debit')).'   ·   Credit '.Format::rupiah(LineTotals::sum($get('lines'), 'credit'))),
                 ]),
-                Tab::make('Other info')->schema([
+                Tab::make(__('Other info'))->schema([
                     Textarea::make('description')->label(__('fields.description'))->rows(3),
                 ]),
             ]),

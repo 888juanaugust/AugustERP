@@ -53,29 +53,29 @@ class DocumentSeriesResource extends MasterResource
     {
         return $schema->components([
             Tabs::make('series')->tabs([
-                Tab::make('Numbering')->schema([
-                    Section::make('Format')
+                Tab::make(__('Numbering'))->schema([
+                    Section::make(__('Format'))
                         ->columns(2)
                         ->schema([
                             TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100),
-                            Select::make('transaction_type')->label('Transaction type')->options(TransactionType::class)->required()->searchable()->native(false),
-                            Select::make('reset_rule')->label('Counter reset')->options(ResetRule::class)->default(ResetRule::Monthly)->required()->native(false),
-                            TextInput::make('counter_digits')->label('Counter digits')->numeric()->minValue(1)->maxValue(10)->default(4)->required()->live(),
-                            Toggle::make('is_default')->label('Default for this transaction type')->inline(false),
+                            Select::make('transaction_type')->label(__('Transaction type'))->options(TransactionType::class)->required()->searchable()->native(false),
+                            Select::make('reset_rule')->label(__('Counter reset'))->options(ResetRule::class)->default(ResetRule::Monthly)->required()->native(false),
+                            TextInput::make('counter_digits')->label(__('Counter digits'))->numeric()->minValue(1)->maxValue(10)->default(4)->required()->live(),
+                            Toggle::make('is_default')->label(__('Default for this transaction type'))->inline(false),
                             self::activeToggle()->inline(false),
                         ]),
-                    Section::make('Components')
-                        ->description('The number is the components in this order. Exactly one must be the counter.')
+                    Section::make(__('Components'))
+                        ->description(__('The number is the components in this order. Exactly one must be the counter.'))
                         ->schema([
                             Repeater::make('pattern')
                                 ->hiddenLabel()
                                 ->table([
-                                    TableColumn::make('Component'),
-                                    TableColumn::make('Text'),
+                                    TableColumn::make(__('Component')),
+                                    TableColumn::make(__('Text')),
                                 ])
                                 ->schema([
                                     Select::make('token')->options(PatternToken::class)->required()->native(false)->live(),
-                                    TextInput::make('text')->maxLength(20)->placeholder('only for separator text')->live(onBlur: true)
+                                    TextInput::make('text')->maxLength(20)->placeholder(__('only for separator text'))->live(onBlur: true)
                                         ->disabled(fn (Get $get) => $get('token') !== PatternToken::Text->value)
                                         ->dehydrated(),
                                 ])
@@ -92,7 +92,7 @@ class DocumentSeriesResource extends MasterResource
                                     }
                                 }),
                             Placeholder::make('example')
-                                ->label('Example for today')
+                                ->label(__('Example for today'))
                                 ->content(fn (Get $get): string => self::example($get('pattern'), (int) ($get('counter_digits') ?: 4))),
                         ]),
                 ]),
@@ -116,15 +116,15 @@ class DocumentSeriesResource extends MasterResource
             ->modifyQueryUsing(fn ($query) => $query->with('users'))
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('transaction_type')->label('Transaction type')->badge()->color('gray')->sortable(),
-                TextColumn::make('example')->label('Example')->state(fn (DocumentSeries $r) => self::example($r->pattern, $r->counter_digits))->fontFamily('mono'),
-                TextColumn::make('reset_rule')->label('Reset'),
+                TextColumn::make('transaction_type')->label(__('Transaction type'))->badge()->color('gray')->sortable(),
+                TextColumn::make('example')->label(__('Example'))->state(fn (DocumentSeries $r) => self::example($r->pattern, $r->counter_digits))->fontFamily('mono'),
+                TextColumn::make('reset_rule')->label(__('Reset')),
                 self::usersColumn(),
                 IconColumn::make('is_default')->label(__('fields.is_default'))->boolean(),
             ])
             ->defaultSort('transaction_type')
             ->filters([
-                SelectFilter::make('transaction_type')->label('Transaction type')->options(TransactionType::class),
+                SelectFilter::make('transaction_type')->label(__('Transaction type'))->options(TransactionType::class),
                 self::activeFilter(),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);

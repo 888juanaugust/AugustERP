@@ -24,7 +24,7 @@ class ManageAccounts extends ManageMaster
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('New account')->slideOver()
+            CreateAction::make()->label(__('New account'))->slideOver()
                 ->mutateDataUsing(fn (array $data) => self::liftOpening($data))
                 ->after(fn (Model $record, array $data) => self::saveOpening($record, $data)),
         ];
@@ -79,7 +79,7 @@ class ManageAccounts extends ManageMaster
             );
             app(PostingService::class)->post($opening->fresh()->load('account'));
         } catch (\RuntimeException $e) {
-            Notification::make()->title('Opening balance not posted')->body($e->getMessage())->danger()->persistent()->send();
+            Notification::make()->title(__('Opening balance not posted'))->body($e->getMessage())->danger()->persistent()->send();
         }
     }
 }

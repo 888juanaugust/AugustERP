@@ -51,19 +51,19 @@ class SalesTargetResource extends ErpResource
 
         return $schema->components([
             Section::make()->columns(3)->schema([
-                TextInput::make('name')->label('Target name')->required()->maxLength(100),
-                Select::make('target_type')->label('Target type')->options($types)->default('per_salesman')->required()->native(false)->live(),
-                Select::make('branch_id')->label('Branch sales')->relationship('branch', 'name')->preload()->native(false),
-                DatePicker::make('from_date')->label('From')->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->startOfYear()),
-                DatePicker::make('to_date')->label('Until')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->endOfYear()),
+                TextInput::make('name')->label(__('Target name'))->required()->maxLength(100),
+                Select::make('target_type')->label(__('Target type'))->options($types)->default('per_salesman')->required()->native(false)->live(),
+                Select::make('branch_id')->label(__('Branch sales'))->relationship('branch', 'name')->preload()->native(false),
+                DatePicker::make('from_date')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->startOfYear()),
+                DatePicker::make('to_date')->label(__('Until'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->endOfYear()),
             ]),
             Tabs::make('target')->tabs([
-                Tab::make('Targets')->schema([
+                Tab::make(__('Targets'))->schema([
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
-                        ->table([TableColumn::make('For'), TableColumn::make('Quantity')->alignment(Alignment::End), TableColumn::make('Value')->alignment(Alignment::End)])
+                        ->table([TableColumn::make(__('For')), TableColumn::make(__('Quantity'))->alignment(Alignment::End), TableColumn::make(__('Value'))->alignment(Alignment::End)])
                         ->schema([
                             LineItemFields::item()->visible(fn (Get $get) => $get('../../target_type') === 'per_item')->required(false),
                             Select::make('item_category_id')->relationship('itemCategory', 'name')->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_category'),
@@ -74,9 +74,9 @@ class SalesTargetResource extends ErpResource
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel('Add target'),
                 ]),
-                Tab::make('Notes')->schema([
+                Tab::make(__('Notes'))->schema([
                     Textarea::make('notes')->label(__('fields.memo'))->rows(3),
-                    TextInput::make('analyst_name')->label('Analyst')->maxLength(100),
+                    TextInput::make('analyst_name')->label(__('Analyst'))->maxLength(100),
                 ]),
             ]),
         ])->columns(1);
@@ -87,15 +87,15 @@ class SalesTargetResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('branch'))
             ->columns([
-                TextColumn::make('from_date')->label('From')->formatStateUsing(fn ($state) => Format::date($state))->placeholder('—'),
-                TextColumn::make('to_date')->label('Until')->formatStateUsing(fn ($state) => Format::date($state))->sortable(),
-                TextColumn::make('year')->label('Year')->state(fn (SalesTarget $r) => $r->to_date->year),
-                TextColumn::make('name')->label('Target name')->searchable()->sortable()->weight('medium'),
-                TextColumn::make('branch.name')->label(__('fields.branch'))->placeholder('All'),
-                TextColumn::make('target_type')->label('Target type')->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
+                TextColumn::make('from_date')->label(__('From'))->formatStateUsing(fn ($state) => Format::date($state))->placeholder('—'),
+                TextColumn::make('to_date')->label(__('Until'))->formatStateUsing(fn ($state) => Format::date($state))->sortable(),
+                TextColumn::make('year')->label(__('Year'))->state(fn (SalesTarget $r) => $r->to_date->year),
+                TextColumn::make('name')->label(__('Target name'))->searchable()->sortable()->weight('medium'),
+                TextColumn::make('branch.name')->label(__('fields.branch'))->placeholder(__('All')),
+                TextColumn::make('target_type')->label(__('Target type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
             ])
             ->defaultSort('to_date', 'desc')
-            ->filters([SelectFilter::make('target_type')->label('Target type')->options(['per_item' => 'Per item', 'per_category' => 'Per item category', 'per_salesman' => 'Per salesperson', 'per_month' => 'Per month'])])
+            ->filters([SelectFilter::make('target_type')->label(__('Target type'))->options(['per_item' => __('Per item'), 'per_category' => __('Per item category'), 'per_salesman' => __('Per salesperson'), 'per_month' => __('Per month')])])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }
 

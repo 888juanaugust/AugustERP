@@ -36,13 +36,13 @@ class ContactResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('Full name')->required()->maxLength(150),
-            Select::make('contact_type')->label('Type')->options(ContactType::class)->default(ContactType::Other)->required()->native(false),
-            TextInput::make('company')->label('Company')->maxLength(150),
-            TextInput::make('position')->label('Position')->maxLength(100),
-            TextInput::make('email')->label('Email')->email()->maxLength(150),
-            TextInput::make('mobile_phone')->label('Mobile')->tel()->maxLength(30),
-            TextInput::make('work_phone')->label('Work phone')->tel()->maxLength(30),
+            TextInput::make('name')->label(__('Full name'))->required()->maxLength(150),
+            Select::make('contact_type')->label(__('Type'))->options(ContactType::class)->default(ContactType::Other)->required()->native(false),
+            TextInput::make('company')->label(__('Company'))->maxLength(150),
+            TextInput::make('position')->label(__('Position'))->maxLength(100),
+            TextInput::make('email')->label(__('Email'))->email()->maxLength(150),
+            TextInput::make('mobile_phone')->label(__('Mobile'))->tel()->maxLength(30),
+            TextInput::make('work_phone')->label(__('Work phone'))->tel()->maxLength(30),
             Textarea::make('notes')->label(__('fields.memo'))->rows(2)->columnSpanFull(),
         ])->columns(2);
     }
@@ -51,14 +51,14 @@ class ContactResource extends MasterResource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('Full name')->searchable()->sortable(),
-                TextColumn::make('contact_type')->label('Type')->badge()->color('gray'),
-                TextColumn::make('company')->label('Company')->searchable()->placeholder('—'),
-                TextColumn::make('email')->label('Email')->placeholder('—'),
-                TextColumn::make('mobile_phone')->label('Mobile')->placeholder('—'),
+                TextColumn::make('name')->label(__('Full name'))->searchable()->sortable(),
+                TextColumn::make('contact_type')->label(__('Type'))->badge()->color('gray'),
+                TextColumn::make('company')->label(__('Company'))->searchable()->placeholder('—'),
+                TextColumn::make('email')->label(__('Email'))->placeholder('—'),
+                TextColumn::make('mobile_phone')->label(__('Mobile'))->placeholder('—'),
             ])
             ->defaultSort('name')
-            ->filters([SelectFilter::make('contact_type')->label('Type')->options(ContactType::class)])
+            ->filters([SelectFilter::make('contact_type')->label(__('Type'))->options(ContactType::class)])
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);
     }
 

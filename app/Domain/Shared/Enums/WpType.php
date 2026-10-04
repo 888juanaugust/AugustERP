@@ -17,10 +17,10 @@ enum WpType: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Nik => 'National ID (NIK)',
-            self::Npwp => 'Tax ID (NPWP)',
-            self::Passport => 'Passport',
-            self::Other => 'Other',
+            self::Nik => __('National ID (NIK)'),
+            self::Npwp => __('Tax ID (NPWP)'),
+            self::Passport => __('Passport'),
+            self::Other => __('Other'),
         };
     }
 }

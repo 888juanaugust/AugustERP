@@ -45,7 +45,7 @@
     </style>
 </head>
 <body>
-<div class="toolbar"><button onclick="window.print()">Print</button></div>
+<div class="toolbar"><button onclick="window.print()">{{ __('Print') }}</button></div>
 <div class="sheet">
     <header>
         <div class="company">
@@ -73,10 +73,10 @@
                 @if (($s['show_tax_id'] ?? true) && ($party->wp_number ?? null))<div>NPWP {{ $party->wp_number }}</div>@endif
             </div>
             @if (isset($document->to_address) && $document->to_address)
-                <div><div class="label">Ship to</div><div class="notes">{{ $document->to_address }}</div></div>
+                <div><div class="label">{{ __('Ship to') }}</div><div class="notes">{{ $document->to_address }}</div></div>
             @endif
             @if (isset($document->payment_term_id) && $document->payment_term_id && method_exists($document, 'paymentTerm'))
-                <div><div class="label">Terms</div>{{ $document->paymentTerm?->name }}</div>
+                <div><div class="label">{{ __('Terms') }}</div>{{ $document->paymentTerm?->name }}</div>
             @endif
         </div>
     @endif
@@ -84,14 +84,14 @@
     @if ($shape === 'priced')
         <table>
             <thead><tr>
-                @if ($s['show_item_code'] ?? true)<th>Code</th>@endif
-                <th>Description</th>
-                <th class="num">Qty</th>
-                @if ($s['show_unit'] ?? true)<th>Unit</th>@endif
-                <th class="num">Price</th>
-                @if ($s['show_discount'] ?? true)<th class="num">Disc</th>@endif
-                @if ($s['show_tax'] ?? true)<th class="num">VAT</th>@endif
-                <th class="num">Amount</th>
+                @if ($s['show_item_code'] ?? true)<th>{{ __('Code') }}</th>@endif
+                <th>{{ __('Description') }}</th>
+                <th class="num">{{ __('Qty') }}</th>
+                @if ($s['show_unit'] ?? true)<th>{{ __('Unit') }}</th>@endif
+                <th class="num">{{ __('Price') }}</th>
+                @if ($s['show_discount'] ?? true)<th class="num">{{ __('Disc') }}</th>@endif
+                @if ($s['show_tax'] ?? true)<th class="num">{{ __('VAT') }}</th>@endif
+                <th class="num">{{ __('Amount') }}</th>
             </tr></thead>
             <tbody>
             @foreach ($lines as $line)
@@ -109,16 +109,16 @@
             </tbody>
         </table>
         <table class="totals">
-            <tr><td>Subtotal</td><td class="num">{{ Format::number((int) ($document->subtotal ?? 0)) }}</td></tr>
-            @if ((int) ($document->discount_amount ?? 0))<tr><td>Discount</td><td class="num">−{{ Format::number((int) $document->discount_amount) }}</td></tr>@endif
-            @if ((int) ($document->charges_total ?? 0))<tr><td>Other charges</td><td class="num">{{ Format::number((int) $document->charges_total) }}</td></tr>@endif
-            @if (($s['show_tax'] ?? true) && (int) ($document->tax_total ?? 0))<tr><td>VAT</td><td class="num">{{ Format::number((int) $document->tax_total) }}</td></tr>@endif
-            @if ((int) ($document->down_payment_total ?? 0))<tr><td>Down payment</td><td class="num">−{{ Format::number((int) $document->down_payment_total) }}</td></tr>@endif
-            <tr class="grand"><td>Total</td><td class="num">{{ Format::rupiah((int) ($document->total ?? 0) - (int) ($document->down_payment_total ?? 0)) }}</td></tr>
+            <tr><td>{{ __('Subtotal') }}</td><td class="num">{{ Format::number((int) ($document->subtotal ?? 0)) }}</td></tr>
+            @if ((int) ($document->discount_amount ?? 0))<tr><td>{{ __('Discount') }}</td><td class="num">−{{ Format::number((int) $document->discount_amount) }}</td></tr>@endif
+            @if ((int) ($document->charges_total ?? 0))<tr><td>{{ __('Other charges') }}</td><td class="num">{{ Format::number((int) $document->charges_total) }}</td></tr>@endif
+            @if (($s['show_tax'] ?? true) && (int) ($document->tax_total ?? 0))<tr><td>{{ __('VAT') }}</td><td class="num">{{ Format::number((int) $document->tax_total) }}</td></tr>@endif
+            @if ((int) ($document->down_payment_total ?? 0))<tr><td>{{ __('Down payment') }}</td><td class="num">−{{ Format::number((int) $document->down_payment_total) }}</td></tr>@endif
+            <tr class="grand"><td>{{ __('Total') }}</td><td class="num">{{ Format::rupiah((int) ($document->total ?? 0) - (int) ($document->down_payment_total ?? 0)) }}</td></tr>
         </table>
     @elseif ($shape === 'settlement')
         <table>
-            <thead><tr><th>Document</th><th class="num">Applied</th><th class="num">Discount</th></tr></thead>
+            <thead><tr><th>{{ __('Document') }}</th><th class="num">{{ __('Applied') }}</th><th class="num">{{ __('Discount') }}</th></tr></thead>
             <tbody>
             @foreach ($lines as $line)
                 @php $target = $line->receivable ?? $line->payable ?? null; @endphp
@@ -128,48 +128,48 @@
         </table>
         <table class="totals">
             <tr><td>{{ $meta['party'] === 'customer' ? 'Received into' : 'Paid from' }}</td><td class="num">{{ $document->bankAccount?->name }}</td></tr>
-            @if ($document->cheque_no ?? null)<tr><td>Cheque / giro</td><td class="num">{{ $document->cheque_no }} @if ($document->cheque_date) · {{ Format::date($document->cheque_date) }} @endif</td></tr>@endif
-            <tr class="grand"><td>Amount</td><td class="num">{{ Format::rupiah((int) $document->amount) }}</td></tr>
+            @if ($document->cheque_no ?? null)<tr><td>{{ __('Cheque / giro') }}</td><td class="num">{{ $document->cheque_no }} @if ($document->cheque_date) · {{ Format::date($document->cheque_date) }} @endif</td></tr>@endif
+            <tr class="grand"><td>{{ __('Amount') }}</td><td class="num">{{ Format::rupiah((int) $document->amount) }}</td></tr>
         </table>
     @elseif ($shape === 'cash')
         <div class="parties">
             <div><div class="label">{{ $document instanceof \App\Models\CashBank\CashPayment ? 'Paid to' : 'Received from' }}</div><strong>{{ $document->payee ?? $document->payer ?? '—' }}</strong></div>
-            <div><div class="label">Cash / Bank</div>{{ $document->bankAccount?->name }}</div>
-            @if ($document->cheque_no)<div><div class="label">Cheque / giro</div>{{ $document->cheque_no }}</div>@endif
+            <div><div class="label">{{ __('Cash / Bank') }}</div>{{ $document->bankAccount?->name }}</div>
+            @if ($document->cheque_no)<div><div class="label">{{ __('Cheque / giro') }}</div>{{ $document->cheque_no }}</div>@endif
         </div>
         <table>
-            <thead><tr><th>Account</th><th>Memo</th><th class="num">Amount</th></tr></thead>
+            <thead><tr><th>{{ __('Account') }}</th><th>{{ __('Memo') }}</th><th class="num">{{ __('Amount') }}</th></tr></thead>
             <tbody>
             @foreach ($lines as $line)
                 <tr><td>{{ $line->account?->no }} {{ $line->account?->name }}</td><td>{{ $line->memo }}</td><td class="num">{{ Format::number((int) $line->amount) }}</td></tr>
             @endforeach
             </tbody>
         </table>
-        <table class="totals"><tr class="grand"><td>Total</td><td class="num">{{ Format::rupiah((int) $document->amount) }}</td></tr></table>
+        <table class="totals"><tr class="grand"><td>{{ __('Total') }}</td><td class="num">{{ Format::rupiah((int) $document->amount) }}</td></tr></table>
     @elseif ($shape === 'transfer')
         <table>
-            <tr><th>From</th><td>{{ $document->fromBankAccount?->name }}</td></tr>
-            <tr><th>To</th><td>{{ $document->toBankAccount?->name }}</td></tr>
-            <tr><th>Amount</th><td class="num" style="text-align:left">{{ Format::rupiah((int) $document->amount) }}</td></tr>
-            @if ((int) $document->fees_total)<tr><th>Fees</th><td>{{ Format::rupiah((int) $document->fees_total) }}</td></tr>@endif
+            <tr><th>{{ __('From') }}</th><td>{{ $document->fromBankAccount?->name }}</td></tr>
+            <tr><th>{{ __('To') }}</th><td>{{ $document->toBankAccount?->name }}</td></tr>
+            <tr><th>{{ __('Amount') }}</th><td class="num" style="text-align:left">{{ Format::rupiah((int) $document->amount) }}</td></tr>
+            @if ((int) $document->fees_total)<tr><th>{{ __('Fees') }}</th><td>{{ Format::rupiah((int) $document->fees_total) }}</td></tr>@endif
         </table>
     @elseif ($shape === 'journal')
         <table>
-            <thead><tr><th>Account</th><th>Memo</th><th class="num">Debit</th><th class="num">Credit</th></tr></thead>
+            <thead><tr><th>{{ __('Account') }}</th><th>{{ __('Memo') }}</th><th class="num">{{ __('Debit') }}</th><th class="num">{{ __('Credit') }}</th></tr></thead>
             <tbody>
             @foreach ($lines as $line)
                 <tr><td>{{ $line->account?->no }} {{ $line->account?->name }}</td><td>{{ $line->memo }}</td><td class="num">{{ $line->debit ? Format::number((int) $line->debit) : '' }}</td><td class="num">{{ $line->credit ? Format::number((int) $line->credit) : '' }}</td></tr>
             @endforeach
             </tbody>
         </table>
-        <table class="totals"><tr class="grand"><td>Total</td><td class="num">{{ Format::rupiah((int) $document->total) }}</td></tr></table>
+        <table class="totals"><tr class="grand"><td>{{ __('Total') }}</td><td class="num">{{ Format::rupiah((int) $document->total) }}</td></tr></table>
     @elseif ($shape === 'stock')
         <table>
             <thead><tr>
-                @if ($s['show_item_code'] ?? true)<th>Code</th>@endif
-                <th>Item</th><th class="num">Qty</th>
-                @if ($s['show_unit'] ?? true)<th>Unit</th>@endif
-                <th>Warehouse</th>
+                @if ($s['show_item_code'] ?? true)<th>{{ __('Code') }}</th>@endif
+                <th>{{ __('Item') }}</th><th class="num">{{ __('Qty') }}</th>
+                @if ($s['show_unit'] ?? true)<th>{{ __('Unit') }}</th>@endif
+                <th>{{ __('Warehouse') }}</th>
             </tr></thead>
             <tbody>
             @foreach ($lines as $line)
@@ -186,14 +186,14 @@
     @endif
 
     @if (($s['show_notes'] ?? true) && ($document->description ?? null))
-        <div class="label">Notes</div>
+        <div class="label">{{ __('Notes') }}</div>
         <p class="notes">{{ $document->description }}</p>
     @endif
 
     @if ($s['show_signature'] ?? true)
         <div class="signatures">
-            <div><div class="line">Prepared by</div></div>
-            <div><div class="line">Approved by</div></div>
+            <div><div class="line">{{ __('Prepared by') }}</div></div>
+            <div><div class="line">{{ __('Approved by') }}</div></div>
             <div><div class="line">{{ $meta['party'] === 'customer' ? 'Received by' : 'Acknowledged by' }}</div></div>
         </div>
     @endif

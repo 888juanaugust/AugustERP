@@ -23,7 +23,7 @@ class DepreciationSchedule extends ReportPage
 
     public static function title(): string
     {
-        return 'Depreciation Schedule';
+        return __('Depreciation Schedule');
     }
 
     public static function group(): string
@@ -50,9 +50,9 @@ class DepreciationSchedule extends ReportPage
     {
         return [
             Select::make('category_id')
-                ->label('Asset category')
+                ->label(__('Asset category'))
                 ->options(fn () => AssetCategory::query()->orderBy('name')->pluck('name', 'id'))
-                ->placeholder('All categories')
+                ->placeholder(__('All categories'))
                 ->nullable()
                 ->native(false)
                 ->live(),

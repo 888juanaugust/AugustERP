@@ -20,13 +20,13 @@ enum TaxDocumentCode: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::TaxInvoice => 'Tax invoice',
-            self::SpecificDocument => 'Specific document',
-            self::Export => 'Export',
-            self::Aggregated => 'Aggregated (digunggung)',
-            self::Import => 'Import',
-            self::Domestic => 'Domestic acquisition',
-            self::NotCredited => 'Not credited',
+            self::TaxInvoice => __('Tax invoice'),
+            self::SpecificDocument => __('Specific document'),
+            self::Export => __('Export'),
+            self::Aggregated => __('Aggregated (digunggung)'),
+            self::Import => __('Import'),
+            self::Domestic => __('Domestic acquisition'),
+            self::NotCredited => __('Not credited'),
         };
     }
 

@@ -38,15 +38,15 @@ class BranchResource extends MasterResource
     {
         return $schema->components([
             Tabs::make('branch')->tabs([
-                Tab::make('General')->schema([
+                Tab::make(__('General'))->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100)->unique(ignoreRecord: true),
-                    TextInput::make('phone_number')->label('Phone number')->tel()->maxLength(30),
-                    Textarea::make('address')->label('Address')->rows(3),
-                    Toggle::make('is_default')->label('Default branch')->inline(false),
+                    TextInput::make('phone_number')->label(__('Phone number'))->tel()->maxLength(30),
+                    Textarea::make('address')->label(__('Address'))->rows(3),
+                    Toggle::make('is_default')->label(__('Default branch'))->inline(false),
                     self::activeToggle()->inline(false),
                 ]),
-                Tab::make('Tax info')->schema([
-                    TextInput::make('nitku')->label('Business location ID (NITKU)')->maxLength(30),
+                Tab::make(__('Tax info'))->schema([
+                    TextInput::make('nitku')->label(__('Business location ID (NITKU)'))->maxLength(30),
                 ]),
                 self::usersTab(),
             ]),
@@ -60,7 +60,7 @@ class BranchResource extends MasterResource
             ->columns([
                 self::activeColumn(),
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('phone_number')->label('Phone number')->placeholder('—'),
+                TextColumn::make('phone_number')->label(__('Phone number'))->placeholder('—'),
                 self::usersColumn(),
                 IconColumn::make('is_default')->label(__('fields.is_default'))->boolean(),
             ])

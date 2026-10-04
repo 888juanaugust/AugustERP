@@ -16,7 +16,7 @@ class EquityChanges extends ReportPage
 
     public static function title(): string
     {
-        return 'Statement of Changes in Equity';
+        return __('Statement of Changes in Equity');
     }
 
     public static function group(): string

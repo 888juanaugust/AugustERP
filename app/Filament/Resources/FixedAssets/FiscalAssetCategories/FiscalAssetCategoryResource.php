@@ -37,10 +37,10 @@ class FiscalAssetCategoryResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('Name')->required()->maxLength(100)->unique(ignoreRecord: true),
-            Select::make('depreciation_method')->label('Depreciation method')->options(DepreciationMethod::class)->default(DepreciationMethod::StraightLine)->required()->native(false),
-            TextInput::make('useful_life_years')->label('Estimated life (years)')->numeric()->integer()->minValue(0)->required(),
-            TextInput::make('rate_percent')->label('Depreciation rate (%)')->numeric()->step(0.01)->minValue(0)->maxValue(100)->suffix('%'),
+            TextInput::make('name')->label(__('Name'))->required()->maxLength(100)->unique(ignoreRecord: true),
+            Select::make('depreciation_method')->label(__('Depreciation method'))->options(DepreciationMethod::class)->default(DepreciationMethod::StraightLine)->required()->native(false),
+            TextInput::make('useful_life_years')->label(__('Estimated life (years)'))->numeric()->integer()->minValue(0)->required(),
+            TextInput::make('rate_percent')->label(__('Depreciation rate (%)'))->numeric()->step(0.01)->minValue(0)->maxValue(100)->suffix('%'),
         ]);
     }
 
@@ -48,16 +48,16 @@ class FiscalAssetCategoryResource extends MasterResource
     {
         return $table
             ->columns([
-                TextColumn::make('rate_percent')->label('Rate (%)')->alignEnd()->sortable()
+                TextColumn::make('rate_percent')->label(__('Rate (%)'))->alignEnd()->sortable()
                     ->formatStateUsing(fn ($state): string => Format::quantity($state, 2)),
-                TextColumn::make('name')->label('Name')->searchable()->sortable()->weight('medium'),
-                TextColumn::make('useful_life_years')->label('Estimated life (years)')->alignEnd()->sortable(),
-                TextColumn::make('depreciation_method')->label('Method')->badge()->color('gray')
+                TextColumn::make('name')->label(__('Name'))->searchable()->sortable()->weight('medium'),
+                TextColumn::make('useful_life_years')->label(__('Estimated life (years)'))->alignEnd()->sortable(),
+                TextColumn::make('depreciation_method')->label(__('Method'))->badge()->color('gray')
                     ->formatStateUsing(fn ($state) => $state instanceof DepreciationMethod ? $state->getLabel() : $state),
             ])
             ->defaultSort('name')
             ->filters([
-                SelectFilter::make('depreciation_method')->label('Depreciation method')->options(DepreciationMethod::class),
+                SelectFilter::make('depreciation_method')->label(__('Depreciation method'))->options(DepreciationMethod::class),
             ])
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);
     }
