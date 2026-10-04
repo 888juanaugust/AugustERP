@@ -1,0 +1,109 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Pages\Reports;
+
+use App\Domain\Reports\InventoryReports;
+use App\Models\Inventory\Item;
+use Filament\Forms\Components\Select;
+
+/** Stock Card (stock-card): one item's movements with the running balance. */
+class StockCard extends ReportPage
+{
+    public static function reportKey(): string
+    {
+        return 'stock-card';
+    }
+
+    public static function title(): string
+    {
+        return 'Stock Card';
+    }
+
+    public static function group(): string
+    {
+        return 'Inventory';
+    }
+
+    public static function description(): string
+    {
+        return "One item's movements in and out with the running quantity and value, per warehouse or across all.";
+    }
+
+    protected function usesBranch(): bool
+    {
+        return false;
+    }
+
+    protected function defaultFilters(): array
+    {
+        return parent::defaultFilters() + ['item_id' => null, 'warehouse_id' => null];
+    }
+
+    protected function extraFilters(): array
+    {
+        return [
+            Select::make('item_id')
+                ->label('Item')
+                ->searchable()
+                ->getSearchResultsUsing(fn (string $search) => InventoryReports::itemOptions($search))
+                ->getOptionLabelUsing(fn ($value) => ($item = Item::query()->find($value)) ? "{$item->number} · {$item->name}" : null)
+                ->placeholder('Choose an item')
+                ->native(false)
+                ->live(),
+            Select::make('warehouse_id')
+                ->label('Warehouse')
+                ->options(fn () => InventoryReports::warehouseOptions())
+                ->placeholder('All warehouses')
+                ->nullable()
+                ->native(false)
+                ->live(),
+        ];
+    }
+
+    protected function rows(): array
+    {
+        $itemId = $this->filters['item_id'] ?? null;
+        if ($itemId === null || $itemId === '') {
+            return [];
+        }
+
+        $warehouseId = $this->filters['warehouse_id'] ?? null;
+
+        return InventoryReports::stockCard((int) $itemId, $this->period(), $warehouseId ? (int) $warehouseId : null);
+    }
+
+    protected function columns(): array
+    {
+        return [
+            static::date('trans_date', 'Date'),
+            static::text('source', 'Source'),
+            static::text('warehouse', 'Warehouse'),
+            static::quantity('in', 'In'),
+            static::quantity('out', 'Out'),
+            static::quantity('unit_cost', 'Unit cost'),
+            static::quantity('balance_qty', 'Balance qty'),
+            static::money('balance_value', 'Balance value'),
+        ];
+    }
+
+    protected function exportHeaders(): array
+    {
+        return ['Date', 'Source', 'Warehouse', 'In', 'Out', 'Unit cost', 'Balance qty', 'Balance value'];
+    }
+
+    protected function exportRow(array $row): array
+    {
+        return [
+            $row['trans_date'],
+            $row['source'],
+            $row['warehouse'],
+            $row['in'],
+            $row['out'],
+            $row['unit_cost'],
+            $row['balance_qty'],
+            $row['balance_value'],
+        ];
+    }
+}
