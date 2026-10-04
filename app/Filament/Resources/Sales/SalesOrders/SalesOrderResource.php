@@ -20,6 +20,7 @@ use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\SalesLinesTab;
 use App\Models\Sales\SalesOrder;
@@ -145,6 +146,7 @@ class SalesOrderResource extends ErpResource
                 Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('gray')
                     ->visible(fn (SalesOrder $record) => $record->isApproved() && in_array($record->status, ['pending', 'partial'], true) && SalesInvoiceResource::canCreate())
                     ->url(fn (SalesOrder $record) => SalesInvoiceResource::getUrl('create', ['source' => 'order:'.$record->id])),
+                PrintAction::make(),
             ]);
     }
 

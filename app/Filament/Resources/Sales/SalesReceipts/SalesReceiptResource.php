@@ -23,6 +23,7 @@ use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayableFields;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\ReceivableFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\Sales\SalesReceipt;
@@ -167,7 +168,7 @@ class SalesReceiptResource extends ErpResource
                 SelectFilter::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('customer_id')->label('Received from')->relationship('customer', 'name')->searchable(),
             ])
-            ->recordActions([EditAction::make(), ...GiroActions::forRecord()]);
+            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), PrintAction::make()]);
     }
 
     public static function getPages(): array

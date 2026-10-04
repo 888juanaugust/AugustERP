@@ -16,6 +16,7 @@ use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\PrintAction;
 use App\Models\Company\Branch;
 use App\Models\Inventory\ItemTransfer;
 use App\Models\Inventory\Warehouse;
@@ -132,6 +133,7 @@ class ItemTransferResource extends ErpResource
             ->recordActions([
                 EditAction::make()->visible(fn (ItemTransfer $r) => $r->isSend()),
                 self::receiveAction(),
+                PrintAction::make(),
             ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Modul;
 use App\Filament\Widgets\CompanyPulse;
+use App\Http\Controllers\PrintController;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -21,6 +22,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
@@ -71,6 +73,7 @@ class AdminPanelProvider extends PanelProvider
                 CompanyPulse::class,
                 AccountWidget::class,
             ])
+            ->routes(fn () => Route::get('/print/{alias}/{id}', PrintController::class)->name('print'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

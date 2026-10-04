@@ -16,6 +16,7 @@ use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\VendorFields;
 use App\Models\Inventory\Item;
@@ -137,6 +138,7 @@ class PurchaseInvoiceResource extends ErpResource
                 Action::make('pay')->label('Pay')->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (PurchaseInvoice $record) => $record->payment_status !== 'paid' && PurchasePaymentResource::canCreate())
                     ->url(fn (PurchaseInvoice $record) => PurchasePaymentResource::getUrl('create', ['source' => 'purchase_invoice:'.$record->id])),
+                PrintAction::make(),
             ]);
     }
 

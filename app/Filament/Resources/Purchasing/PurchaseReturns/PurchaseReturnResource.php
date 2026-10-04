@@ -16,6 +16,7 @@ use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PayableFields;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\VendorFields;
 use App\Models\Purchasing\GoodsReceipt;
@@ -136,7 +137,7 @@ class PurchaseReturnResource extends ErpResource
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable()])
-            ->recordActions([EditAction::make()]);
+            ->recordActions([EditAction::make(), PrintAction::make()]);
     }
 
     public static function getPages(): array

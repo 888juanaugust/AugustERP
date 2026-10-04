@@ -18,6 +18,7 @@ use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\PrintAction;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
@@ -138,7 +139,7 @@ class InventoryAdjustmentResource extends ErpResource
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange()])
-            ->recordActions([EditAction::make()->hidden(fn (InventoryAdjustment $r) => $r->is_opening)]);
+            ->recordActions([EditAction::make()->hidden(fn (InventoryAdjustment $r) => $r->is_opening), PrintAction::make()]);
     }
 
     public static function getPages(): array

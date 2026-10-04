@@ -16,6 +16,7 @@ use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\SalesLinesTab;
 use App\Models\Sales\SalesQuotation;
 use Filament\Actions\Action;
@@ -78,6 +79,7 @@ class SalesQuotationResource extends ErpResource
                 Action::make('order')->label('Create order')->icon('heroicon-m-arrow-right-circle')->color('primary')
                     ->visible(fn (SalesQuotation $record) => in_array($record->status, ['pending', 'partial'], true) && SalesOrderResource::canCreate())
                     ->url(fn (SalesQuotation $record) => SalesOrderResource::getUrl('create', ['source' => $record->id])),
+                PrintAction::make(),
             ]);
     }
 

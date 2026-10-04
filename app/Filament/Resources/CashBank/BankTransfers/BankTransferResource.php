@@ -18,6 +18,7 @@ use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Models\CashBank\BankTransfer;
 use App\Models\GeneralLedger\Account;
 use Filament\Actions\EditAction;
@@ -113,7 +114,7 @@ class BankTransferResource extends ErpResource
                 SelectFilter::make('from_bank_account_id')->label('From')->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('to_bank_account_id')->label('To')->options(fn () => Account::options(AccountType::CashBank)),
             ])
-            ->recordActions([EditAction::make()]);
+            ->recordActions([EditAction::make(), PrintAction::make()]);
     }
 
     public static function getPages(): array

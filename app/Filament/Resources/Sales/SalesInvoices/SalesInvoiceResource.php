@@ -18,6 +18,7 @@ use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\SalesLinesTab;
 use App\Models\Sales\Delivery;
@@ -139,6 +140,7 @@ class SalesInvoiceResource extends ErpResource
                 Action::make('receive')->label('Receive payment')->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (SalesInvoice $record) => $record->payment_status !== 'paid' && SalesReceiptResource::canCreate())
                     ->url(fn (SalesInvoice $record) => SalesReceiptResource::getUrl('create', ['source' => 'sales_invoice:'.$record->id])),
+                PrintAction::make(),
             ]);
     }
 

@@ -15,6 +15,7 @@ use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\SalesLinesTab;
 use App\Models\Sales\Delivery;
@@ -103,6 +104,7 @@ class DeliveryResource extends ErpResource
                 Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('primary')
                     ->visible(fn (Delivery $record) => in_array($record->status, ['pending', 'partial'], true) && SalesInvoiceResource::canCreate())
                     ->url(fn (Delivery $record) => SalesInvoiceResource::getUrl('create', ['source' => 'delivery:'.$record->id])),
+                PrintAction::make(),
             ]);
     }
 
