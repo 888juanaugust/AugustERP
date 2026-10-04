@@ -23,7 +23,12 @@ final class CustomerFields
             ->required()
             ->native(false)
             ->live()
-            ->hint(fn ($state) => $state && ($c = Customer::query()->find($state)) && app(CreditCheck::class)->needsNotice($c) ? 'Overdue: an invoice is older than '.CreditCheck::NOTICE_AFTER_DAYS.' days' : null)
+            ->hint(function ($state): ?string {
+                $customer = $state ? Customer::query()->find($state) : null;
+                $check = app(CreditCheck::class);
+
+                return $customer && $check->needsNotice($customer) ? "Overdue: an invoice is older than {$check->noticeDays()} days" : null;
+            })
             ->hintColor('danger')
             ->afterStateUpdated(function (Set $set, $state) use ($fillsTerms): void {
                 $customer = $state ? Customer::query()->find($state) : null;

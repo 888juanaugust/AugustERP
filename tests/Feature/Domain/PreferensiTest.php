@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Domain;
 
+use App\Domain\Pengaturan\BusinessRule;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Pengaturan\PreferensiTab;
 use App\Domain\Pengaturan\PreferensiType;
-use App\Domain\Pengaturan\Saklar;
 use App\Models\Company\AuditLog;
 use Tests\TestCase;
 
@@ -38,8 +38,11 @@ class PreferensiTest extends TestCase
         $this->assertSame(30, $prefs->get(PreferensiKey::AgingIntervalDays));
         $this->assertSame('invoice_date', $prefs->get(PreferensiKey::AgingBasis));
         $this->assertTrue($prefs->get(PreferensiKey::NewCustomerInclusiveTax));
-        $this->assertTrue(Saklar::SegregationOfDuties->isOn());
-        $this->assertFalse(Saklar::AllowNegativeStock->isOn());
+        $this->assertTrue(BusinessRule::SegregationOfDuties->isOn());
+        $this->assertFalse(BusinessRule::AllowNegativeStock->isOn());
+        $this->assertFalse(BusinessRule::SalesOrderApproval->isOn(), 'orders are approved on entry until a company switches the rule on');
+        $this->assertSame(0, $prefs->get(PreferensiKey::CreditNoticeDays));
+        $this->assertSame(0, $prefs->get(PreferensiKey::CreditFreezeDays));
     }
 
     public function test_a_change_is_stored_typed_cached_and_audited(): void
@@ -52,7 +55,7 @@ class PreferensiTest extends TestCase
         $prefs->set(PreferensiKey::CompanyName, 'PT August Makmur', $admin);
 
         $this->assertSame(120, $prefs->get(PreferensiKey::AgingRangeDays));
-        $this->assertTrue(Saklar::AllowNegativeStock->isOn());
+        $this->assertTrue(BusinessRule::AllowNegativeStock->isOn());
         $this->assertSame('PT August Makmur', app(Preferensi::class)->get(PreferensiKey::CompanyName));
 
         $this->assertDatabaseHas('preferences', ['key' => 'other.aging_range_days', 'updated_by' => $admin->id]);

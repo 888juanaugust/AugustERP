@@ -99,13 +99,12 @@ enum PreferensiKey: string
     case AgingIntervalDays = 'other.aging_interval_days';
     case CommissionBasis = 'other.commission_basis';
 
-    // Business rules this product keeps (switches; off is audited)
+    // Business rules (switches and day counts; every change is audited)
+    case SalesOrderApproval = 'rules.sales_order_approval';
     case SegregationOfDuties = 'rules.segregation_of_duties';
-    case MarketingApprovalRequired = 'rules.marketing_approval_required';
     case AllowNegativeStock = 'rules.allow_negative_stock';
-    case SplitAcrossWarehouses = 'rules.split_across_warehouses';
-    case StoreVisits = 'rules.store_visits';
-    case CommissionScheme = 'rules.commission_scheme';
+    case CreditNoticeDays = 'rules.credit_notice_days';
+    case CreditFreezeDays = 'rules.credit_freeze_days';
 
     public function tab(): PreferensiTab
     {
@@ -124,7 +123,7 @@ enum PreferensiKey: string
             self::CustomerDownPaymentAccount, self::SalesDiscountAccount, self::PayableAccount,
             self::VendorDownPaymentAccount, self::CostOfSalesAccount, self::InventoryAccount,
             self::GoodsInTransitAccount, self::RoundingAccount, self::GiroReceivableAccount, self::GiroPayableAccount => PreferensiType::Account,
-            self::AgingRangeDays, self::AgingIntervalDays => PreferensiType::Int,
+            self::AgingRangeDays, self::AgingIntervalDays, self::CreditNoticeDays, self::CreditFreezeDays => PreferensiType::Int,
             self::TransactionExtraColumns, self::ItemExtraColumns, self::ExtraDateColumns => PreferensiType::TextList,
             default => match ($this->tab()) {
                 PreferensiTab::Features, PreferensiTab::Attachments, PreferensiTab::Rules => PreferensiType::Bool,
@@ -158,8 +157,9 @@ enum PreferensiKey: string
             self::AgingBasis => 'invoice_date',
             self::AgingIntervalDays => 30,
             self::CommissionBasis => 'payment',
-            self::SegregationOfDuties, self::MarketingApprovalRequired, self::SplitAcrossWarehouses, self::StoreVisits, self::CommissionScheme => true,
-            self::AllowNegativeStock => false,
+            self::SegregationOfDuties => true,
+            self::SalesOrderApproval, self::AllowNegativeStock => false,
+            self::CreditNoticeDays, self::CreditFreezeDays => 0,
             default => match ($this->type()) {
                 PreferensiType::Bool => false,
                 default => null,
@@ -255,12 +255,11 @@ enum PreferensiKey: string
             self::AgingBasis => 'Age receivables from',
             self::AgingIntervalDays => 'Aging interval (days)',
             self::CommissionBasis => 'Commission is calculated from',
-            self::SegregationOfDuties => 'Segregation of duties: whoever files a claim, return or stock count never verifies it',
-            self::MarketingApprovalRequired => 'Every sales order waits for the approval of the marketing user in charge of the customer',
+            self::SalesOrderApproval => 'Sales orders wait for approval before they can be delivered or invoiced',
+            self::SegregationOfDuties => 'Segregation of duties: whoever enters a document never approves or verifies it',
             self::AllowNegativeStock => 'Allow stock to go negative',
-            self::SplitAcrossWarehouses => 'Split an order across warehouses when one cannot fill it',
-            self::StoreVisits => 'Store visit check-ins by sales staff',
-            self::CommissionScheme => 'Salesperson commission on paid invoices against targets',
+            self::CreditNoticeDays => 'Flag a customer when an invoice is unpaid for more than (days)',
+            self::CreditFreezeDays => 'Freeze a customer when an invoice is unpaid for more than (days)',
         };
     }
 
@@ -272,6 +271,10 @@ enum PreferensiKey: string
             self::AgingRangeDays => 'Receivables older than this are reported as the last bucket.',
             self::AllowNegativeStock => 'When off, a delivery or adjustment that would take stock below zero is refused.',
             self::SegregationOfDuties => 'Turning this off is written to the activity log.',
+            self::SalesOrderApproval => 'Who approves is set under Settings → Transaction Approvers. Without a rule that covers the order, anyone with the "approve transactions" right may.',
+            self::CreditNoticeDays => 'The customer is flagged on sales documents and the invoice list. 0 switches this off.',
+            self::CreditFreezeDays => 'No order is approved for the customer until the aged invoice is settled. 0 switches this off.',
+            self::DecimalFormat, self::QuantityDecimals, self::PriceDecimals, self::DateFormat => 'Reserved: this release formats numbers and dates the Indonesian way (1.234.567, 17/10/2026).',
             self::FixedAssets, self::BudgetTarget, self::Tax, self::Approval, self::SalesExtras, self::Payroll => 'Switches the module and its screens on or off; data already entered is kept.',
             self::MultiBranch => 'Shows the Branches screen and branch filters; one default branch always exists.',
             self::MultiCurrency => 'Shows the Currencies screen; amounts stay in the base currency.',

@@ -95,8 +95,8 @@ class EmployeeResource extends MasterResource
                                 Select::make('start_year_payment')->label('year')
                                     ->options(collect(range((int) date('Y') - 5, (int) date('Y') + 1))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())->native(false),
                             ]),
-                            TextInput::make('previous_income')->label('Income earned before joining')->prefix('Rp')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
-                            TextInput::make('previous_tax')->label('Tax withheld before joining')->prefix('Rp')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
+                            TextInput::make('previous_income')->label('Income earned before joining')->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
+                            TextInput::make('previous_tax')->label('Tax withheld before joining')->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
                         ]),
                 ]),
                 Tab::make('Salary account')->schema([

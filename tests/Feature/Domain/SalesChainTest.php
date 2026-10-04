@@ -12,6 +12,7 @@ use App\Domain\Sales\OrderApproval;
 use App\Domain\Sales\PriceResolver;
 use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
+use App\Models\Company\TransactionApprover;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
@@ -56,7 +57,6 @@ class SalesChainTest extends TestCase
         $this->warehouse = Warehouse::default();
         $this->vat = TaxCode::default();
         $this->docs = app(DocumentRepository::class);
-        app(Preferensi::class)->set(PreferensiKey::MarketingApprovalRequired, false);
 
         $opening = InventoryAdjustment::query()->create(['number' => 'ADJ-OPEN', 'trans_date' => '2026-04-01', 'created_by' => auth()->id()]);
         $opening->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'adjustment_type' => 'quantity', 'quantity' => 20, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 20, 'unit_cost' => 100_000, 'total_cost' => 0, 'warehouse_id' => $this->warehouse->id]);
@@ -208,19 +208,28 @@ class SalesChainTest extends TestCase
         $this->assertStringContainsString('PA-1', $resolved['source']);
     }
 
-    public function test_approval_needs_the_right_and_another_person_and_respects_the_credit_limit(): void
+    public function test_approval_follows_the_approval_rules_needs_another_person_and_respects_the_credit_limit(): void
     {
-        app(Preferensi::class)->set(PreferensiKey::MarketingApprovalRequired, true);
+        app(Preferensi::class)->set(PreferensiKey::SalesOrderApproval, true);
+        $admin = auth()->user();
         $sales = User::factory()->create();
-        $marketing = User::factory()->create();
+        $approver = User::factory()->create();
         AccessGroup::query()->where('name', 'Sales')->firstOrFail()->users()->attach($sales);
-        AccessGroup::query()->where('name', 'Marketing')->firstOrFail()->users()->attach($marketing);
         $this->actingAs($sales);
 
         $order = $this->order(10, 150_000);
         $this->assertSame('awaiting', $order->approval_status);
 
         $approval = app(OrderApproval::class);
+        $this->assertTrue($approval->canApprove($order, $admin), 'without a covering rule, the approve right decides');
+        $this->assertFalse($approval->canApprove($order, $sales));
+
+        $rule = TransactionApprover::query()->create(['transaction_type' => 'sales_order', 'min_amount' => 1_000_000, 'rule' => 'any_one', 'is_active' => true]);
+        $rule->approvers()->attach($approver);
+        $this->assertCount(1, $approval->rulesFor($order));
+        $this->assertFalse($approval->canApprove($order, $admin), 'a covering rule names who approves');
+        $this->assertTrue($approval->canApprove($order, $approver));
+        $this->assertCount(0, $approval->rulesFor($this->order(1, 150_000)), 'below the rule\'s amount');
         try {
             $approval->approve($order, $sales);
             $this->fail('sales cannot approve');
@@ -229,23 +238,37 @@ class SalesChainTest extends TestCase
         }
 
         $this->customer->update(['credit_limit_amount_enabled' => true, 'credit_limit_amount' => 1_000_000]);
-        $this->actingAs($marketing);
+        $this->actingAs($approver);
         try {
-            $approval->approve($order->fresh(), $marketing);
+            $approval->approve($order->fresh(), $approver);
             $this->fail('over the credit limit');
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('credit limit', $e->getMessage());
         }
 
         $this->customer->update(['credit_limit_amount' => 2_000_000]);
-        $approval->approve($order->fresh(), $marketing);
+        $approval->approve($order->fresh(), $approver);
         $this->assertSame('approved', $order->fresh()->approval_status);
-        $this->assertSame($marketing->id, $order->fresh()->approved_by);
+        $this->assertSame($approver->id, $order->fresh()->approved_by);
         $this->assertSame(1_665_000, app(CreditCheck::class)->openOrders($this->customer));
     }
 
-    public function test_an_invoice_unpaid_for_over_150_days_freezes_the_customer(): void
+    public function test_without_credit_day_counts_an_old_invoice_neither_flags_nor_freezes(): void
     {
+        $invoice = SalesInvoice::query()->create(['number' => 'INV-OLD', 'trans_date' => '2026-05-01', 'customer_id' => $this->customer->id, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $invoice->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'quantity' => 1, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 1, 'unit_price' => 150_000, 'warehouse_id' => $this->warehouse->id]);
+        $invoice->refreshTotal();
+        $this->docs->created($invoice);
+
+        $check = app(CreditCheck::class);
+        $this->assertSame(198, $check->oldestUnpaidDays($this->customer));
+        $this->assertFalse($check->needsNotice($this->customer));
+        $check->assert($this->customer, 100);
+    }
+
+    public function test_an_invoice_unpaid_past_the_freeze_days_freezes_the_customer(): void
+    {
+        app(Preferensi::class)->setMany([PreferensiKey::CreditNoticeDays->value => 120, PreferensiKey::CreditFreezeDays->value => 150]);
         $invoice = SalesInvoice::query()->create(['number' => 'INV-OLD', 'trans_date' => '2026-05-01', 'customer_id' => $this->customer->id, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
         $invoice->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'quantity' => 1, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 1, 'unit_price' => 150_000, 'warehouse_id' => $this->warehouse->id]);
         $invoice->refreshTotal();

@@ -90,12 +90,12 @@ class InventoryAdjustmentResource extends ErpResource
                             Select::make('adjustment_type')->options(['quantity' => 'Quantity', 'value' => 'Value'])->default('quantity')->required()->native(false)->live(),
                             LineItemFields::quantity()->placeholder('negative = out')->disabled(fn (Get $get) => $get('adjustment_type') === 'value')->dehydrated(),
                             LineItemFields::unit(),
-                            TextInput::make('unit_cost')->numeric()->default(0)->prefix('Rp')
+                            TextInput::make('unit_cost')->numeric()->default(0)->prefix(Format::symbol())
                                 ->disabled(fn (Get $get) => ! $seesCost || $get('adjustment_type') === 'value')->dehydrated(),
                             Select::make('warehouse_id')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false)
                                 ->default(fn () => Warehouse::default()?->id),
                             TextInput::make('memo')->maxLength(255),
-                            TextInput::make('total_cost')->label('Value change')->numeric()->default(0)->prefix('Rp')
+                            TextInput::make('total_cost')->label('Value change')->numeric()->default(0)->prefix(Format::symbol())
                                 ->visible(fn (Get $get) => $get('adjustment_type') === 'value'),
                             Select::make('adjustment_account_id')->label('Adjustment account')->options(fn () => Account::options(AccountType::CostOfSales, AccountType::Expense, AccountType::OtherExpense, AccountType::OtherIncome, AccountType::Equity))->searchable()->native(false)->placeholder('Inventory Adjustments (default)'),
                             LineItemFields::baseQuantity(),

@@ -47,7 +47,7 @@ class ListFixedAssets extends ListDocuments
 
                     Notification::make()
                         ->title("{$result['posted']} month(s) posted")
-                        ->body('Rp '.Format::number($result['amount']).' of depreciation')
+                        ->body(Format::money($result['amount']).' of depreciation')
                         ->success()
                         ->send();
 

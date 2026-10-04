@@ -79,7 +79,7 @@ class PurchaseRequisitionResource extends ErpResource
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
                             DatePicker::make('requested_date')->native(false)->displayFormat(Format::DATE_INPUT),
-                            TextInput::make('estimated_price')->numeric()->default(0)->prefix('Rp'),
+                            TextInput::make('estimated_price')->numeric()->default(0)->prefix(Format::symbol()),
                             TextInput::make('memo')->maxLength(255),
                             LineItemFields::baseQuantity(),
                         ])

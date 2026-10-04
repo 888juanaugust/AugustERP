@@ -152,7 +152,7 @@ class VendorResource extends MasterResource
                             ])
                             ->schema([
                                 DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
-                                TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix('Rp'),
+                                TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix(Format::symbol()),
                                 Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
                                 TextInput::make('number')->maxLength(60),
                                 TextInput::make('description')->maxLength(255),

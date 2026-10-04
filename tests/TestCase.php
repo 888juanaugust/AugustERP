@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Domain\Shared\Format;
 use App\Models\User;
 use App\Modules\ModuleRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -10,6 +11,12 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 abstract class TestCase extends BaseTestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Format::forgetSymbol();
+    }
 
     /** Switch every module on, so a test sees every screen whatever the defaults say. */
     protected function enableAllModules(): void

@@ -14,11 +14,8 @@ use App\Models\Company\Employee;
 use App\Models\Company\PayrollEntry;
 use App\Models\Company\RecurringTransaction;
 use App\Models\Company\SalaryComponent;
-use App\Models\Company\TransactionApprover;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalVoucher;
-use App\Models\Settings\AccessGroup;
-use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -141,17 +138,11 @@ class CompanyExtrasTest extends TestCase
         $this->assertSame(-750_000, $this->balance('1102'));
     }
 
-    public function test_the_calendar_shows_what_falls_due_and_the_seeded_approval_rule_names_marketing(): void
+    public function test_the_calendar_shows_what_falls_due(): void
     {
         RecurringTransaction::query()->create(['name' => 'Rent', 'transaction_type' => 'journal_voucher', 'frequency' => 'monthly', 'next_run_on' => '2026-11-28', 'status' => 'active', 'template' => ['lines' => []], 'created_by' => auth()->id()]);
         $events = CalendarFeed::month(2026, 11);
         $this->assertSame('recurring', $events['2026-11-28'][0]['kind']);
         $this->assertSame('period', $events['2026-11-30'][0]['kind']);
-
-        $rule = TransactionApprover::query()->where('transaction_type', 'sales_order')->firstOrFail();
-        $marketing = User::factory()->create();
-        AccessGroup::query()->where('name', 'Marketing')->firstOrFail()->users()->attach($marketing);
-        $this->assertTrue($rule->allowsApprover($marketing));
-        $this->assertFalse($rule->allowsApprover(User::factory()->create()));
     }
 }

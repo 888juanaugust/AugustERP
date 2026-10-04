@@ -167,7 +167,7 @@ class CustomerResource extends MasterResource
                             ])
                             ->schema([
                                 DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
-                                TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix('Rp'),
+                                TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix(Format::symbol()),
                                 Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
                                 TextInput::make('number')->maxLength(60),
                                 TextInput::make('description')->maxLength(255),
@@ -190,7 +190,7 @@ class CustomerResource extends MasterResource
                                 Toggle::make('credit_limit_age_enabled')->label('Block when an invoice is older than')->live()->inline(false),
                                 TextInput::make('credit_limit_age_days')->label('days')->numeric()->integer()->minValue(0)->default(0)->visible(fn (Get $get) => $get('credit_limit_age_enabled')),
                                 Toggle::make('credit_limit_amount_enabled')->label('Block when receivables and open orders exceed')->live()->inline(false),
-                                TextInput::make('credit_limit_amount')->label('amount')->prefix('Rp')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0)->visible(fn (Get $get) => $get('credit_limit_amount_enabled')),
+                                TextInput::make('credit_limit_amount')->label('amount')->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0)->visible(fn (Get $get) => $get('credit_limit_amount_enabled')),
                             ])->visible(fn (Get $get) => $get('credit_limit_mode') === 'per_customer'),
                         ]),
                         Select::make('default_warehouse_id')->label('Default warehouse')->relationship('defaultWarehouse', 'name', fn ($query) => $query->where('is_active', true))->preload()->native(false),

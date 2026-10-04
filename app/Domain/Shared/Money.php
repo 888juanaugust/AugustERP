@@ -95,10 +95,10 @@ final class Money
         return ($amount < 0 ? '-' : '').number_format(abs($amount), 0, ',', '.');
     }
 
-    /** "Rp 18.450.000". */
+    /** "Rp 18.450.000", under the base currency's symbol. */
     public static function rupiah(int $amount): string
     {
-        return ($amount < 0 ? '-Rp ' : 'Rp ').number_format(abs($amount), 0, ',', '.');
+        return Format::money($amount);
     }
 
     /** "18.450.000", "Rp 18.450.000", "18450000", "18.450.000,00" → 18450000; rounds half-up when decimals are present. */

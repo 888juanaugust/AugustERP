@@ -21,17 +21,26 @@ use RuntimeException;
 /**
  * Whether a customer may take on more credit: the limit by amount (open
  * receivables plus open orders) and the limit by age (an unpaid invoice older
- * than N days), each only when the customer has it switched on; the 150-day
- * freeze of the business rules; and the override right that lifts the amount
- * limit. Derived arithmetic every time, never stored state.
+ * than N days), each only when the customer has it switched on; the company's
+ * own notice and freeze day counts from the Business Rules (0 = off); and the
+ * override right that lifts the amount limit. Derived arithmetic every time,
+ * never stored state.
  */
 final class CreditCheck
 {
-    public const FREEZE_AFTER_DAYS = 150;
+    public function __construct(private readonly SettlementService $settlement, private readonly HakAkses $akses, private readonly Preferensi $prefs) {}
 
-    public const NOTICE_AFTER_DAYS = 120;
+    /** Days after which an unpaid invoice flags the customer; 0 when the rule is off. */
+    public function noticeDays(): int
+    {
+        return max(0, (int) $this->prefs->get(PreferensiKey::CreditNoticeDays));
+    }
 
-    public function __construct(private readonly SettlementService $settlement, private readonly HakAkses $akses) {}
+    /** Days after which an unpaid invoice freezes the customer; 0 when the rule is off. */
+    public function freezeDays(): int
+    {
+        return max(0, (int) $this->prefs->get(PreferensiKey::CreditFreezeDays));
+    }
 
     /** Open receivables (invoices and down payments, less credits) of the customer or its parent group. */
     public function exposure(Customer $customer): int
@@ -66,7 +75,7 @@ final class CreditCheck
     /** The oldest unpaid invoice's age in days, by the aging basis in Preferences. */
     public function oldestUnpaidDays(Customer $customer): int
     {
-        $basis = app(Preferensi::class)->get(PreferensiKey::AgingBasis);
+        $basis = $this->prefs->get(PreferensiKey::AgingBasis);
         $column = $basis === 'due_date' ? 'due_date' : 'trans_date';
         $oldest = SalesInvoice::query()->whereIn('customer_id', $this->groupIds($customer))->where('payment_status', '!=', 'paid')->min($column);
 
@@ -79,8 +88,9 @@ final class CreditCheck
         $limitHolder = $customer->credit_limit_mode === 'parent' && $customer->parentCustomer ? $customer->parentCustomer : $customer;
         $age = $this->oldestUnpaidDays($customer);
 
-        if ($age > self::FREEZE_AFTER_DAYS) {
-            throw new RuntimeException("{$customer->name} is frozen: an invoice has been unpaid for {$age} days (the limit is ".self::FREEZE_AFTER_DAYS.'). Settle it first.');
+        $freeze = $this->freezeDays();
+        if ($freeze > 0 && $age > $freeze) {
+            throw new RuntimeException("{$customer->name} is frozen: an invoice has been unpaid for {$age} days (the limit is {$freeze}). Settle it first.");
         }
         if ($limitHolder->credit_limit_age_enabled && $age > $limitHolder->credit_limit_age_days) {
             throw new RuntimeException("{$customer->name} has an invoice unpaid for {$age} days, over its {$limitHolder->credit_limit_age_days}-day limit.");
@@ -95,7 +105,9 @@ final class CreditCheck
 
     public function needsNotice(Customer $customer): bool
     {
-        return $this->oldestUnpaidDays($customer) > self::NOTICE_AFTER_DAYS;
+        $notice = $this->noticeDays();
+
+        return $notice > 0 && $this->oldestUnpaidDays($customer) > $notice;
     }
 
     /** @return list<int> */

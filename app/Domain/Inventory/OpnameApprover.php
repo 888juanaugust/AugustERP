@@ -7,7 +7,7 @@ namespace App\Domain\Inventory;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Audit\Auditor;
-use App\Domain\Pengaturan\Saklar;
+use App\Domain\Pengaturan\BusinessRule;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Shared\Format;
 use App\Models\Inventory\InventoryAdjustment;
@@ -36,7 +36,7 @@ final class OpnameApprover
         if (! $this->akses->allowsSpecial($approver, HakKhusus::ApproveTransactions)) {
             throw new RuntimeException('Approving a stock count takes the "approve transactions" right.');
         }
-        if (Saklar::SegregationOfDuties->isOn() && $result->created_by !== null && $result->created_by === $approver->id) {
+        if (BusinessRule::SegregationOfDuties->isOn() && $result->created_by !== null && $result->created_by === $approver->id) {
             throw new RuntimeException('Segregation of duties: the person who entered the count cannot approve it.');
         }
 

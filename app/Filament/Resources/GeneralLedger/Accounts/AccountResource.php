@@ -72,7 +72,7 @@ class AccountResource extends MasterResource
                         TextInput::make('bank_account_name')->label('Account holder')->maxLength(150),
                     ]),
                 Tab::make('Opening balance')->schema([
-                    TextInput::make('opening_amount')->label('Balance')->prefix('Rp')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()
+                    TextInput::make('opening_amount')->label('Balance')->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()
                         ->helperText('With the account\'s normal sign: a positive liability is a credit balance. Posted against Opening Balance Equity.'),
                     DatePicker::make('opening_date')->label('As of')->native(false)->displayFormat(Format::DATE_INPUT),
                 ]),

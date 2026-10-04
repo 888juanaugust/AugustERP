@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Domain\Pengaturan\Preferensi;
-use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\DocumentRepository;
 use App\Filament\Pages\Reports\BalanceSheet;
 use App\Filament\Pages\Reports\ReportCatalogue;
@@ -38,7 +36,6 @@ class ReportsScreensTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-30 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        app(Preferensi::class)->set(PreferensiKey::MarketingApprovalRequired, false);
         $docs = app(DocumentRepository::class);
         $acc = fn (string $no) => (int) Account::query()->where('no', $no)->value('id');
         $receipt = CashReceipt::query()->create(['number' => 'CR-1', 'trans_date' => '2026-11-01', 'bank_account_id' => $acc('1102'), 'payer' => 'Owner', 'created_by' => auth()->id()]);
