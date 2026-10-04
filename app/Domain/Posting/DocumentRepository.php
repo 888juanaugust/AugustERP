@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Domain\Posting;
 
 use App\Domain\Audit\Auditor;
+use App\Domain\Fulfilment\FulfilmentService;
 use App\Domain\Posting\Contracts\Postable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The write path of every document: guard, persist, post, record the
- * revision and the audit entry, all in one transaction. The Filament
- * document pages call these hooks around their own saving.
+ * The write path of every document: guard, save, post (when the document
+ * posts), refresh the documents it pulled from, record the revision and the
+ * audit entry, all in one transaction. The Filament document pages call these
+ * hooks around their own saving.
  */
 final class DocumentRepository
 {
@@ -21,53 +24,92 @@ final class DocumentRepository
         private readonly PostingService $postings,
         private readonly DocumentGuard $guard,
         private readonly Revisions $revisions,
+        private readonly FulfilmentService $fulfilment,
     ) {}
 
     /** After a new document and its lines are in the database. */
-    public function created(Postable&Model $document): void
+    public function created(Model $document): void
     {
         DB::transaction(function () use ($document): void {
             $document->refresh();
-            $this->postings->post($document);
-            $this->revisions->record($document, 'created', null, $document->snapshot());
-            Auditor::log('created', $document, $document->postingNumber(), [], $document->postingDate()->toDateString());
+            if ($document instanceof Postable) {
+                $this->postings->post($document);
+            }
+            $this->fulfilment->refreshUpstream($document);
+            $this->revisions->record($document, 'created', null, $this->snapshot($document));
+            Auditor::log('created', $document, $this->number($document), [], $this->date($document));
         });
     }
 
     /** Before an existing document is changed: the snapshot to compare against, or an exception. */
-    public function beforeUpdate(Postable&Model $document, ?CarbonInterface $newDate = null): array
+    public function beforeUpdate(Model $document, ?CarbonInterface $newDate = null): array
     {
-        $this->guard->assertMutable($document, $newDate);
+        if ($document instanceof Postable) {
+            $this->guard->assertMutable($document, $newDate);
+        }
 
-        return $document->snapshot();
+        return $this->snapshot($document) + ['sources' => $this->fulfilment->sourcesOf($document)];
     }
 
     /** After the header and lines are saved: re-post and record what changed. */
-    public function updated(Postable&Model $document, array $before): void
+    public function updated(Model $document, array $before): void
     {
         DB::transaction(function () use ($document, $before): void {
             $document->refresh();
-            $this->postings->post($document);
-            $after = $document->snapshot();
+            if ($document instanceof Postable) {
+                $this->postings->post($document);
+            }
+            $this->fulfilment->refreshUpstream($document, $before['sources'] ?? []);
+            $after = $this->snapshot($document);
+            unset($before['sources']);
             $this->revisions->record($document, 'updated', $before, $after);
-            Auditor::log('updated', $document, $document->postingNumber(), ['before' => $before['header'] ?? null, 'after' => $after['header'] ?? null], $document->postingDate()->toDateString());
+            Auditor::log('updated', $document, $this->number($document), ['before' => $before['header'] ?? null, 'after' => $after['header'] ?? null], $this->date($document));
         });
     }
 
-    public function delete(Postable&Model $document): void
+    public function delete(Model $document): void
     {
         DB::transaction(function () use ($document): void {
-            $this->guard->assertMutable($document);
-            $before = $document->snapshot();
-            $this->postings->unpost($document);
+            if ($document instanceof Postable) {
+                $this->guard->assertMutable($document);
+            } else {
+                (new Blockers\ReferencedBlocker)->blocks($document) && throw new Exceptions\DocumentLockedException("{$this->number($document)} cannot be deleted: another document has been made from it.");
+            }
+            $before = $this->snapshot($document);
+            $sources = $this->fulfilment->sourcesOf($document);
+            if ($document instanceof Postable) {
+                $this->postings->unpost($document);
+            }
             $this->revisions->record($document, 'deleted', $before, null);
-            Auditor::log('deleted', $document, $document->postingNumber(), ['before' => $before['header'] ?? null], $document->postingDate()->toDateString());
+            Auditor::log('deleted', $document, $this->number($document), ['before' => $before['header'] ?? null], $this->date($document));
             $document->delete();
+            $this->fulfilment->refreshUpstream($document, $sources);
         });
     }
 
-    public function lockReason(Postable&Model $document): ?string
+    public function lockReason(Model $document): ?string
     {
-        return $this->guard->lockReason($document);
+        return $document instanceof Postable ? $this->guard->lockReason($document) : (new Blockers\ReferencedBlocker)->blocks($document);
+    }
+
+    private function snapshot(Model $document): array
+    {
+        if ($document instanceof Postable) {
+            return $document->snapshot();
+        }
+        $header = collect($document->getAttributes())->except(['updated_at', 'created_at'])->all();
+        $lines = method_exists($document, 'lines') ? $document->lines()->get()->map(fn ($l) => $l->getAttributes())->all() : [];
+
+        return ['header' => $header, 'lines' => $lines];
+    }
+
+    private function number(Model $document): string
+    {
+        return $document instanceof Postable ? $document->postingNumber() : (string) $document->getAttribute('number');
+    }
+
+    private function date(Model $document): ?string
+    {
+        return $document->getAttribute('trans_date') ? Carbon::parse($document->getAttribute('trans_date'))->toDateString() : null;
     }
 }

@@ -5,11 +5,15 @@ namespace App\Providers;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
+use App\Domain\Fulfilment\FulfilmentService;
 use App\Domain\Inventory\Costing\Recoster;
 use App\Domain\Inventory\StockLedger;
 use App\Domain\Pengaturan\Preferensi;
+use App\Domain\Posting\Blockers\ReferencedBlocker;
+use App\Domain\Posting\Blockers\SettledBlocker;
 use App\Domain\Posting\DocumentGuard;
 use App\Domain\Posting\PostingService;
+use App\Domain\Settlement\AllocationLedger;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
 use App\Models\Company\Contact;
@@ -37,14 +41,30 @@ use App\Models\Inventory\StockOpnameOrder;
 use App\Models\Inventory\StockOpnameResult;
 use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
+use App\Models\Purchasing\GoodsReceipt;
+use App\Models\Purchasing\GoodsReceiptLine;
+use App\Models\Purchasing\PaymentOrder;
+use App\Models\Purchasing\PurchaseDownPayment;
+use App\Models\Purchasing\PurchaseInvoice;
+use App\Models\Purchasing\PurchaseInvoiceLine;
+use App\Models\Purchasing\PurchaseOrder;
+use App\Models\Purchasing\PurchaseOrderLine;
+use App\Models\Purchasing\PurchasePayment;
+use App\Models\Purchasing\PurchaseRequisition;
+use App\Models\Purchasing\PurchaseRequisitionLine;
+use App\Models\Purchasing\PurchaseReturn;
+use App\Models\Purchasing\PurchaseReturnLine;
 use App\Models\Purchasing\Vendor;
 use App\Models\Purchasing\VendorCategory;
+use App\Models\Purchasing\VendorClaim;
+use App\Models\Purchasing\VendorPrice;
 use App\Models\Sales\Customer;
 use App\Models\Sales\CustomerCategory;
 use App\Models\Sales\DiscountCategory;
 use App\Models\Sales\PriceCategory;
 use App\Models\Settings\AccessGroup;
 use App\Models\Settings\DocumentSeries;
+use App\Models\Settlement\PaymentAllocation;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -60,6 +80,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(MenuRegistry::class);
         $this->app->singleton(PostingService::class);
         $this->app->singleton(DocumentGuard::class);
+        $this->app->singleton(Recoster::class);
+        $this->app->singleton(FulfilmentService::class);
         $this->app->singleton(Recoster::class);
     }
 
@@ -106,12 +128,44 @@ class AppServiceProvider extends ServiceProvider
             'item_transfer' => ItemTransfer::class,
             'stock_opname_order' => StockOpnameOrder::class,
             'stock_opname_result' => StockOpnameResult::class,
+            'payment_allocation' => PaymentAllocation::class,
+            'purchase_requisition' => PurchaseRequisition::class,
+            'purchase_requisition_line' => PurchaseRequisitionLine::class,
+            'vendor_price' => VendorPrice::class,
+            'purchase_order' => PurchaseOrder::class,
+            'purchase_order_line' => PurchaseOrderLine::class,
+            'goods_receipt' => GoodsReceipt::class,
+            'goods_receipt_line' => GoodsReceiptLine::class,
+            'purchase_down_payment' => PurchaseDownPayment::class,
+            'purchase_invoice' => PurchaseInvoice::class,
+            'purchase_invoice_line' => PurchaseInvoiceLine::class,
+            'purchase_payment' => PurchasePayment::class,
+            'purchase_return' => PurchaseReturn::class,
+            'purchase_return_line' => PurchaseReturnLine::class,
+            'vendor_claim' => VendorClaim::class,
+            'payment_order' => PaymentOrder::class,
         ]);
 
         // The stock ledger writes the movements every posting declares.
         $postings = $this->app->make(PostingService::class);
         $postings->extend(fn ($posting, $builder) => $this->app->make(StockLedger::class)->write($posting, $builder));
         $postings->onUnpost(fn ($posting) => $this->app->make(StockLedger::class)->unwrite($posting));
+
+        // The settlement ledger writes what each payment applied to which invoice.
+        $postings->extend(fn ($posting, $builder) => $this->app->make(AllocationLedger::class)->write($posting, $builder));
+        $postings->onUnpost(fn ($posting) => $this->app->make(AllocationLedger::class)->unwrite($posting));
+
+        // What keeps a document from changing: payments applied to it, documents made from it.
+        $guard = $this->app->make(DocumentGuard::class);
+        $guard->addBlocker($this->app->make(SettledBlocker::class));
+        $guard->addBlocker($this->app->make(ReferencedBlocker::class));
+
+        // Who pulls lines from whom, so processed quantities and statuses follow.
+        $fulfilment = $this->app->make(FulfilmentService::class);
+        $fulfilment->register(PurchaseRequisitionLine::class, PurchaseOrderLine::class);
+        $fulfilment->register(PurchaseOrderLine::class, GoodsReceiptLine::class);
+        $fulfilment->register(PurchaseOrderLine::class, PurchaseInvoiceLine::class);
+        $fulfilment->register(GoodsReceiptLine::class, PurchaseInvoiceLine::class);
 
         // Every ability on a model resolves through the access matrix: the
         // model's screen (MenuRegistry) and the right the ability maps to.

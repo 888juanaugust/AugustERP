@@ -41,6 +41,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
 /** Stock Opname Results: the count against the system; approval by someone else posts the variance. */
 class StockOpnameResultResource extends ErpResource
@@ -89,9 +90,9 @@ class StockOpnameResultResource extends ErpResource
                                     continue;
                                 }
                                 $system = ItemCost::query()->where('item_id', $item->id)->where('warehouse_id', $order->warehouse_id)->value('qty_on_hand') ?? '0';
-                                $lines[] = ['item_id' => $item->id, 'counted_qty' => (string) $system, 'unit_id' => $item->unit1_id, 'base_quantity' => (string) $system, 'system_qty' => (string) $system];
+                                $lines[(string) Str::uuid()] = ['item_id' => $item->id, 'counted_qty' => (string) $system, 'unit_id' => $item->unit1_id, 'base_quantity' => (string) $system, 'system_qty' => (string) $system];
                             }
-                            $set('lines', array_values($lines));
+                            $set('lines', array_filter($lines, fn ($l) => ! empty($l['item_id'])));
                         }),
                     Repeater::make('lines')
                         ->hiddenLabel()

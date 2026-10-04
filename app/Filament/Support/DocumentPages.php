@@ -10,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -40,6 +41,20 @@ final class DocumentPages
     public static function afterUpdated(Model $record, array $before): void
     {
         app(DocumentRepository::class)->updated($record, $before);
+    }
+
+    /**
+     * Repeater items are keyed; a relationship repeater also reloads from the
+     * record on fill, so prefilled lines go straight into the page state.
+     */
+    public static function keyedRows(array $rows): array
+    {
+        $keyed = [];
+        foreach ($rows as $row) {
+            $keyed[(string) Str::uuid()] = $row;
+        }
+
+        return $keyed;
     }
 
     public static function deleteAction(): DeleteAction
