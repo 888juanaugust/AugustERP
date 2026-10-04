@@ -439,9 +439,12 @@
 
 .fi-fo-table-repeater {
     overflow-x: auto;
+    min-width: 0;
+    max-width: 100%;
 }
 
-.fi-fo-table-repeater table {
+/* The grid keeps a working width and scrolls inside its card. */
+.fi-fo-table-repeater > table {
     min-width: 1280px;
 }
 
@@ -457,6 +460,19 @@
 .fi-fo-table-repeater .fi-select-input,
 .fi-fo-table-repeater .fi-input {
     min-width: 6.5rem;
+}
+
+/* A select cell never wraps its chosen option: the cell grows instead. */
+.fi-fo-table-repeater td:has(.fi-select-input),
+.fi-fo-table-repeater td:has(.choices) {
+    min-width: 11rem;
+    white-space: nowrap;
+}
+
+.fi-fo-table-repeater .choices__list--single .choices__item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .fi-fo-table-repeater td:first-child .fi-select-input {
