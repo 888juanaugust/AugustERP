@@ -8,12 +8,25 @@ use App\Domain\Access\MenuRegistry;
 use App\Domain\Pengaturan\Preferensi;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
+use App\Models\Company\Contact;
 use App\Models\Company\Currency;
+use App\Models\Company\Employee;
 use App\Models\Company\Fob;
 use App\Models\Company\PaymentTerm;
 use App\Models\Company\Shipment;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
+use App\Models\Inventory\Item;
+use App\Models\Inventory\ItemBrand;
+use App\Models\Inventory\ItemCategory;
+use App\Models\Inventory\Unit;
+use App\Models\Inventory\Warehouse;
+use App\Models\Purchasing\Vendor;
+use App\Models\Purchasing\VendorCategory;
+use App\Models\Sales\Customer;
+use App\Models\Sales\CustomerCategory;
+use App\Models\Sales\DiscountCategory;
+use App\Models\Sales\PriceCategory;
 use App\Models\Settings\AccessGroup;
 use App\Models\Settings\DocumentSeries;
 use App\Models\User;
@@ -49,6 +62,19 @@ class AppServiceProvider extends ServiceProvider
             'shipment' => Shipment::class,
             'fob' => Fob::class,
             'audit_log' => AuditLog::class,
+            'customer' => Customer::class,
+            'customer_category' => CustomerCategory::class,
+            'price_category' => PriceCategory::class,
+            'discount_category' => DiscountCategory::class,
+            'vendor' => Vendor::class,
+            'vendor_category' => VendorCategory::class,
+            'employee' => Employee::class,
+            'contact' => Contact::class,
+            'item' => Item::class,
+            'item_category' => ItemCategory::class,
+            'item_brand' => ItemBrand::class,
+            'unit' => Unit::class,
+            'warehouse' => Warehouse::class,
         ]);
 
         // Every ability on a model resolves through the access matrix: the

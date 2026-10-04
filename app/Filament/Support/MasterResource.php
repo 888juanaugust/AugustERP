@@ -79,6 +79,6 @@ abstract class MasterResource extends ErpResource
 
         return $query->where(fn ($q) => $q
             ->where('used_all_user', true)
-            ->orWhereHas($relationship, fn ($u) => $u->whereKey($user->id)));
+            ->orWhereHas($relationship, fn ($query) => $query->whereKey($user->id)));
     }
 }

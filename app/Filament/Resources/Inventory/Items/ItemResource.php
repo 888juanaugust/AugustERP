@@ -1,0 +1,250 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\Inventory\Items;
+
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
+use App\Domain\Access\MenuKey;
+use App\Domain\Numbering\TransactionType;
+use App\Domain\Shared\Enums\AccountType;
+use App\Domain\Shared\Enums\ItemType;
+use App\Domain\Shared\Format;
+use App\Filament\Resources\Inventory\Items\Pages\CreateItem;
+use App\Filament\Resources\Inventory\Items\Pages\EditItem;
+use App\Filament\Resources\Inventory\Items\Pages\ListItems;
+use App\Filament\Support\Columns\Rupiah;
+use App\Filament\Support\MasterResource;
+use App\Filament\Support\NumberFields;
+use App\Models\Company\TaxCode;
+use App\Models\GeneralLedger\Account;
+use App\Models\Inventory\Item;
+use App\Models\Inventory\ItemCategory;
+use App\Models\Inventory\Unit;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Support\RawJs;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+
+/** The Items & Services screen: the reference system's tabs, with units, prices per level and opening stock. */
+class ItemResource extends MasterResource
+{
+    protected static ?string $model = Item::class;
+
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
+
+    protected static ?string $modelLabel = 'Item';
+
+    public static function menuKey(): MenuKey
+    {
+        return MenuKey::ItemsAndServices;
+    }
+
+    private static function money(string $name, string $label): TextInput
+    {
+        return TextInput::make($name)->label($label)->prefix('Rp')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0);
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make('Item')
+                ->columns(3)
+                ->schema([
+                    TextInput::make('name')->label('Item name')->required()->maxLength(200)->columnSpan(2),
+                    NumberFields::make(TransactionType::Item, 'Item code'),
+                    Select::make('item_type')->label('Item type')->options(ItemType::class)->default(ItemType::Inventory)->required()->native(false)->live(),
+                    TextInput::make('upc_no')->label('UPC / barcode')->maxLength(50),
+                    Select::make('unit1_id')->label('Base unit')->relationship('unit1', 'name')->preload()->required()->native(false)
+                        ->default(fn () => Unit::query()->where('name', 'PCS')->value('id')),
+                    Select::make('brand_id')->label('Brand')->relationship('brand', 'name')->preload()->searchable()->native(false),
+                    Select::make('category_id')->label('Category')->relationship('category', 'name')->preload()->searchable()->native(false)
+                        ->default(fn () => ItemCategory::query()->where('is_default', true)->value('id')),
+                    self::activeToggle()->inline(false),
+                ]),
+            Tabs::make('item')
+                ->persistTabInQueryString()
+                ->tabs([
+                    Tab::make('Sales / Purchasing')->schema([
+                        Grid::make(3)->schema([
+                            TextInput::make('default_discount')->label('Default discount (%)')->numeric()->minValue(0)->maxValue(100)->default(0),
+                            self::money('sell_price', 'Selling price per base unit'),
+                            TextInput::make('min_sell_qty')->label('Minimum sale quantity')->numeric()->minValue(0)->default(0),
+                            Toggle::make('use_wholesale_price')->label('Apply wholesale price / discount')->inline(false),
+                            Select::make('substitute_item_id')->label('Substitute item')
+                                ->relationship('substitute', 'name', fn ($query, ?Item $record) => $query->when($record, fn ($query) => $query->whereKeyNot($record->getKey())))
+                                ->searchable()->native(false)->columnSpan(2),
+                            Select::make('preferred_vendor_id')->label('Preferred vendor')->relationship('preferredVendor', 'name', fn ($query) => $query->where('is_active', true))->searchable()->preload()->native(false),
+                            Select::make('vendor_unit_id')->label('Purchase unit')->relationship('vendorUnit', 'name')->preload()->native(false),
+                            self::money('purchase_price', 'Purchase price'),
+                            TextInput::make('min_purchase_qty')->label('Minimum purchase quantity')->numeric()->minValue(0)->default(0),
+                            TextInput::make('min_stock')->label('Minimum stock')->numeric()->minValue(0)->default(0),
+                        ]),
+                        Fieldset::make('Tax')->columns(3)->schema([
+                            TextInput::make('item_tax_code')->label('e-Tax goods code')->maxLength(20)->placeholder('e.g. 110000'),
+                            Select::make('tax1_id')->label('VAT')->relationship('tax1', 'description', fn ($query) => $query->where('is_active', true))->preload()->native(false)
+                                ->default(fn () => TaxCode::default()?->id),
+                            Select::make('tax3_id')->label('Withholding tax')->relationship('tax3', 'description', fn ($query) => $query->where('is_active', true))->preload()->native(false),
+                        ]),
+                    ]),
+                    Tab::make('Units')->schema([
+                        Repeater::make('units')
+                            ->label('Other units')
+                            ->helperText('The base unit counts as 1; a carton of 12 pieces has ratio 12.')
+                            ->relationship()
+                            ->orderColumn('sort')
+                            ->table([
+                                TableColumn::make('Unit'),
+                                TableColumn::make('Contains (base units)'),
+                                TableColumn::make('Selling price'),
+                            ])
+                            ->schema([
+                                Select::make('unit_id')->relationship('unit', 'name')->required()->native(false)->distinct(),
+                                TextInput::make('ratio')->numeric()->minValue(0.000001)->required()->default(1),
+                                self::money('sell_price', 'Selling price'),
+                            ])
+                            ->addActionLabel('Add unit')
+                            ->defaultItems(0),
+                    ]),
+                    Tab::make('Prices')->schema([
+                        Repeater::make('prices')
+                            ->label('Selling price per price category')
+                            ->relationship()
+                            ->orderColumn('sort')
+                            ->table([
+                                TableColumn::make('Price category'),
+                                TableColumn::make('Unit'),
+                                TableColumn::make('Price'),
+                            ])
+                            ->schema([
+                                Select::make('price_category_id')->relationship('priceCategory', 'name')->required()->native(false),
+                                Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder('Base unit'),
+                                self::money('price', 'Price'),
+                            ])
+                            ->addActionLabel('Add price')
+                            ->defaultItems(0),
+                    ]),
+                    Tab::make('Stock')
+                        ->visible(fn (Get $get) => ($get('item_type') ?? ItemType::Inventory->value) === ItemType::Inventory->value || $get('item_type') === ItemType::Inventory)
+                        ->schema([
+                            Repeater::make('openingStocks')
+                                ->label('Opening stock at the data start date')
+                                ->helperText('Posted as the opening adjustment by the inventory module; after that, stock moves only through documents.')
+                                ->relationship()
+                                ->orderColumn('sort')
+                                ->table([
+                                    TableColumn::make('Date'),
+                                    TableColumn::make('Quantity'),
+                                    TableColumn::make('Unit'),
+                                    TableColumn::make('Unit cost'),
+                                    TableColumn::make('Warehouse'),
+                                ])
+                                ->schema([
+                                    DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
+                                    TextInput::make('quantity')->numeric()->required(),
+                                    Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder('Base unit'),
+                                    TextInput::make('unit_cost')->numeric()->prefix('Rp')->default(0)
+                                        ->disabled(fn () => ! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost))->dehydrated(),
+                                    Select::make('warehouse_id')->relationship('warehouse', 'name', fn ($query) => $query->where('is_active', true))->required()->native(false),
+                                ])
+                                ->addActionLabel('Add opening stock')
+                                ->defaultItems(0),
+                        ]),
+                    Tab::make('Components')
+                        ->visible(fn (Get $get) => $get('item_type') === ItemType::Group->value || $get('item_type') === ItemType::Group)
+                        ->schema([
+                            Repeater::make('components')
+                                ->label('Items in this group')
+                                ->relationship()
+                                ->orderColumn('sort')
+                                ->table([
+                                    TableColumn::make('Item'),
+                                    TableColumn::make('Quantity'),
+                                    TableColumn::make('Unit'),
+                                ])
+                                ->schema([
+                                    Select::make('item_id')->relationship('item', 'name', fn ($query) => $query->where('item_type', '!=', ItemType::Group->value))->searchable()->required()->native(false),
+                                    TextInput::make('quantity')->numeric()->required()->default(1),
+                                    Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder('Base unit'),
+                                ])
+                                ->addActionLabel('Add component')
+                                ->defaultItems(0),
+                        ]),
+                    Tab::make('Accounts')->schema([
+                        Grid::make(2)->schema([
+                            Select::make('inventory_account_id')->label('Inventory')->options(fn () => Account::options(AccountType::Inventory))->searchable()->native(false)->placeholder("The category's"),
+                            Select::make('sales_account_id')->label('Sales')->options(fn () => Account::options(AccountType::Revenue))->searchable()->native(false)->placeholder("The category's"),
+                            Select::make('cogs_account_id')->label('Cost of goods sold')->options(fn () => Account::options(AccountType::CostOfSales))->searchable()->native(false)->placeholder("The category's"),
+                            Select::make('sales_return_account_id')->label('Sales returns')->options(fn () => Account::options(AccountType::Revenue))->searchable()->native(false)->placeholder("The category's"),
+                            Select::make('purchase_return_account_id')->label('Purchase returns')->options(fn () => Account::options(AccountType::Inventory, AccountType::CostOfSales))->searchable()->native(false)->placeholder("The category's"),
+                        ]),
+                    ]),
+                    Tab::make('Other')->schema([
+                        Select::make('branch_id')->label('Used in branch')->relationship('branch', 'name')->preload()->native(false),
+                        Textarea::make('notes')->label(__('fields.memo'))->rows(2),
+                        Grid::make(4)->schema([
+                            TextInput::make('length_cm')->label('Length (cm)')->numeric()->minValue(0),
+                            TextInput::make('width_cm')->label('Width (cm)')->numeric()->minValue(0),
+                            TextInput::make('height_cm')->label('Height (cm)')->numeric()->minValue(0),
+                            TextInput::make('weight_gr')->label('Weight (g)')->numeric()->minValue(0),
+                        ]),
+                    ]),
+                ]),
+        ])->columns(1);
+    }
+
+    public static function table(Table $table): Table
+    {
+        $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
+
+        return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['unit1', 'brand', 'category']))
+            ->columns([
+                TextColumn::make('number')->label('Item code')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('item_type')->label('Type')->badge()->color('gray'),
+                TextColumn::make('unit1.name')->label(__('fields.unit')),
+                TextColumn::make('name')->label('Item name')->searchable()->sortable()->weight('medium')->wrap(),
+                TextColumn::make('brand.name')->label('Brand')->placeholder('—'),
+                TextColumn::make('category.name')->label('Category')->placeholder('—')->toggleable(),
+                TextColumn::make('stock')->label('Available stock')->state(fn () => Format::quantity(0))->alignEnd()->tooltip('Stock arrives with the inventory module.'),
+                Rupiah::make('purchase_price')->label('Purchase price')->visible($seesCost),
+                Rupiah::make('sell_price')->label('Selling price'),
+                TextColumn::make('min_stock')->label('Minimum stock')->state(fn (Item $r) => Format::quantity($r->min_stock))->alignEnd(),
+            ])
+            ->defaultSort('number')
+            ->filters([
+                self::activeFilter(),
+                SelectFilter::make('item_type')->label('Item type')->options(ItemType::class)->multiple(),
+                SelectFilter::make('category_id')->label('Category')->relationship('category', 'name'),
+                SelectFilter::make('brand_id')->label('Brand')->relationship('brand', 'name'),
+            ])
+            ->recordActions([EditAction::make(), DeleteAction::make()]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListItems::route('/'),
+            'create' => CreateItem::route('/create'),
+            'edit' => EditItem::route('/{record}/edit'),
+        ];
+    }
+}
