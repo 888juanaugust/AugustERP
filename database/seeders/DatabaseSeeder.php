@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Modules\ModuleRegistry;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -20,8 +21,12 @@ class DatabaseSeeder extends Seeder
             DocumentSeriesSeeder::class,
             AccessGroupSeeder::class,
             MasterDataSeeder::class,
-            FixedAssetSeeder::class,
             CompanyExtrasSeeder::class,
         ]);
+
+        // Each module that is switched on brings its own defaults.
+        foreach (app(ModuleRegistry::class)->enabled() as $module) {
+            $this->call($module::defaultSeeders());
+        }
     }
 }

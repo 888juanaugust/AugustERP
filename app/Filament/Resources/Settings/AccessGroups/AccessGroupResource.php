@@ -13,6 +13,7 @@ use App\Filament\Resources\Settings\AccessGroups\Pages\EditAccessGroup;
 use App\Filament\Resources\Settings\AccessGroups\Pages\ListAccessGroups;
 use App\Filament\Support\ErpResource;
 use App\Models\Settings\AccessGroup;
+use App\Modules\ModuleRegistry;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
@@ -93,9 +94,14 @@ class AccessGroupResource extends ErpResource
     {
         $options = collect(Hak::cases())->mapWithKeys(fn (Hak $h) => [$h->value => $h->label()])->all();
 
-        return array_map(function (Modul $modul) use ($options) {
-            $screens = array_filter(MenuKey::cases(), fn (MenuKey $k) => $k->modul() === $modul && $k->isReplicated());
+        $modules = app(ModuleRegistry::class);
+
+        return array_values(array_filter(array_map(function (Modul $modul) use ($options, $modules) {
+            $screens = array_filter(MenuKey::cases(), fn (MenuKey $k) => $k->modul() === $modul && $k->isReplicated() && $modules->menuKeyEnabled($k));
             usort($screens, fn (MenuKey $a, MenuKey $b) => $a->sort() <=> $b->sort());
+            if ($screens === []) {
+                return null;
+            }
 
             return Section::make($modul->getLabel())
                 ->collapsible()
@@ -108,7 +114,7 @@ class AccessGroupResource extends ErpResource
                         ->bulkToggleable(),
                     array_values($screens),
                 ));
-        }, Modul::cases());
+        }, Modul::cases())));
     }
 
     public static function table(Table $table): Table
