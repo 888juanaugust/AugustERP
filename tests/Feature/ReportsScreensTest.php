@@ -10,15 +10,11 @@ use App\Filament\Pages\Reports\SalesByCustomer;
 use App\Filament\Pages\Reports\StockCard;
 use App\Filament\Pages\Reports\VatReturn;
 use App\Models\CashBank\CashReceipt;
-use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
-use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
-use App\Models\Sales\Customer;
-use App\Models\Sales\PriceCategory;
 use App\Models\Sales\SalesInvoice;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
@@ -42,8 +38,8 @@ class ReportsScreensTest extends TestCase
         $receipt->lines()->create(['sort' => 0, 'account_id' => $acc('3100'), 'amount' => 50_000_000]);
         $receipt->refreshTotal();
         $docs->created($receipt);
-        $customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
-        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000]);
+        $customer = $this->sampleCustomer();
+        $this->item = $this->sampleItem();
         $opening = InventoryAdjustment::query()->create(['number' => 'ADJ-OPEN', 'trans_date' => '2026-11-02', 'created_by' => auth()->id()]);
         $opening->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'adjustment_type' => 'quantity', 'quantity' => 20, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 20, 'unit_cost' => 100_000, 'total_cost' => 0, 'warehouse_id' => Warehouse::default()->id]);
         $docs->created($opening);
@@ -73,7 +69,7 @@ class ReportsScreensTest extends TestCase
 
         Livewire::test(SalesByCustomer::class)
             ->set('filters.from', '2026-11-01')->set('filters.until', '2026-11-30')
-            ->assertSee('Bengkel Maju')->assertSee('1.500.000')->assertSee('165.000');
+            ->assertSee('Acme Trading')->assertSee('1.500.000')->assertSee('165.000');
 
         Livewire::test(StockCard::class)
             ->set('filters.from', '2026-11-01')->set('filters.until', '2026-11-30')

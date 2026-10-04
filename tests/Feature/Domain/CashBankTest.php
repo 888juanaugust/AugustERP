@@ -13,16 +13,11 @@ use App\Models\CashBank\BankTransfer;
 use App\Models\CashBank\CashPayment;
 use App\Models\CashBank\CashReceipt;
 use App\Models\CashBank\Giro;
-use App\Models\Company\PaymentTerm;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalLine;
 use App\Models\GeneralLedger\Posting;
 use App\Models\Inventory\InventoryAdjustment;
-use App\Models\Inventory\Item;
-use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
-use App\Models\Sales\Customer;
-use App\Models\Sales\PriceCategory;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesReceipt;
 use Carbon\CarbonImmutable;
@@ -167,8 +162,8 @@ class CashBankTest extends TestCase
 
     public function test_a_giro_received_waits_in_giros_receivable_until_it_clears_and_bounces_back_to_the_invoice(): void
     {
-        $customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
-        $item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000]);
+        $customer = $this->sampleCustomer();
+        $item = $this->sampleItem();
         $opening = InventoryAdjustment::query()->create(['number' => 'ADJ-OPEN', 'trans_date' => '2026-10-01', 'created_by' => auth()->id()]);
         $opening->lines()->create(['sort' => 0, 'item_id' => $item->id, 'adjustment_type' => 'quantity', 'quantity' => 20, 'unit_id' => $item->unit1_id, 'base_quantity' => 20, 'unit_cost' => 100_000, 'total_cost' => 0, 'warehouse_id' => Warehouse::default()->id]);
         $this->docs->created($opening);

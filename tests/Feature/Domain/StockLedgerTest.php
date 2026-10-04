@@ -43,7 +43,7 @@ class StockLedgerTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'purchase_price' => 50_000]);
+        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Widget', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'purchase_price' => 50_000]);
         $this->main = Warehouse::default();
         $this->branch = Warehouse::query()->create(['name' => 'Branch B']);
     }
@@ -135,7 +135,7 @@ class StockLedgerTest extends TestCase
             app(DocumentRepository::class)->delete($first);
             $this->fail('deleting the only receipt would leave the issue without stock');
         } catch (NegativeStockException $e) {
-            $this->assertStringContainsString('Brake pad', $e->getMessage());
+            $this->assertStringContainsString('Widget', $e->getMessage());
         }
         $this->assertSame('5.0000', $this->cache()->qty_on_hand, 'nothing changed');
     }
@@ -210,10 +210,9 @@ class StockLedgerTest extends TestCase
         $this->adjust('2026-11-01', [[10, 50_000, null]]);
         $counter = User::factory()->create();
         $approver = User::factory()->create();
-        AccessGroup::query()->where('name', 'Inventory')->firstOrFail()->users()->attach([$counter->id, $approver->id]);
-        AccessGroup::query()->where('name', 'Marketing')->firstOrFail()->users()->attach([$counter->id, $approver->id]); // carries "approve transactions"
+        AccessGroup::query()->where('name', 'Warehouse')->firstOrFail()->users()->attach([$counter->id, $approver->id]); // carries "approve transactions"
 
-        $order = StockOpnameOrder::query()->create(['number' => 'SOO-1', 'trans_date' => '2026-11-09', 'start_date' => '2026-11-10', 'person_charged' => 'Budi', 'warehouse_id' => $this->main->id, 'created_by' => $counter->id]);
+        $order = StockOpnameOrder::query()->create(['number' => 'SOO-1', 'trans_date' => '2026-11-09', 'start_date' => '2026-11-10', 'person_charged' => 'Alex Doe', 'warehouse_id' => $this->main->id, 'created_by' => $counter->id]);
         $result = StockOpnameResult::query()->create(['number' => 'SOR-1', 'trans_date' => '2026-11-10', 'stock_opname_order_id' => $order->id, 'created_by' => $counter->id]);
         $result->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'counted_qty' => 8, 'base_quantity' => 8]);
         app(OpnameApprover::class)->snapshotSystemQuantities($result->fresh()->load('order', 'lines'));

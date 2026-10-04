@@ -7,7 +7,6 @@ use App\Domain\Posting\AccountBalances;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Posting\Exceptions\DocumentLockedException;
 use App\Domain\Settlement\SettlementService;
-use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
@@ -45,8 +44,8 @@ class PurchaseChainTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        $this->vendor = Vendor::query()->create(['number' => 'V-00001', 'name' => 'PT Sumber Part', 'branch_id' => Branch::default()->id]);
-        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id')]);
+        $this->vendor = $this->sampleVendor();
+        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Widget', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id')]);
         $this->warehouse = Warehouse::default();
         $this->vat = TaxCode::default();
         $this->docs = app(DocumentRepository::class);

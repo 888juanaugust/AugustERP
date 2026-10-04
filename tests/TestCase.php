@@ -5,17 +5,26 @@ namespace Tests;
 use App\Domain\Shared\Format;
 use App\Models\User;
 use App\Modules\ModuleRegistry;
+use Database\Seeders\Demo\DemoCompanySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Tests\Support\Fixtures;
 
 abstract class TestCase extends BaseTestCase
 {
+    use Fixtures;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
         Format::forgetSymbol();
+    }
+
+    /** The demo company on top of the defaults: brands, categories, customers, vendors, items with opening stock. */
+    protected function seedDemo(): void
+    {
+        $this->seed(DemoCompanySeeder::class);
     }
 
     /** Switch every module on, so a test sees every screen whatever the defaults say. */

@@ -9,7 +9,7 @@ use App\Domain\Access\MenuKey;
 use App\Models\Company\TaxCode;
 use App\Models\Settings\AccessGroup;
 use App\Models\User;
-use Database\Seeders\AccessGroupSeeder;
+use Database\Seeders\Defaults\AccessGroupSeeder;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
 
@@ -87,9 +87,10 @@ class HakAksesTest extends TestCase
         $this->assertEqualsCanonicalizing(['see_cost', 'export_data'], $target->specialRights()->pluck('right')->all());
     }
 
-    public function test_the_seeded_groups_reproduce_the_role_table(): void
+    public function test_the_seeded_groups_divide_the_work_the_way_a_trading_company_does(): void
     {
         $this->seed(AccessGroupSeeder::class);
+        $this->assertEqualsCanonicalizing(AccessGroupSeeder::GROUPS, AccessGroup::query()->pluck('name')->all());
         $akses = app(HakAkses::class);
         $member = function (string $group): User {
             $user = User::factory()->create();
@@ -100,24 +101,42 @@ class HakAksesTest extends TestCase
 
         $sales = $member('Sales');
         $this->assertTrue($akses->allows($sales, MenuKey::SalesOrders, Hak::Create));
-        $this->assertFalse($akses->allows($sales, MenuKey::SalesReceipts, Hak::Create), 'sales cannot confirm payment');
-        $this->assertFalse($akses->allowsSpecial($sales, HakKhusus::SeeCost), 'sales cannot see cost');
-        $this->assertFalse($akses->allowsSpecial($sales, HakKhusus::ApproveTransactions), 'sales cannot approve credit');
+        $this->assertTrue($akses->allows($sales, MenuKey::Customers, Hak::Update));
+        $this->assertFalse($akses->allows($sales, MenuKey::SalesReceipts, Hak::Create), 'sales does not record money');
+        $this->assertFalse($akses->allowsSpecial($sales, HakKhusus::SeeCost), 'sales does not see cost');
+        $this->assertFalse($akses->allowsSpecial($sales, HakKhusus::ApproveTransactions), 'sales does not approve its own orders');
 
         $finance = $member('Finance');
         $this->assertTrue($akses->allows($finance, MenuKey::SalesReceipts, Hak::Create));
+        $this->assertTrue($akses->allows($finance, MenuKey::BankReconciliation, Hak::Update));
+        $this->assertTrue($akses->allowsSpecial($finance, HakKhusus::ApproveTransactions));
+        $this->assertTrue($akses->allowsSpecial($finance, HakKhusus::SeeCreditData));
         $this->assertFalse($akses->allows($finance, MenuKey::PriceAndDiscountAdjustments, Hak::Create), 'finance does not set prices');
+        $this->assertFalse($akses->allows($finance, MenuKey::SalesOrders, Hak::Create), 'finance reads orders, does not enter them');
 
-        $inventory = $member('Inventory');
-        $this->assertTrue($akses->allows($inventory, MenuKey::ItemsAndServices, Hak::Update));
-        $this->assertFalse($akses->allowsSpecial($inventory, HakKhusus::SeeCreditData));
+        $accounting = $member('Accounting');
+        $this->assertTrue($akses->allows($accounting, MenuKey::JournalVouchers, Hak::Create));
+        $this->assertTrue($akses->allows($accounting, MenuKey::FixedAssets, Hak::Create));
+        $this->assertTrue($akses->allowsSpecial($accounting, HakKhusus::OpenClosedPeriod));
+        $this->assertFalse($akses->allows($accounting, MenuKey::SalesInvoices, Hak::Create), 'accounting reads the trade documents');
+        $this->assertFalse($akses->allowsSpecial($accounting, HakKhusus::SeeCreditData));
+
+        $purchasing = $member('Purchasing');
+        $this->assertTrue($akses->allows($purchasing, MenuKey::PurchaseOrders, Hak::Create));
+        $this->assertTrue($akses->allowsSpecial($purchasing, HakKhusus::SeeCost));
+        $this->assertFalse($akses->allows($purchasing, MenuKey::GoodsReceipts, Hak::Create), 'the warehouse receives the goods');
+        $this->assertFalse($akses->allows($purchasing, MenuKey::PurchasePayments, Hak::Create), 'finance pays');
 
         $warehouse = $member('Warehouse');
         $this->assertTrue($akses->allows($warehouse, MenuKey::DeliveryOrders, Hak::Update));
-        $this->assertFalse($akses->allows($warehouse, MenuKey::ItemsAndServices, Hak::Update), 'warehouse does not edit the catalogue');
+        $this->assertTrue($akses->allows($warehouse, MenuKey::GoodsReceipts, Hak::Create));
+        $this->assertTrue($akses->allows($warehouse, MenuKey::ItemsAndServices, Hak::Update));
+        $this->assertTrue($akses->allowsSpecial($warehouse, HakKhusus::ApproveTransactions), 'approves stock counts');
+        $this->assertFalse($akses->allows($warehouse, MenuKey::SalesOrders, Hak::Create));
+        $this->assertFalse($akses->allowsSpecial($warehouse, HakKhusus::SeeCreditData));
 
-        $marketing = $member('Marketing');
-        $this->assertTrue($akses->allowsSpecial($marketing, HakKhusus::ApproveTransactions));
-        $this->assertFalse($akses->allows($marketing, MenuKey::SalesReceipts, Hak::Create));
+        $operator = $member('Administrator');
+        $this->assertTrue($akses->allows($operator, MenuKey::Preferences, Hak::Update));
+        $this->assertTrue($akses->allowsSpecial($operator, HakKhusus::DeletePostedTransactions));
     }
 }

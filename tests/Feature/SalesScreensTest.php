@@ -12,17 +12,14 @@ use App\Filament\Resources\Sales\SalesInvoices\Pages\CreateSalesInvoice;
 use App\Filament\Resources\Sales\SalesOrders\Pages\CreateSalesOrder;
 use App\Filament\Resources\Sales\SalesOrders\Pages\ListSalesOrders;
 use App\Filament\Resources\Sales\SalesReceipts\Pages\CreateSalesReceipt;
-use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
 use App\Models\Company\TransactionApprover;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
-use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Customer;
 use App\Models\Sales\Delivery;
-use App\Models\Sales\PriceCategory;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesOrder;
 use App\Models\Sales\SalesReceipt;
@@ -45,8 +42,8 @@ class SalesScreensTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        $this->customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
-        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000, 'tax1_id' => TaxCode::default()->id]);
+        $this->customer = $this->sampleCustomer();
+        $this->item = $this->sampleItem(['tax1_id' => TaxCode::default()->id]);
 
         $opening = InventoryAdjustment::query()->create(['number' => 'ADJ-OPEN', 'trans_date' => '2026-10-01', 'created_by' => auth()->id()]);
         $opening->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'adjustment_type' => 'quantity', 'quantity' => 20, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 20, 'unit_cost' => 100_000, 'total_cost' => 0, 'warehouse_id' => Warehouse::default()->id]);

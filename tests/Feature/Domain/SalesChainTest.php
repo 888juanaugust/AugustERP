@@ -10,7 +10,6 @@ use App\Domain\Posting\DocumentRepository;
 use App\Domain\Sales\CreditCheck;
 use App\Domain\Sales\OrderApproval;
 use App\Domain\Sales\PriceResolver;
-use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
 use App\Models\Company\TransactionApprover;
 use App\Models\GeneralLedger\Account;
@@ -52,8 +51,8 @@ class SalesChainTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        $this->customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
-        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000]);
+        $this->customer = $this->sampleCustomer();
+        $this->item = $this->sampleItem();
         $this->warehouse = Warehouse::default();
         $this->vat = TaxCode::default();
         $this->docs = app(DocumentRepository::class);

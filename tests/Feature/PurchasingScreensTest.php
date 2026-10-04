@@ -9,7 +9,6 @@ use App\Filament\Resources\Purchasing\PurchaseInvoices\Pages\CreatePurchaseInvoi
 use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\CreatePurchaseOrder;
 use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\ListPurchaseOrders;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\CreatePurchasePayment;
-use App\Models\Company\Branch;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\Item;
@@ -38,8 +37,8 @@ class PurchasingScreensTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        $this->vendor = Vendor::query()->create(['number' => 'V-00001', 'name' => 'PT Sumber Part', 'branch_id' => Branch::default()->id, 'default_inc_tax' => false]);
-        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'purchase_price' => 100_000, 'tax1_id' => TaxCode::default()->id]);
+        $this->vendor = $this->sampleVendor(['default_inc_tax' => false]);
+        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Widget', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'purchase_price' => 100_000, 'tax1_id' => TaxCode::default()->id]);
     }
 
     public function test_the_chain_runs_through_the_screens(): void
