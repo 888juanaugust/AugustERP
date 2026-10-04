@@ -15,12 +15,12 @@ Modul sistem referensi `setting`, 8 layar. Dibangkitkan; sunting `_catatan.json`
 - [Penomoran](#penomoran)
 - [Desain Cetakan](#desain-cetakan)
 - [Penyetuju Transaksi](#penyetuju-transaksi)
-- [Accurate Store](#accurate-store)
-- [Accurate Capital](#accurate-capital)
+- [Add-on store (vendor service)](#add-on-store-vendor-service)
+- [Financing program (vendor service)](#financing-program-vendor-service)
 
 ## Preferensi
 
-Rute di sistem referensi: `#accurate__company__preferences` · Jenis: preferensi
+Rute di sistem referensi: `company__preferences` · Jenis: preferensi
 
 ### Daftar
 
@@ -178,7 +178,7 @@ Rute di sistem referensi: `#accurate__company__preferences` · Jenis: preferensi
 
 ## Akses Grup
 
-Rute di sistem referensi: `#accurate__company__access-privilege` · Jenis: layar
+Rute di sistem referensi: `company__access-privilege` · Jenis: layar
 
 ### Daftar
 
@@ -221,7 +221,7 @@ _(tidak ada isian terbaca)_
 
 ## Pengguna
 
-Rute di sistem referensi: `#accurate__company__user-company` · Jenis: layar
+Rute di sistem referensi: `company__user-company` · Jenis: layar
 
 ### Daftar
 
@@ -249,7 +249,7 @@ _(tidak ada isian terbaca)_
 
 ## Penomoran
 
-Rute di sistem referensi: `#accurate__company__auto-number` · Jenis: layar
+Rute di sistem referensi: `company__auto-number` · Jenis: layar
 
 ### Daftar
 
@@ -289,7 +289,7 @@ _(tidak ada isian terbaca)_
 
 ## Desain Cetakan
 
-Rute di sistem referensi: `#accurate__company__print-layout` · Jenis: layar
+Rute di sistem referensi: `company__print-layout` · Jenis: layar
 
 ### Daftar
 
@@ -317,7 +317,7 @@ _(tidak ada isian terbaca)_
 
 ## Penyetuju Transaksi
 
-Rute di sistem referensi: `#accurate__company__user-approval` · Jenis: layar
+Rute di sistem referensi: `company__user-approval` · Jenis: layar
 
 ### Daftar
 
@@ -349,17 +349,17 @@ _(tidak ada isian terbaca)_
 
 - PersetujuanMarketingWajib: setiap pesanan menunggu persetujuan marketing yang memegang pelanggan. Menjadi aturan persetujuan yang di-seed.
 
-## Accurate Store
+## Add-on store (vendor service)
 
-Rute di sistem referensi: `#accurate__company__application` · Jenis: layar
+Rute di sistem referensi: `company__application` · Jenis: layar
 
 ### Perilaku yang direplikasi
 
 - Pasar aplikasi tambahan sistem referensi; tidak direplikasi.
 
-## Accurate Capital
+## Financing program (vendor service)
 
-Rute di sistem referensi: `#accurate__company__capital-program` · Jenis: layar
+Rute di sistem referensi: `company__capital-program` · Jenis: layar
 
 ### Perilaku yang direplikasi
 

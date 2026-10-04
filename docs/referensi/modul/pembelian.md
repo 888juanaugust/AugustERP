@@ -2,7 +2,7 @@
 
 ## Pesanan Pembelian
 
-Rute: `#accurate__vendor__purchase-order`
+Rute: `vendor__purchase-order`
 
 **Judul layar:** Data Baru · Biaya Lainnya
 
@@ -83,7 +83,7 @@ Rute: `#accurate__vendor__purchase-order`
 
 ## Penerimaan Barang
 
-Rute: `#accurate__vendor__receive-item`
+Rute: `vendor__receive-item`
 
 **Judul layar:** Data Baru · Info lainnya · Info Pengiriman
 
@@ -156,7 +156,7 @@ Rute: `#accurate__vendor__receive-item`
 
 ## Uang Muka Pembelian
 
-Rute: `#accurate__vendor__purchase-downpayment`
+Rute: `vendor__purchase-downpayment`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -223,7 +223,7 @@ Rute: `#accurate__vendor__purchase-downpayment`
 
 ## Faktur Pembelian
 
-Rute: `#accurate__vendor__purchase-invoice`
+Rute: `vendor__purchase-invoice`
 
 **Judul layar:** Data Baru · Biaya Lainnya
 
@@ -304,7 +304,7 @@ Rute: `#accurate__vendor__purchase-invoice`
 
 ## Pembayaran Pembelian
 
-Rute: `#accurate__vendor__purchase-payment`
+Rute: `vendor__purchase-payment`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -375,7 +375,7 @@ Rute: `#accurate__vendor__purchase-payment`
 
 ## Retur Pembelian
 
-Rute: `#accurate__vendor__purchase-return`
+Rute: `vendor__purchase-return`
 
 **Judul layar:** Data Baru · Biaya Lainnya
 
@@ -457,7 +457,7 @@ Rute: `#accurate__vendor__purchase-return`
 
 ## Klaim Pemasok
 
-Rute: `#accurate__vendor__vendor-claim`
+Rute: `vendor__vendor-claim`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -520,7 +520,7 @@ Rute: `#accurate__vendor__vendor-claim`
 
 ## Harga Pemasok
 
-Rute: `#accurate__inventory__vendor-price`
+Rute: `inventory__vendor-price`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -583,7 +583,7 @@ Rute: `#accurate__inventory__vendor-price`
 
 ## Kategori Pemasok
 
-Rute: `#accurate__vendor__vendor-category`
+Rute: `vendor__vendor-category`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -618,7 +618,7 @@ Rute: `#accurate__vendor__vendor-category`
 
 ## Pemasok
 
-Rute: `#accurate__vendor__vendor`
+Rute: `vendor__vendor`
 
 **Judul layar:** Data Baru · Lain-lain
 
@@ -721,7 +721,7 @@ _(tidak ada isian)_
 
 ## Perintah Pembayaran
 
-Rute: `#accurate__vendor__transfer-order`
+Rute: `vendor__transfer-order`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -780,7 +780,7 @@ Rute: `#accurate__vendor__transfer-order`
 
 ## Transfer Pemasok
 
-Rute: `#accurate__vendor__multi-vendor-transfer`
+Rute: `vendor__multi-vendor-transfer`
 
 **Kolom daftar:** Tgl Batas Transfer · Pemasok · Metode Bayar · Bank · No Rekening Pemasok · A/n Rekening · Nilai Pembayaran · Proses
 

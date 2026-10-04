@@ -23,7 +23,7 @@ Modul sistem referensi `purchase`, 12 layar. Dibangkitkan; sunting `_catatan.jso
 
 ## Pesanan Pembelian
 
-Rute di sistem referensi: `#accurate__vendor__purchase-order` · Jenis: layar
+Rute di sistem referensi: `vendor__purchase-order` · Jenis: layar
 
 ### Daftar
 
@@ -83,7 +83,7 @@ _(tidak ada isian terbaca)_
 
 ## Penerimaan Barang
 
-Rute di sistem referensi: `#accurate__vendor__receive-item` · Jenis: layar
+Rute di sistem referensi: `vendor__receive-item` · Jenis: layar
 
 ### Daftar
 
@@ -132,7 +132,7 @@ _(tidak ada isian terbaca)_
 
 ## Uang Muka Pembelian
 
-Rute di sistem referensi: `#accurate__vendor__purchase-downpayment` · Jenis: layar
+Rute di sistem referensi: `vendor__purchase-downpayment` · Jenis: layar
 
 ### Daftar
 
@@ -177,7 +177,7 @@ _(tidak ada isian terbaca)_
 
 ## Faktur Pembelian
 
-Rute di sistem referensi: `#accurate__vendor__purchase-invoice` · Jenis: layar
+Rute di sistem referensi: `vendor__purchase-invoice` · Jenis: layar
 
 ### Daftar
 
@@ -238,7 +238,7 @@ _(tidak ada isian terbaca)_
 
 ## Pembayaran Pembelian
 
-Rute di sistem referensi: `#accurate__vendor__purchase-payment` · Jenis: layar
+Rute di sistem referensi: `vendor__purchase-payment` · Jenis: layar
 
 ### Daftar
 
@@ -281,7 +281,7 @@ _(tidak ada isian terbaca)_
 
 ## Retur Pembelian
 
-Rute di sistem referensi: `#accurate__vendor__purchase-return` · Jenis: layar
+Rute di sistem referensi: `vendor__purchase-return` · Jenis: layar
 
 ### Daftar
 
@@ -335,7 +335,7 @@ _(tidak ada isian terbaca)_
 
 ## Klaim Pemasok
 
-Rute di sistem referensi: `#accurate__vendor__vendor-claim` · Jenis: layar
+Rute di sistem referensi: `vendor__vendor-claim` · Jenis: layar
 
 ### Daftar
 
@@ -377,7 +377,7 @@ _(tidak ada isian terbaca)_
 
 ## Harga Pemasok
 
-Rute di sistem referensi: `#accurate__inventory__vendor-price` · Jenis: layar
+Rute di sistem referensi: `inventory__vendor-price` · Jenis: layar
 
 ### Daftar
 
@@ -420,7 +420,7 @@ _(tidak ada isian terbaca)_
 
 ## Kategori Pemasok
 
-Rute di sistem referensi: `#accurate__vendor__vendor-category` · Jenis: layar
+Rute di sistem referensi: `vendor__vendor-category` · Jenis: layar
 
 ### Daftar
 
@@ -446,7 +446,7 @@ _(tidak ada isian terbaca)_
 
 ## Pemasok
 
-Rute di sistem referensi: `#accurate__vendor__vendor` · Jenis: layar
+Rute di sistem referensi: `vendor__vendor` · Jenis: layar
 
 ### Daftar
 
@@ -531,7 +531,7 @@ _(tidak ada isian terbaca)_
 
 ## Perintah Pembayaran
 
-Rute di sistem referensi: `#accurate__vendor__transfer-order` · Jenis: layar
+Rute di sistem referensi: `vendor__transfer-order` · Jenis: layar
 
 ### Daftar
 
@@ -573,7 +573,7 @@ _(tidak ada isian terbaca)_
 
 ## Transfer Pemasok
 
-Rute di sistem referensi: `#accurate__vendor__multi-vendor-transfer` · Jenis: layar
+Rute di sistem referensi: `vendor__multi-vendor-transfer` · Jenis: layar
 
 ### Daftar
 

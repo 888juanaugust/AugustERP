@@ -11,9 +11,9 @@ generated from a structured study of the **reference system**, the ERP the busin
 today. A phase of `docs/ROADMAP.md` is done when every screen in its spec pages exists with
 its fields and every *Perilaku yang direplikasi* line has a test.
 
-**The UI is a placeholder.** Filament's admin panel is scaffolding so the functions can be
-built and tested; the owner redesigns the interface afterwards. Do not spend effort on
-visual polish; spend it on the domain, the data model and the tests.
+**The UI follows DESIGN.md.** Filament's admin panel is skinned with the design system and
+lays every screen out the way the reference system does. Spend the effort on the domain,
+the data model and the tests; the look is the tokens' job.
 
 **Footprint rule.** Outside `tools/referensi-scan/` (the study tool, which has to name the
 system it logs into), the reference product is called *sistem referensi* and nothing else:
@@ -22,7 +22,7 @@ August's ERP is its own product; the study is where its spec came from.
 
 ## Stack
 
-- Laravel 13, Filament 5 (one panel, `/admin`), PHP ^8.3 locally, 8.4 in CI and on the VPS
+- Laravel 13, Filament 5 (one panel, `/admin`, English), PHP ^8.3 locally, 8.4 in CI and on the VPS
 - PostgreSQL 16 only (row locks, partial unique indexes, jsonb). Never SQLite, not even in tests
 - Redis for queue and cache; supervisor-managed workers in production
 - `tools/referensi-scan/`: the Playwright study tool that produced the spec. Node 22. Not
@@ -30,13 +30,31 @@ August's ERP is its own product; the study is where its spec came from.
 
 ## Language
 
-Bahasa Indonesia is the UI language and the language of `docs/spec/`, because that is what
-the business speaks. Code identifiers are English. Domain terms stay Indonesian where staff
-say them that way: `faktur`, `surat jalan`, `gudang`, `cabang`, `giro`, `pelanggan`,
-`pemasok`. The reference system's own field names (`transDate`, `typeAutoNumber`,
-`paymentTerm`, recorded in the spec as *Nama di sistem referensi*) are the preferred
-English identifiers for the same concepts, so that data can later be moved in and out of
-it one to one.
+**The product speaks English** (owner, 2026-10-04): navigation, screen names, field labels,
+buttons, statuses, validation messages, emails and print views. `APP_LOCALE=en`. Buttons are
+verbs that say what happens ("Save order", "Record payment"), never "Submit" or "OK". Numbers
+and dates follow the Indonesian convention DESIGN.md specifies, through
+`App\Domain\Shared\Format`, not through the locale: `Rp 18.450.000`, `17 Oct 2026` in
+tables, `17/10/2026` in inputs.
+
+The study documents (`docs/spec/`, `docs/referensi/`) stay in the language of the reference
+system, as the faithful record of what was studied. Every screen has its English name in
+`lang/en/menu.php` beside its studied name, and `App\Domain\Access\MenuKey::source()`
+returns the studied name, so the spec stays traceable from any screen.
+
+Code identifiers are English, preferring the reference system's own field names
+(`transDate`, `typeAutoNumber`, `paymentTerm`, recorded in the spec as *Nama di sistem
+referensi*) as snake_case columns (`trans_date`, `payment_term_id`), so that data can later
+be moved in and out of it one to one. Indonesian domain words that have no English
+equivalent in daily use (`giro`, `faktur pajak`, `NPWP`, `NITKU`, `PPh`) stay as they are.
+
+## Design
+
+`docs/design/DESIGN.md` is the visual system; `resources/css/filament/admin/theme.css`
+implements its tokens and the panel provider its settings. Components use tokens, never raw
+hex. The layout of every screen follows the reference system (its list columns and filters,
+its form's header, tabs and line grids, recorded in `docs/spec/`); DESIGN.md decides how
+that layout looks. Geist is self-hosted; no font or asset is loaded from a third party.
 
 ## Invariants
 

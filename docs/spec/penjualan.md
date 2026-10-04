@@ -37,7 +37,7 @@ Modul sistem referensi `sales`, 16 layar. Dibangkitkan; sunting `_catatan.json`,
 
 ## Penawaran Penjualan
 
-Rute di sistem referensi: `#accurate__customer__sales-quotation` · Jenis: layar
+Rute di sistem referensi: `customer__sales-quotation` · Jenis: layar
 
 ### Daftar
 
@@ -93,7 +93,7 @@ _(tidak ada isian terbaca)_
 
 ## Pesanan Penjualan
 
-Rute di sistem referensi: `#accurate__customer__sales-order` · Jenis: layar
+Rute di sistem referensi: `customer__sales-order` · Jenis: layar
 
 ### Daftar
 
@@ -153,7 +153,7 @@ _(tidak ada isian terbaca)_
 
 ## Pengiriman Pesanan
 
-Rute di sistem referensi: `#accurate__customer__delivery-order` · Jenis: layar
+Rute di sistem referensi: `customer__delivery-order` · Jenis: layar
 
 ### Daftar
 
@@ -205,7 +205,7 @@ _(tidak ada isian terbaca)_
 
 ## Uang Muka Penjualan
 
-Rute di sistem referensi: `#accurate__customer__sales-downpayment` · Jenis: layar
+Rute di sistem referensi: `customer__sales-downpayment` · Jenis: layar
 
 ### Daftar
 
@@ -254,7 +254,7 @@ _(tidak ada isian terbaca)_
 
 ## Faktur Penjualan
 
-Rute di sistem referensi: `#accurate__customer__sales-invoice` · Jenis: layar
+Rute di sistem referensi: `customer__sales-invoice` · Jenis: layar
 
 ### Daftar
 
@@ -319,7 +319,7 @@ _(tidak ada isian terbaca)_
 
 ## Penerimaan Penjualan
 
-Rute di sistem referensi: `#accurate__customer__sales-receipt` · Jenis: layar
+Rute di sistem referensi: `customer__sales-receipt` · Jenis: layar
 
 ### Daftar
 
@@ -362,7 +362,7 @@ _(tidak ada isian terbaca)_
 
 ## Retur Penjualan
 
-Rute di sistem referensi: `#accurate__customer__sales-return` · Jenis: layar
+Rute di sistem referensi: `customer__sales-return` · Jenis: layar
 
 ### Daftar
 
@@ -420,7 +420,7 @@ _(tidak ada isian terbaca)_
 
 ## Tukar Faktur
 
-Rute di sistem referensi: `#accurate__customer__exchange-invoice` · Jenis: layar
+Rute di sistem referensi: `customer__exchange-invoice` · Jenis: layar
 
 ### Daftar
 
@@ -462,7 +462,7 @@ _(tidak ada isian terbaca)_
 
 ## Kategori Pelanggan
 
-Rute di sistem referensi: `#accurate__customer__customer-category` · Jenis: layar
+Rute di sistem referensi: `customer__customer-category` · Jenis: layar
 
 ### Daftar
 
@@ -488,7 +488,7 @@ _(tidak ada isian terbaca)_
 
 ## Kategori Penjualan
 
-Rute di sistem referensi: `#accurate__customer__price-category` · Jenis: layar
+Rute di sistem referensi: `customer__price-category` · Jenis: layar
 
 ### Daftar
 
@@ -513,7 +513,7 @@ _(tidak ada isian terbaca)_
 
 ## Pelanggan
 
-Rute di sistem referensi: `#accurate__customer__customer` · Jenis: layar
+Rute di sistem referensi: `customer__customer` · Jenis: layar
 
 ### Daftar
 
@@ -619,7 +619,7 @@ _(tidak ada isian terbaca)_
 
 ## Penyesuaian Harga/Diskon
 
-Rute di sistem referensi: `#accurate__inventory__sellingprice-adjustment` · Jenis: layar
+Rute di sistem referensi: `inventory__sellingprice-adjustment` · Jenis: layar
 
 ### Daftar
 
@@ -652,7 +652,7 @@ Rute di sistem referensi: `#accurate__inventory__sellingprice-adjustment` · Jen
 
 ## Komisi Penjual
 
-Rute di sistem referensi: `#accurate__company__salesman-commission` · Jenis: layar
+Rute di sistem referensi: `company__salesman-commission` · Jenis: layar
 
 ### Daftar
 
@@ -705,7 +705,7 @@ _(tidak ada isian terbaca)_
 
 ## Target Penjualan
 
-Rute di sistem referensi: `#accurate__budget-target__sales-target` · Jenis: layar
+Rute di sistem referensi: `budget-target__sales-target` · Jenis: layar
 
 ### Daftar
 
@@ -747,7 +747,7 @@ _(tidak ada isian terbaca)_
 
 ## SmartLink e-Commerce
 
-Rute di sistem referensi: `#accurate__customer__ecommerce-setting` · Jenis: layar
+Rute di sistem referensi: `customer__ecommerce-setting` · Jenis: layar
 
 ### Daftar
 
@@ -791,7 +791,7 @@ _(tidak ada isian terbaca)_
 
 ## Check In
 
-Rute di sistem referensi: `#accurate__customer__sales-check-in` · Jenis: layar
+Rute di sistem referensi: `customer__sales-check-in` · Jenis: layar
 
 ### Daftar
 

@@ -20,7 +20,7 @@ Modul sistem referensi `general-ledger`, 9 layar. Dibangkitkan; sunting `_catata
 
 ## Akun Perkiraan
 
-Rute di sistem referensi: `#accurate__general-ledger__glaccount` · Jenis: layar
+Rute di sistem referensi: `general-ledger__glaccount` · Jenis: layar
 
 ### Daftar
 
@@ -69,7 +69,7 @@ _(tidak ada isian terbaca)_
 
 ## Pencatatan Beban
 
-Rute di sistem referensi: `#accurate__general-ledger__expense-accrual` · Jenis: layar
+Rute di sistem referensi: `general-ledger__expense-accrual` · Jenis: layar
 
 ### Daftar
 
@@ -114,7 +114,7 @@ _(tidak ada isian terbaca)_
 
 ## Pencatatan Gaji
 
-Rute di sistem referensi: `#accurate__cash-bank__employee-payment` · Jenis: layar
+Rute di sistem referensi: `cash-bank__employee-payment` · Jenis: layar
 
 ### Daftar
 
@@ -162,7 +162,7 @@ _(tidak ada isian terbaca)_
 
 ## Jurnal Umum
 
-Rute di sistem referensi: `#accurate__general-ledger__journal-voucher` · Jenis: layar
+Rute di sistem referensi: `general-ledger__journal-voucher` · Jenis: layar
 
 ### Daftar
 
@@ -205,7 +205,7 @@ _(tidak ada isian terbaca)_
 
 ## Monitor Anggaran
 
-Rute di sistem referensi: `#accurate__budget-target__accountbudget-monitor` · Jenis: layar
+Rute di sistem referensi: `budget-target__accountbudget-monitor` · Jenis: layar
 
 ### Daftar
 
@@ -224,7 +224,7 @@ Rute di sistem referensi: `#accurate__budget-target__accountbudget-monitor` · J
 
 ## Transfer Anggaran
 
-Rute di sistem referensi: `#accurate__budget-target__accountbudget-transfer` · Jenis: layar
+Rute di sistem referensi: `budget-target__accountbudget-transfer` · Jenis: layar
 
 ### Daftar
 
@@ -265,7 +265,7 @@ _(tidak ada isian terbaca)_
 
 ## Anggaran
 
-Rute di sistem referensi: `#accurate__budget-target__accountbudget-target` · Jenis: layar
+Rute di sistem referensi: `budget-target__accountbudget-target` · Jenis: layar
 
 ### Daftar
 
@@ -306,7 +306,7 @@ _(tidak ada isian terbaca)_
 
 ## Histori Akun
 
-Rute di sistem referensi: `#accurate__general-ledger__account-history` · Jenis: layar
+Rute di sistem referensi: `general-ledger__account-history` · Jenis: layar
 
 ### Daftar
 
@@ -326,7 +326,7 @@ Rute di sistem referensi: `#accurate__general-ledger__account-history` · Jenis:
 
 ## Log Aktifitas Jurnal
 
-Rute di sistem referensi: `#accurate__company__audit-journal` · Jenis: layar
+Rute di sistem referensi: `company__audit-journal` · Jenis: layar
 
 ### Daftar
 

@@ -20,7 +20,7 @@ Modul sistem referensi `report`, 5 layar. Dibangkitkan; sunting `_catatan.json`,
 
 ## Daftar Laporan
 
-Rute di sistem referensi: `#accurate__report__report` · Jenis: laporan
+Rute di sistem referensi: `report__report` · Jenis: laporan
 
 ### Isian
 
@@ -34,7 +34,7 @@ Rute di sistem referensi: `#accurate__report__report` · Jenis: laporan
 
 ## SPT PPN / PPNBM
 
-Rute di sistem referensi: `#accurate__report__spt-masa` · Jenis: laporan
+Rute di sistem referensi: `report__spt-masa` · Jenis: laporan
 
 ### Daftar
 
@@ -80,7 +80,7 @@ Rute di sistem referensi: `#accurate__report__spt-masa` · Jenis: laporan
 
 ## Analisa AI
 
-Rute di sistem referensi: `#accurate__report-insight-analysis` · Jenis: laporan
+Rute di sistem referensi: `report-insight-analysis` · Jenis: laporan
 
 ### Perilaku yang direplikasi
 
@@ -88,7 +88,7 @@ Rute di sistem referensi: `#accurate__report-insight-analysis` · Jenis: laporan
 
 ## SPT PPh Ps.21
 
-Rute di sistem referensi: `#accurate__report__formulir-1721-induk` · Jenis: laporan
+Rute di sistem referensi: `report__formulir-1721-induk` · Jenis: laporan
 
 ### Daftar
 
@@ -143,7 +143,7 @@ Rute di sistem referensi: `#accurate__report__formulir-1721-induk` · Jenis: lap
 
 ## Bukti Potong PPh Ps.21
 
-Rute di sistem referensi: `#accurate__report__formulir-1721-bukti-potong` · Jenis: laporan
+Rute di sistem referensi: `report__formulir-1721-bukti-potong` · Jenis: laporan
 
 ### Daftar
 

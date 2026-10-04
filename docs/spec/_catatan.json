@@ -70,12 +70,12 @@
       "PersetujuanMarketingWajib: setiap pesanan menunggu persetujuan marketing yang memegang pelanggan. Menjadi aturan persetujuan yang di-seed."
     ]
   },
-  "Pengaturan/Accurate Store": {
+  "Pengaturan/Add-on store (vendor service)": {
     "perilaku": [
       "Pasar aplikasi tambahan sistem referensi; tidak direplikasi."
     ]
   },
-  "Pengaturan/Accurate Capital": {
+  "Pengaturan/Financing program (vendor service)": {
     "perilaku": [
       "Program pembiayaan sistem referensi; tidak direplikasi."
     ]

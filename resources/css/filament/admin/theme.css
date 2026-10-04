@@ -1,0 +1,430 @@
+/*
+ * August's ERP admin theme. The tokens are docs/design/DESIGN.md; components use
+ * tokens, never raw hex. Filament's own styles load inside layer(components),
+ * so the plain rules below win without !important.
+ */
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+:root {
+    /* Color, light (the default) */
+    --ae-canvas: #e3e7f2;
+    --ae-surface: #ffffff;
+    --ae-surface-sunken: #f6f6f3;
+    --ae-ink: #1d2433;
+    --ae-muted: #6b7280;
+    --ae-line: #e9e4da;
+    --ae-card-edge: #f2efe9;
+    --ae-input-edge: #d1d0ce;
+    --ae-accent: #2f5bea;
+    --ae-accent-soft: #e6ebfc;
+    --ae-focus-ring: #dae1fb;
+
+    /* Status badges: background / text */
+    --ae-success-bg: #e4f6ea;
+    --ae-success-fg: #166534;
+    --ae-warning-bg: #fff2d4;
+    --ae-warning-fg: #8a5a00;
+    --ae-danger-bg: #fde7e7;
+    --ae-danger-fg: #a11d1d;
+    --ae-neutral-bg: #eef0f4;
+    --ae-neutral-fg: #4b5563;
+    --ae-info-bg: #e6ebfc;
+    --ae-info-fg: #2f5bea;
+    --ae-trend-up: #15803d;
+    --ae-trend-down: #b42318;
+
+    /* Shape and depth */
+    --ae-radius: 14px;
+    --ae-radius-md: 10px;
+    --ae-radius-sm: 8px;
+    --ae-radius-full: 999px;
+    --ae-shadow-card: 0 1px 1px rgb(20 30 60 / 0.04), 0 12px 28px -8px rgb(20 30 60 / 0.14);
+    --ae-shadow-pop: 0 4px 8px rgb(20 30 60 / 0.06), 0 24px 48px -12px rgb(20 30 60 / 0.22);
+    --ae-shadow-btn: inset 0 1px 0 rgb(255 255 255 / 0.2), 0 2px 6px rgb(47 91 234 / 0.35);
+
+    /* Spacing (comfortable density, 4px grid) */
+    --ae-pad-page: 22px;
+    --ae-gap-card: 12px;
+    --ae-pad-card: 16px;
+    --ae-sidebar-inset: 12px;
+    --ae-sidebar-width: 200px;
+}
+
+/* Proposed dark palette (DESIGN.md), not yet reviewed: dark mode stays off. */
+.dark {
+    --ae-canvas: #0f1219;
+    --ae-surface: #171b25;
+    --ae-surface-sunken: #1d2230;
+    --ae-ink: #e7eaf2;
+    --ae-muted: #9aa3b5;
+    --ae-line: #262c3a;
+    --ae-card-edge: #232937;
+    --ae-input-edge: #343b4d;
+    --ae-accent: #7d9bff;
+    --ae-accent-soft: #1f2a4d;
+    --ae-focus-ring: #2a3a70;
+}
+
+/* ---------- Canvas and type ---------- */
+
+.fi-body {
+    background: var(--ae-canvas);
+    color: var(--ae-ink);
+    font-size: 13.5px;
+    line-height: 20px;
+}
+
+.fi-body :is(table, .fi-ta-cell, .fi-wi-stats-overview-stat-value, .fi-in-text, .fi-fo-field-wrp input[inputmode='decimal'], input[inputmode='numeric']) {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Floating sidebar ---------- */
+
+@media (min-width: 1024px) {
+    .fi-body:not(.fi-body-has-top-navigation) .fi-sidebar {
+        top: var(--ae-sidebar-inset);
+        height: calc(100dvh - 2 * var(--ae-sidebar-inset));
+        margin-inline-start: var(--ae-sidebar-inset);
+        background: var(--ae-surface);
+        border: 1px solid var(--ae-card-edge);
+        border-radius: var(--ae-radius);
+        box-shadow: var(--ae-shadow-card);
+    }
+
+    .fi-body-has-topbar:not(.fi-body-has-top-navigation) .fi-sidebar {
+        top: var(--ae-sidebar-inset);
+        height: calc(100dvh - 2 * var(--ae-sidebar-inset));
+    }
+}
+
+.fi-sidebar-nav {
+    padding: 16px 12px 20px;
+    gap: 20px;
+}
+
+.fi-sidebar-nav-groups {
+    margin-inline: 0;
+    gap: 18px;
+}
+
+.fi-sidebar-header {
+    padding-inline: 16px;
+}
+
+.fi-sidebar-group-label {
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ae-muted);
+}
+
+.fi-sidebar-item-btn {
+    padding: 8px 9px;
+    border-radius: var(--ae-radius-md);
+}
+
+.fi-sidebar-item-label {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ae-ink);
+}
+
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:focus-visible {
+    background: var(--ae-surface-sunken);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background: var(--ae-accent-soft);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
+    color: var(--ae-accent);
+}
+
+/* ---------- Topbar on the canvas, page header ---------- */
+
+.fi-topbar {
+    background: transparent;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+    padding-inline: var(--ae-pad-page);
+}
+
+.fi-main {
+    padding-inline: var(--ae-pad-page);
+}
+
+.fi-page {
+    gap: var(--ae-gap-card);
+}
+
+.fi-header-heading {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ae-ink);
+}
+
+.fi-header-subheading {
+    color: var(--ae-muted);
+}
+
+.fi-breadcrumbs-item-label {
+    color: var(--ae-muted);
+}
+
+/* ---------- Cards: every section, table, widget, tab strip ---------- */
+
+.fi-section:not(.fi-section-not-contained):not(.fi-aside),
+.fi-section:not(.fi-section-not-contained).fi-aside > .fi-section-content-ctn,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-wi-widget .fi-wi-chart,
+.fi-tabs:not(.fi-contained),
+.fi-fo-repeater-item {
+    background: var(--ae-surface);
+    border-radius: var(--ae-radius);
+    box-shadow: var(--ae-shadow-card);
+    --tw-ring-color: var(--ae-card-edge);
+}
+
+.fi-section:not(.fi-section-not-contained):not(.fi-aside) > .fi-section-header {
+    padding: 14px var(--ae-pad-card);
+}
+
+.fi-section:not(.fi-section-not-contained):not(.fi-divided) > .fi-section-content-ctn > .fi-section-content {
+    padding: var(--ae-pad-card);
+}
+
+.fi-section-header-heading {
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 600;
+    color: var(--ae-ink);
+}
+
+.fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+    border-color: var(--ae-line);
+}
+
+/* ---------- Tables: clean, hover, sunken header ---------- */
+
+.fi-ta-header-cell {
+    background: var(--ae-surface-sunken);
+}
+
+.fi-ta-header-cell-label {
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ae-muted);
+}
+
+.fi-ta-table {
+    font-variant-numeric: tabular-nums;
+}
+
+.fi-ta-cell {
+    padding: 11px 14px;
+}
+
+.fi-ta-row:not(.fi-ta-row-not-clickable):hover,
+.fi-ta-row.fi-clickable:hover,
+.fi-ta-row.fi-selected {
+    background: var(--ae-accent-soft);
+}
+
+.fi-ta-row > .fi-ta-cell:first-of-type .fi-ta-text-item-label {
+    font-weight: 500;
+}
+
+.fi-ta-header,
+.fi-ta-header-toolbar,
+.fi-ta-content {
+    border-color: var(--ae-line);
+}
+
+.fi-ta-pagination {
+    border-color: var(--ae-line);
+}
+
+/* ---------- Badges: pills with a status dot ---------- */
+
+.fi-badge {
+    border-radius: var(--ae-radius-full);
+    padding: 3px 9px;
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    --tw-ring-shadow: 0 0 #0000;
+}
+
+.fi-badge.fi-color::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: none;
+}
+
+.fi-badge.fi-color-success { background: var(--ae-success-bg); color: var(--ae-success-fg); }
+.fi-badge.fi-color-warning { background: var(--ae-warning-bg); color: var(--ae-warning-fg); }
+.fi-badge.fi-color-danger  { background: var(--ae-danger-bg);  color: var(--ae-danger-fg); }
+.fi-badge.fi-color-gray    { background: var(--ae-neutral-bg); color: var(--ae-neutral-fg); }
+.fi-badge.fi-color-info    { background: var(--ae-info-bg);    color: var(--ae-info-fg); }
+.fi-badge.fi-color-primary { background: var(--ae-accent-soft); color: var(--ae-accent); }
+
+/* ---------- Buttons ---------- */
+
+.fi-btn {
+    border-radius: var(--ae-radius-md);
+    padding: 8px 14px;
+    font-weight: 600;
+}
+
+.fi-btn.fi-size-sm { padding: 6px 10px; }
+.fi-btn.fi-size-xs { padding: 4px 8px; }
+
+.fi-btn:not(.fi-outlined).fi-color-primary:not(label) {
+    box-shadow: var(--ae-shadow-btn);
+}
+
+.fi-btn.fi-outlined,
+.fi-btn:not(.fi-outlined):not(.fi-color) {
+    --tw-ring-color: var(--ae-line);
+    color: var(--ae-ink);
+}
+
+/* ---------- Inputs: outlined, with a soft focus ring ---------- */
+
+.fi-input-wrp {
+    border-radius: var(--ae-radius-md);
+    box-shadow: none;
+    --tw-ring-color: var(--ae-input-edge);
+}
+
+.fi-input-wrp:not(.fi-disabled):focus-within {
+    --tw-ring-color: var(--ae-accent);
+    box-shadow: 0 0 0 3px var(--ae-focus-ring);
+}
+
+.fi-input-wrp.fi-disabled {
+    background: var(--ae-surface-sunken);
+}
+
+.fi-fo-field-wrp-label .fi-fo-field-wrp-label-text,
+.fi-fo-field-label-text,
+.fi-fo-field-wrp-label {
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
+    color: var(--ae-muted);
+}
+
+.fi-fo-field-wrp-helper-text,
+.fi-fo-field-wrp-hint {
+    font-size: 12px;
+    color: var(--ae-muted);
+}
+
+.fi-fo-field-wrp-error-message {
+    color: var(--ae-danger-fg);
+}
+
+.fi-input[inputmode='decimal'],
+.fi-input[inputmode='numeric'],
+.fi-input.ae-money {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Tabs as pills ---------- */
+
+.fi-tabs:not(.fi-contained) {
+    padding: 6px;
+    gap: 4px;
+}
+
+.fi-tabs-item {
+    border-radius: var(--ae-radius-sm);
+    padding: 6px 12px;
+}
+
+.fi-tabs-item:not(.fi-active) .fi-tabs-item-label {
+    color: var(--ae-muted);
+}
+
+.fi-tabs-item.fi-active {
+    background: var(--ae-accent-soft);
+}
+
+.fi-tabs-item.fi-active .fi-tabs-item-label,
+.fi-tabs-item.fi-active > .fi-icon {
+    color: var(--ae-accent);
+}
+
+.fi-tabs-item .fi-badge {
+    font-weight: 500;
+}
+
+/* ---------- Modals, slide-overs, dropdowns ---------- */
+
+.fi-modal-window {
+    border-radius: var(--ae-radius);
+    box-shadow: var(--ae-shadow-pop);
+}
+
+.fi-modal > .fi-modal-close-overlay {
+    background: rgb(15 18 25 / 0.35);
+    backdrop-filter: blur(2px);
+}
+
+.fi-dropdown-panel {
+    border-radius: var(--ae-radius-md);
+    box-shadow: var(--ae-shadow-pop);
+}
+
+/* ---------- KPI cards (dashboard) ---------- */
+
+.fi-wi-stats-overview-stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ae-muted);
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-size: 22px;
+    line-height: 28px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ae-ink);
+}
+
+/* ---------- Forms: create/edit pages read best at 1100px ---------- */
+
+.fi-resource-create-record-page .fi-page-content,
+.fi-resource-edit-record-page .fi-page-content {
+    max-width: 1100px;
+}
+
+/* ---------- Print: white A4, no canvas, no shadows ---------- */
+
+@media print {
+    .fi-body { background: #fff; }
+    .fi-sidebar, .fi-topbar-ctn, .fi-header-actions-ctn, .fi-badge { display: none; }
+    .fi-section, .fi-ta-ctn { box-shadow: none; }
+}

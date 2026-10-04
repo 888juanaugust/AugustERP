@@ -18,7 +18,7 @@ Modul sistem referensi `smartlink-tax`, 3 layar. Dibangkitkan; sunting `_catatan
 
 ## e-Faktur CTAS
 
-Rute di sistem referensi: `#accurate__company__efaktur-ctas` · Jenis: layar
+Rute di sistem referensi: `company__efaktur-ctas` · Jenis: layar
 
 ### Daftar
 
@@ -46,7 +46,7 @@ Rute di sistem referensi: `#accurate__company__efaktur-ctas` · Jenis: layar
 
 ## Email Faktur Pajak
 
-Rute di sistem referensi: `#accurate__customer__efaktur-send` · Jenis: layar
+Rute di sistem referensi: `customer__efaktur-send` · Jenis: layar
 
 ### Daftar
 
@@ -65,7 +65,7 @@ Rute di sistem referensi: `#accurate__customer__efaktur-send` · Jenis: layar
 
 ## e-Faktur Legacy
 
-Rute di sistem referensi: `#accurate__company__efaktur-online` · Jenis: layar
+Rute di sistem referensi: `company__efaktur-online` · Jenis: layar
 
 ### Daftar
 

@@ -22,7 +22,7 @@ Modul sistem referensi `asset`, 7 layar. Dibangkitkan; sunting `_catatan.json`, 
 
 ## Aset Tetap
 
-Rute di sistem referensi: `#accurate__fixed-asset__fixed-asset` · Jenis: layar
+Rute di sistem referensi: `fixed-asset__fixed-asset` · Jenis: layar
 
 ### Daftar
 
@@ -78,7 +78,7 @@ _(tidak ada isian terbaca)_
 
 ## Kategori Aset
 
-Rute di sistem referensi: `#accurate__fixed-asset__fa-type` · Jenis: layar
+Rute di sistem referensi: `fixed-asset__fa-type` · Jenis: layar
 
 ### Daftar
 
@@ -102,7 +102,7 @@ _(tidak ada isian terbaca)_
 
 ## Kategori Aset Tetap Pajak
 
-Rute di sistem referensi: `#accurate__fixed-asset__fiscal-fa-type` · Jenis: layar
+Rute di sistem referensi: `fixed-asset__fiscal-fa-type` · Jenis: layar
 
 ### Daftar
 
@@ -130,7 +130,7 @@ _(tidak ada isian terbaca)_
 
 ## Perubahan Aset Tetap
 
-Rute di sistem referensi: `#accurate__fixed-asset__fixed-asset-edited` · Jenis: layar
+Rute di sistem referensi: `fixed-asset__fixed-asset-edited` · Jenis: layar
 
 ### Daftar
 
@@ -180,7 +180,7 @@ _(tidak ada isian terbaca)_
 
 ## Disposisi Aset Tetap
 
-Rute di sistem referensi: `#accurate__fixed-asset__fixed-asset-disposed` · Jenis: layar
+Rute di sistem referensi: `fixed-asset__fixed-asset-disposed` · Jenis: layar
 
 ### Daftar
 
@@ -210,7 +210,7 @@ Rute di sistem referensi: `#accurate__fixed-asset__fixed-asset-disposed` · Jeni
 
 ## Pindah Aset
 
-Rute di sistem referensi: `#accurate__fixed-asset__asset-transfer` · Jenis: layar
+Rute di sistem referensi: `fixed-asset__asset-transfer` · Jenis: layar
 
 ### Daftar
 
@@ -251,7 +251,7 @@ _(tidak ada isian terbaca)_
 
 ## Aset per Lokasi
 
-Rute di sistem referensi: `#accurate__fixed-asset__asset-location` · Jenis: layar
+Rute di sistem referensi: `fixed-asset__asset-location` · Jenis: layar
 
 ### Daftar
 

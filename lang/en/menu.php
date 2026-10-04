@@ -1,0 +1,119 @@
+<?php
+
+/**
+ * English names of the modules and screens. Keys are MenuKey values (the
+ * screen's route key in the study, vendor prefix stripped); the comment is the
+ * screen's name in the reference system, kept so the spec stays traceable.
+ */
+return [
+    'modules' => [
+        'Settings' => 'Settings',
+        'Company' => 'Company',
+        'GeneralLedger' => 'General Ledger',
+        'CashBank' => 'Cash & Bank',
+        'Sales' => 'Sales',
+        'Purchasing' => 'Purchasing',
+        'Inventory' => 'Inventory',
+        'FixedAssets' => 'Fixed Assets',
+        'Tax' => 'Tax',
+        'Reports' => 'Reports',
+    ],
+    'screens' => [
+        'company__preferences' => 'Preferences', // Preferensi
+        'company__access-privilege' => 'Access Groups', // Akses Grup
+        'company__user-company' => 'Users', // Pengguna
+        'company__auto-number' => 'Numbering', // Penomoran
+        'company__print-layout' => 'Print Layouts', // Desain Cetakan
+        'company__user-approval' => 'Transaction Approvers', // Penyetuju Transaksi
+        'company__application' => 'Add-on Store', // Accurate Store
+        'company__capital-program' => 'Financing Program', // Accurate Capital
+        'company__currency' => 'Currencies', // Mata Uang
+        'company__branch' => 'Branches', // Cabang
+        'company__tax' => 'Tax Codes', // Pajak
+        'company__payment-term' => 'Payment Terms', // Syarat Pembayaran
+        'company__shipment' => 'Shipping Methods', // Pengiriman
+        'company__freeonboard' => 'FOB Terms', // FOB
+        'company__employee-fee' => 'Salary Components', // Gaji/Tunjangan
+        'company__employee' => 'Employees', // Karyawan
+        'company__recurring' => 'Recurring Transactions', // Transaksi Berulang
+        'company__period-end' => 'Month-end Process', // Proses Akhir Bulan
+        'company__contact' => 'Contacts', // Kontak
+        'company__memorize-transaction' => 'Memorized Transactions', // Transaksi Favorit
+        'company__calendar' => 'Calendar', // Kalender
+        'company__audit' => 'Activity Log', // Log Aktifitas
+        'general-ledger__glaccount' => 'Chart of Accounts', // Akun Perkiraan
+        'general-ledger__expense-accrual' => 'Expense Accruals', // Pencatatan Beban
+        'cash-bank__employee-payment' => 'Payroll Entries', // Pencatatan Gaji
+        'general-ledger__journal-voucher' => 'Journal Vouchers', // Jurnal Umum
+        'budget-target__accountbudget-monitor' => 'Budget Monitor', // Monitor Anggaran
+        'budget-target__accountbudget-transfer' => 'Budget Transfers', // Transfer Anggaran
+        'budget-target__accountbudget-target' => 'Budgets', // Anggaran
+        'general-ledger__account-history' => 'Account History', // Histori Akun
+        'company__audit-journal' => 'Journal Activity Log', // Log Aktifitas Jurnal
+        'cash-bank__other-payment' => 'Payments', // Pembayaran
+        'cash-bank__other-deposit' => 'Receipts', // Penerimaan
+        'cash-bank__bank-transfer' => 'Bank Transfers', // Transfer Bank
+        'cash-bank__internet-banking' => 'Internet Banking', // SmartLink e-Banking
+        'cash-bank__bank-statement' => 'Bank Statements', // Rekening Koran
+        'cash-bank__bank-book' => 'Bank Book', // Histori Bank
+        'cash-bank__bank-reconcile' => 'Bank Reconciliation', // Rekonsiliasi Bank
+        'company__application-virtual-account' => 'Virtual Accounts', // SmartLink Virtual Account
+        'company__application-epayment' => 'e-Payment', // SmartLink e-Payment
+        'customer__sales-quotation' => 'Sales Quotations', // Penawaran Penjualan
+        'customer__sales-order' => 'Sales Orders', // Pesanan Penjualan
+        'customer__delivery-order' => 'Delivery Orders', // Pengiriman Pesanan
+        'customer__sales-downpayment' => 'Sales Down Payments', // Uang Muka Penjualan
+        'customer__sales-invoice' => 'Sales Invoices', // Faktur Penjualan
+        'customer__sales-receipt' => 'Sales Receipts', // Penerimaan Penjualan
+        'customer__sales-return' => 'Sales Returns', // Retur Penjualan
+        'customer__exchange-invoice' => 'Invoice Exchanges', // Tukar Faktur
+        'customer__customer-category' => 'Customer Categories', // Kategori Pelanggan
+        'customer__price-category' => 'Price Categories', // Kategori Penjualan
+        'customer__customer' => 'Customers', // Pelanggan
+        'inventory__sellingprice-adjustment' => 'Price & Discount Adjustments', // Penyesuaian Harga/Diskon
+        'company__salesman-commission' => 'Salesman Commissions', // Komisi Penjual
+        'budget-target__sales-target' => 'Sales Targets', // Target Penjualan
+        'customer__ecommerce-setting' => 'e-Commerce Links', // SmartLink e-Commerce
+        'customer__sales-check-in' => 'Check-ins', // Check In
+        'vendor__purchase-order' => 'Purchase Orders', // Pesanan Pembelian
+        'vendor__receive-item' => 'Goods Receipts', // Penerimaan Barang
+        'vendor__purchase-downpayment' => 'Purchase Down Payments', // Uang Muka Pembelian
+        'vendor__purchase-invoice' => 'Purchase Invoices', // Faktur Pembelian
+        'vendor__purchase-payment' => 'Purchase Payments', // Pembayaran Pembelian
+        'vendor__purchase-return' => 'Purchase Returns', // Retur Pembelian
+        'vendor__vendor-claim' => 'Vendor Claims', // Klaim Pemasok
+        'inventory__vendor-price' => 'Vendor Prices', // Harga Pemasok
+        'vendor__vendor-category' => 'Vendor Categories', // Kategori Pemasok
+        'vendor__vendor' => 'Vendors', // Pemasok
+        'vendor__transfer-order' => 'Payment Orders', // Perintah Pembayaran
+        'vendor__multi-vendor-transfer' => 'Vendor Transfers', // Transfer Pemasok
+        'vendor__purchase-requisition' => 'Purchase Requisitions', // Permintaan Barang
+        'inventory__item-transfer' => 'Item Transfers', // Pemindahan Barang
+        'inventory__item-adjustment' => 'Inventory Adjustments', // Penyesuaian Persediaan
+        'inventory__stock-opname-order' => 'Stock Opname Orders', // Perintah Stok Opname
+        'inventory__stock-opname-result' => 'Stock Opname Results', // Hasil Stok Opname
+        'inventory__item' => 'Items & Services', // Barang & Jasa
+        'inventory__warehouse' => 'Warehouses', // Gudang
+        'inventory__unit' => 'Units', // Satuan Barang
+        'inventory__item-category' => 'Item Categories', // Kategori Barang
+        'inventory__item-brand' => 'Item Brands', // Merek Barang
+        'inventory__backorder-inquiry' => 'Order Fulfilment', // Pemenuhan Pesanan
+        'inventory__stock-warehouse' => 'Stock by Warehouse', // Barang per Gudang
+        'inventory__minimum-stock-item' => 'Minimum Stock', // Barang Stok Minimum
+        'fixed-asset__fixed-asset' => 'Fixed Assets', // Aset Tetap
+        'fixed-asset__fa-type' => 'Asset Categories', // Kategori Aset
+        'fixed-asset__fiscal-fa-type' => 'Fiscal Asset Categories', // Kategori Aset Tetap Pajak
+        'fixed-asset__fixed-asset-edited' => 'Asset Changes', // Perubahan Aset Tetap
+        'fixed-asset__fixed-asset-disposed' => 'Asset Disposals', // Disposisi Aset Tetap
+        'fixed-asset__asset-transfer' => 'Asset Transfers', // Pindah Aset
+        'fixed-asset__asset-location' => 'Assets by Location', // Aset per Lokasi
+        'company__efaktur-ctas' => 'e-Tax Invoice Export', // e-Faktur CTAS
+        'customer__efaktur-send' => 'Email Tax Invoice', // Email Faktur Pajak
+        'company__efaktur-online' => 'Legacy e-Tax Export', // e-Faktur Legacy
+        'report__report' => 'Report Catalogue', // Daftar Laporan
+        'report__spt-masa' => 'VAT Return', // SPT PPN / PPNBM
+        'report-insight-analysis' => 'AI Analysis', // Analisa AI
+        'report__formulir-1721-induk' => 'Income Tax Art. 21 Return', // SPT PPh Ps.21
+        'report__formulir-1721-bukti-potong' => 'Withholding Slips', // Bukti Potong PPh Ps.21
+    ],
+];

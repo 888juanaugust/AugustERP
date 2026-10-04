@@ -2,7 +2,7 @@
 
 ## Pembayaran
 
-Rute: `#accurate__cash-bank__other-payment`
+Rute: `cash-bank__other-payment`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -67,7 +67,7 @@ Rute: `#accurate__cash-bank__other-payment`
 
 ## Penerimaan
 
-Rute: `#accurate__cash-bank__other-deposit`
+Rute: `cash-bank__other-deposit`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -132,7 +132,7 @@ Rute: `#accurate__cash-bank__other-deposit`
 
 ## Transfer Bank
 
-Rute: `#accurate__cash-bank__bank-transfer`
+Rute: `cash-bank__bank-transfer`
 
 **Judul layar:** Data Baru · Biaya Transfer
 
@@ -187,7 +187,7 @@ Rute: `#accurate__cash-bank__bank-transfer`
 
 ## SmartLink e-Banking
 
-Rute: `#accurate__cash-bank__internet-banking`
+Rute: `cash-bank__internet-banking`
 
 **Judul layar:** Data Baru
 
@@ -224,7 +224,7 @@ Rute: `#accurate__cash-bank__internet-banking`
 
 ## Rekening Koran
 
-Rute: `#accurate__cash-bank__bank-statement`
+Rute: `cash-bank__bank-statement`
 
 **Kolom daftar:** Tanggal · Keterangan · Mutasi · Tipe · Saldo · #
 
@@ -238,7 +238,7 @@ Rute: `#accurate__cash-bank__bank-statement`
 
 ## Histori Bank
 
-Rute: `#accurate__cash-bank__bank-book`
+Rute: `cash-bank__bank-book`
 
 **Kolom daftar:** Tanggal · No. Sumber # · No Cek # · Tipe Transaksi · Keterangan · Mutasi · Tipe · Saldo · #
 
@@ -252,7 +252,7 @@ Rute: `#accurate__cash-bank__bank-book`
 
 ## Rekonsiliasi Bank
 
-Rute: `#accurate__cash-bank__bank-reconcile`
+Rute: `cash-bank__bank-reconcile`
 
 ### Isian layar
 
@@ -264,9 +264,9 @@ Rute: `#accurate__cash-bank__bank-reconcile`
 
 ## SmartLink Virtual Account
 
-Rute: `#accurate__company__application-virtual-account`
+Rute: `company__application-virtual-account`
 
 ## SmartLink e-Payment
 
-Rute: `#accurate__company__application-epayment`
+Rute: `company__application-epayment`
 

@@ -2,7 +2,7 @@
 
 ## Akses Grup
 
-Rute: `#accurate__company__access-privilege`
+Rute: `company__access-privilege`
 
 **Judul layar:** Data Baru
 
@@ -45,7 +45,7 @@ Rute: `#accurate__company__access-privilege`
 
 ## Pengguna
 
-Rute: `#accurate__company__user-company`
+Rute: `company__user-company`
 
 **Judul layar:** Data Baru
 
@@ -86,7 +86,7 @@ Rute: `#accurate__company__user-company`
 
 ## Penomoran
 
-Rute: `#accurate__company__auto-number`
+Rute: `company__auto-number`
 
 **Judul layar:** Data Baru · Akses Pengguna
 
@@ -131,7 +131,7 @@ Rute: `#accurate__company__auto-number`
 
 ## Desain Cetakan
 
-Rute: `#accurate__company__print-layout`
+Rute: `company__print-layout`
 
 **Judul layar:** Data Baru
 
@@ -168,7 +168,7 @@ Rute: `#accurate__company__print-layout`
 
 ## Penyetuju Transaksi
 
-Rute: `#accurate__company__user-approval`
+Rute: `company__user-approval`
 
 **Judul layar:** Data Baru · Kriteria Pengajuan · Kriteria Penyetuju
 
@@ -208,11 +208,11 @@ Rute: `#accurate__company__user-approval`
 | Pengguna | lookup |  |  |
 | Dengan Syarat | select |  | Ada Salah Satu Pengguna Setuju, Disetujui Minimal Dua Pengguna, Semua Pengguna Harus Setuju (Berurutan), Semua Pengguna Harus Setuju (Tidak Berurutan) |
 
-## Accurate Store
+## Add-on store (vendor service)
 
-Rute: `#accurate__company__application`
+Rute: `company__application`
 
-## Accurate Capital
+## Financing program (vendor service)
 
-Rute: `#accurate__company__capital-program`
+Rute: `company__capital-program`
 

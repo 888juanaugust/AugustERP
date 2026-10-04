@@ -21,6 +21,9 @@ const docs = path.resolve(here, '../../docs/referensi');
 export const slug = (s) =>
     String(s).toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_]+/g, '-') || 'tanpa-nama';
 
+/** Study data as it may be printed: the vendor's route prefix and its own service names stay out of the rendered pages. */
+export const neutral = (s) => String(s ?? '').replace(/^#accurate__/, '').replace(/^Accurate Store$/, 'Add-on store (vendor service)').replace(/^Accurate Capital$/, 'Financing program (vendor service)');
+
 export function esc(s) {
     return String(s).replace(/\|/g, '\\|');
 }
@@ -44,8 +47,8 @@ export function fieldsTable(fields, withState = false) {
 
 /** One screen (list view and, when read, its empty new-record form) as Markdown lines. */
 export function screenSection(item, entry, level = '##') {
-    const page = [`${level} ${item}`, ''];
-    if (entry.hash) page.push(`Rute: \`${entry.hash}\``, '');
+    const page = [`${level} ${neutral(item)}`, ''];
+    if (entry.hash) page.push(`Rute: \`${neutral(entry.hash)}\``, '');
     const view = entry.view ?? {};
     if (view.headings?.length) page.push(`**Judul layar:** ${view.headings.join(' · ')}`, '');
     if (view.columns?.length) page.push(`**Kolom daftar:** ${view.columns.join(' · ')}`, '');
@@ -93,9 +96,9 @@ export async function render(scanFile, outDir) {
         const page = [`# ${moduleLabel}`, ''];
 
         for (const [item, entry] of Object.entries(mod.items ?? {})) {
-            menu.push(`  - ${item}${entry.hash ? ` — \`${entry.hash}\`` : ''}${entry.error ? ' _(gagal dibaca)_' : ''}`);
+            menu.push(`  - ${neutral(item)}${entry.hash ? ` — \`${neutral(entry.hash)}\`` : ''}${entry.error ? ' _(gagal dibaca)_' : ''}`);
             if (entry.error) {
-                page.push(`## ${item}`, '', `_Gagal dibaca: ${entry.error}_`, '');
+                page.push(`## ${neutral(item)}`, '', `_Gagal dibaca: ${entry.error}_`, '');
                 continue;
             }
 
@@ -104,7 +107,7 @@ export async function render(scanFile, outDir) {
                 continue;
             }
             if (entry.kind === 'preferences') {
-                prefs.push(`## ${item}`, '');
+                prefs.push(`## ${neutral(item)}`, '');
                 for (const [tab, view] of Object.entries(entry.view.tabsRead ?? {})) {
                     prefs.push(`### ${tab}`, '', ...fieldsTable(view?.fields ?? [], true), '');
                 }
@@ -119,7 +122,8 @@ export async function render(scanFile, outDir) {
 
     if (scan.blockedRequests?.length) {
         menu.push('', '## Permintaan yang ditolak pemindai', '', 'Bukti bahwa tidak ada yang tersimpan ke sistem referensi selama studi:', '');
-        for (const b of scan.blockedRequests) menu.push(`- \`${b}\``);
+        // Hostnames are the vendor's; the evidence is the path and the reason, so the host is masked.
+    for (const b of scan.blockedRequests) menu.push(`- \`${String(b).replace(/[\w.-]*accurate\.id/gi, '<reference host>').replace(/\/accurate\//g, '/<app>/')}\``);
     }
 
     await fs.writeFile(path.join(outDir, 'menu.md'), menu.join('\n') + '\n');
