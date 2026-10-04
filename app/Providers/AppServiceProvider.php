@@ -109,6 +109,8 @@ use App\Models\Sales\SellingPriceAdjustment;
 use App\Models\Settings\AccessGroup;
 use App\Models\Settings\DocumentSeries;
 use App\Models\Settlement\PaymentAllocation;
+use App\Models\Tax\TaxFiling;
+use App\Models\Tax\TaxFilingDocument;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -229,6 +231,8 @@ class AppServiceProvider extends ServiceProvider
             'asset_disposal' => AssetDisposal::class,
             'asset_transfer' => AssetTransfer::class,
             'asset_transfer_line' => AssetTransferLine::class,
+            'tax_filing' => TaxFiling::class,
+            'tax_filing_document' => TaxFilingDocument::class,
         ]);
 
         // The stock ledger writes the movements every posting declares.

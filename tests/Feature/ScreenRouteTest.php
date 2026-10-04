@@ -105,6 +105,8 @@ class ScreenRouteTest extends TestCase
             MenuKey::Payments, MenuKey::Receipts, MenuKey::BankTransfers, MenuKey::BankStatements, MenuKey::BankBook, MenuKey::BankReconciliation,
             // phase 8
             MenuKey::FixedAssets, MenuKey::AssetCategories, MenuKey::FiscalAssetCategories, MenuKey::AssetChanges, MenuKey::AssetDisposals, MenuKey::AssetTransfers, MenuKey::AssetsByLocation,
+            // phase 9
+            MenuKey::ETaxInvoiceExport, MenuKey::LegacyETaxExport,
         ] as $key) {
             $this->assertContains($key->value, $built, $key->label());
             $this->assertNotContains($key->value, $placeholders, $key->label().' is a placeholder');
@@ -113,7 +115,7 @@ class ScreenRouteTest extends TestCase
         $this->assertEqualsCanonicalizing([
             MenuKey::PrintLayouts->value, MenuKey::TransactionApprovers->value,
             MenuKey::Budgets->value, MenuKey::BudgetMonitor->value, MenuKey::BudgetTransfers->value, MenuKey::PayrollEntries->value,
-            MenuKey::ECommerceLinks->value,
+            MenuKey::ECommerceLinks->value, MenuKey::EmailTaxInvoice->value,
         ], $placeholders);
     }
 }
