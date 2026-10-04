@@ -46,7 +46,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
-/** The Items & Services screen: the reference system's tabs, with units, prices per level and opening stock. */
+/** The Items & Services screen: the standard's tabs, with units, prices per level and opening stock. */
 class ItemResource extends MasterResource
 {
     protected static ?string $model = Item::class;

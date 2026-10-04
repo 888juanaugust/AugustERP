@@ -6,7 +6,7 @@ namespace App\Domain\FixedAssets;
 
 use Filament\Support\Contracts\HasLabel;
 
-/** The depreciation methods the reference system offers (A-03). */
+/** The depreciation methods the standard offers. */
 enum DepreciationMethod: string implements HasLabel
 {
     case None = 'none';

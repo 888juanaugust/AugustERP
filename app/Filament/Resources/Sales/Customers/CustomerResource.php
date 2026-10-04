@@ -48,7 +48,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
-/** The Customer screen: every tab of the reference system's form. */
+/** The Customer screen: every tab of the standard's form. */
 class CustomerResource extends MasterResource
 {
     protected static ?string $model = Customer::class;

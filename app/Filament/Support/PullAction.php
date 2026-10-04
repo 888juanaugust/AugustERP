@@ -14,7 +14,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
 
 /**
- * The reference system's "Ambil": pick open upstream documents of the chosen
+ * The standard's "Ambil": pick open upstream documents of the chosen
  * party and append their remaining lines to the grid, each line pointing at
  * its source so fulfilment follows.
  */

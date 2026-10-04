@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Field labels shared by every transaction document (the reference system's
+ * Field labels shared by every transaction document (the standard's
  * common header, "Other info" and "Other charges" pattern) and by the masters.
  */
 return [

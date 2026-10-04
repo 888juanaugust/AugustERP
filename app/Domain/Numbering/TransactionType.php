@@ -6,7 +6,7 @@ namespace App\Domain\Numbering;
 
 use Filament\Support\Contracts\HasLabel;
 
-/** The transaction types the Numbering screen offers, as the reference system lists them. */
+/** The transaction types the Numbering screen offers, as the standard lists them. */
 enum TransactionType: string implements HasLabel
 {
     case FixedAsset = 'fixed_asset';

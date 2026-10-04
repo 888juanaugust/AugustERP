@@ -7,7 +7,7 @@ namespace App\Filament\Support;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * The reference system's "Proses": a create page opened with ?source=ID starts
+ * The standard's "Proses": a create page opened with ?source=ID starts
  * from that upstream document, lines pulled and pointing back at it.
  */
 trait PrefillsFromSource

@@ -1,79 +1,93 @@
-# August's ERP
+# August ERP
 
-An ERP for an Indonesian trading business: accounting, inventory, purchasing, sales, cash
-and bank, fixed assets, tax and reports. English interface, Indonesian number and date
-conventions, built on the visual system in `docs/design/DESIGN.md`. It is built in two stages:
-first every function staff rely on today exists and is tested, then the owner modifies it
-and gives it a new interface.
+A standard, modular ERP template for trading companies: accounting, inventory, purchasing,
+sales, cash and bank, fixed assets, tax and reports. Laravel 13 and Filament 5 on
+PostgreSQL. English interface, translatable; Indonesian number, date and tax conventions by
+default. One installation per client: create a repository from this template, run the
+installer, switch off what the client does not need, and keep merging template updates.
 
-The functional spec came from a structured, read-only study of the system the business
-runs today (the *reference system*): every module, screen, list, form field, line grid,
-tab, report and preference, so that nothing staff depend on is lost before the interface
-is redesigned. The application is a Laravel 13 + Filament 5 skeleton that the spec fills
-in, phase by phase.
+## Modules
 
-## What is built (October 2026)
+| Module group | Screens | Switch |
+|---|---|---|
+| Settings | Preferences, access groups, users, numbering, print layouts, approval rules | always on (approval rules switchable) |
+| Company | Branches, currencies, tax codes, payment terms, shipping, FOB, employees, salary components, recurring and memorized transactions, month-end process, contacts, calendar, activity log | always on (branches and currencies follow their preferences) |
+| General Ledger | Chart of accounts, journal vouchers, expense accruals, payroll entries, budgets, account history, journal activity log | always on (budgets and payroll switchable) |
+| Cash & Bank | Payments, receipts, bank transfers, bank statements, bank book, reconciliation, giros | always on |
+| Sales | Quotation → order → delivery → invoice → receipt, down payments, returns, invoice exchange, customers, price categories and adjustments; check-ins, commissions and targets | always on (sales extras off by default) |
+| Purchasing | Requisition → order → receipt → invoice → payment, down payments, returns, claims, vendor prices, payment orders, vendor transfers | always on |
+| Inventory | Stock per warehouse at moving average, adjustments, transfers, stock opname, order fulfilment, stock inquiries, items, units, categories, brands | always on |
+| Fixed Assets | Assets, categories, fiscal groups, monthly depreciation, changes, disposals, transfers, assets by location | on by default |
+| Tax | Tax invoice export (bulk-import XML and the legacy CSV), serial numbers pasted back, VAT return | on by default |
+| Reports | A catalogue of sixteen reports computed from the ledgers, with Excel export | always on |
 
-Every module of the reference system is in place and tested: 86 of its 89 replicated
-screens are real (`ScreenRouteTest` is the honest counter), the other three are
-placeholders that say what is missing — emailing tax invoices, and the two Article 21
-income-tax forms that wait for payroll. Vendor services of the reference system
-(e-banking, virtual accounts, e-payment, marketplace links, the add-on store, financing,
-AI analysis) are not reproduced.
+The functional standard, screen by screen, is in [docs/standard](docs/standard/README.md);
+it is generated from the code (`php artisan erp:standard`), with hand-written notes on
+behaviours and rules. The rules every installation keeps are in [CLAUDE.md](CLAUDE.md);
+what the next releases add is in [docs/ROADMAP.md](docs/ROADMAP.md); the visual system in
+[docs/design/DESIGN.md](docs/design/DESIGN.md).
 
-| Module | Built |
-|---|---|
-| Settings | Preferences, numbering, access groups, users, print layouts, approval rules |
-| Company | Branches, currencies, tax codes, payment terms, shipping, FOB, employees, salary components, contacts, recurring and memorized transactions, month-end process, calendar, activity log |
-| General Ledger | Chart of accounts, one posting layer with append-only ledgers, journal vouchers, expense accruals, payroll entries, budgets, budget monitor and transfers, account history, journal activity log |
-| Cash & Bank | Payments, receipts, bank transfers, bank statements, bank book, reconciliation (a cleared line locks its document), giros |
-| Sales | Quotation → order (marketing approval, credit limit, aging freeze) → delivery → invoice → receipt, down payments, returns, invoice exchange, price adjustments, commissions, targets, check-ins |
-| Purchasing | Requisition → order → receipt → invoice → payment, down payments, returns, claims, vendor prices, payment orders |
-| Inventory | Stock ledger per warehouse with moving average on document dates and recosting, adjustments, transfers, stock opname, order fulfilment, stock and minimum-stock inquiries |
-| Fixed Assets | Assets, categories, fiscal groups, monthly depreciation by method (scheduled), changes, disposals, transfers, assets by location |
-| Tax | e-Tax invoice export (bulk-import XML and the legacy CSV), serial numbers pasted back |
-| Reports | A catalogue of sixteen reports computed from the ledgers with Excel export, and the VAT return |
+## Starting a new client
 
-Documents print under a designable layout; customers, vendors and items import from a
-spreadsheet. Three scheduled commands run the books: `erp:depreciate` (last day of the
-month), `erp:recurring` (daily), and the queue workers. Open accounting questions are listed
-in `docs/spec` (the delivery journal's goods-in-transit account, same-day costing order);
-confirm them with the accountant before relying on those figures.
+1. On GitHub, **Use this template** to create the client's repository, then clone it.
+2. `composer setup` — installs dependencies, writes `.env`, runs `erp:install` with the
+   demo company and builds the assets. Or step by step:
 
-| Where | What |
-|---|---|
-| [docs/spec/README.md](docs/spec/README.md) | **The functional spec**: every module and screen, its list columns, filters, form fields (with the reference system's own field names), line grids, tabs, and the behaviours to replicate. Generated |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | The build order: fifteen phases from Preferensi to UAT, and what "done" means for each |
-| [docs/referensi/menu.md](docs/referensi/menu.md) | The reference system's full menu tree with the route of every screen, as studied |
-| [docs/referensi/modul/](docs/referensi/modul/) · [laporan.md](docs/referensi/laporan.md) · [preferensi.md](docs/referensi/preferensi.md) | The raw study, rendered: one page per module, the reports, the preference switches as the business set them |
-| [docs/referensi/PARITY-webtransaction.md](docs/referensi/PARITY-webtransaction.md) | The feature matrix written for the previous plan (WebTransaction against the reference system), kept as the source of the notes in `docs/spec/_catatan.json` |
-| [tools/referensi-scan/](tools/referensi-scan/README.md) | The study tool: how it is run, what it refuses to do, how the spec is regenerated |
-| [docs/design/DESIGN.md](docs/design/DESIGN.md) | The visual system: tokens, layout, page types, components |
-| [CLAUDE.md](CLAUDE.md) | Rules for anyone (or any agent) working in this repository: stack, language, design, invariants, the footprint rule |
+   ```bash
+   composer install
+   cp .env.example .env && php artisan key:generate      # set DB_*, APP_NAME, APP_URL
+   php artisan erp:install                                # prompts for the company, modules, administrator
+   npm install && npm run build
+   php artisan serve                                      # http://localhost:8000/admin
+   ```
 
-## Running the application
+   Non-interactive, for a server:
 
-```bash
-composer install            # PHP ^8.3, PostgreSQL 16 running, databases augusterp and augusterp_test
-cp .env.example .env && php artisan key:generate
-php artisan migrate --seed  # seeds the administrator: admin@august.test / ADMIN_PASSWORD (or "password" locally)
-php artisan test
-npm install && npm run build
-php artisan serve           # /admin
-```
+   ```bash
+   php artisan erp:install --no-interaction --company="Example Co" --currency=IDR \
+     --admin-email=owner@example.test --admin-password='…' --disable=payroll,sales-extras
+   ```
 
-In a Claude Code cloud session, `.claude/hooks/session-start.sh` does the database, Redis,
-Composer and tool setup on start.
+3. Put the client's own code in `app/Client` and its settings in `config/client.php`
+   (extra modules, starting features, panel colours). The template never touches either.
+4. Keep the template as a remote and merge its updates:
 
-## Regenerating the spec
+   ```bash
+   git remote add template https://github.com/888juanaugust/augusterp.git
+   git config merge.ours.driver true          # once: keeps app/Client, config/client.php, lang/*.json, .env.example
+   git fetch template && git merge template/main
+   ```
+
+Requirements: PHP 8.3 or 8.4 with `pdo_pgsql`, `intl`, `bcmath`; PostgreSQL 16; Redis;
+Node 22. The schedule needs `php artisan schedule:run` every minute (depreciation on the
+month's last day, recurring transactions daily) and a queue worker.
+
+## Running the tests
 
 ```bash
-cd tools/referensi-scan
-npm ci && npm test
-npm run scan -- --screenshots       # credentials and database from the environment, see its README
-npm run render && npm run spec
-./privacy-check.sh
+php artisan test            # against the erp_test database (phpunit.xml)
+vendor/bin/pint --test
+php artisan erp:standard --check
+npm run smoke -- /admin     # screenshots of running pages into storage/app/smoke (php artisan serve first)
 ```
 
-Then read the diff of `docs/referensi/` and `docs/spec/` before committing: labels and
-structure only, never a record.
+In a Claude Code cloud session, `.claude/hooks/session-start.sh` brings up PostgreSQL and
+Redis, installs dependencies and installs the demo database.
+
+## Translating
+
+The English text of the UI is the translation key. For a new locale:
+
+```bash
+node tools/i18n/extract-strings.mjs id       # writes lang/id.json with every key, to fill in
+cp -r lang/en/fields.php lang/id/ ; cp lang/en/status.php lang/id/   # lang/id/menu.php already exists
+```
+
+Set `APP_LOCALE=id`. `node tools/i18n/wrap-literals.mjs` wraps any new literal a developer
+left unwrapped, and `TranslationGuardTest` fails the build on one.
+
+## History
+
+The template grew out of a complete, screen-by-screen rebuild for one Indonesian trading
+company and was then made company-neutral and modular. The study material that rebuild
+worked from is kept on the `archive/study` branch, not on `main`.

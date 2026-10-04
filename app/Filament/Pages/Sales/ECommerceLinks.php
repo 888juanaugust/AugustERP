@@ -16,6 +16,6 @@ class ECommerceLinks extends PlaceholderPage
 
     protected function explanation(): string
     {
-        return "Marketplace links are the reference system's own integration service and are not replicated; a sales order can be entered for any customer.";
+        return 'Marketplace links were an integration service of the original product and are not replicated; a sales order can be entered for any customer.';
     }
 }

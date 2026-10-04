@@ -6,7 +6,7 @@ namespace App\Domain\Shared\Enums;
 
 use Filament\Support\Contracts\HasLabel;
 
-/** The sixteen account types of the reference system's chart of accounts. */
+/** The sixteen account types of the standard chart of accounts. */
 enum AccountType: string implements HasLabel
 {
     case CashBank = 'cash_bank';

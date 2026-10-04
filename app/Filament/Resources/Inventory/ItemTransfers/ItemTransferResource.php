@@ -137,7 +137,7 @@ class ItemTransferResource extends ErpResource
             ]);
     }
 
-    /** The reference system's "Terima Barang": receive what is still in transit from a send. */
+    /** The standard's "Terima Barang": receive what is still in transit from a send. */
     public static function receiveAction(): Action
     {
         return Action::make('receive')

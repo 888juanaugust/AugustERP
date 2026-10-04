@@ -10,9 +10,9 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
 /**
- * A screen of the reference system that exists in the menu but is built in a
- * later phase. Says so, instead of a dead link; ScreenRouteTest counts it as
- * not done.
+ * A screen of the standard that exists in the menu but is built in a later
+ * release. Says so, instead of a dead link; ScreenRouteTest counts it as not
+ * done.
  */
 abstract class PlaceholderPage extends ErpPage
 {
@@ -24,11 +24,11 @@ abstract class PlaceholderPage extends ErpPage
     {
         return $schema->components([
             Callout::make()
-                ->heading(static::menuKey()->label().' is planned, not yet built')
+                ->heading(__(':screen is planned for a later release', ['screen' => static::menuKey()->label()]))
                 ->description($this->explanation())
                 ->icon(Heroicon::OutlinedClock)
                 ->color('info'),
-            Text::make('Studied as "'.static::menuKey()->source().'" in the reference system; see docs/spec.')
+            Text::make(__('See docs/standard for what this screen will hold.'))
                 ->color('gray')
                 ->size('sm'),
         ]);

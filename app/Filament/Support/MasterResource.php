@@ -14,7 +14,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 
 /**
- * A master-data screen: a list with the reference system's columns and its
+ * A master-data screen: a list with the standard's columns and its
  * "Non Aktif" filter, and a form. Small masters manage records in a slide-over;
  * the big ones (customers, vendors, items, employees, accounts) have full pages.
  */
@@ -22,7 +22,7 @@ abstract class MasterResource extends ErpResource
 {
     protected static ?string $recordTitleAttribute = 'name';
 
-    /** The reference system's "Non Aktif: Semua / Ya / Tidak" filter, active records by default. */
+    /** The standard's "Non Aktif: Semua / Ya / Tidak" filter, active records by default. */
     public static function activeFilter(): TernaryFilter
     {
         return TernaryFilter::make('is_active')
@@ -43,7 +43,7 @@ abstract class MasterResource extends ErpResource
         return Toggle::make('is_active')->label(__('fields.is_active'))->default(true);
     }
 
-    /** The reference system's "Daftar Pengguna" tab: everyone, or a chosen set of users. */
+    /** The standard's "Daftar Pengguna" tab: everyone, or a chosen set of users. */
     public static function usersTab(string $relationship = 'users'): Tab
     {
         return Tab::make(__('Users'))
@@ -58,7 +58,7 @@ abstract class MasterResource extends ErpResource
             ]);
     }
 
-    /** "All users" or the names, as the reference system's list column. */
+    /** "All users" or the names, as the standard's list column. */
     public static function usersColumn(string $relationship = 'users'): TextColumn
     {
         return TextColumn::make('used_all_user')

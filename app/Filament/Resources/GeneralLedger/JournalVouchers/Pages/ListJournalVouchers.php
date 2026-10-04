@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
- * The reference system's Journal Vouchers list: every journal entry in the
+ * The standard's Journal Vouchers list: every journal entry in the
  * books, whatever document wrote it, with the source document's number as
  * "Trans. No." and a filter by transaction type. Manual vouchers open to edit.
  */

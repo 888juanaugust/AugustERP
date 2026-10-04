@@ -51,8 +51,8 @@ class InstallCommand extends Command
         $company = $this->option('company') ?: ($interactive ? text('Company name', required: true, default: (string) config('app.name')) : (string) config('app.name'));
         $adminEmail = $this->option('admin-email') ?: env('ADMIN_EMAIL') ?: ($interactive ? text('Administrator email', default: 'admin@example.test', required: true) : 'admin@example.test');
         $adminPassword = $this->option('admin-password') ?: env('ADMIN_PASSWORD') ?: ($interactive ? password('Administrator password (blank keeps "password")') : null);
-        $enable = (array) $this->option('enable');
-        $disable = (array) $this->option('disable');
+        $enable = self::keys($this->option('enable'));
+        $disable = self::keys($this->option('disable'));
         if ($interactive && $enable === [] && $disable === []) {
             $defaultOn = array_values(array_filter($switchable, fn (string $key) => $modules->isEnabled($key)));
             $chosen = multiselect('Optional modules to switch on', options: array_combine($switchable, $switchable), default: $defaultOn, scroll: 10);
@@ -96,5 +96,24 @@ class InstallCommand extends Command
         $this->info("{$options->company} is ready. Log in at ".rtrim((string) config('app.url'), '/').'/admin as '.$options->adminEmail.'.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Module keys from a repeated option, each value possibly comma-separated: --enable=payroll --enable=tax,budgets.
+     *
+     * @return list<string>
+     */
+    private static function keys(mixed $values): array
+    {
+        $keys = [];
+        foreach ((array) $values as $value) {
+            foreach (explode(',', (string) $value) as $key) {
+                if (trim($key) !== '') {
+                    $keys[] = trim($key);
+                }
+            }
+        }
+
+        return array_values(array_unique($keys));
     }
 }

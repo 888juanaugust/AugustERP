@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 
 /**
- * The ten modules of the sidebar, in the order the reference system shows them.
+ * The ten modules of the sidebar, in the order the standard shows them.
  * Every screen (App\Domain\Access\MenuKey) belongs to exactly one.
  */
 enum Modul: string implements HasIcon, HasLabel

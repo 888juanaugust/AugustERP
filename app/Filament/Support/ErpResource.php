@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 /**
- * Every resource of the product: it is one screen of the reference system's
+ * Every resource of the product: it is one screen of the standard's
  * menu (its MenuKey), sits in that screen's module at that screen's position,
  * and is named in English from lang/en/menu.php. Access is decided by the
  * access matrix, not by per-model policies.

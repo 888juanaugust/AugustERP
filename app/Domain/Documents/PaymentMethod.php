@@ -6,7 +6,7 @@ namespace App\Domain\Documents;
 
 use Filament\Support\Contracts\HasLabel;
 
-/** How money moved, as the reference system's payment forms list it. */
+/** How money moved, as the standard's payment forms list it. */
 enum PaymentMethod: string implements HasLabel
 {
     case Cash = 'cash';

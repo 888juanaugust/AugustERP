@@ -8,7 +8,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Fieldset;
 
-/** The reference system's address block: street, city, postcode, province, country. */
+/** The standard's address block: street, city, postcode, province, country. */
 final class AddressFields
 {
     public static function make(string $prefix, string $label): Fieldset

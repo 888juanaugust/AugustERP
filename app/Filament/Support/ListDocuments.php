@@ -10,7 +10,7 @@ use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
-/** A document list: status tabs with counts, as the reference system's "Status" filter. */
+/** A document list: status tabs with counts, as the standard's "Status" filter. */
 abstract class ListDocuments extends ListRecords
 {
     protected string $statusColumn = 'status';

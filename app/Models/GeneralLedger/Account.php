@@ -57,7 +57,7 @@ class Account extends Model implements HasAuditReference
         return $this->belongsToMany(User::class, 'account_users');
     }
 
-    /** "[1101] Cash" as the reference system prints account lookups. */
+    /** "[1101] Cash" as the standard prints account lookups. */
     public function displayName(): string
     {
         return "[{$this->no}] {$this->name}";
