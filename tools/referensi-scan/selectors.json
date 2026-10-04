@@ -1,0 +1,80 @@
+{
+  "_comment": "Tuned from recon on 2026-10-03: the login form sits on the landing page as #account / #password with an invisible reCAPTCHA. allowPost takes exact paths only — never a save endpoint.",
+  "loginUrl": "https://account.reference.example/",
+  "allowPost": [
+    "/referensi/db-update-progress.do",
+    "/referensi/init.do",
+    "/referensi/dashboard.do",
+    "/referensi/company/news-page.do"
+  ],
+  "_allowPost": "All seen in recon on the app host after opening the database. db-update-progress.do: the app polling whether REFERENSI's own schema upgrade of the opened database has finished (the name says update, the call reads a percentage). init.do: the app's client bootstrap that loads the menu and session for the browser. dashboard.do: loads the home screen's figures. company/news-page.do: the news feed on the home screen. Nothing in the books changes.",
+  "stubPost": [
+    "/referensi/company/set-time-zone-offset.do",
+    "/referensi/update-global-search.do"
+  ],
+  "_stubPost": "Refused like any write, but answered locally with an empty success instead of an aborted request, because the app retries each failure every few seconds and raises a modal each time, which stops the crawl. set-time-zone-offset.do would store the browser's clock offset for date display; update-global-search.do refreshes the client's search index. Neither reaches REFERENSI.",
+  "login": {
+    "email": [
+      "#account",
+      "input[name=account]",
+      "input[type=email]",
+      "input[name*=email i]",
+      "input[name*=user i]",
+      "#email",
+      "#username"
+    ],
+    "password": [
+      "input[type=password]"
+    ],
+    "submit": [
+      "button[type=submit]",
+      "input[type=submit]",
+      "button:has-text('Masuk')",
+      "button:has-text('Login')"
+    ]
+  },
+  "database": {
+    "open": [
+      ".card-db",
+      "a:has-text('Buka')",
+      "button:has-text('Buka')",
+      "[class*=database] a",
+      "[class*=db-list] a"
+    ]
+  },
+  "app": {
+    "_comment": "The app is ready when its sidebar's module buttons exist (they are bound from one list, so one means all).",
+    "ready": "a.main-menu-button",
+    "readyCount": 1,
+    "ignoreTabs": [
+      "Dashboard",
+      "Berita"
+    ],
+    "busy": ".busy-load-container",
+    "screenRoot": ".module-container",
+    "listToggle": "button.module-list-button",
+    "closeWindow": "a.aol-main-tab-close",
+    "_screens": "Every opened entry is a window (.module-container) under the app's tab bar. A transaction entry opens as its empty new form; the Daftar button (module-list-button) toggles the list of records; the window's tab closes with its aol-main-tab-close."
+  },
+  "menu": {
+    "_comment": "REFERENSI's sidebar is a column of icon buttons; each opens a submenu whose entries are links to hash routes (#referensi__<area>__<screen>). The module's key is read from its icon's class; its label from the submenu heading, else from labels.",
+    "moduleButtons": "a.main-menu-button",
+    "moduleKey": "icn-menu-([\\w-]+)",
+    "entryLinks": "a[href^='#referensi__']",
+    "labels": {
+      "setting": "Pengaturan",
+      "company": "Perusahaan",
+      "general-ledger": "Buku Besar",
+      "cash-bank": "Kas & Bank",
+      "sales": "Penjualan",
+      "purchase": "Pembelian",
+      "inventory": "Persediaan",
+      "asset": "Aset Tetap",
+      "smartlink-tax": "Pajak",
+      "report": "Laporan"
+    },
+    "modules": [],
+    "sidebarMaxX": 60
+  },
+  "challenge": "(captcha|kode verifikasi|kode otp|kode autentikasi|masukkan kode|verification code|authentication code|enter the code|google authenticator|two-factor|2fa|one-time)"
+}
