@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Domain\Posting\AccountBalances;
+use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Money;
+use App\Models\GeneralLedger\Account;
+use App\Models\Purchasing\PurchaseInvoice;
+use App\Models\Sales\SalesInvoice;
+use Carbon\CarbonImmutable;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 /**
- * The dashboard's KPI row (DESIGN.md page type D). The figures are computed
- * from the ledgers once the documents exist (phases 3 to 7); until then each
- * tile shows the shape of the number it will carry.
+ * The dashboard's KPI row (DESIGN.md page type D): this month's invoiced
+ * sales against last month's, what customers owe, what the company owes,
+ * and the cash and bank balance, all read from the invoices and the journal.
  */
 class CompanyPulse extends StatsOverviewWidget
 {
@@ -24,19 +30,31 @@ class CompanyPulse extends StatsOverviewWidget
 
     protected function getStats(): array
     {
+        $today = CarbonImmutable::today();
+        $thisMonth = (int) SalesInvoice::query()->whereBetween('trans_date', [$today->startOfMonth()->toDateString(), $today->endOfMonth()->toDateString()])->sum('total');
+        $lastMonth = (int) SalesInvoice::query()->whereBetween('trans_date', [$today->subMonthNoOverflow()->startOfMonth()->toDateString(), $today->subMonthNoOverflow()->endOfMonth()->toDateString()])->sum('total');
+        $change = $lastMonth > 0 ? (int) round(($thisMonth - $lastMonth) * 100 / $lastMonth) : null;
+
+        $balances = AccountBalances::asOf($today);
+        $sum = fn (AccountType $type): int => Account::query()->ofType($type)->whereNull('parent_id')->pluck('id')->sum(fn ($id) => $balances[$id] ?? 0);
+        $openReceivables = SalesInvoice::query()->where('payment_status', '!=', 'paid')->count();
+        $overdue = SalesInvoice::query()->where('payment_status', '!=', 'paid')->whereDate('due_date', '<', $today)->count();
+        $openPayables = PurchaseInvoice::query()->where('payment_status', '!=', 'paid')->count();
+
         return [
-            Stat::make('Sales this month', Money::rupiah(0))
-                ->description('vs last month')
+            Stat::make('Sales this month', Money::rupiah($thisMonth))
+                ->description($change === null ? 'nothing invoiced last month' : ($change >= 0 ? '+' : '').$change.' % vs last month')
+                ->descriptionIcon($change === null ? 'heroicon-m-minus' : ($change >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down'))
+                ->color($change === null ? 'gray' : ($change >= 0 ? 'success' : 'danger')),
+            Stat::make('Receivables outstanding', Money::rupiah($sum(AccountType::AccountsReceivable)))
+                ->description($openReceivables.' invoice(s) open'.($overdue ? ", {$overdue} overdue" : ''))
+                ->color($overdue ? 'warning' : 'gray'),
+            Stat::make('Payables outstanding', Money::rupiah($sum(AccountType::AccountsPayable)))
+                ->description($openPayables.' bill(s) open')
                 ->color('gray'),
-            Stat::make('Receivables outstanding', Money::rupiah(0))
-                ->description('0 invoices open')
-                ->color('gray'),
-            Stat::make('Payables outstanding', Money::rupiah(0))
-                ->description('0 bills open')
-                ->color('gray'),
-            Stat::make('Cash and bank', Money::rupiah(0))
-                ->description('all accounts')
-                ->color('gray'),
+            Stat::make('Cash and bank', Money::rupiah($sum(AccountType::CashBank)))
+                ->description('all accounts, today')
+                ->color('primary'),
         ];
     }
 }

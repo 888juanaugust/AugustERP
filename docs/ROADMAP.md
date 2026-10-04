@@ -6,6 +6,8 @@ setiap layar di halaman spec fasenya ada dengan semua isiannya, dan setiap butir
 yang direplikasi* punya uji. Antarmuka selama fase 1–14 adalah pengganti sementara (panel
 Filament); pemilik mendesain ulang setelahnya.
 
+**Status (Oktober 2026):** fase 0–12 selesai dan teruji (lihat `README.md`, bagian *What is built*); fase 13 (penggajian penuh, formulir 1721, email faktur pajak) belum; fase 14 impor master selesai, impor saldo awal lewat formulir pelanggan/pemasok; fase 15 menunggu pemilik.
+
 | Fase | Lingkup | Halaman spec | Selesai ketika |
 |---|---|---|---|
 | 0 | Pemindaian, spec, kerangka Laravel + Filament, CI | — | Sesi ini: repositori ini ada, `docs/spec` terisi, `php artisan test` dan `npm test` hijau |

@@ -12,6 +12,34 @@ tab, report and preference, so that nothing staff depend on is lost before the i
 is redesigned. The application is a Laravel 13 + Filament 5 skeleton that the spec fills
 in, phase by phase.
 
+## What is built (October 2026)
+
+Every module of the reference system is in place and tested: 86 of its 89 replicated
+screens are real (`ScreenRouteTest` is the honest counter), the other three are
+placeholders that say what is missing — emailing tax invoices, and the two Article 21
+income-tax forms that wait for payroll. Vendor services of the reference system
+(e-banking, virtual accounts, e-payment, marketplace links, the add-on store, financing,
+AI analysis) are not reproduced.
+
+| Module | Built |
+|---|---|
+| Settings | Preferences, numbering, access groups, users, print layouts, approval rules |
+| Company | Branches, currencies, tax codes, payment terms, shipping, FOB, employees, salary components, contacts, recurring and memorized transactions, month-end process, calendar, activity log |
+| General Ledger | Chart of accounts, one posting layer with append-only ledgers, journal vouchers, expense accruals, payroll entries, budgets, budget monitor and transfers, account history, journal activity log |
+| Cash & Bank | Payments, receipts, bank transfers, bank statements, bank book, reconciliation (a cleared line locks its document), giros |
+| Sales | Quotation → order (marketing approval, credit limit, aging freeze) → delivery → invoice → receipt, down payments, returns, invoice exchange, price adjustments, commissions, targets, check-ins |
+| Purchasing | Requisition → order → receipt → invoice → payment, down payments, returns, claims, vendor prices, payment orders |
+| Inventory | Stock ledger per warehouse with moving average on document dates and recosting, adjustments, transfers, stock opname, order fulfilment, stock and minimum-stock inquiries |
+| Fixed Assets | Assets, categories, fiscal groups, monthly depreciation by method (scheduled), changes, disposals, transfers, assets by location |
+| Tax | e-Tax invoice export (bulk-import XML and the legacy CSV), serial numbers pasted back |
+| Reports | A catalogue of sixteen reports computed from the ledgers with Excel export, and the VAT return |
+
+Documents print under a designable layout; customers, vendors and items import from a
+spreadsheet. Three scheduled commands run the books: `erp:depreciate` (last day of the
+month), `erp:recurring` (daily), and the queue workers. Open accounting questions are listed
+in `docs/spec` (the delivery journal's goods-in-transit account, same-day costing order);
+confirm them with the accountant before relying on those figures.
+
 | Where | What |
 |---|---|
 | [docs/spec/README.md](docs/spec/README.md) | **The functional spec**: every module and screen, its list columns, filters, form fields (with the reference system's own field names), line grids, tabs, and the behaviours to replicate. Generated |
