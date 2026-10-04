@@ -1,0 +1,33 @@
+name: Scanner
+
+# The ACCURATE scanner's own tests: the network guard and sanitiser as pure
+# functions, and the offline smoke test that runs the whole crawler in a real
+# browser against a fake ACCURATE. Nothing here touches the real ACCURATE.
+on:
+  push:
+    paths: ['tools/accurate-scan/**', '.github/workflows/scanner.yml']
+  pull_request:
+    paths: ['tools/accurate-scan/**', '.github/workflows/scanner.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/accurate-scan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tools/accurate-scan/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - name: No record in the committed scan
+        run: bash tools/accurate-scan/privacy-check.sh
+        working-directory: .
