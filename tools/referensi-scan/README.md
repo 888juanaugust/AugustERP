@@ -1,4 +1,7 @@
-# accurate-scan
+# referensi-scan
+
+The study tool. This is the one place in the repository that names the product it logs
+into; everywhere else it is *sistem referensi* (see the footprint rule in CLAUDE.md).
 
 A read-only scan of the business's ACCURATE Online database. It writes down what
 ACCURATE *is* — every menu entry and its route, every list's columns and filters,
@@ -7,7 +10,7 @@ buttons, report and preference switch — so that `docs/spec/` can say, screen b
 screen, what August's ERP must do to match it.
 
 **Not part of the application.** Laravel never loads it and the Laravel CI does not
-run it; `.github/workflows/scanner.yml` runs its own tests.
+run it; `.github/workflows/scanner.yml` runs its own tests and the privacy check.
 
 ## What it will and will not do
 
@@ -22,7 +25,7 @@ It runs against the live database, so it is built to be unable to change it:
 | Challenges | A visible captcha or a verification code stops the run (exit code 3). In `--headful` mode on your own machine it waits for **you** to answer it; it never answers one itself. The invisible reCAPTCHA on the login form asks nobody anything and is not a challenge |
 
 Every refused request is logged (method, host, path — no ids, no query string)
-and listed at the bottom of `docs/accurate/menu.md` as evidence.
+and listed at the bottom of `docs/referensi/menu.md` as evidence.
 
 `test/smoke.test.mjs` proves the rules in a real browser against a fake
 ACCURATE (`test/fixtures/`) built like the real one — icon sidebar, submenu
@@ -52,7 +55,7 @@ them: every fresh login is another pass through ACCURATE's captcha scoring.
 ## Running it
 
 ```bash
-cd tools/accurate-scan
+cd tools/referensi-scan
 npm ci                  # playwright only; the browser comes from /opt/pw-browsers in a cloud session
 npm test                # guard + sanitiser unit tests, and the offline smoke test
 
@@ -66,8 +69,8 @@ changed: `app` (the sidebar, loading mask, list toggle, window close), `menu`
 (module buttons, entry links), `allowPost` (**exact paths**, never a save).
 
 ```bash
-ACCURATE_DATABASE=JAVAINDO npm run scan -- --screenshots   # every entry → docs/accurate/scan.json (resumable)
-npm run render          # → docs/accurate/{menu,laporan,preferensi}.md, modul/*.md
+ACCURATE_DATABASE=JAVAINDO npm run scan -- --screenshots   # every entry → docs/referensi/scan.json (resumable)
+npm run render          # → docs/referensi/{menu,laporan,preferensi}.md, modul/*.md
 npm run spec            # + docs/spec/_catatan.json → docs/spec/*.md
 ```
 
@@ -80,10 +83,10 @@ A rerun resumes: entries already in `scan.json` are skipped. An entry that faile
 is stored with its error and also skipped, so to retry it, drop it first:
 
 ```bash
-jq 'del(.modules[].items[] | select(.error))' ../../docs/accurate/scan.json > /tmp/s.json && mv /tmp/s.json ../../docs/accurate/scan.json
+jq 'del(.modules[].items[] | select(.error))' ../../docs/referensi/scan.json > /tmp/s.json && mv /tmp/s.json ../../docs/referensi/scan.json
 ```
 
-**Before committing**, read the diff of `docs/accurate/` and `docs/spec/` and run
+**Before committing**, read the diff of `docs/referensi/` and `docs/spec/` and run
 the privacy greps. The sanitiser is conservative, but you are the last check that
 no customer, supplier, employee or amount went in:
 
@@ -99,14 +102,14 @@ When the cloud session cannot reach ACCURATE, or ACCURATE asks for a verificatio
 code:
 
 ```bash
-cd tools/accurate-scan
+cd tools/referensi-scan
 npm ci && npx playwright install chromium
 export ACCURATE_EMAIL=... ACCURATE_PASSWORD=... ACCURATE_DATABASE=JAVAINDO   # in the shell, not in a file you commit
 node scan.mjs --mode=full --headful --screenshots
 node render.mjs && node spec.mjs
 ```
 
-Then commit `docs/accurate/` and `docs/spec/`, after the greps above.
+Then commit `docs/referensi/` and `docs/spec/`, after the greps above.
 
 ## How ACCURATE Online is built (what the selectors encode)
 

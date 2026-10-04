@@ -32,6 +32,15 @@ test('a module whose name sounds like a write still lists', () => {
     assert.equal(classifyRequest({ method: 'POST', url: api('item-transfer/save.do') }).allow, false);
 });
 
+test('an action that begins with a read verb is a read, whatever follows', () => {
+    assert.equal(classifyRequest({ method: 'POST', url: api('cash-bank/search-bank-transfer.do') }).allow, true);
+    assert.equal(classifyRequest({ method: 'POST', url: api('company/search-print-layout.do') }).allow, true);
+    assert.equal(classifyRequest({ method: 'POST', url: api('budget-target/list-accountbudget-transfer.do') }).allow, true);
+    // ...but a save that merely contains a read word is not, and a query string can still refuse.
+    assert.equal(classifyRequest({ method: 'POST', url: api('bank-transfer/save-search.do') }).allow, false);
+    assert.equal(classifyRequest({ method: 'POST', url: api('cash-bank/search-bank-transfer.do?action=delete') }).allow, false);
+});
+
 test('reads by POST are allowed only when the action says read', () => {
     assert.equal(classifyRequest({ method: 'POST', url: api('sales-order/list.do') }).allow, true);
     assert.equal(classifyRequest({ method: 'POST', url: api('customer/detail.do') }).allow, true);

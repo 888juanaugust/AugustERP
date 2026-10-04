@@ -24,7 +24,7 @@ yarn-error.log
 /.vscode
 /.zed
 
-# The ACCURATE scanner's working state: session cookies, recon dumps,
+# The reference study tool's working state: session cookies, recon dumps,
 # request logs and screenshots of live screens. Never committed.
-/tools/accurate-scan/.state
-/tools/accurate-scan/node_modules
+/tools/referensi-scan/.state
+/tools/referensi-scan/node_modules

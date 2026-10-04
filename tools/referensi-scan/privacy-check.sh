@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# The last check before docs/accurate and docs/spec are committed: nothing that
+# The last check before docs/referensi and docs/spec are committed: nothing that
 # looks like one of the business's records may be in them. The sanitiser drops
 # such text before it is written; this proves it, and it fails CI when it did not.
-# Usage: tools/accurate-scan/privacy-check.sh [dir ...]   (default: docs/accurate docs/spec)
+# Usage: tools/accurate-scan/privacy-check.sh [dir ...]   (default: docs/referensi docs/spec)
 set -uo pipefail
 cd "$(dirname "$0")/../.."
-dirs=("$@"); [ ${#dirs[@]} -eq 0 ] && dirs=(docs/accurate docs/spec)
+dirs=("$@"); [ ${#dirs[@]} -eq 0 ] && dirs=(docs/referensi docs/spec)
 status=0
 report() { echo "privacy-check: $1" >&2; status=1; }
 

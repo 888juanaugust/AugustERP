@@ -8,7 +8,7 @@
  *                                look like. Writes only to .state/
  *   node scan.mjs --mode=full    visit every menu entry, its list, its empty
  *                                "new" form and each tab; write
- *                                docs/accurate/scan.json (resumable)
+ *                                docs/referensi/scan.json (resumable)
  *
  * Credentials come from ACCURATE_EMAIL / ACCURATE_PASSWORD and are never
  * printed. ACCURATE_DATABASE picks the database when the account has several.
@@ -55,7 +55,7 @@ const stateDir = path.resolve(args.state ?? process.env.ACCURATE_SCAN_STATE ?? p
 // Screenshots show live records, so they live under the state dir, which is
 // never committed; one PNG per screen, named after the menu path.
 const shotDir = path.join(stateDir, 'screenshots');
-const outFile = path.resolve(args.out ?? path.join(repoRoot, 'docs/accurate/scan.json'));
+const outFile = path.resolve(args.out ?? path.join(repoRoot, 'docs/referensi/scan.json'));
 const selectors = JSON.parse(await fs.readFile(path.resolve(args.selectors ?? path.join(here, 'selectors.json')), 'utf8'));
 
 const email = process.env.ACCURATE_EMAIL;
@@ -330,18 +330,30 @@ async function waitForApp() {
     log('the app did not finish loading within two minutes; continuing with what is there');
 }
 
-/** The one "OK" the crawler presses, as a fallback to the in-page sweeper. */
+/**
+ * Close an informational dialog: a window whose only buttons are OK, Tutup,
+ * Close, Salin, Tidak or Batal. One that offers Simpan, Hapus, Proses or Ya
+ * is a decision and is left alone (the crawler then fails the entry rather
+ * than answer it). The in-page sweeper handles the "request failed" modal;
+ * this covers the others the app raises.
+ */
 async function dismissErrorDialog() {
-    const title = page.getByText(/Terjadi Permasalahan pada Pemrosesan/i).filter({ visible: true });
-    if ((await title.count()) === 0) return false;
-    const ok = page.getByRole('button', { name: /^OK$/i }).filter({ visible: true }).first();
-    if ((await ok.count()) > 0) {
-        await ok.click({ timeout: 2000 }).catch(() => {});
-    } else {
-        await page.keyboard.press('Escape').catch(() => {});
+    const windows = page.locator('.window, [role=dialog], .dialog').filter({ visible: true });
+    const n = await windows.count();
+    let closed = false;
+    for (let i = n - 1; i >= 0; i--) {
+        const w = windows.nth(i);
+        const buttons = w.locator('button, a.button').filter({ visible: true });
+        const labels = [];
+        for (let j = 0; j < Math.min(await buttons.count(), 12); j++) labels.push(((await buttons.nth(j).innerText().catch(() => '')) || '').trim());
+        if (labels.length === 0 || labels.some((l) => !/^(ok|tutup|close|salin|tidak|batal|×|x)$/i.test(l))) continue;
+        const idx = labels.findIndex((l) => /^(ok|tutup|close|tidak|batal)$/i.test(l));
+        if (idx < 0) continue;
+        await buttons.nth(idx).click({ timeout: 2000 }).catch(() => {});
+        closed = true;
+        await pause(500);
     }
-    await pause(500);
-    return true;
+    return closed;
 }
 
 // --- the menu ---------------------------------------------------------------
@@ -418,12 +430,23 @@ async function openEntry(module, entry) {
         await waitForApp();
     }
     await notBusy();
-    const buttons = page.locator(selectors.menu.moduleButtons).filter({ visible: true });
-    await buttons.nth(module.index).click({ timeout: 10000 });
-    await pause(Math.max(delay, 800));
-    const link = page.locator(`${selectors.menu.entryLinks}[href="${entry.hash}"]`).filter({ visible: true }).first();
-    if ((await link.count()) === 0) throw new Error(`entry ${entry.hash} not visible in the ${module.label} submenu`);
-    await link.click({ timeout: 5000 });
+    const link = () => page.locator(`${selectors.menu.entryLinks}[href="${entry.hash}"]`).filter({ visible: true }).first();
+    // A submenu left open closes again when its button is clicked: use what
+    // is open when it is the right one, close it first when it is not.
+    if ((await link().count()) === 0) {
+        if ((await page.locator(selectors.menu.entryLinks).filter({ visible: true }).count()) > 0) {
+            await page.keyboard.press('Escape').catch(() => {});
+            await pause(500);
+        }
+        const buttons = page.locator(selectors.menu.moduleButtons).filter({ visible: true });
+        await buttons.nth(module.index).click({ timeout: 10000 });
+        await pause(Math.max(delay, 800));
+    }
+    if ((await link().count()) === 0) {
+        await shot(`error--${slug(module.label)}--${slug(entry.label)}`);
+        throw new Error(`entry ${entry.hash} not visible in the ${module.label} submenu`);
+    }
+    await link().click({ timeout: 5000 });
     await settle();
 }
 
@@ -530,8 +553,10 @@ async function fullScan() {
                 log(`  ✓ ${entry.label}`);
             } catch (e) {
                 mod.items[entry.label] = { hash: entry.hash, error: cleanText(e.message) ?? 'error' };
-                log(`  ✗ ${entry.label}: ${e.message}`);
+                log(`  ✗ ${entry.label}: ${e.message.split('\n')[0]}`);
+                await shot(`error--${slug(module.label)}--${slug(entry.label)}--after`);
                 await page.keyboard.press('Escape').catch(() => {});
+                await dismissErrorDialog();
             }
             await closeScreen();
             await save(result);

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * docs/accurate/scan.json → readable pages under docs/accurate/:
+ * docs/referensi/scan.json → readable pages under docs/referensi/:
  *   modul/<modul>.md   every screen in a module: list columns, the "new" form
  *                      (fields, line grid, tabs)
  *   laporan.md         every report and its parameters
@@ -16,7 +16,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const docs = path.resolve(here, '../../docs/accurate');
+const docs = path.resolve(here, '../../docs/referensi');
 
 export const slug = (s) =>
     String(s).toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[\s_]+/g, '-') || 'tanpa-nama';
@@ -84,9 +84,9 @@ export async function render(scanFile, outDir) {
     const scan = JSON.parse(await fs.readFile(scanFile, 'utf8'));
     await fs.mkdir(path.join(outDir, 'modul'), { recursive: true });
 
-    const menu = ['# Menu ACCURATE', '', `Dipindai ${scan.scannedAt ?? '—'}. Setiap entri menu adalah rute hash di aplikasi ACCURATE Online.`, ''];
-    const reports = ['# Laporan ACCURATE', ''];
-    const prefs = ['# Preferensi ACCURATE', '', 'Saklar dan angka seperti tersetel di database yang dipindai.', ''];
+    const menu = ['# Menu sistem referensi', '', `Dipelajari ${scan.scannedAt ?? '—'}. Setiap entri menu adalah rute hash di aplikasi sistem referensi.`, ''];
+    const reports = ['# Laporan sistem referensi', ''];
+    const prefs = ['# Preferensi sistem referensi', '', 'Saklar dan angka seperti tersetel di database yang dipelajari.', ''];
 
     for (const [moduleLabel, mod] of Object.entries(scan.modules ?? {})) {
         menu.push(`- **${moduleLabel}**${mod.key ? ` (\`${mod.key}\`)` : ''}`);
@@ -118,7 +118,7 @@ export async function render(scanFile, outDir) {
     }
 
     if (scan.blockedRequests?.length) {
-        menu.push('', '## Permintaan yang ditolak pemindai', '', 'Bukti bahwa tidak ada yang tersimpan ke ACCURATE selama pemindaian:', '');
+        menu.push('', '## Permintaan yang ditolak pemindai', '', 'Bukti bahwa tidak ada yang tersimpan ke sistem referensi selama studi:', '');
         for (const b of scan.blockedRequests) menu.push(`- \`${b}\``);
     }
 

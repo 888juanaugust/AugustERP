@@ -2,8 +2,13 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "august/erp",
     "type": "project",
-    "description": "August's ERP: a replica of ACCURATE Online's functions, to be modified and re-skinned. Spec in docs/spec, scanned from ACCURATE by tools/accurate-scan.",
-    "keywords": ["erp", "akuntansi", "accurate", "laravel", "filament"],
+    "description": "August's ERP: accounting, inventory, purchasing, sales, cash and bank, fixed assets, tax and reports for an Indonesian trading business. The spec is in docs/spec.",
+    "keywords": [
+        "erp",
+        "akuntansi",
+        "laravel",
+        "filament"
+    ],
     "license": "proprietary",
     "require": {
         "php": "^8.3",

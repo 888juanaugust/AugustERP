@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * docs/accurate/scan.json + docs/spec/_catatan.json → docs/spec/<modul>.md
+ * docs/referensi/scan.json + docs/spec/_catatan.json → docs/spec/<modul>.md
  *
- * The functional spec of August's ERP: one page per ACCURATE module, one
+ * The functional spec of August's ERP: one page per module of the reference system, one
  * section per screen, with what the scan read (list columns, filters, the
  * new-record form's fields and line grids, tabs, buttons) and what the notes
  * file adds by hand — the behaviours to replicate, the WebTransaction extras
@@ -20,7 +20,7 @@ import { fieldsTable, esc, slug } from './render.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
-const scanFile = path.resolve(process.argv[2] ?? path.join(root, 'docs/accurate/scan.json'));
+const scanFile = path.resolve(process.argv[2] ?? path.join(root, 'docs/referensi/scan.json'));
 const notesFile = path.resolve(process.argv[3] ?? path.join(root, 'docs/spec/_catatan.json'));
 const outDir = path.resolve(process.argv[4] ?? path.join(root, 'docs/spec'));
 
@@ -49,13 +49,13 @@ function fieldRows(fields) {
         const options = f.options ? f.options.join(', ') : f.optionCount !== undefined ? `(${f.optionCount} data)` : '';
         return `| ${esc(label)} | ${f.name ? `\`${f.name}\`` : ''} | ${f.type} | ${f.required ? 'ya' : ''} | ${esc(options)} |`;
     });
-    return ['| Isian | Nama di ACCURATE | Jenis | Wajib | Pilihan |', '|---|---|---|---|---|', ...rows];
+    return ['| Isian | Nama di sistem referensi | Jenis | Wajib | Pilihan |', '|---|---|---|---|---|', ...rows];
 }
 
 function screenSpec(moduleLabel, item, entry) {
     const out = [`## ${item}`, ''];
     if (entry.error) return [...out, `_Layar ini gagal dibaca oleh pemindai (${entry.error}); lengkapi dengan tangan atau pindai ulang._`, ''];
-    out.push(`Rute ACCURATE: \`${entry.hash ?? '—'}\` · Jenis: ${entry.kind === 'report' ? 'laporan' : entry.kind === 'preferences' ? 'preferensi' : 'layar'}`, '');
+    out.push(`Rute di sistem referensi: \`${entry.hash ?? '—'}\` · Jenis: ${entry.kind === 'report' ? 'laporan' : entry.kind === 'preferences' ? 'preferensi' : 'layar'}`, '');
 
     const view = entry.view ?? {};
     if (view.columns?.length || view.filters?.length || view.buttons?.length || view.catalog?.length) {
@@ -102,7 +102,7 @@ function screenSpec(moduleLabel, item, entry) {
     return out;
 }
 
-const index = ['# Spesifikasi fungsional August\'s ERP', '', `Dibangkitkan dari pemindaian ACCURATE Online ${scan.scannedAt ?? '—'} (\`docs/accurate/scan.json\`) dan catatan \`docs/spec/_catatan.json\` oleh \`tools/accurate-scan/spec.mjs\`. Jangan sunting berkas modul dengan tangan; sunting catatannya, lalu bangkitkan ulang.`, ''];
+const index = ['# Spesifikasi fungsional August\'s ERP', '', `Dibangkitkan dari studi sistem referensi ${scan.scannedAt ?? '—'} (\`docs/referensi/scan.json\`) dan catatan \`docs/spec/_catatan.json\` oleh \`tools/referensi-scan/spec.mjs\`. Jangan sunting berkas modul dengan tangan; sunting catatannya, lalu bangkitkan ulang.`, ''];
 index.push(...notesSection(noteFor('_global'), '##'));
 index.push('## Modul', '', '| Modul | Kunci | Layar | Berkas |', '|---|---|---|---|');
 
@@ -111,7 +111,7 @@ for (const [moduleLabel, mod] of Object.entries(scan.modules ?? {})) {
     const file = `${slug(moduleLabel)}.md`;
     index.push(`| ${moduleLabel} | \`${mod.key ?? ''}\` | ${items.length} | [${file}](${file}) |`);
 
-    const page = [`# ${moduleLabel}`, '', `Modul ACCURATE \`${mod.key ?? ''}\`, ${items.length} layar. Dibangkitkan; sunting \`_catatan.json\`, bukan berkas ini.`, ''];
+    const page = [`# ${moduleLabel}`, '', `Modul sistem referensi \`${mod.key ?? ''}\`, ${items.length} layar. Dibangkitkan; sunting \`_catatan.json\`, bukan berkas ini.`, ''];
     page.push(...notesSection(noteFor(moduleLabel), '##'));
     page.push('## Layar', '', ...items.map(([item, entry]) => `- [${item}](#${slug(item)})${entry.error ? ' _(gagal dibaca)_' : ''}`), '');
     for (const [item, entry] of items) page.push(...screenSpec(moduleLabel, item, entry));
