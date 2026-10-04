@@ -16,6 +16,7 @@ use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\SalesLinesTab;
 use App\Models\Sales\Delivery;
@@ -132,7 +133,7 @@ class SalesReturnResource extends ErpResource
                 SelectFilter::make('return_type')->label('Return from')->options(['invoice' => 'Invoice', 'delivery' => 'Delivery', 'none' => 'No invoice', 'down_payment' => 'Down payment']),
                 TernaryFilter::make('is_printed')->label(__('fields.is_printed')),
             ])
-            ->recordActions([EditAction::make()]);
+            ->recordActions([EditAction::make(), PrintAction::make()]);
     }
 
     public static function getPages(): array

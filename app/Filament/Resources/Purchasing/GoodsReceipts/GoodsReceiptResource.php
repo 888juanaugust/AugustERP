@@ -14,6 +14,7 @@ use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\VendorFields;
 use App\Models\Purchasing\GoodsReceipt;
@@ -87,6 +88,7 @@ class GoodsReceiptResource extends ErpResource
                 Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('primary')
                     ->visible(fn (GoodsReceipt $record) => in_array($record->status, ['pending', 'partial'], true) && PurchaseInvoiceResource::canCreate())
                     ->url(fn (GoodsReceipt $record) => PurchaseInvoiceResource::getUrl('create', ['source' => 'receipt:'.$record->id])),
+                PrintAction::make(),
             ]);
     }
 

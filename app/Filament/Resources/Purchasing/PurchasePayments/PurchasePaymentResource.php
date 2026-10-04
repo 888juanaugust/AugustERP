@@ -22,6 +22,7 @@ use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayableFields;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\VendorFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\Purchasing\PurchasePayment;
@@ -163,7 +164,7 @@ class PurchasePaymentResource extends ErpResource
                 SelectFilter::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('vendor_id')->label('Paid to')->relationship('vendor', 'name')->searchable(),
             ])
-            ->recordActions([EditAction::make(), ...GiroActions::forRecord()]);
+            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), PrintAction::make()]);
     }
 
     public static function getPages(): array

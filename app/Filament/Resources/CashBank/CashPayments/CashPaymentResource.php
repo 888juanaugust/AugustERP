@@ -19,6 +19,7 @@ use App\Filament\Support\GiroActions;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Models\CashBank\CashPayment;
 use App\Models\Company\MemorizedTransaction;
 use App\Models\GeneralLedger\Account;
@@ -115,7 +116,7 @@ class CashPaymentResource extends ErpResource
                 DocumentListFilters::dateRange(),
                 SelectFilter::make('bank_account_id')->label('Cash / Bank')->options(fn () => Account::options(AccountType::CashBank)),
             ])
-            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction()]);
+            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);
     }
 
     /** Saves the voucher's accounts and amounts as a memorized transaction, used again from the create page. */

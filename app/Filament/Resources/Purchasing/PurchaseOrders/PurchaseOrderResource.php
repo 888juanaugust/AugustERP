@@ -16,6 +16,7 @@ use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\VendorFields;
 use App\Models\Inventory\Item;
@@ -92,6 +93,7 @@ class PurchaseOrderResource extends ErpResource
                 Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('gray')
                     ->visible(fn (PurchaseOrder $record) => in_array($record->status, ['pending', 'partial'], true) && PurchaseInvoiceResource::canCreate())
                     ->url(fn (PurchaseOrder $record) => PurchaseInvoiceResource::getUrl('create', ['source' => 'order:'.$record->id])),
+                PrintAction::make(),
             ]);
     }
 
