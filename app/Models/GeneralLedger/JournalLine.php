@@ -2,9 +2,11 @@
 
 namespace App\Models\GeneralLedger;
 
+use App\Models\CashBank\BankReconciliationItem;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /** One side of a journal entry. Append-only. */
 class JournalLine extends Model
@@ -41,5 +43,11 @@ class JournalLine extends Model
     public function posting(): BelongsTo
     {
         return $this->belongsTo(Posting::class);
+    }
+
+    /** Set once the bank agreed with this line in a reconciliation. */
+    public function reconciliationItem(): HasOne
+    {
+        return $this->hasOne(BankReconciliationItem::class);
     }
 }

@@ -5,15 +5,30 @@ namespace App\Providers;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
+use App\Domain\CashBank\GiroService;
+use App\Domain\CashBank\Reconciler;
 use App\Domain\Fulfilment\FulfilmentService;
 use App\Domain\Inventory\Costing\Recoster;
 use App\Domain\Inventory\StockLedger;
 use App\Domain\Pengaturan\Preferensi;
+use App\Domain\Posting\Blockers\GiroBlocker;
+use App\Domain\Posting\Blockers\ReconciledBlocker;
 use App\Domain\Posting\Blockers\ReferencedBlocker;
 use App\Domain\Posting\Blockers\SettledBlocker;
 use App\Domain\Posting\DocumentGuard;
 use App\Domain\Posting\PostingService;
 use App\Domain\Settlement\AllocationLedger;
+use App\Models\CashBank\BankReconciliation;
+use App\Models\CashBank\BankReconciliationItem;
+use App\Models\CashBank\BankStatement;
+use App\Models\CashBank\BankStatementLine;
+use App\Models\CashBank\BankTransfer;
+use App\Models\CashBank\BankTransferFee;
+use App\Models\CashBank\CashPayment;
+use App\Models\CashBank\CashPaymentLine;
+use App\Models\CashBank\CashReceipt;
+use App\Models\CashBank\CashReceiptLine;
+use App\Models\CashBank\Giro;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
 use App\Models\Company\Contact;
@@ -100,7 +115,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DocumentGuard::class);
         $this->app->singleton(Recoster::class);
         $this->app->singleton(FulfilmentService::class);
-        $this->app->singleton(Recoster::class);
+        $this->app->singleton(GiroService::class);
+        $this->app->singleton(Reconciler::class);
     }
 
     public function boot(): void
@@ -180,6 +196,17 @@ class AppServiceProvider extends ServiceProvider
             'salesman_commission' => SalesmanCommission::class,
             'sales_target' => SalesTarget::class,
             'check_in' => CheckIn::class,
+            'cash_payment' => CashPayment::class,
+            'cash_payment_line' => CashPaymentLine::class,
+            'cash_receipt' => CashReceipt::class,
+            'cash_receipt_line' => CashReceiptLine::class,
+            'bank_transfer' => BankTransfer::class,
+            'bank_transfer_fee' => BankTransferFee::class,
+            'bank_statement' => BankStatement::class,
+            'bank_statement_line' => BankStatementLine::class,
+            'bank_reconciliation' => BankReconciliation::class,
+            'bank_reconciliation_item' => BankReconciliationItem::class,
+            'giro' => Giro::class,
         ]);
 
         // The stock ledger writes the movements every posting declares.
@@ -195,6 +222,8 @@ class AppServiceProvider extends ServiceProvider
         $guard = $this->app->make(DocumentGuard::class);
         $guard->addBlocker($this->app->make(SettledBlocker::class));
         $guard->addBlocker($this->app->make(ReferencedBlocker::class));
+        $guard->addBlocker($this->app->make(ReconciledBlocker::class));
+        $guard->addBlocker($this->app->make(GiroBlocker::class));
 
         // Who pulls lines from whom, so processed quantities and statuses follow.
         $fulfilment = $this->app->make(FulfilmentService::class);

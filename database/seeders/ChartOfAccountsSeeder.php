@@ -23,6 +23,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['1101', 'Petty Cash', AccountType::CashBank, false],
             ['1102', 'Bank', AccountType::CashBank, false],
             ['1103', 'Pending Payments', AccountType::CashBank, true],
+            ['1105', 'Giros Receivable', AccountType::OtherCurrentAsset, true],
             ['1200', 'Accounts Receivable', AccountType::AccountsReceivable, true],
             ['1300', 'Inventory', AccountType::Inventory, true],
             ['1310', 'Goods Delivered, Not Invoiced', AccountType::Inventory, true],
@@ -32,6 +33,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['1500', 'Fixed Assets', AccountType::FixedAsset, false],
             ['1510', 'Accumulated Depreciation', AccountType::AccumulatedDepreciation, false],
             ['2100', 'Accounts Payable', AccountType::AccountsPayable, true],
+            ['2105', 'Giros Payable', AccountType::OtherCurrentLiability, true],
             ['2110', 'Goods Received, Not Invoiced', AccountType::AccountsPayable, true],
             ['2200', 'VAT Out', AccountType::OtherCurrentLiability, true],
             ['2210', 'Customer Down Payments', AccountType::OtherCurrentLiability, true],
@@ -80,6 +82,8 @@ class ChartOfAccountsSeeder extends Seeder
             PreferensiKey::InventoryAccount->value => $id('1300'),
             PreferensiKey::GoodsInTransitAccount->value => $id('1310'),
             PreferensiKey::RoundingAccount->value => $id('7200'),
+            PreferensiKey::GiroReceivableAccount->value => $id('1105'),
+            PreferensiKey::GiroPayableAccount->value => $id('2105'),
             PreferensiKey::TemporaryPaymentAccount->value => $id('1103'),
         ]);
     }
