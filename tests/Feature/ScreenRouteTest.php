@@ -59,7 +59,7 @@ class ScreenRouteTest extends TestCase
         }
     }
 
-    public function test_the_phase_one_screens_are_registered(): void
+    public function test_the_built_screens_are_registered_and_the_placeholders_are_known(): void
     {
         $built = array_keys($this->screens());
         $placeholders = collect(Filament::getPanel('admin')->getPages())
@@ -72,11 +72,19 @@ class ScreenRouteTest extends TestCase
             MenuKey::Preferences, MenuKey::AccessGroups, MenuKey::Users, MenuKey::Numbering,
             MenuKey::Currencies, MenuKey::Branches, MenuKey::TaxCodes, MenuKey::PaymentTerms,
             MenuKey::ShippingMethods, MenuKey::FOBTerms, MenuKey::ActivityLog,
+            // phase 2
+            MenuKey::Customers, MenuKey::CustomerCategories, MenuKey::PriceCategories, MenuKey::Vendors, MenuKey::VendorCategories,
+            MenuKey::Employees, MenuKey::Contacts, MenuKey::ItemsAndServices, MenuKey::Units, MenuKey::ItemCategories, MenuKey::ItemBrands, MenuKey::Warehouses,
+            // phase 3
+            MenuKey::ChartOfAccounts, MenuKey::JournalVouchers, MenuKey::ExpenseAccruals, MenuKey::AccountHistory, MenuKey::MonthEndProcess, MenuKey::JournalActivityLog,
         ] as $key) {
             $this->assertContains($key->value, $built, $key->label());
             $this->assertNotContains($key->value, $placeholders, $key->label().' is a placeholder');
         }
 
-        $this->assertEqualsCanonicalizing([MenuKey::PrintLayouts->value, MenuKey::TransactionApprovers->value], $placeholders);
+        $this->assertEqualsCanonicalizing([
+            MenuKey::PrintLayouts->value, MenuKey::TransactionApprovers->value,
+            MenuKey::Budgets->value, MenuKey::BudgetMonitor->value, MenuKey::BudgetTransfers->value, MenuKey::PayrollEntries->value,
+        ], $placeholders);
     }
 }
