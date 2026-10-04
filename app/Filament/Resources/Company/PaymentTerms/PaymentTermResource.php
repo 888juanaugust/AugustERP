@@ -38,16 +38,16 @@ class PaymentTermResource extends MasterResource
     {
         return $schema->components([
             TextInput::make('name')->label(__('fields.name'))->required()->maxLength(60)->unique(ignoreRecord: true)->columnSpanFull(),
-            Fieldset::make('Early payment discount')
+            Fieldset::make(__('Early payment discount'))
                 ->columns(2)
                 ->schema([
-                    TextInput::make('discount_days')->label('If paid within (days)')->numeric()->integer()->minValue(0)->default(0)->required(),
-                    TextInput::make('discount_percent')->label('Discount (%)')->numeric()->minValue(0)->maxValue(100)->step('0.01')->default(0)->required(),
+                    TextInput::make('discount_days')->label(__('If paid within (days)'))->numeric()->integer()->minValue(0)->default(0)->required(),
+                    TextInput::make('discount_percent')->label(__('Discount (%)'))->numeric()->minValue(0)->maxValue(100)->step('0.01')->default(0)->required(),
                 ])
                 ->columnSpanFull(),
-            TextInput::make('due_days')->label('Due in (days)')->numeric()->integer()->minValue(0)->default(30)->required(),
+            TextInput::make('due_days')->label(__('Due in (days)'))->numeric()->integer()->minValue(0)->default(30)->required(),
             Textarea::make('memo')->label(__('fields.memo'))->rows(2)->columnSpanFull(),
-            Toggle::make('is_default')->label('Default term')->inline(false),
+            Toggle::make('is_default')->label(__('Default term'))->inline(false),
             self::activeToggle()->inline(false),
         ])->columns(2);
     }
@@ -57,9 +57,9 @@ class PaymentTermResource extends MasterResource
         return $table
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('discount_percent')->label('Discount')->state(fn (PaymentTerm $r) => Format::percent($r->discount_percent))->alignEnd(),
-                TextColumn::make('discount_days')->label('Discount period (days)')->alignEnd(),
-                TextColumn::make('due_days')->label('Due (days)')->alignEnd()->sortable(),
+                TextColumn::make('discount_percent')->label(__('Discount'))->state(fn (PaymentTerm $r) => Format::percent($r->discount_percent))->alignEnd(),
+                TextColumn::make('discount_days')->label(__('Discount period (days)'))->alignEnd(),
+                TextColumn::make('due_days')->label(__('Due (days)'))->alignEnd()->sortable(),
                 TextColumn::make('memo')->label(__('fields.memo'))->limit(50)->placeholder('—'),
                 self::activeColumn(),
                 IconColumn::make('is_default')->label(__('fields.is_default'))->boolean(),

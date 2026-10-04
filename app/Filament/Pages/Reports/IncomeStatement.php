@@ -16,7 +16,7 @@ class IncomeStatement extends ReportPage
 
     public static function title(): string
     {
-        return 'Income Statement';
+        return __('Income Statement');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class IncomeStatement extends ReportPage
 
     public static function description(): string
     {
-        return 'Revenue, cost of sales, expenses and the net income of the period, per branch when asked.';
+        return __('Revenue, cost of sales, expenses and the net income of the period, per branch when asked.');
     }
 
     protected function rows(): array

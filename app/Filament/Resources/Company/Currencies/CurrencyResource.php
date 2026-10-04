@@ -36,12 +36,12 @@ class CurrencyResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('code')->label('Code')->required()->length(3)->alpha()->unique(ignoreRecord: true)->extraInputAttributes(['style' => 'text-transform: uppercase'])
+            TextInput::make('code')->label(__('Code'))->required()->length(3)->alpha()->unique(ignoreRecord: true)->extraInputAttributes(['style' => 'text-transform: uppercase'])
                 ->dehydrateStateUsing(fn (?string $state) => strtoupper((string) $state)),
-            TextInput::make('symbol')->label('Symbol')->required()->maxLength(10),
-            TextInput::make('name')->label('Name')->required()->maxLength(80),
-            TextInput::make('country')->label('Country')->maxLength(80),
-            Toggle::make('is_base')->label('Base currency')->helperText('Books are kept in the base currency.')->inline(false),
+            TextInput::make('symbol')->label(__('Symbol'))->required()->maxLength(10),
+            TextInput::make('name')->label(__('Name'))->required()->maxLength(80),
+            TextInput::make('country')->label(__('Country'))->maxLength(80),
+            Toggle::make('is_base')->label(__('Base currency'))->helperText(__('Books are kept in the base currency.'))->inline(false),
             self::activeToggle()->inline(false),
         ])->columns(2);
     }
@@ -50,10 +50,10 @@ class CurrencyResource extends MasterResource
     {
         return $table
             ->columns([
-                TextColumn::make('symbol')->label('Symbol'),
-                TextColumn::make('code')->label('Code')->searchable()->sortable(),
-                TextColumn::make('name')->label('Country / Name')->state(fn (Currency $r) => $r->country ? "{$r->country} · {$r->name}" : $r->name)->searchable(),
-                IconColumn::make('is_base')->label('Base')->boolean(),
+                TextColumn::make('symbol')->label(__('Symbol')),
+                TextColumn::make('code')->label(__('Code'))->searchable()->sortable(),
+                TextColumn::make('name')->label(__('Country / Name'))->state(fn (Currency $r) => $r->country ? "{$r->country} · {$r->name}" : $r->name)->searchable(),
+                IconColumn::make('is_base')->label(__('Base'))->boolean(),
                 self::activeColumn(),
             ])
             ->defaultSort('code')

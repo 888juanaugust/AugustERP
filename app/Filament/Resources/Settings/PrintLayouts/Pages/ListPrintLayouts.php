@@ -14,6 +14,6 @@ class ListPrintLayouts extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New print layout')];
+        return [CreateAction::make()->label(__('New print layout'))];
     }
 }

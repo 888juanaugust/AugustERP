@@ -35,12 +35,12 @@ class UnitResource extends MasterResource
     {
         return $schema->components([
             Tabs::make('unit')->tabs([
-                Tab::make('General')->schema([
+                Tab::make(__('General'))->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(30)->unique(ignoreRecord: true),
                 ]),
-                Tab::make('Tax info')->schema([
-                    TextInput::make('unit_tax_code')->label('e-Tax unit code')->placeholder('UM.0018')->maxLength(20)
-                        ->helperText('The unit code the tax office expects on the tax invoice export.'),
+                Tab::make(__('Tax info'))->schema([
+                    TextInput::make('unit_tax_code')->label(__('e-Tax unit code'))->placeholder(__('UM.0018'))->maxLength(20)
+                        ->helperText(__('The unit code the tax office expects on the tax invoice export.')),
                 ]),
             ]),
         ])->columns(1);
@@ -51,7 +51,7 @@ class UnitResource extends MasterResource
         return $table
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('unit_tax_code')->label('e-Tax unit code')->placeholder('—'),
+                TextColumn::make('unit_tax_code')->label(__('e-Tax unit code'))->placeholder('—'),
             ])
             ->defaultSort('name')
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);

@@ -13,25 +13,28 @@ class SalaryComponent extends Model
 {
     use RecordsActivity;
 
-    /** The tax office's income kinds for form 1721, as the reference system lists them. */
-    public const FEE_TYPES = [
-        'salary' => 'Salary / pension / old-age benefit',
-        'tax_allowance' => 'Income tax allowance',
-        'tax_subsidy' => 'Income tax subsidy',
-        'other_allowance' => 'Other allowances',
-        'overtime' => 'Overtime and the like',
-        'accident_insurance' => 'Work accident insurance allowance',
-        'death_insurance' => 'Death insurance',
-        'honorarium' => 'Honoraria and similar rewards',
-        'health_premium_employer' => 'Health insurance premium paid by the employer',
-        'in_kind' => 'Benefits in kind',
-        'bonus' => 'Bonus, gratuity, production incentive and holiday allowance',
-        'pension_employer' => 'Pension contribution paid by the employer',
-        'deduction_no_tax' => 'Salary deduction (not reducing tax)',
-        'deduction_tax' => 'Salary reduction (reducing tax)',
-        'health_premium_employee' => 'Health insurance premium paid by the employee',
-        'pension_employee' => 'Pension contribution paid by the employee',
-    ];
+    /** @return array<string, string> kind → label: the tax office's income kinds for form 1721 */
+    public static function feeTypes(): array
+    {
+        return [
+            'salary' => __('Salary / pension / old-age benefit'),
+            'tax_allowance' => __('Income tax allowance'),
+            'tax_subsidy' => __('Income tax subsidy'),
+            'other_allowance' => __('Other allowances'),
+            'overtime' => __('Overtime and the like'),
+            'accident_insurance' => __('Work accident insurance allowance'),
+            'death_insurance' => __('Death insurance'),
+            'honorarium' => __('Honoraria and similar rewards'),
+            'health_premium_employer' => __('Health insurance premium paid by the employer'),
+            'in_kind' => __('Benefits in kind'),
+            'bonus' => __('Bonus, gratuity, production incentive and holiday allowance'),
+            'pension_employer' => __('Pension contribution paid by the employer'),
+            'deduction_no_tax' => __('Salary deduction (not reducing tax)'),
+            'deduction_tax' => __('Salary reduction (reducing tax)'),
+            'health_premium_employee' => __('Health insurance premium paid by the employee'),
+            'pension_employee' => __('Pension contribution paid by the employee'),
+        ];
+    }
 
     protected $guarded = [];
 

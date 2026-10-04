@@ -36,9 +36,9 @@ class PriceCategoryResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('Category name')->required()->maxLength(100)->unique(ignoreRecord: true),
+            TextInput::make('name')->label(__('Category name'))->required()->maxLength(100)->unique(ignoreRecord: true),
             Textarea::make('notes')->label(__('fields.memo'))->rows(3),
-            Toggle::make('is_default')->label('Default level')->inline(false),
+            Toggle::make('is_default')->label(__('Default level'))->inline(false),
         ])->columns(1);
     }
 
@@ -47,8 +47,8 @@ class PriceCategoryResource extends MasterResource
         return $table
             ->columns([
                 TextColumn::make('notes')->label(__('fields.memo'))->limit(60)->placeholder('—'),
-                TextColumn::make('name')->label('Category name')->searchable()->sortable(),
-                IconColumn::make('is_default')->label('Default')->boolean(),
+                TextColumn::make('name')->label(__('Category name'))->searchable()->sortable(),
+                IconColumn::make('is_default')->label(__('Default'))->boolean(),
             ])
             ->defaultSort('name')
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);

@@ -16,7 +16,7 @@ class SalesByItem extends ReportPage
 
     public static function title(): string
     {
-        return 'Sales by Item';
+        return __('Sales by Item');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class SalesByItem extends ReportPage
 
     public static function description(): string
     {
-        return 'Invoiced sales per item in the period: invoices, quantity, amount, VAT and total.';
+        return __('Invoiced sales per item in the period: invoices, quantity, amount, VAT and total.');
     }
 
     protected function rows(): array

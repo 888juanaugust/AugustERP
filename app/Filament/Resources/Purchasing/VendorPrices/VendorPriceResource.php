@@ -56,11 +56,11 @@ class VendorPriceResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 VendorFields::select(fillsTerms: false),
-                DatePicker::make('trans_date')->label('Effective from')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Effective from'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 NumberFields::make(TransactionType::VendorPrice),
-                Toggle::make('has_end_date')->label('Set an end date')->live()->dehydrated(false)
+                Toggle::make('has_end_date')->label(__('Set an end date'))->live()->dehydrated(false)
                     ->afterStateHydrated(fn (Toggle $component, ?VendorPrice $record) => $component->state($record?->end_date !== null)),
-                DatePicker::make('end_date')->label('Ends on')->native(false)->displayFormat(Format::DATE_INPUT)->visible(fn (Get $get) => (bool) $get('has_end_date')),
+                DatePicker::make('end_date')->label(__('Ends on'))->native(false)->displayFormat(Format::DATE_INPUT)->visible(fn (Get $get) => (bool) $get('has_end_date')),
             ]),
             Tabs::make('prices')->tabs([
                 Tab::make(__('fields.lines'))->schema([
@@ -68,7 +68,7 @@ class VendorPriceResource extends ErpResource
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
-                        ->table([TableColumn::make('Item'), TableColumn::make('Unit'), TableColumn::make('New price')->alignment(Alignment::End)])
+                        ->table([TableColumn::make(__('Item')), TableColumn::make(__('Unit')), TableColumn::make(__('New price'))->alignment(Alignment::End)])
                         ->schema([
                             LineItemFields::item(),
                             LineItemFields::unit(),
@@ -88,11 +88,11 @@ class VendorPriceResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('vendor'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Effective from'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Effective from')),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(50)->placeholder('—'),
-                Tanggal::make('end_date')->label('Ends on')->placeholder('—'),
+                Tanggal::make('end_date')->label(__('Ends on'))->placeholder('—'),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable()])

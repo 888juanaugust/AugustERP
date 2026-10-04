@@ -56,9 +56,9 @@ class SalesReturnResource extends ErpResource
     {
         return $schema->components([
             PricedDocumentForm::header(CustomerFields::select(), TransactionType::SalesReturn, 'Return No.', [
-                Select::make('return_type')->label('Return from')->options(['invoice' => 'Invoice', 'delivery' => 'Delivery', 'none' => 'No invoice', 'down_payment' => 'Down payment'])->default('invoice')->required()->native(false)->live()
+                Select::make('return_type')->label(__('Return from'))->options(['invoice' => __('Invoice'), 'delivery' => __('Delivery'), 'none' => __('No invoice'), 'down_payment' => __('Down payment')])->default('invoice')->required()->native(false)->live()
                     ->afterStateUpdated(fn (Set $set) => $set('source_key', null)),
-                Select::make('source_key')->label('Document')
+                Select::make('source_key')->label(__('Document'))
                     ->options(function (Get $get) {
                         $customer = (int) $get('customer_id');
                         if (! $customer) {
@@ -112,14 +112,14 @@ class SalesReturnResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('customer'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
-                TextColumn::make('return_type')->label('Return from')->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
+                TextColumn::make('return_type')->label(__('Return from'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('payment_status')->label('Credit used')->badge()
+                TextColumn::make('payment_status')->label(__('Credit used'))->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {
-                        'paid' => 'Used', 'partial' => 'Partly used', default => 'Open'
+                        'paid' => __('Used'), 'partial' => __('Partly used'), default => __('Open')
                     })
                     ->color(fn (string $state) => match ($state) {
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
@@ -130,7 +130,7 @@ class SalesReturnResource extends ErpResource
             ->filters([
                 DocumentListFilters::dateRange(),
                 SelectFilter::make('customer_id')->label(__('fields.customer'))->relationship('customer', 'name')->searchable(),
-                SelectFilter::make('return_type')->label('Return from')->options(['invoice' => 'Invoice', 'delivery' => 'Delivery', 'none' => 'No invoice', 'down_payment' => 'Down payment']),
+                SelectFilter::make('return_type')->label(__('Return from'))->options(['invoice' => __('Invoice'), 'delivery' => __('Delivery'), 'none' => __('No invoice'), 'down_payment' => __('Down payment')]),
                 TernaryFilter::make('is_printed')->label(__('fields.is_printed')),
             ])
             ->recordActions([EditAction::make(), PrintAction::make()]);

@@ -22,15 +22,15 @@ enum WorkStatus: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Permanent => 'Permanent employee',
-            self::Temporary => 'Temporary employee',
-            self::NonEmployeeMlm => 'Non-employee: MLM distributor',
-            self::NonEmployeeInsuranceAgent => 'Non-employee: insurance field agent',
-            self::NonEmployeeHawker => 'Non-employee: door-to-door seller',
-            self::NonEmployeeExpert => 'Non-employee: expert',
-            self::Commissioner => 'Board of commissioners / supervisory board',
-            self::NonEmployeeContinuous => 'Non-employee with continuous remuneration',
-            self::NonEmployeeOneOff => 'Non-employee with one-off remuneration',
+            self::Permanent => __('Permanent employee'),
+            self::Temporary => __('Temporary employee'),
+            self::NonEmployeeMlm => __('Non-employee: MLM distributor'),
+            self::NonEmployeeInsuranceAgent => __('Non-employee: insurance field agent'),
+            self::NonEmployeeHawker => __('Non-employee: door-to-door seller'),
+            self::NonEmployeeExpert => __('Non-employee: expert'),
+            self::Commissioner => __('Board of commissioners / supervisory board'),
+            self::NonEmployeeContinuous => __('Non-employee with continuous remuneration'),
+            self::NonEmployeeOneOff => __('Non-employee with one-off remuneration'),
         };
     }
 }

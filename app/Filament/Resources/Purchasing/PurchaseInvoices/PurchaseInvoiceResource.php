@@ -65,7 +65,7 @@ class PurchaseInvoiceResource extends ErpResource
     {
         return $schema->components([
             PricedDocumentForm::header(VendorFields::select(), TransactionType::PurchaseInvoice, 'Form No.', [
-                TextInput::make('bill_number')->label("Vendor's invoice No.")->maxLength(60),
+                TextInput::make('bill_number')->label(__('Vendor\'s invoice No.'))->maxLength(60),
             ]),
             Tabs::make('invoice')->tabs([
                 PricedDocumentForm::linesTab(
@@ -84,15 +84,15 @@ class PurchaseInvoiceResource extends ErpResource
                 PricedDocumentForm::otherInfoTab([
                     VendorFields::paymentTerm(),
                     VendorFields::bankAccount(),
-                    DatePicker::make('due_date')->label('Due date')->native(false)->displayFormat(Format::DATE_INPUT)->helperText('Blank: from the payment term.'),
-                    TextInput::make('tax_invoice_number')->label('Tax invoice No. (vendor)')->maxLength(40),
+                    DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat(Format::DATE_INPUT)->helperText(__('Blank: from the payment term.')),
+                    TextInput::make('tax_invoice_number')->label(__('Tax invoice No. (vendor)'))->maxLength(40),
                 ]),
                 PricedDocumentForm::chargesTab(allocateToCost: true),
-                Tab::make('Down payments')->schema([
+                Tab::make(__('Down payments'))->schema([
                     Repeater::make('downPayments')
                         ->hiddenLabel()
                         ->relationship()
-                        ->table([TableColumn::make('Down payment'), TableColumn::make('Amount deducted')->alignment(Alignment::End)])
+                        ->table([TableColumn::make(__('Down payment')), TableColumn::make(__('Amount deducted'))->alignment(Alignment::End)])
                         ->schema([
                             Select::make('purchase_down_payment_id')
                                 ->options(fn (Get $get) => PurchaseDownPayment::query()->where('vendor_id', $get('../../vendor_id'))->whereIn('status', ['pending', 'partial'])->get()
@@ -113,8 +113,8 @@ class PurchaseInvoiceResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('vendor'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('bill_number')->label('Invoice No.')->searchable()->placeholder('—'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('bill_number')->label(__('Invoice No.'))->searchable()->placeholder('—'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
@@ -123,7 +123,7 @@ class PurchaseInvoiceResource extends ErpResource
                     ->color(fn (string $state) => match ($state) {
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
-                TextColumn::make('age')->label('Age (days)')->state(fn (PurchaseInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
+                TextColumn::make('age')->label(__('Age (days)'))->state(fn (PurchaseInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
                 Rupiah::make('total')->label(__('fields.total')),
                 IconColumn::make('is_printed')->label(__('fields.is_printed'))->boolean()->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -135,7 +135,7 @@ class PurchaseInvoiceResource extends ErpResource
             ])
             ->recordActions([
                 EditAction::make(),
-                Action::make('pay')->label('Pay')->icon('heroicon-m-banknotes')->color('primary')
+                Action::make('pay')->label(__('Pay'))->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (PurchaseInvoice $record) => $record->payment_status !== 'paid' && PurchasePaymentResource::canCreate())
                     ->url(fn (PurchaseInvoice $record) => PurchasePaymentResource::getUrl('create', ['source' => 'purchase_invoice:'.$record->id])),
                 PrintAction::make(),

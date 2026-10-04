@@ -26,8 +26,8 @@ abstract class MasterResource extends ErpResource
     public static function activeFilter(): TernaryFilter
     {
         return TernaryFilter::make('is_active')
-            ->label('Active')
-            ->placeholder('All')
+            ->label(__('Active'))
+            ->placeholder(__('All'))
             ->trueLabel('Active only')
             ->falseLabel('Inactive only')
             ->default(true);
@@ -46,7 +46,7 @@ abstract class MasterResource extends ErpResource
     /** The reference system's "Daftar Pengguna" tab: everyone, or a chosen set of users. */
     public static function usersTab(string $relationship = 'users'): Tab
     {
-        return Tab::make('Users')
+        return Tab::make(__('Users'))
             ->schema([
                 Toggle::make('used_all_user')->label(__('fields.used_all_user'))->default(true)->live(),
                 CheckboxList::make($relationship)

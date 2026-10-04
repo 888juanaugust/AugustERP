@@ -45,37 +45,37 @@ class SalesmanCommissionResource extends MasterResource
     {
         return $schema->components([
             Tabs::make('commission')->tabs([
-                Tab::make('Commission')->schema([
-                    TextInput::make('name')->label('Rule name')->required()->maxLength(100),
-                    Radio::make('active_period')->label('In force')->options(['forever' => 'Always', 'period' => 'For a period'])->default('forever')->live()->inline(),
+                Tab::make(__('Commission'))->schema([
+                    TextInput::make('name')->label(__('Rule name'))->required()->maxLength(100),
+                    Radio::make('active_period')->label(__('In force'))->options(['forever' => __('Always'), 'period' => __('For a period')])->default('forever')->live()->inline(),
                     Grid::make(2)->visible(fn (Get $get) => $get('active_period') === 'period')->schema([
-                        DatePicker::make('from_date')->label('From')->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('to_date')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from_date')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('to_date')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT),
                     ]),
-                    Radio::make('salesman_scope')->label('Salespeople')->options(['all' => 'Everyone', 'specific' => 'Chosen ones'])->default('all')->live()->inline(),
-                    CheckboxList::make('salesmen')->label('Chosen salespeople')->relationship('salesmen', 'name', fn ($query) => $query->where('is_salesman', true))->columns(3)
+                    Radio::make('salesman_scope')->label(__('Salespeople'))->options(['all' => __('Everyone'), 'specific' => __('Chosen ones')])->default('all')->live()->inline(),
+                    CheckboxList::make('salesmen')->label(__('Chosen salespeople'))->relationship('salesmen', 'name', fn ($query) => $query->where('is_salesman', true))->columns(3)
                         ->visible(fn (Get $get) => $get('salesman_scope') === 'specific'),
-                    CheckboxList::make('levels')->label('Applies to levels')->options([1 => 'First', 2 => 'Second', 3 => 'Third', 4 => 'Fourth', 5 => 'Fifth'])->columns(5),
-                    Fieldset::make('Requirement')->schema([
+                    CheckboxList::make('levels')->label(__('Applies to levels'))->options([1 => __('First'), 2 => __('Second'), 3 => __('Third'), 4 => __('Fourth'), 5 => __('Fifth')])->columns(5),
+                    Fieldset::make(__('Requirement'))->schema([
                         Radio::make('requirement')->hiddenLabel()->options([
-                            'none' => 'No requirement',
-                            'sales_value' => 'Sales value between',
-                            'sales_qty' => 'Sales quantity between',
-                            'per_qty' => 'Per quantity sold',
+                            'none' => __('No requirement'),
+                            'sales_value' => __('Sales value between'),
+                            'sales_qty' => __('Sales quantity between'),
+                            'per_qty' => __('Per quantity sold'),
                         ])->default('none')->live(),
                         Grid::make(2)->visible(fn (Get $get) => in_array($get('requirement'), ['sales_value', 'sales_qty'], true))->schema([
-                            TextInput::make('requirement_from')->label('From')->numeric()->default(0),
-                            TextInput::make('requirement_to')->label('To')->numeric()->default(0),
+                            TextInput::make('requirement_from')->label(__('From'))->numeric()->default(0),
+                            TextInput::make('requirement_to')->label(__('To'))->numeric()->default(0),
                         ]),
-                        TextInput::make('requirement_qty')->label('Per quantity')->numeric()->default(0)->visible(fn (Get $get) => $get('requirement') === 'per_qty'),
+                        TextInput::make('requirement_qty')->label(__('Per quantity'))->numeric()->default(0)->visible(fn (Get $get) => $get('requirement') === 'per_qty'),
                     ]),
-                    Fieldset::make('Gain')->columns(3)->schema([
-                        Select::make('gain_type')->label('Commission is')->options(['percent' => 'A percentage', 'fixed' => 'A fixed amount'])->default('percent')->required()->native(false)->live(),
-                        TextInput::make('gain_value')->label(fn (Get $get) => $get('gain_type') === 'fixed' ? 'Amount (Rp)' : 'Percent')->numeric()->required()->default(0),
-                        Select::make('gain_basis')->label('% of')->options(['sales_value' => 'Sales value', 'gross_profit' => 'Gross profit'])->default('sales_value')->native(false)->visible(fn (Get $get) => $get('gain_type') !== 'fixed'),
+                    Fieldset::make(__('Gain'))->columns(3)->schema([
+                        Select::make('gain_type')->label(__('Commission is'))->options(['percent' => __('A percentage'), 'fixed' => __('A fixed amount')])->default('percent')->required()->native(false)->live(),
+                        TextInput::make('gain_value')->label(fn (Get $get) => $get('gain_type') === 'fixed' ? __('Amount (:symbol)', ['symbol' => Format::symbol()]) : __('Percent'))->numeric()->required()->default(0),
+                        Select::make('gain_basis')->label(__('% of'))->options(['sales_value' => __('Sales value'), 'gross_profit' => __('Gross profit')])->default('sales_value')->native(false)->visible(fn (Get $get) => $get('gain_type') !== 'fixed'),
                     ]),
                 ]),
-                Tab::make('Other')->schema([
+                Tab::make(__('Other'))->schema([
                     Textarea::make('notes')->label(__('fields.memo'))->rows(3),
                     self::activeToggle()->inline(false),
                 ]),
@@ -88,9 +88,9 @@ class SalesmanCommissionResource extends MasterResource
         return $table
             ->columns([
                 TextColumn::make('notes')->label(__('fields.memo'))->limit(40)->placeholder('—'),
-                TextColumn::make('name')->label('Rule name')->searchable()->sortable()->weight('medium'),
-                TextColumn::make('period')->label('In force')->state(fn (SalesmanCommission $r) => $r->periodLabel()),
-                TextColumn::make('gain')->label('Gain')->state(fn (SalesmanCommission $r) => $r->gain_type === 'fixed' ? Format::rupiah((int) round((float) $r->gain_value)) : Format::percent($r->gain_value).' of '.str_replace('_', ' ', $r->gain_basis)),
+                TextColumn::make('name')->label(__('Rule name'))->searchable()->sortable()->weight('medium'),
+                TextColumn::make('period')->label(__('In force'))->state(fn (SalesmanCommission $r) => $r->periodLabel()),
+                TextColumn::make('gain')->label(__('Gain'))->state(fn (SalesmanCommission $r) => $r->gain_type === 'fixed' ? Format::rupiah((int) round((float) $r->gain_value)) : Format::percent($r->gain_value).' of '.str_replace('_', ' ', $r->gain_basis)),
                 self::activeColumn(),
             ])
             ->defaultSort('name')

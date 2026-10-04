@@ -23,9 +23,9 @@ class ListFixedAssets extends ListDocuments
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('All'),
-            'active' => Tab::make('In use')->modifyQueryUsing(fn (Builder $query) => $query->where('status', FixedAsset::ACTIVE)),
-            'disposed' => Tab::make('Disposed')->modifyQueryUsing(fn (Builder $query) => $query->where('status', FixedAsset::DISPOSED)),
+            'all' => Tab::make(__('All')),
+            'active' => Tab::make(__('In use'))->modifyQueryUsing(fn (Builder $query) => $query->where('status', FixedAsset::ACTIVE)),
+            'disposed' => Tab::make(__('Disposed'))->modifyQueryUsing(fn (Builder $query) => $query->where('status', FixedAsset::DISPOSED)),
         ];
     }
 
@@ -34,20 +34,20 @@ class ListFixedAssets extends ListDocuments
         return [
             ...parent::getHeaderActions(),
             Action::make('runDepreciation')
-                ->label('Run depreciation')
+                ->label(__('Run depreciation'))
                 ->icon('heroicon-m-calculator')
                 ->color('gray')
                 ->schema([
-                    DatePicker::make('until')->label('Up to the month of')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('until')->label(__('Up to the month of'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 ])
                 ->requiresConfirmation()
-                ->modalDescription('Posts one month of depreciation for every asset in use, for each month not yet posted up to that month. Months already posted are left alone.')
+                ->modalDescription(__('Posts one month of depreciation for every asset in use, for each month not yet posted up to that month. Months already posted are left alone.'))
                 ->action(function (array $data): void {
                     $result = app(DepreciationRun::class)->upTo($data['until']);
 
                     Notification::make()
-                        ->title("{$result['posted']} month(s) posted")
-                        ->body(Format::money($result['amount']).' of depreciation')
+                        ->title(__(':posted month(s) posted', ['posted' => $result['posted']]))
+                        ->body(__(':amount of depreciation', ['amount' => Format::money($result['amount'])]))
                         ->success()
                         ->send();
 

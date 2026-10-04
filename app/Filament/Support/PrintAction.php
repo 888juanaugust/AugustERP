@@ -15,7 +15,7 @@ final class PrintAction
     public static function make(): Action
     {
         return Action::make('print')
-            ->label('Print')
+            ->label(__('Print'))
             ->icon('heroicon-m-printer')
             ->color('gray')
             ->url(fn (Model $record): ?string => ($alias = Printable::aliasOf($record)) ? route('filament.admin.print', ['alias' => $alias, 'id' => $record->getKey()]) : null, shouldOpenInNewTab: true)

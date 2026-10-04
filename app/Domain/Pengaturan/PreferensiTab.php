@@ -22,17 +22,17 @@ enum PreferensiTab: string
     public function label(): string
     {
         return match ($this) {
-            self::Company => 'Company',
-            self::Features => 'Features',
-            self::Tax => 'Tax',
-            self::Sales => 'Sales',
-            self::Purchasing => 'Purchasing',
-            self::Restrictions => 'Restrictions',
-            self::Attachments => 'Attachments',
-            self::ExtraAttributes => 'Extra Attributes',
-            self::DefaultAccounts => 'Default Accounts',
-            self::Other => 'Other',
-            self::Rules => 'Business Rules',
+            self::Company => __('Company'),
+            self::Features => __('Features'),
+            self::Tax => __('Tax'),
+            self::Sales => __('Sales'),
+            self::Purchasing => __('Purchasing'),
+            self::Restrictions => __('Restrictions'),
+            self::Attachments => __('Attachments'),
+            self::ExtraAttributes => __('Extra Attributes'),
+            self::DefaultAccounts => __('Default Accounts'),
+            self::Other => __('Other'),
+            self::Rules => __('Business Rules'),
         };
     }
 

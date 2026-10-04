@@ -60,17 +60,17 @@ class AssetDisposalResource extends ErpResource
                 AssetFields::select()
                     ->afterStateUpdated(fn (Set $set, $state) => $set('quantity', $state ? FixedAsset::query()->find($state)?->quantityRemaining() : null)),
                 NumberFields::make(TransactionType::FixedAssetDisposal, 'Disposal No.'),
-                DatePicker::make('trans_date')->label('Date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                TextInput::make('quantity')->label('Quantity')->numeric()->required()->minValue(0.0001),
-                Select::make('gain_loss_account_id')->label('Gain / loss account')->options(fn () => Account::options(AccountType::OtherIncome, AccountType::OtherExpense))->searchable()->required()->native(false),
-                Select::make('location_id')->label('Asset location')->options(fn () => AssetLocation::options())->native(false),
-                Toggle::make('selling_asset')->label('Sold')->live()->inline(false),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                TextInput::make('quantity')->label(__('Quantity'))->numeric()->required()->minValue(0.0001),
+                Select::make('gain_loss_account_id')->label(__('Gain / loss account'))->options(fn () => Account::options(AccountType::OtherIncome, AccountType::OtherExpense))->searchable()->required()->native(false),
+                Select::make('location_id')->label(__('Asset location'))->options(fn () => AssetLocation::options())->native(false),
+                Toggle::make('selling_asset')->label(__('Sold'))->live()->inline(false),
                 PricedDocumentForm::money('proceeds', 'Proceeds')->visible(fn (Get $get) => (bool) $get('selling_asset')),
-                Select::make('proceeds_account_id')->label('Proceeds to')->options(fn () => Account::options(AccountType::CashBank, AccountType::AccountsReceivable))->searchable()->native(false)
+                Select::make('proceeds_account_id')->label(__('Proceeds to'))->options(fn () => Account::options(AccountType::CashBank, AccountType::AccountsReceivable))->searchable()->native(false)
                     ->visible(fn (Get $get) => (bool) $get('selling_asset'))
                     ->required(fn (Get $get) => (bool) $get('selling_asset')),
-                Textarea::make('description')->label('Notes')->rows(2)->columnSpanFull(),
-                Placeholder::make('book_value')->label('Book value of the asset')
+                Textarea::make('description')->label(__('Notes'))->rows(2)->columnSpanFull(),
+                Placeholder::make('book_value')->label(__('Book value of the asset'))
                     ->content(fn (Get $get) => ($id = $get('fixed_asset_id')) && ($asset = FixedAsset::query()->find($id)) ? Format::rupiah($asset->bookValue()).' for '.Format::quantity($asset->quantityRemaining()).' remaining' : '—'),
             ]),
         ])->columns(1);
@@ -81,14 +81,14 @@ class AssetDisposalResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['fixedAsset', 'gainLossAccount']))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Date'),
-                TextColumn::make('description')->label('Notes')->limit(40)->placeholder('—'),
-                TextColumn::make('fixedAsset.number')->label('Asset')->fontFamily('mono'),
-                TextColumn::make('fixedAsset.name')->label('Asset name'),
-                TextColumn::make('quantity')->label('Qty')->alignEnd()->formatStateUsing(fn ($state) => Format::quantity($state)),
-                Rupiah::make('proceeds')->label('Proceeds'),
-                Rupiah::make('gain_loss')->label('Gain / (loss)'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Date')),
+                TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
+                TextColumn::make('fixedAsset.number')->label(__('Asset'))->fontFamily('mono'),
+                TextColumn::make('fixedAsset.name')->label(__('Asset name')),
+                TextColumn::make('quantity')->label(__('Qty'))->alignEnd()->formatStateUsing(fn ($state) => Format::quantity($state)),
+                Rupiah::make('proceeds')->label(__('Proceeds')),
+                Rupiah::make('gain_loss')->label(__('Gain / (loss)')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([

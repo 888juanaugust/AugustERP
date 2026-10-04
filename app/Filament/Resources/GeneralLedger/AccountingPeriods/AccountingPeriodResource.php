@@ -55,12 +55,12 @@ class AccountingPeriodResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('closedBy'))
             ->columns([
-                TextColumn::make('label')->label('Month')->state(fn (AccountingPeriod $r) => $r->label())->weight('medium'),
+                TextColumn::make('label')->label(__('Month'))->state(fn (AccountingPeriod $r) => $r->label())->weight('medium'),
                 TextColumn::make('status')->label(__('fields.status'))->badge()
                     ->formatStateUsing(fn (string $state) => ucfirst($state))
                     ->color(fn (string $state) => $state === AccountingPeriod::CLOSED ? 'success' : 'gray'),
-                TextColumn::make('closed_at')->label('Closed on')->formatStateUsing(fn ($state) => Format::dateTime($state))->placeholder('—'),
-                TextColumn::make('closedBy.name')->label('By')->placeholder('—'),
+                TextColumn::make('closed_at')->label(__('Closed on'))->formatStateUsing(fn ($state) => Format::dateTime($state))->placeholder('—'),
+                TextColumn::make('closedBy.name')->label(__('By'))->placeholder('—'),
                 TextColumn::make('notes')->label(__('fields.memo'))->limit(60)->placeholder('—'),
             ])
             ->defaultSort('year', 'desc')
@@ -70,11 +70,11 @@ class AccountingPeriodResource extends ErpResource
             ])
             ->recordActions([
                 Action::make('reopen')
-                    ->label('Reopen')
+                    ->label(__('Reopen'))
                     ->icon('heroicon-m-lock-open')
                     ->color('warning')
                     ->requiresConfirmation()
-                    ->modalDescription('Documents dated in this month can be changed again until it is closed once more.')
+                    ->modalDescription(__('Documents dated in this month can be changed again until it is closed once more.'))
                     ->visible(fn (AccountingPeriod $record) => $record->status === AccountingPeriod::CLOSED
                         && app(PeriodLock::class)->lastClosed()?->is($record)
                         && app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::OpenClosedPeriod))
@@ -82,9 +82,9 @@ class AccountingPeriodResource extends ErpResource
                         try {
                             app(PeriodLock::class)->reopen($record->year, $record->month);
                             Auditor::log('period_reopened', $record, $record->label());
-                            Notification::make()->title($record->label().' reopened')->success()->send();
+                            Notification::make()->title(__(':period reopened', ['period' => $record->label()]))->success()->send();
                         } catch (\RuntimeException $e) {
-                            Notification::make()->title('Cannot reopen')->body($e->getMessage())->danger()->send();
+                            Notification::make()->title(__('Cannot reopen'))->body($e->getMessage())->danger()->send();
                         }
                     }),
             ]);

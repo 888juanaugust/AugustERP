@@ -66,9 +66,9 @@ class ItemTransferResource extends ErpResource
             Section::make()
                 ->columns(3)
                 ->schema([
-                    Select::make('item_transfer_type')->label('Process')->options(['send' => 'Send goods', 'receive' => 'Receive goods'])->default('send')->disabled()->dehydrated()->native(false),
-                    Select::make('warehouse_id')->label('From warehouse')->options($warehouses)->required()->native(false)->default(fn () => Warehouse::default()?->id),
-                    Select::make('reference_warehouse_id')->label('To warehouse')->options($warehouses)->required()->native(false)->different('warehouse_id'),
+                    Select::make('item_transfer_type')->label(__('Process'))->options(['send' => __('Send goods'), 'receive' => __('Receive goods')])->default('send')->disabled()->dehydrated()->native(false),
+                    Select::make('warehouse_id')->label(__('From warehouse'))->options($warehouses)->required()->native(false)->default(fn () => Warehouse::default()?->id),
+                    Select::make('reference_warehouse_id')->label(__('To warehouse'))->options($warehouses)->required()->native(false)->different('warehouse_id'),
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                     NumberFields::make(TransactionType::ItemTransfer, 'Transfer No.'),
                     Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false)
@@ -81,10 +81,10 @@ class ItemTransferResource extends ErpResource
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Item'),
-                            TableColumn::make('Quantity')->alignment(Alignment::End),
-                            TableColumn::make('Unit'),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Item')),
+                            TableColumn::make(__('Quantity'))->alignment(Alignment::End),
+                            TableColumn::make(__('Unit')),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             LineItemFields::item(stockedOnly: true),
@@ -112,13 +112,13 @@ class ItemTransferResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['warehouse', 'referenceWarehouse']))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                TextColumn::make('item_transfer_type')->label('Process')->badge()->formatStateUsing(fn (string $state) => $state === 'send' ? 'Send' : 'Receive')->color(fn (string $state) => $state === 'send' ? 'info' : 'success'),
-                TextColumn::make('referenceWarehouse.name')->label('To / from'),
-                TextColumn::make('warehouse.name')->label('Warehouse'),
+                TextColumn::make('item_transfer_type')->label(__('Process'))->badge()->formatStateUsing(fn (string $state) => $state === 'send' ? 'Send' : 'Receive')->color(fn (string $state) => $state === 'send' ? 'info' : 'success'),
+                TextColumn::make('referenceWarehouse.name')->label(__('To / from')),
+                TextColumn::make('warehouse.name')->label(__('Warehouse')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('status')->label('Delivery status')->badge()->formatStateUsing(fn (string $state) => __('status.fulfilment.'.$state))
+                TextColumn::make('status')->label(__('Delivery status'))->badge()->formatStateUsing(fn (string $state) => __('status.fulfilment.'.$state))
                     ->color(fn (string $state) => match ($state) {
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
@@ -126,9 +126,9 @@ class ItemTransferResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('item_transfer_type')->label('Process')->options(['send' => 'Send', 'receive' => 'Receive']),
-                SelectFilter::make('status')->label('Delivery status')->options(['pending' => 'Pending', 'partial' => 'Partial', 'processed' => 'Processed']),
-                SelectFilter::make('warehouse_id')->label('Warehouse')->relationship('warehouse', 'name'),
+                SelectFilter::make('item_transfer_type')->label(__('Process'))->options(['send' => __('Send'), 'receive' => __('Receive')]),
+                SelectFilter::make('status')->label(__('Delivery status'))->options(['pending' => __('Pending'), 'partial' => __('Partial'), 'processed' => __('Processed')]),
+                SelectFilter::make('warehouse_id')->label(__('Warehouse'))->relationship('warehouse', 'name'),
             ])
             ->recordActions([
                 EditAction::make()->visible(fn (ItemTransfer $r) => $r->isSend()),
@@ -141,16 +141,16 @@ class ItemTransferResource extends ErpResource
     public static function receiveAction(): Action
     {
         return Action::make('receive')
-            ->label('Receive')
+            ->label(__('Receive'))
             ->icon('heroicon-m-inbox-arrow-down')
             ->color('success')
             ->visible(fn (ItemTransfer $record) => $record->isSend() && in_array($record->status, ['pending', 'partial'], true) && static::canCreate())
             ->modalHeading(fn (ItemTransfer $record) => "Receive {$record->number} into {$record->referenceWarehouse->name}")
             ->schema(fn (ItemTransfer $record) => [
-                DatePicker::make('trans_date')->label('Receipt date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Receipt date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 Repeater::make('quantities')
-                    ->label('Quantities received')
-                    ->table([TableColumn::make('Item'), TableColumn::make('Still in transit'), TableColumn::make('Receive now')])
+                    ->label(__('Quantities received'))
+                    ->table([TableColumn::make(__('Item')), TableColumn::make(__('Still in transit')), TableColumn::make(__('Receive now'))])
                     ->schema([
                         TextInput::make('item')->disabled()->dehydrated(false),
                         TextInput::make('remaining')->disabled()->dehydrated(false),
@@ -170,9 +170,9 @@ class ItemTransferResource extends ErpResource
                 try {
                     $quantities = collect($data['quantities'] ?? [])->mapWithKeys(fn ($row) => [(int) $row['line_id'] => $row['quantity']])->all();
                     $receipt = app(TransferReceiver::class)->receive($record, $quantities, CarbonImmutable::parse($data['trans_date']), null, $data['description'] ?? null);
-                    Notification::make()->title("Received as {$receipt->number}")->success()->send();
+                    Notification::make()->title(__('Received as :number', ['number' => $receipt->number]))->success()->send();
                 } catch (\RuntimeException $e) {
-                    Notification::make()->title('Cannot receive')->body($e->getMessage())->danger()->persistent()->send();
+                    Notification::make()->title(__('Cannot receive'))->body($e->getMessage())->danger()->persistent()->send();
                 }
             });
     }

@@ -73,7 +73,7 @@ class PurchaseOrderResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('vendor'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
@@ -87,10 +87,10 @@ class PurchaseOrderResource extends ErpResource
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable()])
             ->recordActions([
                 EditAction::make(),
-                Action::make('receive')->label('Receive')->icon('heroicon-m-inbox-arrow-down')->color('primary')
+                Action::make('receive')->label(__('Receive'))->icon('heroicon-m-inbox-arrow-down')->color('primary')
                     ->visible(fn (PurchaseOrder $record) => in_array($record->status, ['pending', 'partial'], true) && GoodsReceiptResource::canCreate())
                     ->url(fn (PurchaseOrder $record) => GoodsReceiptResource::getUrl('create', ['source' => $record->id])),
-                Action::make('invoice')->label('Invoice')->icon('heroicon-m-document-text')->color('gray')
+                Action::make('invoice')->label(__('Invoice'))->icon('heroicon-m-document-text')->color('gray')
                     ->visible(fn (PurchaseOrder $record) => in_array($record->status, ['pending', 'partial'], true) && PurchaseInvoiceResource::canCreate())
                     ->url(fn (PurchaseOrder $record) => PurchaseInvoiceResource::getUrl('create', ['source' => 'order:'.$record->id])),
                 PrintAction::make(),

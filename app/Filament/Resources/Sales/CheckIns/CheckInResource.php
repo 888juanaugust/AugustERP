@@ -53,15 +53,15 @@ class CheckInResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DateTimePicker::make('checked_in_at')->label('Checked in at')->required()->native(false)->seconds(false)->default(now()),
+                DateTimePicker::make('checked_in_at')->label(__('Checked in at'))->required()->native(false)->seconds(false)->default(now()),
                 NumberFields::make(TransactionType::CheckIn),
                 CustomerFields::select(fillsTerms: false)->required(false)
                     ->afterStateUpdated(fn (Set $set, $state) => $set('customer_name', $state ? Customer::query()->find($state)?->name : null)),
-                TextInput::make('customer_name')->label('Customer name at check-in')->required()->maxLength(150),
+                TextInput::make('customer_name')->label(__('Customer name at check-in'))->required()->maxLength(150),
                 Select::make('salesman_id')->label(__('fields.salesman'))->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->required()->native(false)->searchable(),
-                Select::make('sales_order_id')->label('Order taken')->options(fn () => SalesOrder::query()->orderByDesc('trans_date')->limit(100)->pluck('number', 'id'))->searchable()->native(false),
-                TextInput::make('latitude')->label('Latitude')->numeric(),
-                TextInput::make('longitude')->label('Longitude')->numeric(),
+                Select::make('sales_order_id')->label(__('Order taken'))->options(fn () => SalesOrder::query()->orderByDesc('trans_date')->limit(100)->pluck('number', 'id'))->searchable()->native(false),
+                TextInput::make('latitude')->label(__('Latitude'))->numeric(),
+                TextInput::make('longitude')->label(__('Longitude'))->numeric(),
                 Textarea::make('notes')->label(__('fields.memo'))->rows(3)->columnSpanFull(),
             ]),
         ])->columns(1);
@@ -73,17 +73,17 @@ class CheckInResource extends ErpResource
             ->modifyQueryUsing(fn ($query) => $query->with(['salesman', 'salesOrder']))
             ->columns([
                 TextColumn::make('checked_in_at')->label(__('fields.trans_date'))->formatStateUsing(fn ($state) => Format::dateTime($state))->sortable(),
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('customer_name')->label('Customer (at check-in)')->searchable(),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('customer_name')->label(__('Customer (at check-in)'))->searchable(),
                 TextColumn::make('salesman.name')->label(__('fields.salesman')),
-                TextColumn::make('salesOrder.number')->label('Transaction')->fontFamily('mono')->placeholder('—'),
-                TextColumn::make('location')->label('Location')->state(fn (CheckIn $r) => $r->latitude !== null ? "{$r->latitude}, {$r->longitude}" : null)->placeholder('—')->toggleable(),
+                TextColumn::make('salesOrder.number')->label(__('Transaction'))->fontFamily('mono')->placeholder('—'),
+                TextColumn::make('location')->label(__('Location'))->state(fn (CheckIn $r) => $r->latitude !== null ? "{$r->latitude}, {$r->longitude}" : null)->placeholder('—')->toggleable(),
             ])
             ->defaultSort('checked_in_at', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('salesman_id')->label(__('fields.salesman'))->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))])
             ->recordActions([
                 EditAction::make(),
-                Action::make('order')->label('Take an order')->icon('heroicon-m-shopping-cart')->color('primary')
+                Action::make('order')->label(__('Take an order'))->icon('heroicon-m-shopping-cart')->color('primary')
                     ->visible(fn (CheckIn $record) => $record->sales_order_id === null && $record->customer_id !== null && SalesOrderResource::canCreate())
                     ->url(fn (CheckIn $record) => SalesOrderResource::getUrl('create', ['customer' => $record->customer_id, 'check_in' => $record->id])),
             ]);

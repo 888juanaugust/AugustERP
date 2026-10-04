@@ -59,15 +59,15 @@ class AuditLogResource extends ErpResource
     public static function infolist(Schema $schema): Schema
     {
         return $schema->components([
-            TextEntry::make('created_at')->label('Timestamp')->formatStateUsing(fn ($state) => Format::dateTime($state)),
-            TextEntry::make('user.name')->label('User')->placeholder('System'),
-            TextEntry::make('action')->label('Action')->badge()->formatStateUsing(fn (string $state) => self::actionLabel($state)),
-            TextEntry::make('document_type')->label('Transaction type')->formatStateUsing(fn (?string $state) => self::typeLabel($state))->placeholder('—'),
-            TextEntry::make('reference')->label('Reference')->placeholder('—'),
-            TextEntry::make('trans_date')->label('Transaction date')->formatStateUsing(fn ($state) => Format::date($state))->placeholder('—'),
-            TextEntry::make('ip')->label('IP address')->placeholder('—'),
+            TextEntry::make('created_at')->label(__('Timestamp'))->formatStateUsing(fn ($state) => Format::dateTime($state)),
+            TextEntry::make('user.name')->label(__('User'))->placeholder(__('System')),
+            TextEntry::make('action')->label(__('Action'))->badge()->formatStateUsing(fn (string $state) => self::actionLabel($state)),
+            TextEntry::make('document_type')->label(__('Transaction type'))->formatStateUsing(fn (?string $state) => self::typeLabel($state))->placeholder('—'),
+            TextEntry::make('reference')->label(__('Reference'))->placeholder('—'),
+            TextEntry::make('trans_date')->label(__('Transaction date'))->formatStateUsing(fn ($state) => Format::date($state))->placeholder('—'),
+            TextEntry::make('ip')->label(__('IP address'))->placeholder('—'),
             TextEntry::make('meta')
-                ->label('Details')
+                ->label(__('Details'))
                 ->state(fn (AuditLog $record) => $record->meta ? json_encode($record->meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null)
                 ->fontFamily(FontFamily::Mono)
                 ->size('xs')
@@ -81,43 +81,43 @@ class AuditLogResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with('user'))
             ->columns([
-                Tanggal::make('trans_date')->label('Transaction date')->placeholder('—'),
-                TextColumn::make('reference')->label('Reference')->searchable()->limit(40)->placeholder('—'),
-                TextColumn::make('action')->label('Action')->badge()->formatStateUsing(fn (string $state) => self::actionLabel($state))
+                Tanggal::make('trans_date')->label(__('Transaction date'))->placeholder('—'),
+                TextColumn::make('reference')->label(__('Reference'))->searchable()->limit(40)->placeholder('—'),
+                TextColumn::make('action')->label(__('Action'))->badge()->formatStateUsing(fn (string $state) => self::actionLabel($state))
                     ->color(fn (string $state) => match ($state) {
                         'created', 'posted' => 'success',
                         'deleted', 'unposted' => 'danger',
                         'updated', 'preference_changed' => 'warning',
                         default => 'gray',
                     }),
-                TextColumn::make('document_type')->label('Transaction type')->formatStateUsing(fn (?string $state) => self::typeLabel($state))->placeholder('—'),
-                TextColumn::make('created_at')->label('Timestamp')->formatStateUsing(fn ($state) => Format::dateTime($state))->sortable(),
-                TextColumn::make('user.name')->label('User')->placeholder('System'),
-                TextColumn::make('user.email')->label('Email')->placeholder('—'),
-                TextColumn::make('ip')->label('IP address')->placeholder('—'),
+                TextColumn::make('document_type')->label(__('Transaction type'))->formatStateUsing(fn (?string $state) => self::typeLabel($state))->placeholder('—'),
+                TextColumn::make('created_at')->label(__('Timestamp'))->formatStateUsing(fn ($state) => Format::dateTime($state))->sortable(),
+                TextColumn::make('user.name')->label(__('User'))->placeholder(__('System')),
+                TextColumn::make('user.email')->label(__('Email'))->placeholder('—'),
+                TextColumn::make('ip')->label(__('IP address'))->placeholder('—'),
             ])
             ->defaultSort('id', 'desc')
             ->filters([
                 Filter::make('trans_date')
                     ->schema([
-                        DatePicker::make('trans_from')->label('Transaction date from')->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('trans_until')->label('until')->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('trans_from')->label(__('Transaction date from'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('trans_until')->label(__('until'))->native(false)->displayFormat(Format::DATE_INPUT),
                     ])
                     ->query(fn (Builder $q, array $data) => $q
                         ->when($data['trans_from'] ?? null, fn ($query, $d) => $query->whereDate('trans_date', '>=', $d))
                         ->when($data['trans_until'] ?? null, fn ($query, $d) => $query->whereDate('trans_date', '<=', $d))),
                 Filter::make('created_at')
                     ->schema([
-                        DatePicker::make('from')->label('Logged from')->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('until')->label('until')->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from')->label(__('Logged from'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('until')->label(__('until'))->native(false)->displayFormat(Format::DATE_INPUT),
                     ])
                     ->query(fn (Builder $q, array $data) => $q
                         ->when($data['from'] ?? null, fn ($query, $d) => $query->whereDate('created_at', '>=', $d))
                         ->when($data['until'] ?? null, fn ($query, $d) => $query->whereDate('created_at', '<=', $d))),
-                SelectFilter::make('document_type')->label('Transaction type')
+                SelectFilter::make('document_type')->label(__('Transaction type'))
                     ->options(fn () => collect(array_keys(Relation::morphMap()))->mapWithKeys(fn (string $k) => [$k => self::typeLabel($k)])->sort()->all()),
-                SelectFilter::make('user_id')->label('User')->options(fn () => User::query()->orderBy('name')->pluck('name', 'id')),
-                SelectFilter::make('action')->label('Action')
+                SelectFilter::make('user_id')->label(__('User'))->options(fn () => User::query()->orderBy('name')->pluck('name', 'id')),
+                SelectFilter::make('action')->label(__('Action'))
                     ->options(fn () => AuditLog::query()->distinct()->orderBy('action')->pluck('action')->mapWithKeys(fn (string $a) => [$a => self::actionLabel($a)])->all()),
             ], layout: FiltersLayout::AboveContentCollapsible)
             ->persistFiltersInSession()

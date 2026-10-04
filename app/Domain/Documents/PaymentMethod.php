@@ -24,17 +24,17 @@ enum PaymentMethod: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Cash => 'Cash',
-            self::Cheque => 'Cheque / giro',
-            self::BankTransfer => 'Bank transfer',
-            self::Edc => 'EDC',
-            self::DebitCard => 'Debit card',
-            self::CreditCard => 'Credit card',
-            self::Qris => 'QRIS',
-            self::PaymentLink => 'Payment link',
-            self::VirtualAccount => 'Virtual account',
-            self::EWallet => 'E-wallet',
-            self::OtherNonCash => 'Other non-cash',
+            self::Cash => __('Cash'),
+            self::Cheque => __('Cheque / giro'),
+            self::BankTransfer => __('Bank transfer'),
+            self::Edc => __('EDC'),
+            self::DebitCard => __('Debit card'),
+            self::CreditCard => __('Credit card'),
+            self::Qris => __('QRIS'),
+            self::PaymentLink => __('Payment link'),
+            self::VirtualAccount => __('Virtual account'),
+            self::EWallet => __('E-wallet'),
+            self::OtherNonCash => __('Other non-cash'),
         };
     }
 

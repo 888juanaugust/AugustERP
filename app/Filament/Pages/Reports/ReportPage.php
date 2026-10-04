@@ -135,11 +135,11 @@ abstract class ReportPage extends ErpPage implements HasTable
     {
         $fields = [];
         if ($this->usesPeriod()) {
-            $fields[] = DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT)->live();
-            $fields[] = DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT)->live();
+            $fields[] = DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live();
+            $fields[] = DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live();
         }
         if ($this->usesBranch()) {
-            $fields[] = Select::make('branch_id')->label('Branch')->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id'))->placeholder('All branches')->native(false)->live();
+            $fields[] = Select::make('branch_id')->label(__('Branch'))->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id'))->placeholder(__('All branches'))->native(false)->live();
         }
 
         return $schema->components([Section::make()->columns(4)->schema(array_merge($fields, $this->extraFilters()))])->statePath('filters');
@@ -170,14 +170,14 @@ abstract class ReportPage extends ErpPage implements HasTable
                 (bool) ($record['is_heading'] ?? false) => 'ae-report-heading',
                 default => null,
             })
-            ->emptyStateHeading('Nothing in this period');
+            ->emptyStateHeading(__('Nothing in this period'));
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('export')
-                ->label('Export to Excel')
+                ->label(__('Export to Excel'))
                 ->icon('heroicon-m-arrow-down-tray')
                 ->color('gray')
                 ->action(fn (): BinaryFileResponse => ExcelExport::download(

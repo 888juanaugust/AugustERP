@@ -82,15 +82,15 @@ class SalesInvoiceResource extends ErpResource
                 PricedDocumentForm::otherInfoTab([
                     CustomerFields::paymentTerm(),
                     TextInput::make('po_number')->label(__('fields.po_number'))->maxLength(60),
-                    DatePicker::make('due_date')->label('Due date')->native(false)->displayFormat(Format::DATE_INPUT)->helperText('Blank: from the payment term.'),
-                    TextInput::make('nsfp')->label('Tax invoice serial (NSFP)')->maxLength(40)->helperText('Pasted back from the tax office after filing.'),
+                    DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat(Format::DATE_INPUT)->helperText(__('Blank: from the payment term.')),
+                    TextInput::make('nsfp')->label(__('Tax invoice serial (NSFP)'))->maxLength(40)->helperText(__('Pasted back from the tax office after filing.')),
                 ]),
                 PricedDocumentForm::chargesTab(),
-                Tab::make('Down payments')->schema([
+                Tab::make(__('Down payments'))->schema([
                     Repeater::make('downPayments')
                         ->hiddenLabel()
                         ->relationship()
-                        ->table([TableColumn::make('Down payment'), TableColumn::make('Amount deducted')->alignment(Alignment::End)])
+                        ->table([TableColumn::make(__('Down payment')), TableColumn::make(__('Amount deducted'))->alignment(Alignment::End)])
                         ->schema([
                             Select::make('sales_down_payment_id')
                                 ->options(fn (Get $get) => SalesDownPayment::query()->where('customer_id', $get('../../customer_id'))->whereIn('status', ['pending', 'partial'])->get()
@@ -102,8 +102,8 @@ class SalesInvoiceResource extends ErpResource
                         ->defaultItems(0)
                         ->addActionLabel('Deduct a down payment'),
                 ]),
-                Tab::make('Payment info')->schema([
-                    Placeholder::make('paid')->label('Paid')->content(fn (?SalesInvoice $record) => $record ? Format::rupiah($record->paid_amount).' of '.Format::rupiah($record->total - $record->down_payment_total).' · open '.Format::rupiah($record->balance()) : '—'),
+                Tab::make(__('Payment info'))->schema([
+                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesInvoice $record) => $record ? Format::rupiah($record->paid_amount).' of '.Format::rupiah($record->total - $record->down_payment_total).' · open '.Format::rupiah($record->balance()) : '—'),
                 ]),
             ]),
         ])->columns(1);
@@ -114,7 +114,7 @@ class SalesInvoiceResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('customer'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
@@ -123,10 +123,10 @@ class SalesInvoiceResource extends ErpResource
                     ->color(fn (string $state) => match ($state) {
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
-                TextColumn::make('age')->label('Age (days)')->state(fn (SalesInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd()
+                TextColumn::make('age')->label(__('Age (days)'))->state(fn (SalesInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd()
                     ->color(fn (SalesInvoice $r) => ($notice = app(CreditCheck::class)->noticeDays()) > 0 && $r->payment_status !== 'paid' && $r->trans_date->diffInDays(today()) > $notice ? 'danger' : null),
                 Rupiah::make('total')->label(__('fields.total')),
-                TextColumn::make('nsfp')->label('NSFP')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('nsfp')->label(__('NSFP'))->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_printed')->label(__('fields.is_printed'))->boolean()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('trans_date', 'desc')
@@ -137,7 +137,7 @@ class SalesInvoiceResource extends ErpResource
             ])
             ->recordActions([
                 EditAction::make(),
-                Action::make('receive')->label('Receive payment')->icon('heroicon-m-banknotes')->color('primary')
+                Action::make('receive')->label(__('Receive payment'))->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (SalesInvoice $record) => $record->payment_status !== 'paid' && SalesReceiptResource::canCreate())
                     ->url(fn (SalesInvoice $record) => SalesReceiptResource::getUrl('create', ['source' => 'sales_invoice:'.$record->id])),
                 PrintAction::make(),

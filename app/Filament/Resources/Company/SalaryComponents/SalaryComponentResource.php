@@ -38,8 +38,8 @@ class SalaryComponentResource extends MasterResource
     {
         return $schema->components([
             TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100)->unique(ignoreRecord: true),
-            Select::make('fee_type')->label('Component kind')->options(SalaryComponent::FEE_TYPES)->required()->native(false)->default('salary'),
-            Select::make('expense_account_id')->label('Expense account')
+            Select::make('fee_type')->label(__('Component kind'))->options(SalaryComponent::feeTypes())->required()->native(false)->default('salary'),
+            Select::make('expense_account_id')->label(__('Expense account'))
                 ->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::OtherCurrentLiability))
                 ->searchable()->required()->native(false),
             static::activeToggle(),
@@ -52,14 +52,14 @@ class SalaryComponentResource extends MasterResource
             ->modifyQueryUsing(fn ($query) => $query->with('expenseAccount'))
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('fee_type')->label('Component kind')->formatStateUsing(fn ($state): string => SalaryComponent::FEE_TYPES[$state] ?? (string) $state)->sortable(),
-                TextColumn::make('expenseAccount.name')->label('Expense account'),
+                TextColumn::make('fee_type')->label(__('Component kind'))->formatStateUsing(fn ($state): string => SalaryComponent::feeTypes()[$state] ?? (string) $state)->sortable(),
+                TextColumn::make('expenseAccount.name')->label(__('Expense account')),
                 static::activeColumn(),
             ])
             ->defaultSort('name')
             ->filters([
                 static::activeFilter(),
-                SelectFilter::make('fee_type')->label('Component kind')->options(SalaryComponent::FEE_TYPES),
+                SelectFilter::make('fee_type')->label(__('Component kind'))->options(SalaryComponent::feeTypes()),
             ])
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);
     }

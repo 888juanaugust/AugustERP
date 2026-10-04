@@ -7,16 +7,16 @@
     </p>
 
     @if ($rows->isEmpty())
-        <p class="text-gray-500 dark:text-gray-400">Nothing posted yet</p>
+        <p class="text-gray-500 dark:text-gray-400">{{ __('Nothing posted yet') }}</p>
     @else
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-gray-200 dark:border-gray-700">
-                    <th class="text-left py-1">Period</th>
-                    <th class="text-left py-1">Date</th>
-                    <th class="text-right py-1">Amount</th>
-                    <th class="text-right py-1">Accumulated</th>
-                    <th class="text-right py-1">Book value</th>
+                    <th class="text-left py-1">{{ __('Period') }}</th>
+                    <th class="text-left py-1">{{ __('Date') }}</th>
+                    <th class="text-right py-1">{{ __('Amount') }}</th>
+                    <th class="text-right py-1">{{ __('Accumulated') }}</th>
+                    <th class="text-right py-1">{{ __('Book value') }}</th>
                 </tr>
             </thead>
             <tbody>

@@ -15,12 +15,16 @@ class TransactionApprover extends Model
 {
     use RecordsActivity;
 
-    public const RULES = [
-        'any_one' => 'Any one of the approvers',
-        'at_least_two' => 'At least two approvers',
-        'all_in_order' => 'Every approver, in order',
-        'all_any_order' => 'Every approver, in any order',
-    ];
+    /** @return array<string, string> rule value → label */
+    public static function rules(): array
+    {
+        return [
+            'any_one' => __('Any one of the approvers'),
+            'at_least_two' => __('At least two approvers'),
+            'all_in_order' => __('Every approver, in order'),
+            'all_any_order' => __('Every approver, in any order'),
+        ];
+    }
 
     protected $guarded = [];
 

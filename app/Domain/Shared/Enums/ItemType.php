@@ -17,10 +17,10 @@ enum ItemType: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Inventory => 'Inventory item',
-            self::NonInventory => 'Non-inventory item',
-            self::Service => 'Service',
-            self::Group => 'Group / bundle',
+            self::Inventory => __('Inventory item'),
+            self::NonInventory => __('Non-inventory item'),
+            self::Service => __('Service'),
+            self::Group => __('Group / bundle'),
         };
     }
 

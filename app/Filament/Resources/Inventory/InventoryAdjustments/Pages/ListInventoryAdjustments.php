@@ -14,6 +14,6 @@ class ListInventoryAdjustments extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New adjustment')];
+        return [CreateAction::make()->label(__('New adjustment'))];
     }
 }

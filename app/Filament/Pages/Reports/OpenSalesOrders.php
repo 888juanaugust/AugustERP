@@ -16,7 +16,7 @@ class OpenSalesOrders extends ReportPage
 
     public static function title(): string
     {
-        return 'Open Sales Orders';
+        return __('Open Sales Orders');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class OpenSalesOrders extends ReportPage
 
     public static function description(): string
     {
-        return 'Order lines not yet fully delivered or invoiced, with what is left and its value.';
+        return __('Order lines not yet fully delivered or invoiced, with what is left and its value.');
     }
 
     protected function rows(): array

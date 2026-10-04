@@ -70,14 +70,14 @@ class Preferences extends ErpPage
 
         app(Preferensi::class)->setMany(self::fromForm($this->form->getState()));
 
-        Notification::make()->title('Preferences saved')->success()->send();
+        Notification::make()->title(__('Preferences saved'))->success()->send();
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('save')
-                ->label('Save preferences')
+                ->label(__('Save preferences'))
                 ->action('save')
                 ->visible(static::canUpdate()),
         ];

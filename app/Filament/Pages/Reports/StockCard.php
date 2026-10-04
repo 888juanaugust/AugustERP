@@ -18,7 +18,7 @@ class StockCard extends ReportPage
 
     public static function title(): string
     {
-        return 'Stock Card';
+        return __('Stock Card');
     }
 
     public static function group(): string
@@ -45,17 +45,17 @@ class StockCard extends ReportPage
     {
         return [
             Select::make('item_id')
-                ->label('Item')
+                ->label(__('Item'))
                 ->searchable()
                 ->getSearchResultsUsing(fn (string $search) => InventoryReports::itemOptions($search))
                 ->getOptionLabelUsing(fn ($value) => ($item = Item::query()->find($value)) ? "{$item->number} · {$item->name}" : null)
-                ->placeholder('Choose an item')
+                ->placeholder(__('Choose an item'))
                 ->native(false)
                 ->live(),
             Select::make('warehouse_id')
-                ->label('Warehouse')
+                ->label(__('Warehouse'))
                 ->options(fn () => InventoryReports::warehouseOptions())
-                ->placeholder('All warehouses')
+                ->placeholder(__('All warehouses'))
                 ->nullable()
                 ->native(false)
                 ->live(),

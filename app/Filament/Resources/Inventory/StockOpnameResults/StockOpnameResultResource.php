@@ -65,8 +65,8 @@ class StockOpnameResultResource extends ErpResource
             Section::make()
                 ->columns(3)
                 ->schema([
-                    DatePicker::make('trans_date')->label('Count date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                    Select::make('stock_opname_order_id')->label('Count order')
+                    DatePicker::make('trans_date')->label(__('Count date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    Select::make('stock_opname_order_id')->label(__('Count order'))
                         ->options(fn () => StockOpnameOrder::query()->where('status', 'open')->orderByDesc('trans_date')->get()->mapWithKeys(fn ($o) => [$o->id => "{$o->number} · {$o->warehouse->name}"]))
                         ->required()->native(false)->live()
                         ->disabled(fn (?StockOpnameResult $record) => $record !== null)->dehydrated(),
@@ -75,7 +75,7 @@ class StockOpnameResultResource extends ErpResource
             Tabs::make('result')->tabs([
                 Tab::make(__('fields.lines'))->schema([
                     Action::make('pull')
-                        ->label('Pull the items of the order')
+                        ->label(__('Pull the items of the order'))
                         ->icon('heroicon-m-arrow-down-tray')
                         ->visible(fn (?StockOpnameResult $record, Get $get) => ($record === null || ! $record->isApproved()) && $get('stock_opname_order_id'))
                         ->action(function (Set $set, Get $get): void {
@@ -99,10 +99,10 @@ class StockOpnameResultResource extends ErpResource
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Item'),
-                            TableColumn::make('Counted')->alignment(Alignment::End),
-                            TableColumn::make('Unit'),
-                            TableColumn::make('System')->alignment(Alignment::End),
+                            TableColumn::make(__('Item')),
+                            TableColumn::make(__('Counted'))->alignment(Alignment::End),
+                            TableColumn::make(__('Unit')),
+                            TableColumn::make(__('System'))->alignment(Alignment::End),
                         ])
                         ->schema([
                             LineItemFields::item(stockedOnly: true),
@@ -128,18 +128,18 @@ class StockOpnameResultResource extends ErpResource
     public static function approveAction(): Action
     {
         return Action::make('approve')
-            ->label('Approve and post the variance')
+            ->label(__('Approve and post the variance'))
             ->icon('heroicon-m-check-badge')
             ->color('success')
             ->requiresConfirmation()
-            ->modalDescription('The differences between the count and the system become one inventory adjustment in the order\'s warehouse.')
+            ->modalDescription(__('The differences between the count and the system become one inventory adjustment in the order\'s warehouse.'))
             ->visible(fn (StockOpnameResult $record) => ! $record->isApproved() && app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ApproveTransactions))
             ->action(function (StockOpnameResult $record): void {
                 try {
                     $adjustment = app(OpnameApprover::class)->approve($record, auth()->user());
-                    Notification::make()->title($adjustment ? "Approved; variance posted as {$adjustment->number}" : 'Approved; no differences')->success()->send();
+                    Notification::make()->title($adjustment ? __('Approved; variance posted as :number', ['number' => $adjustment->number]) : __('Approved; no differences'))->success()->send();
                 } catch (\RuntimeException $e) {
-                    Notification::make()->title('Cannot approve')->body($e->getMessage())->danger()->persistent()->send();
+                    Notification::make()->title(__('Cannot approve'))->body($e->getMessage())->danger()->persistent()->send();
                 }
             });
     }
@@ -150,15 +150,15 @@ class StockOpnameResultResource extends ErpResource
             ->modifyQueryUsing(fn ($query) => $query->with('order'))
             ->columns([
                 TextColumn::make('status')->label('#')->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => $state === 'approved' ? 'success' : 'warning'),
-                Tanggal::make('trans_date')->label('Count date'),
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                TextColumn::make('order.number')->label('Count order')->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Count date')),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('order.number')->label(__('Count order'))->fontFamily('mono'),
                 TextColumn::make('description')->label(__('fields.description'))->limit(50)->placeholder('—'),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('status')->options(['draft' => 'Draft', 'approved' => 'Approved']),
+                SelectFilter::make('status')->options(['draft' => __('Draft'), 'approved' => __('Approved')]),
             ])
             ->recordActions([EditAction::make(), self::approveAction()]);
     }

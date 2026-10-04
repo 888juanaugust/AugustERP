@@ -14,6 +14,6 @@ class ListAccessGroups extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New group')];
+        return [CreateAction::make()->label(__('New group'))];
     }
 }

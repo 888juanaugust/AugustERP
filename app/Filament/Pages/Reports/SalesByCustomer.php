@@ -16,7 +16,7 @@ class SalesByCustomer extends ReportPage
 
     public static function title(): string
     {
-        return 'Sales by Customer';
+        return __('Sales by Customer');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class SalesByCustomer extends ReportPage
 
     public static function description(): string
     {
-        return 'Invoiced sales per customer in the period: invoices, quantity, amount, VAT and total.';
+        return __('Invoiced sales per customer in the period: invoices, quantity, amount, VAT and total.');
     }
 
     protected function rows(): array

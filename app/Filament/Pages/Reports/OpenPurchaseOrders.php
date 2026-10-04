@@ -16,7 +16,7 @@ class OpenPurchaseOrders extends ReportPage
 
     public static function title(): string
     {
-        return 'Open Purchase Orders';
+        return __('Open Purchase Orders');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class OpenPurchaseOrders extends ReportPage
 
     public static function description(): string
     {
-        return 'Order lines not yet fully received or invoiced, with what is left and its value.';
+        return __('Order lines not yet fully received or invoiced, with what is left and its value.');
     }
 
     protected function rows(): array

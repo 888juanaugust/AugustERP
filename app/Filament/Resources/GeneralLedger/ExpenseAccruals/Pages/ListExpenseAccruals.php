@@ -14,6 +14,6 @@ class ListExpenseAccruals extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New expense accrual')];
+        return [CreateAction::make()->label(__('New expense accrual'))];
     }
 }

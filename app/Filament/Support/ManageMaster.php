@@ -13,7 +13,7 @@ abstract class ManageMaster extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make()->label('New '.strtolower(static::getResource()::getModelLabel()))->slideOver(),
+            CreateAction::make()->label(__('New :record', ['record' => strtolower(static::getResource()::getModelLabel())]))->slideOver(),
         ];
     }
 }

@@ -16,7 +16,7 @@ class PurchasesByVendor extends ReportPage
 
     public static function title(): string
     {
-        return 'Purchases by Vendor';
+        return __('Purchases by Vendor');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class PurchasesByVendor extends ReportPage
 
     public static function description(): string
     {
-        return 'Invoiced purchases per vendor in the period: invoices, quantity, amount, VAT and total.';
+        return __('Invoiced purchases per vendor in the period: invoices, quantity, amount, VAT and total.');
     }
 
     protected function rows(): array

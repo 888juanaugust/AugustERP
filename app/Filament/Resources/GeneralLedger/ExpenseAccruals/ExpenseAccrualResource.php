@@ -63,21 +63,21 @@ class ExpenseAccrualResource extends ErpResource
             Section::make()
                 ->columns(3)
                 ->schema([
-                    Select::make('payable_account_id')->label('Expense payable')->options(fn () => Account::options(AccountType::AccountsPayable, AccountType::OtherCurrentLiability))->searchable()->required()->native(false)
+                    Select::make('payable_account_id')->label(__('Expense payable'))->options(fn () => Account::options(AccountType::AccountsPayable, AccountType::OtherCurrentLiability))->searchable()->required()->native(false)
                         ->default(fn () => Account::query()->where('no', '2230')->value('id')),
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today())->live(onBlur: true),
                     NumberFields::make(TransactionType::ExpenseAccrual, 'Expense No.'),
                 ]),
             Tabs::make('accrual')->tabs([
-                Tab::make('Expense lines')->schema([
+                Tab::make(__('Expense lines'))->schema([
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Account'),
-                            TableColumn::make('Amount')->alignment(Alignment::End),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Account')),
+                            TableColumn::make(__('Amount'))->alignment(Alignment::End),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::FixedAsset))->searchable()->required()->native(false),
@@ -92,8 +92,8 @@ class ExpenseAccrualResource extends ErpResource
                         ->hiddenLabel()
                         ->content(fn (Get $get): string => 'Total '.Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
                 ]),
-                Tab::make('Other info')->schema([
-                    DatePicker::make('due_date')->label('Due date')->required()->native(false)->displayFormat(Format::DATE_INPUT)
+                Tab::make(__('Other info'))->schema([
+                    DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)
                         ->default(fn () => today()->addDays(30)),
                     Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false)
                         ->default(fn () => Branch::default()?->id),
@@ -107,9 +107,9 @@ class ExpenseAccrualResource extends ErpResource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                Tanggal::make('due_date')->label('Due date'),
+                Tanggal::make('due_date')->label(__('Due date')),
                 Rupiah::make('total')->label(__('fields.total')),
                 Rupiah::make('paid_amount')->label(__('fields.paid')),
                 TextColumn::make('status')->label(__('fields.status'))->badge()
@@ -123,11 +123,11 @@ class ExpenseAccrualResource extends ErpResource
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
-                SelectFilter::make('status')->options(['unpaid' => 'Unpaid', 'partial' => 'Partially paid', 'paid' => 'Paid']),
+                SelectFilter::make('status')->options(['unpaid' => __('Unpaid'), 'partial' => __('Partially paid'), 'paid' => __('Paid')]),
                 Filter::make('trans_date')
                     ->schema([
-                        DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT),
                     ])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))

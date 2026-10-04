@@ -36,13 +36,13 @@ class ShipmentResource extends MasterResource
     {
         return $schema->components([
             Tabs::make('shipment')->tabs([
-                Tab::make('General')->schema([
+                Tab::make(__('General'))->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100)->unique(ignoreRecord: true),
-                    TextInput::make('pic_name')->label('Contact person')->maxLength(100),
-                    TextInput::make('pic_phone_number')->label('Phone number')->tel()->maxLength(30),
+                    TextInput::make('pic_name')->label(__('Contact person'))->maxLength(100),
+                    TextInput::make('pic_phone_number')->label(__('Phone number'))->tel()->maxLength(30),
                 ]),
-                Tab::make('Other info')->schema([
-                    Textarea::make('address')->label('Address')->rows(3),
+                Tab::make(__('Other info'))->schema([
+                    Textarea::make('address')->label(__('Address'))->rows(3),
                     self::activeToggle()->inline(false),
                 ]),
             ]),
@@ -54,9 +54,9 @@ class ShipmentResource extends MasterResource
         return $table
             ->columns([
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('pic_name')->label('Contact person')->placeholder('—'),
-                TextColumn::make('pic_phone_number')->label('Phone number')->placeholder('—'),
-                TextColumn::make('address')->label('Address')->limit(50)->placeholder('—'),
+                TextColumn::make('pic_name')->label(__('Contact person'))->placeholder('—'),
+                TextColumn::make('pic_phone_number')->label(__('Phone number'))->placeholder('—'),
+                TextColumn::make('address')->label(__('Address'))->limit(50)->placeholder('—'),
                 self::activeColumn(),
             ])
             ->defaultSort('name')

@@ -14,6 +14,6 @@ class ListBudgets extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()->label('New budget')];
+        return [CreateAction::make()->label(__('New budget'))];
     }
 }

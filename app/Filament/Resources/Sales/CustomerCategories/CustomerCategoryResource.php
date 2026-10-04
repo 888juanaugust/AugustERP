@@ -35,14 +35,14 @@ class CustomerCategoryResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('Category name')->required()->maxLength(100),
+            TextInput::make('name')->label(__('Category name'))->required()->maxLength(100),
             Select::make('parent_id')
-                ->label('Sub-category of')
+                ->label(__('Sub-category of'))
                 ->relationship('parent', 'name', fn ($query, ?CustomerCategory $record) => $query->when($record, fn ($query) => $query->whereKeyNot($record->getKey()))->orderBy('name'))
                 ->searchable()
                 ->preload()
                 ->native(false),
-            Toggle::make('is_default')->label('Default category')->inline(false),
+            Toggle::make('is_default')->label(__('Default category'))->inline(false),
         ])->columns(1);
     }
 
@@ -51,9 +51,9 @@ class CustomerCategoryResource extends MasterResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('parent'))
             ->columns([
-                TextColumn::make('name')->label('Category name')->searchable()->sortable()
+                TextColumn::make('name')->label(__('Category name'))->searchable()->sortable()
                     ->state(fn (CustomerCategory $r) => $r->parent ? "{$r->parent->name} › {$r->name}" : $r->name),
-                IconColumn::make('is_default')->label('Default')->boolean(),
+                IconColumn::make('is_default')->label(__('Default'))->boolean(),
             ])
             ->defaultSort('name')
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);

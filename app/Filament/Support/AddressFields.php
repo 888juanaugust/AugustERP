@@ -18,11 +18,11 @@ final class AddressFields
         return Fieldset::make($label)
             ->columns(2)
             ->schema([
-                Textarea::make("{$prefix}street")->label('Street')->rows(2)->columnSpanFull(),
-                TextInput::make("{$prefix}city")->label('City')->maxLength(80),
-                TextInput::make("{$prefix}zip_code")->label('Postcode')->maxLength(10),
-                TextInput::make("{$prefix}province")->label('Province')->maxLength(80),
-                TextInput::make("{$prefix}country")->label('Country')->maxLength(80)->default('Indonesia'),
+                Textarea::make("{$prefix}street")->label(__('Street'))->rows(2)->columnSpanFull(),
+                TextInput::make("{$prefix}city")->label(__('City'))->maxLength(80),
+                TextInput::make("{$prefix}zip_code")->label(__('Postcode'))->maxLength(10),
+                TextInput::make("{$prefix}province")->label(__('Province'))->maxLength(80),
+                TextInput::make("{$prefix}country")->label(__('Country'))->maxLength(80)->default('Indonesia'),
             ]);
     }
 }

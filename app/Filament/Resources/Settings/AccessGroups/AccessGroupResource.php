@@ -48,21 +48,21 @@ class AccessGroupResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('General')
+            Section::make(__('General'))
                 ->schema([
-                    TextInput::make('name')->label('Group name')->required()->maxLength(100)->unique(ignoreRecord: true),
+                    TextInput::make('name')->label(__('Group name'))->required()->maxLength(100)->unique(ignoreRecord: true),
                     Radio::make('restriction_type')
-                        ->label('Access restriction')
+                        ->label(__('Access restriction'))
                         ->options([
-                            'preferences' => 'Follow the restrictions set in Preferences',
-                            'time_window' => 'Restricted to a time window',
+                            'preferences' => __('Follow the restrictions set in Preferences'),
+                            'time_window' => __('Restricted to a time window'),
                         ])
                         ->default('preferences')
                         ->live(),
                     Grid::make(2)
                         ->schema([
-                            TimePicker::make('restricted_from')->label('From')->seconds(false),
-                            TimePicker::make('restricted_until')->label('Until')->seconds(false),
+                            TimePicker::make('restricted_from')->label(__('From'))->seconds(false),
+                            TimePicker::make('restricted_until')->label(__('Until'))->seconds(false),
                         ])
                         ->visible(fn (Get $get) => $get('restriction_type') === 'time_window'),
                     Textarea::make('memo')->label(__('fields.memo'))->rows(2),
@@ -70,17 +70,17 @@ class AccessGroupResource extends ErpResource
             Tabs::make('group')
                 ->persistTabInQueryString()
                 ->tabs([
-                    Tab::make('Users')->schema([
+                    Tab::make(__('Users'))->schema([
                         CheckboxList::make('users')
-                            ->label('Members')
+                            ->label(__('Members'))
                             ->relationship('users', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
                             ->columns(3)
                             ->searchable(),
                     ]),
-                    Tab::make('Screen rights')->schema(self::rightsSections()),
-                    Tab::make('Special rights')->schema([
+                    Tab::make(__('Screen rights'))->schema(self::rightsSections()),
+                    Tab::make(__('Special rights'))->schema([
                         CheckboxList::make('special_rights')
-                            ->label('Rights not tied to one screen')
+                            ->label(__('Rights not tied to one screen'))
                             ->options(collect(HakKhusus::cases())->mapWithKeys(fn (HakKhusus $r) => [$r->value => $r->label()])->all())
                             ->columns(2)
                             ->bulkToggleable(),
@@ -121,9 +121,9 @@ class AccessGroupResource extends ErpResource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->label('Group name')->searchable()->sortable(),
-                TextColumn::make('users.name')->label('Users')->listWithLineBreaks()->limitList(5)->expandableLimitedList(),
-                TextColumn::make('rights_count')->label('Screens')->counts('rights')->alignEnd(),
+                TextColumn::make('name')->label(__('Group name'))->searchable()->sortable(),
+                TextColumn::make('users.name')->label(__('Users'))->listWithLineBreaks()->limitList(5)->expandableLimitedList(),
+                TextColumn::make('rights_count')->label(__('Screens'))->counts('rights')->alignEnd(),
             ])
             ->defaultSort('name')
             ->recordActions([

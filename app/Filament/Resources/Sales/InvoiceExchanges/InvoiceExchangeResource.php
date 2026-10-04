@@ -58,16 +58,16 @@ class InvoiceExchangeResource extends ErpResource
                 CustomerFields::select(fillsTerms: false),
                 DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 NumberFields::make(TransactionType::InvoiceExchange),
-                DatePicker::make('collect_date')->label('Exchange date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                DatePicker::make('due_date')->label('Due date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->addDays(30)),
+                DatePicker::make('collect_date')->label(__('Exchange date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->addDays(30)),
             ]),
             Tabs::make('exchange')->tabs([
-                Tab::make('Invoices')->schema([
+                Tab::make(__('Invoices'))->schema([
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
-                        ->table([TableColumn::make('Invoice'), TableColumn::make('Invoice date'), TableColumn::make('Due')])
+                        ->table([TableColumn::make(__('Invoice')), TableColumn::make(__('Invoice date')), TableColumn::make(__('Due'))])
                         ->schema([
                             Select::make('sales_invoice_id')
                                 ->options(fn (Get $get) => SalesInvoice::query()->where('customer_id', $get('../../customer_id'))->where('payment_status', '!=', 'paid')->orderByDesc('trans_date')->get()
@@ -92,10 +92,10 @@ class InvoiceExchangeResource extends ErpResource
             ->columns([
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                Tanggal::make('collect_date')->label('Exchange date'),
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('collect_date')->label(__('Exchange date')),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 TextColumn::make('status')->label(__('fields.status'))->badge()->formatStateUsing(fn (string $state) => $state === 'processed' ? 'Collected' : 'Pending')->color(fn (string $state) => $state === 'processed' ? 'success' : 'info'),
-                Rupiah::make('total')->label('Invoice total'),
+                Rupiah::make('total')->label(__('Invoice total')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), DocumentListFilters::dateRange('collect_date', 'Exchange date'), SelectFilter::make('customer_id')->label(__('fields.customer'))->relationship('customer', 'name')->searchable()])

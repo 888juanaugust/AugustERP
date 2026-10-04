@@ -17,7 +17,7 @@ class PayableAging extends ReportPage
 
     public static function title(): string
     {
-        return 'Payable Aging';
+        return __('Payable Aging');
     }
 
     public static function group(): string
@@ -39,8 +39,8 @@ class PayableAging extends ReportPage
     {
         return [
             Select::make('basis')
-                ->label('Age from')
-                ->options(['invoice_date' => 'Invoice date', 'due_date' => 'Due date'])
+                ->label(__('Age from'))
+                ->options(['invoice_date' => __('Invoice date'), 'due_date' => __('Due date')])
                 ->default('invoice_date')
                 ->native(false)
                 ->live(),

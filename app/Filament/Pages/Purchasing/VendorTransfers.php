@@ -49,23 +49,23 @@ class VendorTransfers extends ErpPage implements HasTable
             ->query(fn () => PaymentOrderLine::query()->with(['paymentOrder.bankAccount', 'vendor.bankAccounts.bank'])->whereNull('purchase_payment_id')
                 ->whereHas('paymentOrder', fn ($query) => $query->where('status', '!=', 'processed')))
             ->columns([
-                TextColumn::make('paymentOrder.trans_date')->label('Transfer deadline')->formatStateUsing(fn ($state) => Format::date($state))->sortable(),
-                TextColumn::make('paymentOrder.number')->label('Order')->fontFamily('mono'),
+                TextColumn::make('paymentOrder.trans_date')->label(__('Transfer deadline'))->formatStateUsing(fn ($state) => Format::date($state))->sortable(),
+                TextColumn::make('paymentOrder.number')->label(__('Order'))->fontFamily('mono'),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
-                TextColumn::make('paymentOrder.payment_method')->label('Method')->badge()->color('gray'),
-                TextColumn::make('paymentOrder.bankAccount.name')->label('Bank')->placeholder('—'),
-                TextColumn::make('vendor_account')->label("Vendor's account No.")->state(fn (PaymentOrderLine $r) => $r->vendor->bankAccounts->first()?->bank_account)->placeholder('—'),
-                TextColumn::make('vendor_holder')->label('Account holder')->state(fn (PaymentOrderLine $r) => trim(($r->vendor->bankAccounts->first()?->bank?->name ?? '').' '.($r->vendor->bankAccounts->first()?->bank_account_name ?? '')))->placeholder('—'),
-                TextColumn::make('amount')->label('Amount')->formatStateUsing(fn ($state) => Format::number((int) $state))->alignEnd(),
+                TextColumn::make('paymentOrder.payment_method')->label(__('Method'))->badge()->color('gray'),
+                TextColumn::make('paymentOrder.bankAccount.name')->label(__('Bank'))->placeholder('—'),
+                TextColumn::make('vendor_account')->label(__('Vendor\'s account No.'))->state(fn (PaymentOrderLine $r) => $r->vendor->bankAccounts->first()?->bank_account)->placeholder('—'),
+                TextColumn::make('vendor_holder')->label(__('Account holder'))->state(fn (PaymentOrderLine $r) => trim(($r->vendor->bankAccounts->first()?->bank?->name ?? '').' '.($r->vendor->bankAccounts->first()?->bank_account_name ?? '')))->placeholder('—'),
+                TextColumn::make('amount')->label(__('Amount'))->formatStateUsing(fn ($state) => Format::number((int) $state))->alignEnd(),
             ])
             ->defaultSort('id')
             ->toolbarActions([
                 BulkAction::make('pay')
-                    ->label('Pay the selected')
+                    ->label(__('Pay the selected'))
                     ->icon('heroicon-m-banknotes')
                     ->color('primary')
                     ->requiresConfirmation()
-                    ->modalDescription('One purchase payment per vendor and payment order, from the order\'s bank, dated today.')
+                    ->modalDescription(__('One purchase payment per vendor and payment order, from the order\'s bank, dated today.'))
                     ->visible(fn () => app(HakAkses::class)->allows(auth()->user(), MenuKey::PurchasePayments, Hak::Create))
                     ->action(function (Collection $records): void {
                         $count = 0;
@@ -98,14 +98,14 @@ class VendorTransfers extends ErpPage implements HasTable
                                     $count++;
                                 }
                             });
-                            Notification::make()->title("{$count} payment(s) recorded")->success()->send();
+                            Notification::make()->title(__(':count payment(s) recorded', ['count' => $count]))->success()->send();
                         } catch (\RuntimeException $e) {
-                            Notification::make()->title('Cannot pay')->body($e->getMessage())->danger()->persistent()->send();
+                            Notification::make()->title(__('Cannot pay'))->body($e->getMessage())->danger()->persistent()->send();
                         }
                     })
                     ->deselectRecordsAfterCompletion(),
             ])
-            ->emptyStateHeading('Nothing queued for transfer')
-            ->emptyStateDescription('Invoices put on a payment order appear here until they are paid.');
+            ->emptyStateHeading(__('Nothing queued for transfer'))
+            ->emptyStateDescription(__('Invoices put on a payment order appear here until they are paid.'));
     }
 }

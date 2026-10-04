@@ -16,7 +16,7 @@ class PurchasesByItem extends ReportPage
 
     public static function title(): string
     {
-        return 'Purchases by Item';
+        return __('Purchases by Item');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class PurchasesByItem extends ReportPage
 
     public static function description(): string
     {
-        return 'Invoiced purchases per item in the period: invoices, quantity, amount, VAT and total.';
+        return __('Invoiced purchases per item in the period: invoices, quantity, amount, VAT and total.');
     }
 
     protected function rows(): array

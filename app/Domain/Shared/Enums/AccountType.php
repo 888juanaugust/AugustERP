@@ -29,22 +29,22 @@ enum AccountType: string implements HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::CashBank => 'Cash / Bank',
-            self::AccountsReceivable => 'Accounts Receivable',
-            self::Inventory => 'Inventory',
-            self::OtherCurrentAsset => 'Other Current Asset',
-            self::FixedAsset => 'Fixed Asset',
-            self::AccumulatedDepreciation => 'Accumulated Depreciation',
-            self::OtherAsset => 'Other Asset',
-            self::AccountsPayable => 'Accounts Payable',
-            self::OtherCurrentLiability => 'Other Current Liability',
-            self::LongTermLiability => 'Long-term Liability',
-            self::Equity => 'Equity',
-            self::Revenue => 'Revenue',
-            self::CostOfSales => 'Cost of Sales',
-            self::Expense => 'Expense',
-            self::OtherIncome => 'Other Income',
-            self::OtherExpense => 'Other Expense',
+            self::CashBank => __('Cash / Bank'),
+            self::AccountsReceivable => __('Accounts Receivable'),
+            self::Inventory => __('Inventory'),
+            self::OtherCurrentAsset => __('Other Current Asset'),
+            self::FixedAsset => __('Fixed Asset'),
+            self::AccumulatedDepreciation => __('Accumulated Depreciation'),
+            self::OtherAsset => __('Other Asset'),
+            self::AccountsPayable => __('Accounts Payable'),
+            self::OtherCurrentLiability => __('Other Current Liability'),
+            self::LongTermLiability => __('Long-term Liability'),
+            self::Equity => __('Equity'),
+            self::Revenue => __('Revenue'),
+            self::CostOfSales => __('Cost of Sales'),
+            self::Expense => __('Expense'),
+            self::OtherIncome => __('Other Income'),
+            self::OtherExpense => __('Other Expense'),
         };
     }
 

@@ -66,33 +66,33 @@ class RecurringTransactionResource extends ErpResource
                 ->columns(3)
                 ->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100),
-                    TextInput::make('category')->label('Category')->maxLength(50)->datalist(fn () => self::categories()),
-                    Select::make('transaction_type')->label('Document')->options(RecurringTransaction::TYPES)->required()->native(false)->live(),
-                    Select::make('frequency')->label('Frequency')->options(RecurringTransaction::FREQUENCIES)->default('monthly')->required()->native(false),
-                    DatePicker::make('next_run_on')->label('Next run')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                    DatePicker::make('end_on')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT)->nullable(),
+                    TextInput::make('category')->label(__('Category'))->maxLength(50)->datalist(fn () => self::categories()),
+                    Select::make('transaction_type')->label(__('Document'))->options(RecurringTransaction::types())->required()->native(false)->live(),
+                    Select::make('frequency')->label(__('Frequency'))->options(RecurringTransaction::frequencies())->default('monthly')->required()->native(false),
+                    DatePicker::make('next_run_on')->label(__('Next run'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('end_on')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->nullable(),
                     Select::make('status')->label(__('fields.status'))->options(self::STATUSES)->default('active')->required()->native(false),
                 ]),
-            Section::make('Template')
-                ->description('What each run puts on the document; the date is the run date and the number comes from the default series.')
+            Section::make(__('Template'))
+                ->description(__('What each run puts on the document; the date is the run date and the number comes from the default series.'))
                 ->columns(3)
                 ->schema([
-                    TextInput::make('template.description')->label('Description on the document')->maxLength(255)->columnSpan(3),
-                    Select::make('template.bank_account_id')->label('Cash / Bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)
+                    TextInput::make('template.description')->label(__('Description on the document'))->maxLength(255)->columnSpan(3),
+                    Select::make('template.bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)
                         ->visible(fn (Get $get): bool => self::isCash($get))
                         ->required(fn (Get $get): bool => self::isCash($get)),
-                    TextInput::make('template.payee')->label('Payee')->maxLength(255)->visible(fn (Get $get): bool => $get('transaction_type') === 'cash_payment'),
-                    TextInput::make('template.payer')->label('Payer')->maxLength(255)->visible(fn (Get $get): bool => $get('transaction_type') === 'cash_receipt'),
+                    TextInput::make('template.payee')->label(__('Payee'))->maxLength(255)->visible(fn (Get $get): bool => $get('transaction_type') === 'cash_payment'),
+                    TextInput::make('template.payer')->label(__('Payer'))->maxLength(255)->visible(fn (Get $get): bool => $get('transaction_type') === 'cash_receipt'),
                     Repeater::make('template.lines')
-                        ->label('Lines')
+                        ->label(__('Lines'))
                         ->columns(6)
                         ->columnSpan(3)
                         ->schema([
-                            Select::make('account_id')->label('Account')->options(fn () => Account::options())->searchable()->required()->native(false)->columnSpan(2),
+                            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->required()->native(false)->columnSpan(2),
                             PricedDocumentForm::money('debit', 'Debit')->visible(fn (Get $get): bool => self::isJournal($get, '../../../transaction_type')),
                             PricedDocumentForm::money('credit', 'Credit')->visible(fn (Get $get): bool => self::isJournal($get, '../../../transaction_type')),
                             PricedDocumentForm::money('amount', 'Amount')->visible(fn (Get $get): bool => ! self::isJournal($get, '../../../transaction_type')),
-                            TextInput::make('memo')->label('Memo')->maxLength(255)
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255)
                                 ->columnSpan(fn (Get $get): int => self::isJournal($get, '../../../transaction_type') ? 2 : 3),
                         ])
                         ->defaultItems(1)
@@ -112,15 +112,15 @@ class RecurringTransactionResource extends ErpResource
     {
         return $table
             ->columns([
-                TextColumn::make('category')->label('Category')->sortable()->placeholder('—'),
+                TextColumn::make('category')->label(__('Category'))->sortable()->placeholder('—'),
                 TextColumn::make('name')->label(__('fields.name'))->searchable()->sortable(),
-                TextColumn::make('transaction_type')->label('Document')->sortable()
-                    ->formatStateUsing(fn (string $state): string => RecurringTransaction::TYPES[$state] ?? $state),
-                TextColumn::make('frequency')->label('Frequency')
-                    ->formatStateUsing(fn (string $state): string => RecurringTransaction::FREQUENCIES[$state] ?? $state),
-                Tanggal::make('next_run_on')->label('Next run'),
-                Tanggal::make('last_run_on')->label('Last run')->placeholder('—'),
-                TextColumn::make('run_count')->label('Runs')->alignEnd(),
+                TextColumn::make('transaction_type')->label(__('Document'))->sortable()
+                    ->formatStateUsing(fn (string $state): string => RecurringTransaction::types()[$state] ?? $state),
+                TextColumn::make('frequency')->label(__('Frequency'))
+                    ->formatStateUsing(fn (string $state): string => RecurringTransaction::frequencies()[$state] ?? $state),
+                Tanggal::make('next_run_on')->label(__('Next run')),
+                Tanggal::make('last_run_on')->label(__('Last run'))->placeholder('—'),
+                TextColumn::make('run_count')->label(__('Runs'))->alignEnd(),
                 TextColumn::make('status')->label(__('fields.status'))->badge()
                     ->formatStateUsing(fn (string $state): string => self::STATUSES[$state] ?? $state)
                     ->color(fn (string $state): string => match ($state) {
@@ -131,14 +131,14 @@ class RecurringTransactionResource extends ErpResource
             ])
             ->defaultSort('next_run_on')
             ->filters([
-                SelectFilter::make('transaction_type')->label('Document')->options(RecurringTransaction::TYPES),
-                SelectFilter::make('category')->label('Category')->options(fn () => self::categories()),
+                SelectFilter::make('transaction_type')->label(__('Document'))->options(RecurringTransaction::types()),
+                SelectFilter::make('category')->label(__('Category'))->options(fn () => self::categories()),
                 SelectFilter::make('status')->label(__('fields.status'))->options(self::STATUSES),
             ])
             ->recordActions([
                 EditAction::make(),
                 Action::make('run')
-                    ->label('Run now')
+                    ->label(__('Run now'))
                     ->icon('heroicon-m-play')
                     ->color('primary')
                     ->visible(fn ($record): bool => $record->status === 'active')
@@ -147,9 +147,9 @@ class RecurringTransactionResource extends ErpResource
                     ->action(function ($record): void {
                         try {
                             $document = app(RecurringRunner::class)->run($record);
-                            Notification::make()->title("{$document->number} made")->success()->send();
+                            Notification::make()->title(__(':number made', ['number' => $document->number]))->success()->send();
                         } catch (RuntimeException $e) {
-                            Notification::make()->title('Cannot run')->body($e->getMessage())->danger()->persistent()->send();
+                            Notification::make()->title(__('Cannot run'))->body($e->getMessage())->danger()->persistent()->send();
                         }
                     }),
                 DeleteAction::make(),

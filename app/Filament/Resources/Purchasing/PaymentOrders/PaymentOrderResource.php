@@ -63,23 +63,23 @@ class PaymentOrderResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('trans_date')->label('Transfer deadline')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Transfer deadline'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 NumberFields::make(TransactionType::PaymentOrder, 'Voucher No.'),
-                Select::make('payment_method')->label('Payment method')->options([PaymentMethod::BankTransfer->value => 'Bank transfer', PaymentMethod::VirtualAccount->value => 'Virtual account', PaymentMethod::Cheque->value => 'Cheque / giro'])->default('bank_transfer')->required()->native(false),
-                Select::make('bank_account_id')->label('Pay from bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false),
+                Select::make('payment_method')->label(__('Payment method'))->options([PaymentMethod::BankTransfer->value => __('Bank transfer'), PaymentMethod::VirtualAccount->value => __('Virtual account'), PaymentMethod::Cheque->value => __('Cheque / giro')])->default('bank_transfer')->required()->native(false),
+                Select::make('bank_account_id')->label(__('Pay from bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false),
             ]),
             Tabs::make('order')->tabs([
-                Tab::make('Invoices')->schema([
+                Tab::make(__('Invoices'))->schema([
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Invoice'),
-                            TableColumn::make('Vendor'),
-                            TableColumn::make('Open balance')->alignment(Alignment::End),
-                            TableColumn::make('Pay')->alignment(Alignment::End),
-                            TableColumn::make('Discount')->alignment(Alignment::End),
+                            TableColumn::make(__('Invoice')),
+                            TableColumn::make(__('Vendor')),
+                            TableColumn::make(__('Open balance'))->alignment(Alignment::End),
+                            TableColumn::make(__('Pay'))->alignment(Alignment::End),
+                            TableColumn::make(__('Discount'))->alignment(Alignment::End),
                         ])
                         ->schema([
                             Select::make('payable_key')
@@ -130,10 +130,10 @@ class PaymentOrderResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('bankAccount'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Transfer deadline'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Transfer deadline')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('bankAccount.name')->label('Bank')->placeholder('—'),
+                TextColumn::make('bankAccount.name')->label(__('Bank'))->placeholder('—'),
                 TextColumn::make('status')->label(__('fields.status'))->badge()->formatStateUsing(fn (string $state) => __('status.fulfilment.'.$state))
                     ->color(fn (string $state) => match ($state) {
                         'processed' => 'success', 'partial' => 'warning', default => 'info'
@@ -141,7 +141,7 @@ class PaymentOrderResource extends ErpResource
                 Rupiah::make('total')->label(__('fields.total')),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('status')->options(['pending' => 'Pending', 'partial' => 'Partial', 'processed' => 'Processed'])])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('status')->options(['pending' => __('Pending'), 'partial' => __('Partial'), 'processed' => __('Processed')])])
             ->recordActions([EditAction::make()]);
     }
 

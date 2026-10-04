@@ -33,7 +33,7 @@ final class DocumentPages
         try {
             return app(DocumentRepository::class)->beforeUpdate($record, $newDate);
         } catch (RuntimeException $e) {
-            Notification::make()->title('Cannot save')->body($e->getMessage())->danger()->persistent()->send();
+            Notification::make()->title(__('Cannot save'))->body($e->getMessage())->danger()->persistent()->send();
             throw new Halt;
         }
     }
@@ -66,7 +66,7 @@ final class DocumentPages
 
                     return true;
                 } catch (RuntimeException $e) {
-                    Notification::make()->title('Cannot delete')->body($e->getMessage())->danger()->persistent()->send();
+                    Notification::make()->title(__('Cannot delete'))->body($e->getMessage())->danger()->persistent()->send();
 
                     return false;
                 }

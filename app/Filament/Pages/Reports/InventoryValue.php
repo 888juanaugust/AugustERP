@@ -18,7 +18,7 @@ class InventoryValue extends ReportPage
 
     public static function title(): string
     {
-        return 'Inventory Value by Warehouse';
+        return __('Inventory Value by Warehouse');
     }
 
     public static function group(): string
@@ -50,16 +50,16 @@ class InventoryValue extends ReportPage
     {
         return [
             Select::make('warehouse_id')
-                ->label('Warehouse')
+                ->label(__('Warehouse'))
                 ->options(fn () => InventoryReports::warehouseOptions())
-                ->placeholder('All warehouses')
+                ->placeholder(__('All warehouses'))
                 ->nullable()
                 ->native(false)
                 ->live(),
             Select::make('category_id')
-                ->label('Item category')
+                ->label(__('Item category'))
                 ->options(fn () => ItemCategory::query()->orderBy('name')->pluck('name', 'id'))
-                ->placeholder('All categories')
+                ->placeholder(__('All categories'))
                 ->nullable()
                 ->native(false)
                 ->live(),

@@ -49,9 +49,9 @@ class MinimumStock extends ErpPage implements HasTable
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                Select::make('vendor_id')->label('Vendor')->options(fn () => Vendor::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->searchable()->live()->native(false),
-                Select::make('warehouse_id')->label('Warehouse')->options(fn () => Warehouse::query()->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->live()->native(false)->placeholder('All warehouses'),
-                TextInput::make('search')->label('Item name or code')->live(onBlur: true),
+                Select::make('vendor_id')->label(__('Vendor'))->options(fn () => Vendor::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->searchable()->live()->native(false),
+                Select::make('warehouse_id')->label(__('Warehouse'))->options(fn () => Warehouse::query()->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->live()->native(false)->placeholder(__('All warehouses')),
+                TextInput::make('search')->label(__('Item name or code'))->live(onBlur: true),
             ]),
         ])->statePath('filters');
     }
@@ -66,18 +66,18 @@ class MinimumStock extends ErpPage implements HasTable
         return $table
             ->records(fn () => $this->rows())
             ->columns([
-                TextColumn::make('vendor')->label('Vendor'),
-                TextColumn::make('name')->label('Item name')->weight('medium'),
-                TextColumn::make('number')->label('Item code')->fontFamily('mono'),
-                TextColumn::make('unit')->label('Unit'),
-                TextColumn::make('on_hand')->label('Available')->alignEnd(),
-                TextColumn::make('on_order')->label('On order')->alignEnd(),
-                TextColumn::make('requested')->label('Requested')->alignEnd(),
-                TextColumn::make('min_stock')->label('Minimum')->alignEnd(),
+                TextColumn::make('vendor')->label(__('Vendor')),
+                TextColumn::make('name')->label(__('Item name'))->weight('medium'),
+                TextColumn::make('number')->label(__('Item code'))->fontFamily('mono'),
+                TextColumn::make('unit')->label(__('Unit')),
+                TextColumn::make('on_hand')->label(__('Available'))->alignEnd(),
+                TextColumn::make('on_order')->label(__('On order'))->alignEnd(),
+                TextColumn::make('requested')->label(__('Requested'))->alignEnd(),
+                TextColumn::make('min_stock')->label(__('Minimum'))->alignEnd(),
             ])
             ->paginated(false)
-            ->emptyStateHeading('Nothing below its minimum')
-            ->emptyStateDescription('Items whose stock is at or under the minimum set on the item appear here.');
+            ->emptyStateHeading(__('Nothing below its minimum'))
+            ->emptyStateDescription(__('Items whose stock is at or under the minimum set on the item appear here.'));
     }
 
     /** @return Collection<int, array<string, mixed>> */

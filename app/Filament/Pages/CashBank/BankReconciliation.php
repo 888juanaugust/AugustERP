@@ -67,10 +67,10 @@ class BankReconciliation extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(4)->schema([
-                    Select::make('bank_account_id')->label('Bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
-                    DatePicker::make('start')->label('Period from')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('end')->label('Period until')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    TextInput::make('statement_balance')->label('Statement ending balance')
+                    Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
+                    DatePicker::make('start')->label(__('Period from'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('end')->label(__('Period until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    TextInput::make('statement_balance')->label(__('Statement ending balance'))
                         ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0)->live(onBlur: true),
                 ]),
             ])
@@ -90,16 +90,16 @@ class BankReconciliation extends ErpPage implements HasTable
         return $table
             ->records(fn () => $this->rows())
             ->columns([
-                TextColumn::make('trans_date')->label('Date'),
-                TextColumn::make('source_number')->label('Source No.')->fontFamily('mono'),
-                TextColumn::make('source_type')->label('Transaction type')->badge()->color('gray'),
-                TextColumn::make('description')->label('Description')->limit(50),
-                TextColumn::make('debit')->label('Debit')->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('credit')->label('Credit')->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
-                TextColumn::make('cleared')->label('Cleared')->alignCenter(),
+                TextColumn::make('trans_date')->label(__('Date')),
+                TextColumn::make('source_number')->label(__('Source No.'))->fontFamily('mono'),
+                TextColumn::make('source_type')->label(__('Transaction type'))->badge()->color('gray'),
+                TextColumn::make('description')->label(__('Description'))->limit(50),
+                TextColumn::make('debit')->label(__('Debit'))->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('credit')->label(__('Credit'))->alignEnd()->extraCellAttributes(['class' => 'ae-money']),
+                TextColumn::make('cleared')->label(__('Cleared'))->alignCenter(),
             ])
             ->recordActions([
-                Action::make('clear')->label('Clear')->icon('heroicon-m-check')
+                Action::make('clear')->label(__('Clear'))->icon('heroicon-m-check')
                     ->visible(fn (array $record) => $record['cleared'] === '' && $this->isOpen() && static::canUpdate())
                     ->action(function (array $record): void {
                         $reconciliation = $this->reconciliation();
@@ -109,21 +109,21 @@ class BankReconciliation extends ErpPage implements HasTable
                         try {
                             app(Reconciler::class)->clear($reconciliation, [(int) $record['id']]);
                         } catch (\RuntimeException $e) {
-                            Notification::make()->title('Cannot clear')->body($e->getMessage())->danger()->persistent()->send();
+                            Notification::make()->title(__('Cannot clear'))->body($e->getMessage())->danger()->persistent()->send();
                         }
                         $this->resetTable();
                     }),
             ])
             ->paginated(false)
-            ->emptyStateHeading('Pick a bank and a period')
-            ->emptyStateDescription('The book lines of the bank up to the period\'s end that the bank has not yet agreed with, and those cleared in this reconciliation.');
+            ->emptyStateHeading(__('Pick a bank and a period'))
+            ->emptyStateDescription(__('The book lines of the bank up to the period\'s end that the bank has not yet agreed with, and those cleared in this reconciliation.'));
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('autoMatch')
-                ->label('Match against statement')
+                ->label(__('Match against statement'))
                 ->icon('heroicon-m-sparkles')
                 ->color('gray')
                 ->visible(fn () => $this->isOpen() && static::canUpdate())
@@ -134,18 +134,18 @@ class BankReconciliation extends ErpPage implements HasTable
                     }
                     try {
                         $matched = app(Reconciler::class)->autoMatch($reconciliation);
-                        Notification::make()->title("{$matched} line(s) matched")->success()->send();
+                        Notification::make()->title(__(':matched line(s) matched', ['matched' => $matched]))->success()->send();
                     } catch (\RuntimeException $e) {
-                        Notification::make()->title('Cannot match')->body($e->getMessage())->danger()->persistent()->send();
+                        Notification::make()->title(__('Cannot match'))->body($e->getMessage())->danger()->persistent()->send();
                     }
                     $this->resetTable();
                 }),
             Action::make('clearAll')
-                ->label('Clear every line shown')
+                ->label(__('Clear every line shown'))
                 ->icon('heroicon-m-check')
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalDescription('Every line in the list not yet cleared is marked as agreed by the bank.')
+                ->modalDescription(__('Every line in the list not yet cleared is marked as agreed by the bank.'))
                 ->visible(fn () => $this->isOpen() && static::canUpdate())
                 ->action(function (): void {
                     $reconciliation = $this->reconciliation();
@@ -155,14 +155,14 @@ class BankReconciliation extends ErpPage implements HasTable
                     $ids = $this->rows()->filter(fn (array $row) => $row['cleared'] === '')->map(fn (array $row) => (int) $row['id'])->values()->all();
                     try {
                         $cleared = app(Reconciler::class)->clear($reconciliation, $ids);
-                        Notification::make()->title("{$cleared} line(s) cleared")->success()->send();
+                        Notification::make()->title(__(':cleared line(s) cleared', ['cleared' => $cleared]))->success()->send();
                     } catch (\RuntimeException $e) {
-                        Notification::make()->title('Cannot clear')->body($e->getMessage())->danger()->persistent()->send();
+                        Notification::make()->title(__('Cannot clear'))->body($e->getMessage())->danger()->persistent()->send();
                     }
                     $this->resetTable();
                 }),
             Action::make('close')
-                ->label('Close reconciliation')
+                ->label(__('Close reconciliation'))
                 ->icon('heroicon-m-lock-closed')
                 ->color('success')
                 ->requiresConfirmation()
@@ -177,9 +177,9 @@ class BankReconciliation extends ErpPage implements HasTable
                     }
                     try {
                         app(Reconciler::class)->close($reconciliation);
-                        Notification::make()->title('Reconciliation closed')->success()->send();
+                        Notification::make()->title(__('Reconciliation closed'))->success()->send();
                     } catch (\RuntimeException $e) {
-                        Notification::make()->title('Cannot close')->body($e->getMessage())->danger()->persistent()->send();
+                        Notification::make()->title(__('Cannot close'))->body($e->getMessage())->danger()->persistent()->send();
                     }
                     $this->resetTable();
                 }),

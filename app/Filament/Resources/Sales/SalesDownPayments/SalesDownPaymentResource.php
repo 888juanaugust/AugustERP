@@ -62,7 +62,7 @@ class SalesDownPaymentResource extends ErpResource
                 NumberFields::make(TransactionType::SalesInvoice, 'Invoice No.'),
             ]),
             Tabs::make('down-payment')->tabs([
-                Tab::make('Down payment')->columns(2)->schema([
+                Tab::make(__('Down payment'))->columns(2)->schema([
                     PricedDocumentForm::money('amount', 'Down payment')->required()->minValue(1),
                     TextInput::make('po_number')->label(__('fields.po_number'))->maxLength(60),
                     Select::make('tax_code_id')->label(__('fields.tax_code'))->options(fn () => TaxCode::query()->where('is_active', true)->pluck('description', 'id'))->default(fn () => TaxCode::default()?->id)->native(false),
@@ -71,12 +71,12 @@ class SalesDownPaymentResource extends ErpResource
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     CustomerFields::paymentTerm(),
-                    Textarea::make('to_address')->label('Address')->rows(2),
+                    Textarea::make('to_address')->label(__('Address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),
                 ]),
-                Tab::make('Payment info')->schema([
-                    Placeholder::make('paid')->label('Paid')->content(fn (?SalesDownPayment $record) => $record ? Format::rupiah($record->paid_amount).' of '.Format::rupiah($record->total) : '—'),
-                    Placeholder::make('used')->label('Deducted on invoices')->content(fn (?SalesDownPayment $record) => $record ? Format::rupiah($record->used_amount) : '—'),
+                Tab::make(__('Payment info'))->schema([
+                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesDownPayment $record) => $record ? Format::rupiah($record->paid_amount).' of '.Format::rupiah($record->total) : '—'),
+                    Placeholder::make('used')->label(__('Deducted on invoices'))->content(fn (?SalesDownPayment $record) => $record ? Format::rupiah($record->used_amount) : '—'),
                 ]),
             ]),
         ])->columns(1);
@@ -87,7 +87,7 @@ class SalesDownPaymentResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('customer'))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
@@ -96,14 +96,14 @@ class SalesDownPaymentResource extends ErpResource
                     ->color(fn (string $state) => match ($state) {
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
-                TextColumn::make('age')->label('Age (days)')->state(fn (SalesDownPayment $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
+                TextColumn::make('age')->label(__('Age (days)'))->state(fn (SalesDownPayment $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
                 Rupiah::make('total')->label(__('fields.total')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('customer_id')->label(__('fields.customer'))->relationship('customer', 'name')->searchable()])
             ->recordActions([
                 EditAction::make(),
-                Action::make('receive')->label('Receive payment')->icon('heroicon-m-banknotes')->color('primary')
+                Action::make('receive')->label(__('Receive payment'))->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (SalesDownPayment $record) => $record->payment_status !== 'paid' && SalesReceiptResource::canCreate())
                     ->url(fn (SalesDownPayment $record) => SalesReceiptResource::getUrl('create', ['source' => 'sales_down_payment:'.$record->id])),
             ]);

@@ -64,21 +64,21 @@ class CashReceiptResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                Select::make('bank_account_id')->label('Cash / Bank')->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
-                DatePicker::make('trans_date')->label('Date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                Select::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                 NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
-                Placeholder::make('amount_preview')->label('Amount')->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
+                Placeholder::make('amount_preview')->label(__('Amount'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
             ]),
             Tabs::make('receipt')->tabs([
-                Tab::make('Receipt details')->schema([
+                Tab::make(__('Receipt details'))->schema([
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Account'),
-                            TableColumn::make('Amount')->alignment(Alignment::End),
-                            TableColumn::make('Memo'),
+                            TableColumn::make(__('Account')),
+                            TableColumn::make(__('Amount'))->alignment(Alignment::End),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
@@ -88,11 +88,11 @@ class CashReceiptResource extends ErpResource
                         ->minItems(1)->defaultItems(1)->live()
                         ->addActionLabel('Add line'),
                 ]),
-                Tab::make('Other info')->schema([
-                    TextInput::make('cheque_no')->label('Cheque / giro No.')->maxLength(40)->helperText('Filling this registers a giro received that clears or bounces later.'),
-                    DatePicker::make('cheque_date')->label('Giro due date')->native(false)->displayFormat(Format::DATE_INPUT),
-                    Textarea::make('payer')->label('Payer')->rows(2),
-                    Textarea::make('description')->label('Notes')->rows(3),
+                Tab::make(__('Other info'))->schema([
+                    TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->helperText(__('Filling this registers a giro received that clears or bounces later.')),
+                    DatePicker::make('cheque_date')->label(__('Giro due date'))->native(false)->displayFormat(Format::DATE_INPUT),
+                    Textarea::make('payer')->label(__('Payer'))->rows(2),
+                    Textarea::make('description')->label(__('Notes'))->rows(3),
                 ])->columns(2),
             ]),
         ])->columns(1);
@@ -103,18 +103,18 @@ class CashReceiptResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['bankAccount', 'giro']))
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Date'),
-                TextColumn::make('bankAccount.name')->label('Cash / Bank'),
-                TextColumn::make('cheque_no')->label('Cheque No.')->placeholder('—'),
-                TextColumn::make('description')->label('Notes')->limit(40)->placeholder('—'),
-                TextColumn::make('giro.status')->label('Giro')->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
-                Rupiah::make('amount')->label('Amount'),
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Date')),
+                TextColumn::make('bankAccount.name')->label(__('Cash / Bank')),
+                TextColumn::make('cheque_no')->label(__('Cheque No.'))->placeholder('—'),
+                TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
+                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
+                Rupiah::make('amount')->label(__('Amount')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('bank_account_id')->label('Cash / Bank')->options(fn () => Account::options(AccountType::CashBank)),
+                SelectFilter::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
             ->recordActions([EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);
     }
@@ -123,11 +123,11 @@ class CashReceiptResource extends ErpResource
     public static function memorizeAction(): Action
     {
         return Action::make('memorize')
-            ->label('Memorize')
+            ->label(__('Memorize'))
             ->icon('heroicon-m-bookmark')
             ->color('gray')
             ->schema([
-                TextInput::make('name')->label('Template name')->required()->maxLength(100)->default(fn ($record) => $record->description ?: $record->number),
+                TextInput::make('name')->label(__('Template name'))->required()->maxLength(100)->default(fn ($record) => $record->description ?: $record->number),
             ])
             ->action(function (array $data, $record): void {
                 MemorizedTransaction::query()->create([
@@ -142,7 +142,7 @@ class CashReceiptResource extends ErpResource
                     'used_all_user' => true,
                     'created_by' => auth()->id(),
                 ]);
-                Notification::make()->title("{$data['name']} memorized")->success()->send();
+                Notification::make()->title(__(':name memorized', ['name' => $data['name']]))->success()->send();
             });
     }
 

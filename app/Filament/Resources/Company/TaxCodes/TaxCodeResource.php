@@ -45,19 +45,19 @@ class TaxCodeResource extends MasterResource
         $accounts = fn () => Account::options(AccountType::OtherCurrentAsset, AccountType::OtherCurrentLiability, AccountType::AccountsPayable, AccountType::AccountsReceivable, AccountType::Expense, AccountType::OtherExpense);
 
         return $schema->components([
-            Select::make('tax_type')->label('Tax type')->options(TaxType::class)->required()->native(false),
-            TextInput::make('description')->label('Description')->required()->maxLength(120),
-            TextInput::make('rate_percent')->label('Rate (%)')->numeric()->minValue(0)->maxValue(100)->step('0.0001')->required()->default(0),
-            Fieldset::make('Tax base')
+            Select::make('tax_type')->label(__('Tax type'))->options(TaxType::class)->required()->native(false),
+            TextInput::make('description')->label(__('Description'))->required()->maxLength(120),
+            TextInput::make('rate_percent')->label(__('Rate (%)'))->numeric()->minValue(0)->maxValue(100)->step('0.0001')->required()->default(0),
+            Fieldset::make(__('Tax base'))
                 ->columns(2)
                 ->schema([
-                    TextInput::make('dpp_numerator')->label('Numerator')->numeric()->integer()->minValue(1)->default(1)->required(),
-                    TextInput::make('dpp_denominator')->label('Denominator')->numeric()->integer()->minValue(1)->default(1)->required(),
+                    TextInput::make('dpp_numerator')->label(__('Numerator'))->numeric()->integer()->minValue(1)->default(1)->required(),
+                    TextInput::make('dpp_denominator')->label(__('Denominator'))->numeric()->integer()->minValue(1)->default(1)->required(),
                 ])
                 ->columnSpanFull(),
-            Select::make('sales_tax_account_id')->label('Sales tax account')->options($accounts)->searchable()->required()->native(false),
-            Select::make('purchase_tax_account_id')->label('Purchase tax account')->options($accounts)->searchable()->required()->native(false),
-            Toggle::make('is_default')->label('Default tax code')->inline(false),
+            Select::make('sales_tax_account_id')->label(__('Sales tax account'))->options($accounts)->searchable()->required()->native(false),
+            Select::make('purchase_tax_account_id')->label(__('Purchase tax account'))->options($accounts)->searchable()->required()->native(false),
+            Toggle::make('is_default')->label(__('Default tax code'))->inline(false),
             self::activeToggle()->inline(false),
         ])->columns(2);
     }
@@ -66,17 +66,17 @@ class TaxCodeResource extends MasterResource
     {
         return $table
             ->columns([
-                TextColumn::make('description')->label('Description')->searchable()->sortable(),
-                TextColumn::make('tax_type')->label('Tax type')->badge()->color('gray'),
-                TextColumn::make('rate_percent')->label('Rate')->state(fn (TaxCode $r) => Format::percent($r->rate_percent))->alignEnd(),
-                TextColumn::make('effective')->label('Burden')->state(fn (TaxCode $r) => Format::percent($r->effectiveRatePercent()))->alignEnd()
-                    ->tooltip(fn (TaxCode $r) => "Tax base {$r->dpp_numerator}/{$r->dpp_denominator} of the price"),
+                TextColumn::make('description')->label(__('Description'))->searchable()->sortable(),
+                TextColumn::make('tax_type')->label(__('Tax type'))->badge()->color('gray'),
+                TextColumn::make('rate_percent')->label(__('Rate'))->state(fn (TaxCode $r) => Format::percent($r->rate_percent))->alignEnd(),
+                TextColumn::make('effective')->label(__('Burden'))->state(fn (TaxCode $r) => Format::percent($r->effectiveRatePercent()))->alignEnd()
+                    ->tooltip(fn (TaxCode $r) => __('Tax base :numerator/:denominator of the price', ['numerator' => $r->dpp_numerator, 'denominator' => $r->dpp_denominator])),
                 IconColumn::make('is_default')->label(__('fields.is_default'))->boolean(),
                 self::activeColumn(),
             ])
             ->defaultSort('description')
             ->filters([
-                SelectFilter::make('tax_type')->label('Tax type')->options(TaxType::class),
+                SelectFilter::make('tax_type')->label(__('Tax type'))->options(TaxType::class),
                 self::activeFilter(),
             ])
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);

@@ -67,16 +67,16 @@ class BudgetResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                Select::make('month')->label('Month')->options(Months::options())->required()->native(false)
+                Select::make('month')->label(__('Month'))->options(Months::options())->required()->native(false)
                     ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule, Get $get) => $rule->where('year', $get('year'))->where('scope', $get('scope')))
                     ->validationMessages(['unique' => 'A budget for that month exists.']),
-                TextInput::make('year')->label('Year')->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
-                Select::make('scope')->label('Type')->options(['general' => 'General'])->default('general')->required()->native(false),
+                TextInput::make('year')->label(__('Year'))->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
+                Select::make('scope')->label(__('Type'))->options(['general' => __('General')])->default('general')->required()->native(false),
             ]),
             Tabs::make('budget')->tabs([
-                Tab::make('Budget lines')->schema([
+                Tab::make(__('Budget lines'))->schema([
                     Action::make('pullAccounts')
-                        ->label('Pull every income and expense account')
+                        ->label(__('Pull every income and expense account'))
                         ->icon('heroicon-m-arrow-down-tray')
                         ->color('gray')
                         ->visible(fn (Get $get): bool => array_filter((array) $get('lines'), fn ($line) => ! empty($line['account_id'])) === [])
@@ -88,16 +88,16 @@ class BudgetResource extends ErpResource
                                 ->map(fn (Account $account): array => ['account_id' => $account->id, 'amount' => 0])
                                 ->all();
                             $set('lines', DocumentPages::keyedRows($rows));
-                            Notification::make()->title(count($rows).' account(s) pulled')->success()->send();
+                            Notification::make()->title(__(':count account(s) pulled', ['count' => count($rows)]))->success()->send();
                         }),
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Account (income / expense)'),
-                            TableColumn::make('Code'),
-                            TableColumn::make('Amount')->alignment(Alignment::End),
+                            TableColumn::make(__('Account (income / expense)')),
+                            TableColumn::make(__('Code')),
+                            TableColumn::make(__('Amount'))->alignment(Alignment::End),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => self::accountOptions())->searchable()->required()->native(false)->live()
@@ -110,11 +110,11 @@ class BudgetResource extends ErpResource
                         ->defaultItems(1)
                         ->live()
                         ->addActionLabel('Add account'),
-                    Placeholder::make('total')->label('Total budget')->content(fn (Get $get): string => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
+                    Placeholder::make('total')->label(__('Total budget'))->content(fn (Get $get): string => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
                 ]),
-                Tab::make('Notes')->schema([
-                    Textarea::make('notes')->label('Notes')->rows(3),
-                    TextInput::make('analyst_name')->label('Analyst')->maxLength(120),
+                Tab::make(__('Notes'))->schema([
+                    Textarea::make('notes')->label(__('Notes'))->rows(3),
+                    TextInput::make('analyst_name')->label(__('Analyst'))->maxLength(120),
                 ]),
             ]),
         ])->columns(1);
@@ -125,16 +125,16 @@ class BudgetResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->withSum('lines', 'amount'))
             ->columns([
-                TextColumn::make('year')->label('Year')->sortable(),
-                TextColumn::make('month')->label('Month')->formatStateUsing(fn ($state): string => Months::name($state))->sortable(),
-                TextColumn::make('scope')->label('Type')->formatStateUsing(fn ($state): string => ucfirst((string) $state)),
-                TextColumn::make('analyst_name')->label('Analyst')->placeholder('—'),
-                TextColumn::make('notes')->label('Notes')->limit(40)->placeholder('—'),
-                Rupiah::make('lines_sum_amount')->label('Total'),
+                TextColumn::make('year')->label(__('Year'))->sortable(),
+                TextColumn::make('month')->label(__('Month'))->formatStateUsing(fn ($state): string => Months::name($state))->sortable(),
+                TextColumn::make('scope')->label(__('Type'))->formatStateUsing(fn ($state): string => ucfirst((string) $state)),
+                TextColumn::make('analyst_name')->label(__('Analyst'))->placeholder('—'),
+                TextColumn::make('notes')->label(__('Notes'))->limit(40)->placeholder('—'),
+                Rupiah::make('lines_sum_amount')->label(__('Total')),
             ])
             ->defaultSort(fn ($query) => $query->orderByDesc('year')->orderByDesc('month'))
             ->filters([
-                SelectFilter::make('scope')->label('Type')->options(['general' => 'General']),
+                SelectFilter::make('scope')->label(__('Type'))->options(['general' => __('General')]),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()]);
     }

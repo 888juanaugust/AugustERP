@@ -49,7 +49,7 @@ class StockByWarehouse extends ErpPage implements HasTable
     {
         return $schema->components([
             Section::make()->schema([
-                Select::make('item_id')->label('Item')
+                Select::make('item_id')->label(__('Item'))
                     ->searchable()
                     ->getSearchResultsUsing(fn (string $search) => Item::query()->active()
                         ->where(fn ($q) => $q->where('name', 'ilike', "%{$search}%")->orWhere('number', 'ilike', "%{$search}%"))
@@ -72,16 +72,16 @@ class StockByWarehouse extends ErpPage implements HasTable
         return $table
             ->records(fn () => $this->rows())
             ->columns([
-                TextColumn::make('warehouse')->label('Warehouse')->weight('medium'),
-                TextColumn::make('multi_unit')->label('Quantity in each unit'),
-                TextColumn::make('available')->label('Available stock')->alignEnd(),
-                TextColumn::make('avg_cost')->label('Average cost')->alignEnd()->visible($seesCost),
-                TextColumn::make('value')->label('Value')->alignEnd()->visible($seesCost),
-                TextColumn::make('address')->label('Address')->limit(50),
+                TextColumn::make('warehouse')->label(__('Warehouse'))->weight('medium'),
+                TextColumn::make('multi_unit')->label(__('Quantity in each unit')),
+                TextColumn::make('available')->label(__('Available stock'))->alignEnd(),
+                TextColumn::make('avg_cost')->label(__('Average cost'))->alignEnd()->visible($seesCost),
+                TextColumn::make('value')->label(__('Value'))->alignEnd()->visible($seesCost),
+                TextColumn::make('address')->label(__('Address'))->limit(50),
             ])
             ->paginated(false)
-            ->emptyStateHeading('Pick an item')
-            ->emptyStateDescription('Its stock in every warehouse, counted in every unit it has.');
+            ->emptyStateHeading(__('Pick an item'))
+            ->emptyStateDescription(__('Its stock in every warehouse, counted in every unit it has.'));
     }
 
     /** @return Collection<int, array<string, mixed>> */

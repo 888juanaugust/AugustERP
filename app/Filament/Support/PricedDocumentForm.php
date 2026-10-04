@@ -68,25 +68,25 @@ final class PricedDocumentForm
     public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?\Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null): Tab
     {
         $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
-        $columns = [TableColumn::make('Item')];
-        $columns[] = TableColumn::make('Quantity')->alignment(Alignment::End);
-        $columns[] = TableColumn::make('Unit');
+        $columns = [TableColumn::make(__('Item'))];
+        $columns[] = TableColumn::make(__('Quantity'))->alignment(Alignment::End);
+        $columns[] = TableColumn::make(__('Unit'));
         if ($prices) {
-            $columns[] = TableColumn::make('Unit price')->alignment(Alignment::End);
-            $columns[] = TableColumn::make('Disc %')->alignment(Alignment::End);
-            $columns[] = TableColumn::make('Amount')->alignment(Alignment::End);
-            $columns[] = TableColumn::make('Tax');
+            $columns[] = TableColumn::make(__('Unit price'))->alignment(Alignment::End);
+            $columns[] = TableColumn::make(__('Disc %'))->alignment(Alignment::End);
+            $columns[] = TableColumn::make(__('Amount'))->alignment(Alignment::End);
+            $columns[] = TableColumn::make(__('Tax'));
         }
         if ($warehouse) {
-            $columns[] = TableColumn::make('Warehouse');
+            $columns[] = TableColumn::make(__('Warehouse'));
         }
         if ($salesman) {
-            $columns[] = TableColumn::make('Salesperson');
+            $columns[] = TableColumn::make(__('Salesperson'));
         }
         if ($processed) {
-            $columns[] = TableColumn::make('Processed')->alignment(Alignment::End);
+            $columns[] = TableColumn::make(__('Processed'))->alignment(Alignment::End);
         }
-        $columns[] = TableColumn::make('Memo');
+        $columns[] = TableColumn::make(__('Memo'));
 
         $fields = [
             LineItemFields::item()->afterStateUpdated(function (Set $set, Get $get, $state) use ($priceResolver): void {
@@ -218,11 +218,11 @@ final class PricedDocumentForm
     {
         return Tab::make(__('fields.other_info'))->schema([
             ...$extra,
-            Textarea::make('to_address')->label('Address')->rows(2),
+            Textarea::make('to_address')->label(__('Address'))->rows(2),
             Textarea::make('description')->label(__('fields.description'))->rows(2),
             Toggle::make('taxable')->label(__('fields.taxable'))->default(true)->live(),
             Toggle::make('inclusive_tax')->label(__('fields.inclusive_tax'))->default(false)->live(),
-            TextInput::make('discount_percent')->label('Discount on the total (%)')->numeric()->minValue(0)->maxValue(100)->default(0)->live(onBlur: true),
+            TextInput::make('discount_percent')->label(__('Discount on the total (%)'))->numeric()->minValue(0)->maxValue(100)->default(0)->live(onBlur: true),
             ...($shipping ? [
                 DatePicker::make('ship_date')->label(__('fields.ship_date'))->native(false)->displayFormat(Format::DATE_INPUT),
                 Select::make('shipment_id')->label(__('fields.shipment'))->relationship('shipment', 'name')->preload()->native(false),
@@ -233,14 +233,14 @@ final class PricedDocumentForm
 
     public static function chargesTab(bool $allocateToCost = false): Tab
     {
-        $columns = [TableColumn::make('Charge'), TableColumn::make('Amount')->alignment(Alignment::End), TableColumn::make('Description')];
+        $columns = [TableColumn::make(__('Charge')), TableColumn::make(__('Amount'))->alignment(Alignment::End), TableColumn::make(__('Description'))];
         $fields = [
             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::OtherIncome))->searchable()->required()->native(false),
             self::money('amount', 'Amount')->live(onBlur: true),
             TextInput::make('description')->maxLength(255),
         ];
         if ($allocateToCost) {
-            $columns[] = TableColumn::make('Into item cost');
+            $columns[] = TableColumn::make(__('Into item cost'));
             $fields[] = Toggle::make('allocate_to_cost')->default(false);
         }
 

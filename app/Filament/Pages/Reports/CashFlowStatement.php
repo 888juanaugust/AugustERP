@@ -16,7 +16,7 @@ class CashFlowStatement extends ReportPage
 
     public static function title(): string
     {
-        return 'Cash Flow Statement';
+        return __('Cash Flow Statement');
     }
 
     public static function group(): string
@@ -26,7 +26,7 @@ class CashFlowStatement extends ReportPage
 
     public static function description(): string
     {
-        return 'Cash in and out by operating, investing and financing activities, from the counter-accounts of every cash posting.';
+        return __('Cash in and out by operating, investing and financing activities, from the counter-accounts of every cash posting.');
     }
 
     protected function rows(): array

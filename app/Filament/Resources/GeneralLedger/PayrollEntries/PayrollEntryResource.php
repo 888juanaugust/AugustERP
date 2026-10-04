@@ -82,18 +82,18 @@ class PayrollEntryResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                Select::make('payment_type')->label('Payment type')->options(['monthly' => 'Monthly', 'non_monthly' => 'Non-monthly'])->default('monthly')->required()->native(false),
-                Select::make('period_month')->label('Period month')->options(Months::options())->required()->native(false)->default(today()->month),
-                TextInput::make('period_year')->label('Period year')->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
+                Select::make('payment_type')->label(__('Payment type'))->options(['monthly' => __('Monthly'), 'non_monthly' => __('Non-monthly')])->default('monthly')->required()->native(false),
+                Select::make('period_month')->label(__('Period month'))->options(Months::options())->required()->native(false)->default(today()->month),
+                TextInput::make('period_year')->label(__('Period year'))->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
                 NumberFields::make(TransactionType::PayrollEntry, 'Entry No.'),
-                DatePicker::make('trans_date')->label('Date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                DatePicker::make('due_date')->label('Due date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                Placeholder::make('totals')->label('Net to pay')->content(fn (Get $get): string => Format::rupiah(LineTotals::sum($get('lines'), 'net_amount'))),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                Placeholder::make('totals')->label(__('Net to pay'))->content(fn (Get $get): string => Format::rupiah(LineTotals::sum($get('lines'), 'net_amount'))),
             ]),
             Tabs::make('payroll')->tabs([
-                Tab::make('Employees')->schema([
+                Tab::make(__('Employees'))->schema([
                     Action::make('pullEmployees')
-                        ->label('Pull every active employee')
+                        ->label(__('Pull every active employee'))
                         ->icon('heroicon-m-arrow-down-tray')
                         ->color('gray')
                         ->visible(fn (Get $get): bool => array_filter((array) $get('lines'), fn ($line) => ! empty($line['employee_id'])) === [])
@@ -109,22 +109,22 @@ class PayrollEntryResource extends ErpResource
                                 ])
                                 ->all();
                             $set('lines', DocumentPages::keyedRows($rows));
-                            Notification::make()->title(count($rows).' employee(s) pulled')->success()->send();
+                            Notification::make()->title(__(':count employee(s) pulled', ['count' => count($rows)]))->success()->send();
                         }),
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
-                            TableColumn::make('Employee'),
-                            TableColumn::make('Component'),
-                            TableColumn::make('Gross pay')->alignment(Alignment::End),
-                            TableColumn::make('Income tax')->alignment(Alignment::End),
-                            TableColumn::make('Net pay')->alignment(Alignment::End),
+                            TableColumn::make(__('Employee')),
+                            TableColumn::make(__('Component')),
+                            TableColumn::make(__('Gross pay'))->alignment(Alignment::End),
+                            TableColumn::make(__('Income tax'))->alignment(Alignment::End),
+                            TableColumn::make(__('Net pay'))->alignment(Alignment::End),
                         ])
                         ->schema([
                             Select::make('employee_id')->options(fn () => Employee::query()->orderBy('name')->pluck('name', 'id')->all())->searchable()->required()->native(false),
-                            Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->native(false)->nullable()->placeholder('Basic salary account'),
+                            Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->native(false)->nullable()->placeholder(__('Basic salary account')),
                             PricedDocumentForm::money('gross_amount', 'Gross pay')->required()->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
                             PricedDocumentForm::money('income_tax', 'Income tax')->live(onBlur: true)
@@ -136,13 +136,13 @@ class PayrollEntryResource extends ErpResource
                         ->live()
                         ->addActionLabel('Add employee'),
                 ]),
-                Tab::make('Other info')->schema([
-                    Select::make('expense_payable_account_id')->label('Payable account')->options(fn () => self::payableOptions())->searchable()->required()->native(false)
+                Tab::make(__('Other info'))->schema([
+                    Select::make('expense_payable_account_id')->label(__('Payable account'))->options(fn () => self::payableOptions())->searchable()->required()->native(false)
                         ->default(fn () => Account::query()->where('no', '2230')->value('id')),
-                    Select::make('tax_payable_account_id')->label('Income tax payable')->options(fn () => self::payableOptions())->searchable()->native(false)
+                    Select::make('tax_payable_account_id')->label(__('Income tax payable'))->options(fn () => self::payableOptions())->searchable()->native(false)
                         ->default(fn () => Account::query()->where('no', '2220')->value('id')),
-                    Select::make('branch_id')->label('Branch')->relationship('branch', 'name')->preload()->native(false),
-                    Textarea::make('description')->label('Notes')->rows(2)->maxLength(255),
+                    Select::make('branch_id')->label(__('Branch'))->relationship('branch', 'name')->preload()->native(false),
+                    Textarea::make('description')->label(__('Notes'))->rows(2)->maxLength(255),
                 ])->columns(2),
             ]),
         ])->columns(1);
@@ -152,27 +152,27 @@ class PayrollEntryResource extends ErpResource
     {
         return $table
             ->columns([
-                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
-                Tanggal::make('trans_date')->label('Date'),
-                Tanggal::make('due_date')->label('Due'),
-                TextColumn::make('period')->label('Period')->state(fn (PayrollEntry $record): string => $record->periodLabel()),
-                TextColumn::make('payment_type')->label('Payment type')->badge()->color('gray')
+                TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
+                Tanggal::make('trans_date')->label(__('Date')),
+                Tanggal::make('due_date')->label(__('Due')),
+                TextColumn::make('period')->label(__('Period'))->state(fn (PayrollEntry $record): string => $record->periodLabel()),
+                TextColumn::make('payment_type')->label(__('Payment type'))->badge()->color('gray')
                     ->formatStateUsing(fn ($state): string => $state === 'non_monthly' ? 'Non-monthly' : 'Monthly'),
-                TextColumn::make('payment_status')->label('Status')->badge()
+                TextColumn::make('payment_status')->label(__('Status'))->badge()
                     ->formatStateUsing(fn ($state): string => ucfirst((string) $state))
                     ->color(fn ($state): string => match ($state) {
                         'paid' => 'success',
                         'partial' => 'info',
                         default => 'warning',
                     }),
-                TextColumn::make('description')->label('Notes')->limit(40)->placeholder('—'),
-                Rupiah::make('total')->label('Net pay'),
+                TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
+                Rupiah::make('total')->label(__('Net pay')),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('period_month')->label('Period month')->options(Months::options()),
-                SelectFilter::make('payment_status')->label('Status')->options(['unpaid' => 'Unpaid', 'partial' => 'Partial', 'paid' => 'Paid']),
+                SelectFilter::make('period_month')->label(__('Period month'))->options(Months::options()),
+                SelectFilter::make('payment_status')->label(__('Status'))->options(['unpaid' => __('Unpaid'), 'partial' => __('Partial'), 'paid' => __('Paid')]),
             ])
             ->recordActions([EditAction::make()]);
     }

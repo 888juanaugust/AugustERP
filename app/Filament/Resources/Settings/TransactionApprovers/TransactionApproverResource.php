@@ -46,17 +46,17 @@ class TransactionApproverResource extends MasterResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make('transaction_type')->label('Document')->options(self::documentOptions())->required()->searchable()->native(false),
-            PricedDocumentForm::money('min_amount', 'From amount')->helperText('Documents below this amount need no approval.'),
-            Select::make('rule')->label('Condition')->options(TransactionApprover::RULES)->default('any_one')->required()->native(false),
-            Select::make('branch_id')->label('Branch')->relationship('branch', 'name')->preload()->placeholder('Every branch')->nullable()->native(false),
-            Fieldset::make('Who needs approval')->columns(1)->schema([
-                Select::make('requesters')->label('Users')->multiple()->relationship('requesters', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
-                    ->preload()->searchable()->helperText('Nobody chosen means every user.'),
+            Select::make('transaction_type')->label(__('Document'))->options(self::documentOptions())->required()->searchable()->native(false),
+            PricedDocumentForm::money('min_amount', 'From amount')->helperText(__('Documents below this amount need no approval.')),
+            Select::make('rule')->label(__('Condition'))->options(TransactionApprover::rules())->default('any_one')->required()->native(false),
+            Select::make('branch_id')->label(__('Branch'))->relationship('branch', 'name')->preload()->placeholder(__('Every branch'))->nullable()->native(false),
+            Fieldset::make(__('Who needs approval'))->columns(1)->schema([
+                Select::make('requesters')->label(__('Users'))->multiple()->relationship('requesters', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
+                    ->preload()->searchable()->helperText(__('Nobody chosen means every user.')),
             ]),
-            Fieldset::make('Who approves')->columns(1)->schema([
-                Select::make('groups')->label('Access groups')->multiple()->relationship('groups', 'name', fn ($query) => $query->orderBy('name'))->preload(),
-                Select::make('approvers')->label('Users')->multiple()->relationship('approvers', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))->preload()->searchable(),
+            Fieldset::make(__('Who approves'))->columns(1)->schema([
+                Select::make('groups')->label(__('Access groups'))->multiple()->relationship('groups', 'name', fn ($query) => $query->orderBy('name'))->preload(),
+                Select::make('approvers')->label(__('Users'))->multiple()->relationship('approvers', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))->preload()->searchable(),
             ]),
             self::activeToggle(),
         ])->columns(1);
@@ -67,23 +67,23 @@ class TransactionApproverResource extends MasterResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['groups', 'approvers', 'requesters', 'branch']))
             ->columns([
-                TextColumn::make('transaction_type')->label('Document')->sortable()
+                TextColumn::make('transaction_type')->label(__('Document'))->sortable()
                     ->formatStateUsing(fn (string $state): string => TransactionType::tryFrom($state)?->getLabel() ?? $state),
-                Rupiah::make('min_amount')->label('From amount'),
-                TextColumn::make('approved_by')->label('Approved by')->limit(60)
+                Rupiah::make('min_amount')->label(__('From amount')),
+                TextColumn::make('approved_by')->label(__('Approved by'))->limit(60)
                     ->state(fn ($record): string => $record->groups->pluck('name')->merge($record->approvers->pluck('name'))->join(', ')),
-                TextColumn::make('requested_by')->label('Requested by')->limit(60)
+                TextColumn::make('requested_by')->label(__('Requested by'))->limit(60)
                     ->state(fn ($record): string => $record->requesters->isEmpty() ? 'Everyone' : $record->requesters->pluck('name')->join(', ')),
-                TextColumn::make('branch.name')->label('Branch')->placeholder('Every branch'),
-                TextColumn::make('rule')->label('Condition')
-                    ->formatStateUsing(fn (string $state): string => TransactionApprover::RULES[$state] ?? $state),
+                TextColumn::make('branch.name')->label(__('Branch'))->placeholder(__('Every branch')),
+                TextColumn::make('rule')->label(__('Condition'))
+                    ->formatStateUsing(fn (string $state): string => TransactionApprover::rules()[$state] ?? $state),
                 self::activeColumn(),
             ])
             ->defaultSort('transaction_type')
             ->filters([
                 self::activeFilter(),
-                SelectFilter::make('transaction_type')->label('Document')->options(self::documentOptions()),
-                SelectFilter::make('branch_id')->label('Branch')->relationship('branch', 'name'),
+                SelectFilter::make('transaction_type')->label(__('Document'))->options(self::documentOptions()),
+                SelectFilter::make('branch_id')->label(__('Branch'))->relationship('branch', 'name'),
             ])
             ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);
     }

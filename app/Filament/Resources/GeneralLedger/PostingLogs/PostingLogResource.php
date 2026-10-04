@@ -53,21 +53,21 @@ class PostingLogResource extends ErpResource
             ->modifyQueryUsing(fn ($query) => $query->with(['journalEntry', 'postedBy', 'supersededBy']))
             ->columns([
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
-                TextColumn::make('journalEntry.number')->label('Number')->fontFamily('mono')->placeholder('—'),
-                TextColumn::make('journalEntry.source_number')->label('Trans. No.')->fontFamily('mono')->placeholder('—'),
-                TextColumn::make('document_type')->label('Transaction type')->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
-                TextColumn::make('revision')->label('Rev.')->alignEnd(),
-                TextColumn::make('posted_at')->label('Posted')->formatStateUsing(fn ($state) => Format::dateTime($state))->sortable(),
-                TextColumn::make('postedBy.name')->label('By')->placeholder('System'),
-                TextColumn::make('superseded_at')->label('Superseded')->formatStateUsing(fn ($state) => Format::dateTime($state))->placeholder('active')
+                TextColumn::make('journalEntry.number')->label(__('Number'))->fontFamily('mono')->placeholder('—'),
+                TextColumn::make('journalEntry.source_number')->label(__('Trans. No.'))->fontFamily('mono')->placeholder('—'),
+                TextColumn::make('document_type')->label(__('Transaction type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
+                TextColumn::make('revision')->label(__('Rev.'))->alignEnd(),
+                TextColumn::make('posted_at')->label(__('Posted'))->formatStateUsing(fn ($state) => Format::dateTime($state))->sortable(),
+                TextColumn::make('postedBy.name')->label(__('By'))->placeholder(__('System')),
+                TextColumn::make('superseded_at')->label(__('Superseded'))->formatStateUsing(fn ($state) => Format::dateTime($state))->placeholder(__('active'))
                     ->badge()->color(fn ($state) => $state ? 'gray' : 'success'),
-                TextColumn::make('supersededBy.name')->label('By')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('supersededBy.name')->label(__('By'))->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
             ->filters([
-                SelectFilter::make('document_type')->label('Transaction type')
+                SelectFilter::make('document_type')->label(__('Transaction type'))
                     ->options(fn () => collect(array_keys(Relation::morphMap()))->mapWithKeys(fn (string $k) => [$k => ucfirst(str_replace('_', ' ', $k))])->sort()->all()),
-                TernaryFilter::make('active')->label('Active')->placeholder('All')->trueLabel('Active only')->falseLabel('Superseded only')
+                TernaryFilter::make('active')->label(__('Active'))->placeholder(__('All'))->trueLabel('Active only')->falseLabel('Superseded only')
                     ->queries(
                         true: fn ($query) => $query->whereNull('superseded_at'),
                         false: fn ($query) => $query->whereNotNull('superseded_at'),

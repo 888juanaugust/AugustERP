@@ -78,19 +78,19 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(5)->schema([
-                    Select::make('kind')->label('Tax')
-                        ->options([TaxFiling::OUT => 'VAT out (sales)', TaxFiling::IN => 'VAT in (purchases)'])
+                    Select::make('kind')->label(__('Tax'))
+                        ->options([TaxFiling::OUT => __('VAT out (sales)'), TaxFiling::IN => __('VAT in (purchases)')])
                         ->default(TaxFiling::OUT)->native(false)->selectablePlaceholder(false)->live(),
-                    Select::make('month')->label('Month')->options($months)->default((int) today()->format('n'))->native(false)->selectablePlaceholder(false)->live(),
-                    Select::make('year')->label('Year')
+                    Select::make('month')->label(__('Month'))->options($months)->default((int) today()->format('n'))->native(false)->selectablePlaceholder(false)->live(),
+                    Select::make('year')->label(__('Year'))
                         ->options(collect(range($year - 2, $year + 1))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())
                         ->default($year)->native(false)->selectablePlaceholder(false)->live(),
-                    Select::make('day_from')->label('From day')->options($days)->default(1)->native(false)->selectablePlaceholder(false)->live(),
-                    Select::make('day_to')->label('To day')->options($days)->default(31)->native(false)->selectablePlaceholder(false)->live(),
-                    Select::make('branch_id')->label('Branch')
+                    Select::make('day_from')->label(__('From day'))->options($days)->default(1)->native(false)->selectablePlaceholder(false)->live(),
+                    Select::make('day_to')->label(__('To day'))->options($days)->default(31)->native(false)->selectablePlaceholder(false)->live(),
+                    Select::make('branch_id')->label(__('Branch'))
                         ->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id')->all())
-                        ->nullable()->placeholder('All branches')->native(false)->live(),
-                    TextInput::make('search')->label('Search')->placeholder('Number, serial or name')->live(onBlur: true),
+                        ->nullable()->placeholder(__('All branches'))->native(false)->live(),
+                    TextInput::make('search')->label(__('Search'))->placeholder(__('Number, serial or name'))->live(onBlur: true),
                 ]),
             ])
             ->statePath('filters');
@@ -106,15 +106,15 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
         return $table
             ->query(fn () => FilingDocuments::query($this->kind(), $this->from(), $this->until(), $this->branchId(), $this->filters['search'] ?? null))
             ->columns([
-                TextColumn::make('trans_date')->label('Tax date')->formatStateUsing(fn ($state) => Format::date($state))->sortable(),
-                TextColumn::make('number')->label('Transaction No.')->fontFamily('mono')->searchable(),
-                TextColumn::make('serial')->label('Tax invoice No.')
+                TextColumn::make('trans_date')->label(__('Tax date'))->formatStateUsing(fn ($state) => Format::date($state))->sortable(),
+                TextColumn::make('number')->label(__('Transaction No.'))->fontFamily('mono')->searchable(),
+                TextColumn::make('serial')->label(__('Tax invoice No.'))
                     ->state(fn ($record) => $record instanceof SalesInvoice ? $record->nsfp : $record->tax_invoice_number)
                     ->placeholder('—')->fontFamily('mono'),
-                Rupiah::make('dpp_total')->label('Tax base (DPP)'),
-                Rupiah::make('tax_total')->label('VAT'),
-                TextColumn::make('document')->label('Document')->state(fn () => 'Tax invoice'),
-                TextColumn::make('status')->label('Status')->badge()
+                Rupiah::make('dpp_total')->label(__('Tax base (DPP)')),
+                Rupiah::make('tax_total')->label(__('VAT')),
+                TextColumn::make('document')->label(__('Document'))->state(fn () => 'Tax invoice'),
+                TextColumn::make('status')->label(__('Status'))->badge()
                     ->state(fn ($record) => FilingDocuments::status($record))
                     ->formatStateUsing(fn (string $state) => ucfirst($state))
                     ->color(fn (string $state) => match ($state) {
@@ -122,13 +122,13 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                         'exported' => 'warning',
                         default => 'gray',
                     }),
-                TextColumn::make('party_tax_id')->label('Tax ID')->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_number)->placeholder('—'),
-                TextColumn::make('party_name')->label('Name')->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_name ?: ($record->customer ?? $record->vendor)?->name),
+                TextColumn::make('party_tax_id')->label(__('Tax ID'))->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_number)->placeholder('—'),
+                TextColumn::make('party_name')->label(__('Name'))->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_name ?: ($record->customer ?? $record->vendor)?->name),
             ])
             ->selectable()
             ->bulkActions([
                 BulkAction::make('export')
-                    ->label('Export selected')
+                    ->label(__('Export selected'))
                     ->icon('heroicon-m-arrow-down-tray')
                     ->color('primary')
                     ->visible(fn () => $this->kind() === TaxFiling::OUT && static::canUpdate())
@@ -137,35 +137,35 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                         try {
                             $filing = app(TaxFilingService::class)->export($records, $this->format(), (int) $this->filters['year'], (int) $this->filters['month'], $this->branchId());
                         } catch (\RuntimeException $e) {
-                            Notification::make()->title('Cannot export')->body($e->getMessage())->danger()->persistent()->send();
+                            Notification::make()->title(__('Cannot export'))->body($e->getMessage())->danger()->persistent()->send();
 
                             return null;
                         }
-                        Notification::make()->title("{$filing->document_count} invoice(s) written to {$filing->file_name}")->success()->send();
+                        Notification::make()->title(__(':document_count invoice(s) written to :file_name', ['document_count' => $filing->document_count, 'file_name' => $filing->file_name]))->success()->send();
 
                         return response()->download(Storage::disk('local')->path($filing->file_path), $filing->file_name);
                     }),
             ])
             ->defaultSort('trans_date')
-            ->emptyStateHeading('No tax invoices in this period')
-            ->emptyStateDescription('Taxable invoices dated within the chosen days appear here; pick them and export, then paste the serial numbers back.');
+            ->emptyStateHeading(__('No tax invoices in this period'))
+            ->emptyStateDescription(__('Taxable invoices dated within the chosen days appear here; pick them and export, then paste the serial numbers back.'));
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('pasteSerials')
-                ->label('Paste serial numbers')
+                ->label(__('Paste serial numbers'))
                 ->icon('heroicon-m-clipboard-document')
                 ->color('gray')
                 ->visible(fn () => static::canUpdate())
                 ->schema([
-                    Textarea::make('pasted')->label('One per line: invoice number, then the serial')->rows(8)->required()
-                        ->helperText('Separated by a tab, comma, semicolon or space; e.g. INV-2611-0001  010.002-26.00000123'),
+                    Textarea::make('pasted')->label(__('One per line: invoice number, then the serial'))->rows(8)->required()
+                        ->helperText(__('Separated by a tab, comma, semicolon or space; e.g. INV-2611-0001  010.002-26.00000123')),
                 ])
                 ->action(function (array $data): void {
                     $result = app(TaxFilingService::class)->storeSerials((string) $data['pasted'], $this->kind());
-                    Notification::make()->title(count($result['stored']).' serial(s) stored')->success()->send();
+                    Notification::make()->title(__(':count serial(s) stored', ['count' => count($result['stored'])]))->success()->send();
                     if ($result['unknown'] !== []) {
                         Notification::make()->title(count($result['unknown']).' line(s) not understood')
                             ->body(implode("\n", $result['unknown']))
@@ -174,12 +174,12 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                     $this->resetTable();
                 }),
             Action::make('filings')
-                ->label('Previous exports')
+                ->label(__('Previous exports'))
                 ->icon('heroicon-m-folder')
                 ->color('gray')
-                ->modalHeading('Previous exports')
+                ->modalHeading(__('Previous exports'))
                 ->modalSubmitAction(false)
-                ->modalCancelActionLabel('Close')
+                ->modalCancelActionLabel(__('Close'))
                 ->modalContent(fn () => view('filament.pages.tax.filings', [
                     'filings' => TaxFiling::query()->where('format', $this->format())->latest('created_at')->limit(20)->get(),
                 ])),
