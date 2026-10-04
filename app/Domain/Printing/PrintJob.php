@@ -46,7 +46,7 @@ final class PrintJob
             'meta' => $meta,
             'layout' => $layout,
             'company' => [
-                'name' => (string) ($this->prefs->get(PreferensiKey::CompanyName) ?: $this->prefs->get(PreferensiKey::TaxCompanyName) ?: "August's ERP"),
+                'name' => (string) ($this->prefs->get(PreferensiKey::CompanyName) ?: $this->prefs->get(PreferensiKey::TaxCompanyName) ?: config('app.name')),
                 'address' => (string) $this->prefs->get(PreferensiKey::CompanyAddress),
                 'phone' => (string) $this->prefs->get(PreferensiKey::CompanyPhone),
                 'email' => (string) $this->prefs->get(PreferensiKey::CompanyEmail),

@@ -23,11 +23,11 @@ if [ -d /etc/postgresql/16/main ]; then
     sleep 0.5
   done
   if pg_isready -q -h 127.0.0.1 -p 5432; then
-    su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='augusterp'\"" | grep -q 1 \
-      || su postgres -c "psql -qc \"CREATE ROLE augusterp LOGIN SUPERUSER PASSWORD 'secret'\""
-    for db in augusterp augusterp_test; do
+    su postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='erp'\"" | grep -q 1 \
+      || su postgres -c "psql -qc \"CREATE ROLE erp LOGIN SUPERUSER PASSWORD 'secret'\""
+    for db in erp erp_test; do
       su postgres -c "psql -tAc \"SELECT 1 FROM pg_database WHERE datname='$db'\"" | grep -q 1 \
-        || su postgres -c "createdb -O augusterp $db"
+        || su postgres -c "createdb -O erp $db"
     done
   else
     say "PostgreSQL did not start"

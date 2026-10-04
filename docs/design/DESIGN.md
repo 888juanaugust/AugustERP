@@ -1,6 +1,6 @@
-# AugustERP Design Reference
+# August ERP Design Reference
 
-Master UI reference for every AugustERP build (Laravel + Filament v4/v5).
+Master UI reference for every August ERP build (Laravel + Filament v4/v5).
 Give this file to whoever (or whichever agent) builds screens. Rules here win over Filament defaults.
 
 Chosen config (from the style configurator, 2026-10-04):
@@ -126,7 +126,7 @@ Every card = white surface + 1px `--ae-card-edge` border + `--ae-shadow-card`. N
 ```
 
 - Sidebar floats: 12px margin top, left and bottom; white; radius 14; card shadow. Collapsible to icons on desktop.
-- Sidebar order: brand (logo + "AugustERP" or client name), then nav groups. Active item = `--ae-accent-soft` fill + accent text + accent icon.
+- Sidebar order: brand (logo + the company name, else the app name), then nav groups. Active item = `--ae-accent-soft` fill + accent text + accent icon.
 - Topbar sits on the canvas (no white bar). Breadcrumb left, global search and user menu right.
 - Page header: title (and one-line context such as period or warehouse) on the left, actions on the right. Max one primary button per page, placed rightmost.
 - Content max width: full width for list and report pages; 1100px for create/edit forms.

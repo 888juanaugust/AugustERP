@@ -1,5 +1,5 @@
 /*
- * August's ERP admin theme. The tokens are docs/design/DESIGN.md; components use
+ * The admin theme. The tokens are docs/design/DESIGN.md; components use
  * tokens, never raw hex. Filament's own styles load inside layer(components),
  * so the plain rules below win without !important.
  */
