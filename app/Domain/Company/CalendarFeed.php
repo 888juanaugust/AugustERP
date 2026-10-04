@@ -9,6 +9,7 @@ use App\Models\Company\CalendarEvent;
 use App\Models\Company\RecurringTransaction;
 use App\Models\Purchasing\PurchaseInvoice;
 use App\Models\Sales\SalesInvoice;
+use App\Modules\ModuleRegistry;
 use Carbon\CarbonImmutable;
 
 /**
@@ -42,7 +43,7 @@ final class CalendarFeed
         foreach (CalendarEvent::query()->whereBetween('starts_on', [$from->toDateString(), $until->toDateString()])->orderBy('starts_on')->get() as $event) {
             $add($event->starts_on->toDateString(), 'note', $event->title);
         }
-        $add($until->toDateString(), 'period', 'Month end: close the period and run depreciation');
+        $add($until->toDateString(), 'period', app(ModuleRegistry::class)->isEnabled('fixed-assets') ? 'Month end: close the period and run depreciation' : 'Month end: close the period');
         ksort($events);
 
         return $events;

@@ -15,7 +15,7 @@ final class ReportRegistry
         $classes = [];
         foreach (glob(app_path('Filament/Pages/Reports/*.php')) ?: [] as $file) {
             $class = 'App\\Filament\\Pages\\Reports\\'.basename($file, '.php');
-            if (class_exists($class) && is_subclass_of($class, ReportPage::class) && ! (new \ReflectionClass($class))->isAbstract()) {
+            if (class_exists($class) && is_subclass_of($class, ReportPage::class) && ! (new \ReflectionClass($class))->isAbstract() && $class::available()) {
                 $classes[] = $class;
             }
         }

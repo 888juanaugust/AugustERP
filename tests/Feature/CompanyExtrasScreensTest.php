@@ -26,6 +26,7 @@ class CompanyExtrasScreensTest extends TestCase
         parent::setUp();
         Carbon::setTestNow('2026-11-15 09:00:00');
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
+        $this->enableAllModules();
         $this->seed();
         $this->actingAsAdmin();
     }

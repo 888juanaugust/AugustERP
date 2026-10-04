@@ -31,6 +31,8 @@ enum PreferensiKey: string
     case Project = 'features.project';
     case FinancialCategory = 'features.financial_category';
     case EmployeeLoan = 'features.employee_loan';
+    case SalesExtras = 'features.sales_extras';
+    case Payroll = 'features.payroll';
 
     // Tax
     case TaxCompanyName = 'tax.company_name';
@@ -202,6 +204,8 @@ enum PreferensiKey: string
             self::Project => 'Projects',
             self::FinancialCategory => 'Financial categories',
             self::EmployeeLoan => 'Employee loans',
+            self::SalesExtras => 'Sales extras: check-ins, commissions, targets',
+            self::Payroll => 'Payroll entries and salary components',
             self::TaxCompanyName => 'Registered company name',
             self::PkpDate => 'VAT registration date',
             self::PkpNumber => 'VAT registration number',
@@ -268,6 +272,10 @@ enum PreferensiKey: string
             self::AgingRangeDays => 'Receivables older than this are reported as the last bucket.',
             self::AllowNegativeStock => 'When off, a delivery or adjustment that would take stock below zero is refused.',
             self::SegregationOfDuties => 'Turning this off is written to the activity log.',
+            self::FixedAssets, self::BudgetTarget, self::Tax, self::Approval, self::SalesExtras, self::Payroll => 'Switches the module and its screens on or off; data already entered is kept.',
+            self::MultiBranch => 'Shows the Branches screen and branch filters; one default branch always exists.',
+            self::MultiCurrency => 'Shows the Currencies screen; amounts stay in the base currency.',
+            self::Department, self::Project, self::FinancialCategory, self::EmployeeLoan => 'Reserved: not used by this release.',
             default => null,
         };
     }

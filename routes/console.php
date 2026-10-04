@@ -2,11 +2,17 @@
 
 use App\Domain\Company\RecurringRunner;
 use App\Domain\FixedAssets\DepreciationRun;
+use App\Modules\ModuleRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('erp:depreciate {until? : A month (YYYY-MM); the current month when omitted}', function (?string $until = null) {
+    if (! app(ModuleRegistry::class)->isEnabled('fixed-assets')) {
+        $this->warn('The Fixed assets module is switched off; nothing to depreciate.');
+
+        return;
+    }
     $month = $until ? CarbonImmutable::createFromFormat('Y-m', $until) : CarbonImmutable::today();
     $result = app(DepreciationRun::class)->upTo($month);
     $this->info("Depreciation posted: {$result['posted']} month(s), ".number_format($result['amount'], 0, ',', '.').' in all.');

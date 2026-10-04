@@ -10,6 +10,7 @@ use App\Domain\Reports\Period;
 use App\Domain\Shared\Format;
 use App\Filament\Support\ErpPage;
 use App\Models\Company\Branch;
+use App\Modules\ModuleRegistry;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -65,6 +66,22 @@ abstract class ReportPage extends ErpPage implements HasTable
     public static function menuKey(): MenuKey
     {
         return MenuKey::ReportCatalogue;
+    }
+
+    /** The module key this report needs switched on, or null for a report of the core. */
+    public static function requires(): ?string
+    {
+        return null;
+    }
+
+    public static function available(): bool
+    {
+        return static::requires() === null || app(ModuleRegistry::class)->isEnabled(static::requires());
+    }
+
+    public static function canAccess(): bool
+    {
+        return static::available() && parent::canAccess();
     }
 
     public static function getSlug(?Panel $panel = null): string

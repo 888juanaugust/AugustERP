@@ -7,6 +7,7 @@ namespace App\Filament\Support;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
+use App\Modules\ModuleRegistry;
 use Filament\Pages\Page;
 use Filament\Panel;
 use UnitEnum;
@@ -18,7 +19,18 @@ abstract class ErpPage extends Page
 
     public static function canAccess(): bool
     {
-        return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), Hak::View);
+        return static::moduleEnabled() && app(HakAkses::class)->allows(auth()->user(), static::menuKey(), Hak::View);
+    }
+
+    /** Whether the module that owns this screen is switched on. */
+    public static function moduleEnabled(): bool
+    {
+        return app(ModuleRegistry::class)->menuKeyEnabled(static::menuKey());
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return parent::shouldRegisterNavigation() && static::moduleEnabled();
     }
 
     /** Whether the current user may change what this screen shows. */

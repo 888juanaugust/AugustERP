@@ -7,6 +7,7 @@ namespace App\Filament\Support;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
+use App\Modules\ModuleRegistry;
 use Filament\Panel;
 use Filament\Resources\Resource;
 use Illuminate\Auth\Access\Response;
@@ -33,6 +34,9 @@ abstract class ErpResource extends Resource
         if ($hak === null) {
             return Response::deny();
         }
+        if (! static::moduleEnabled()) {
+            return Response::deny(__('This module is switched off in Preferences.'));
+        }
 
         return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), $hak)
             ? Response::allow()
@@ -41,7 +45,18 @@ abstract class ErpResource extends Resource
 
     public static function canPrint(): bool
     {
-        return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), Hak::Print);
+        return static::moduleEnabled() && app(HakAkses::class)->allows(auth()->user(), static::menuKey(), Hak::Print);
+    }
+
+    /** Whether the module that owns this screen is switched on. */
+    public static function moduleEnabled(): bool
+    {
+        return app(ModuleRegistry::class)->menuKeyEnabled(static::menuKey());
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return parent::shouldRegisterNavigation() && static::moduleEnabled();
     }
 
     public static function getNavigationGroup(): string|UnitEnum|null

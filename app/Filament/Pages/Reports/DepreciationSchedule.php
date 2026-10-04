@@ -11,6 +11,11 @@ use Filament\Forms\Components\Select;
 /** Depreciation Schedule (depreciation-schedule): every asset's cost, depreciation and book value at the period's end. */
 class DepreciationSchedule extends ReportPage
 {
+    public static function requires(): ?string
+    {
+        return 'fixed-assets';
+    }
+
     public static function reportKey(): string
     {
         return 'depreciation-schedule';
