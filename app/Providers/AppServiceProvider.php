@@ -6,6 +6,8 @@ use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
 use App\Domain\Pengaturan\Preferensi;
+use App\Domain\Posting\DocumentGuard;
+use App\Domain\Posting\PostingService;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
 use App\Models\Company\Contact;
@@ -16,6 +18,13 @@ use App\Models\Company\PaymentTerm;
 use App\Models\Company\Shipment;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
+use App\Models\GeneralLedger\AccountingPeriod;
+use App\Models\GeneralLedger\AccountOpeningBalance;
+use App\Models\GeneralLedger\DocumentRevision;
+use App\Models\GeneralLedger\ExpenseAccrual;
+use App\Models\GeneralLedger\JournalEntry;
+use App\Models\GeneralLedger\JournalVoucher;
+use App\Models\GeneralLedger\Posting;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemBrand;
 use App\Models\Inventory\ItemCategory;
@@ -42,6 +51,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(Preferensi::class);
         $this->app->scoped(HakAkses::class);
         $this->app->scoped(MenuRegistry::class);
+        $this->app->singleton(PostingService::class);
+        $this->app->singleton(DocumentGuard::class);
     }
 
     public function boot(): void
@@ -75,6 +86,13 @@ class AppServiceProvider extends ServiceProvider
             'item_brand' => ItemBrand::class,
             'unit' => Unit::class,
             'warehouse' => Warehouse::class,
+            'posting' => Posting::class,
+            'journal_entry' => JournalEntry::class,
+            'document_revision' => DocumentRevision::class,
+            'accounting_period' => AccountingPeriod::class,
+            'account_opening_balance' => AccountOpeningBalance::class,
+            'journal_voucher' => JournalVoucher::class,
+            'expense_accrual' => ExpenseAccrual::class,
         ]);
 
         // Every ability on a model resolves through the access matrix: the

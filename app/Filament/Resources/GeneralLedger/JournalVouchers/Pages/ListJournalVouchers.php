@@ -1,0 +1,105 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\GeneralLedger\JournalVouchers\Pages;
+
+use App\Domain\Shared\Format;
+use App\Filament\Resources\GeneralLedger\JournalVouchers\JournalVoucherResource;
+use App\Filament\Support\Columns\Rupiah;
+use App\Filament\Support\Columns\Tanggal;
+use App\Models\GeneralLedger\JournalEntry;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Resources\Pages\ListRecords;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+
+/**
+ * The reference system's Journal Vouchers list: every journal entry in the
+ * books, whatever document wrote it, with the source document's number as
+ * "Trans. No." and a filter by transaction type. Manual vouchers open to edit.
+ */
+class ListJournalVouchers extends ListRecords
+{
+    protected static string $resource = JournalVoucherResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [CreateAction::make()->label('New journal voucher')];
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(fn () => JournalEntry::query()->active()->withSum('lines', 'debit'))
+            ->columns([
+                TextColumn::make('number')->label('Number')->searchable()->sortable()->fontFamily('mono'),
+                TextColumn::make('source_number')->label('Trans. No.')->fontFamily('mono')->placeholder('—'),
+                Tanggal::make('trans_date')->label(__('fields.trans_date')),
+                TextColumn::make('source_type')->label('Transaction type')->badge()->color('gray')->formatStateUsing(fn (string $state) => self::typeLabel($state)),
+                TextColumn::make('description')->label(__('fields.description'))->limit(60)->placeholder('—'),
+                Rupiah::make('lines_sum_debit')->label(__('fields.total')),
+            ])
+            ->defaultSort('trans_date', 'desc')
+            ->filters([
+                SelectFilter::make('source_type')->label('Transaction type')
+                    ->options(fn () => collect(array_keys(Relation::morphMap()))->mapWithKeys(fn (string $k) => [$k => self::typeLabel($k)])->sort()->all())
+                    ->multiple(),
+                Filter::make('trans_date')
+                    ->schema([
+                        DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT),
+                    ])
+                    ->query(fn (Builder $query, array $data) => $query
+                        ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))
+                        ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '<=', $d))),
+            ])
+            ->persistFiltersInSession()
+            ->recordActions([
+                Action::make('edit')
+                    ->label('Edit')
+                    ->icon('heroicon-m-pencil-square')
+                    ->visible(fn (JournalEntry $record) => $record->source_type === 'journal_voucher' && JournalVoucherResource::canEdit($record->posting->document))
+                    ->url(fn (JournalEntry $record) => JournalVoucherResource::getUrl('edit', ['record' => $record->posting->document_id])),
+                Action::make('view')
+                    ->label('Lines')
+                    ->icon('heroicon-m-eye')
+                    ->slideOver()
+                    ->modalHeading(fn (JournalEntry $record) => "Journal {$record->number}")
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->schema(fn (JournalEntry $record) => [
+                        TextEntry::make('trans_date')->label(__('fields.trans_date'))->state(Format::date($record->trans_date)),
+                        TextEntry::make('description')->label(__('fields.description'))->state($record->description ?: '—'),
+                        RepeatableEntry::make('lines')
+                            ->label('Lines')
+                            ->state($record->lines()->with('account')->get()->map(fn ($l) => [
+                                'account' => $l->account->displayName(),
+                                'debit' => $l->debit ? Format::number($l->debit) : '',
+                                'credit' => $l->credit ? Format::number($l->credit) : '',
+                                'memo' => $l->memo,
+                            ])->all())
+                            ->schema([
+                                TextEntry::make('account')->label('Account'),
+                                TextEntry::make('debit')->label('Debit'),
+                                TextEntry::make('credit')->label('Credit'),
+                                TextEntry::make('memo')->label('Memo'),
+                            ])
+                            ->columns(4),
+                    ]),
+            ]);
+    }
+
+    public static function typeLabel(string $type): string
+    {
+        return ucfirst(str_replace('_', ' ', $type));
+    }
+}
