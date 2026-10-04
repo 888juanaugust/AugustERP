@@ -20,7 +20,9 @@ use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PricedDocumentForm;
 use App\Models\CashBank\CashPayment;
+use App\Models\Company\MemorizedTransaction;
 use App\Models\GeneralLedger\Account;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -29,6 +31,7 @@ use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -112,7 +115,34 @@ class CashPaymentResource extends ErpResource
                 DocumentListFilters::dateRange(),
                 SelectFilter::make('bank_account_id')->label('Cash / Bank')->options(fn () => Account::options(AccountType::CashBank)),
             ])
-            ->recordActions([EditAction::make(), ...GiroActions::forRecord()]);
+            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction()]);
+    }
+
+    /** Saves the voucher's accounts and amounts as a memorized transaction, used again from the create page. */
+    public static function memorizeAction(): Action
+    {
+        return Action::make('memorize')
+            ->label('Memorize')
+            ->icon('heroicon-m-bookmark')
+            ->color('gray')
+            ->schema([
+                TextInput::make('name')->label('Template name')->required()->maxLength(100)->default(fn ($record) => $record->description ?: $record->number),
+            ])
+            ->action(function (array $data, $record): void {
+                MemorizedTransaction::query()->create([
+                    'name' => $data['name'],
+                    'transaction_type' => 'cash_bank_voucher_payment',
+                    'template' => [
+                        'bank_account_id' => $record->bank_account_id,
+                        'payee' => $record->payee,
+                        'description' => $record->description,
+                        'lines' => $record->lines->map(fn ($line) => ['account_id' => $line->account_id, 'amount' => $line->amount, 'memo' => $line->memo])->values()->all(),
+                    ],
+                    'used_all_user' => true,
+                    'created_by' => auth()->id(),
+                ]);
+                Notification::make()->title("{$data['name']} memorized")->success()->send();
+            });
     }
 
     public static function getPages(): array

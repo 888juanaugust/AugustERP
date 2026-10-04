@@ -8,12 +8,15 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\JournalVoucherResource;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
+use App\Models\Company\MemorizedTransaction;
 use App\Models\GeneralLedger\JournalEntry;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -95,6 +98,29 @@ class ListJournalVouchers extends ListRecords
                             ])
                             ->columns(4),
                     ]),
+                Action::make('memorize')
+                    ->label('Memorize')
+                    ->icon('heroicon-m-bookmark')
+                    ->color('gray')
+                    ->visible(fn (JournalEntry $record) => $record->source_type === 'journal_voucher' && $record->posting?->document !== null)
+                    ->schema([
+                        TextInput::make('name')->label('Template name')->required()->maxLength(100)->default(fn (JournalEntry $record) => $record->description ?: $record->source_number),
+                    ])
+                    ->action(function (array $data, JournalEntry $record): void {
+                        $voucher = $record->posting->document;
+                        MemorizedTransaction::query()->create([
+                            'name' => $data['name'],
+                            'transaction_type' => 'journal_voucher',
+                            'template' => [
+                                'description' => $voucher->description,
+                                'branch_id' => $voucher->branch_id,
+                                'lines' => $voucher->lines->map(fn ($line) => ['account_id' => $line->account_id, 'debit' => $line->debit, 'credit' => $line->credit, 'memo' => $line->memo])->values()->all(),
+                            ],
+                            'used_all_user' => true,
+                            'created_by' => auth()->id(),
+                        ]);
+                        Notification::make()->title("{$data['name']} memorized")->success()->send();
+                    }),
             ]);
     }
 
