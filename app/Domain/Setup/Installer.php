@@ -160,6 +160,13 @@ final class Installer
      */
     private function setModules(array $enable, array $disable): void
     {
+        if ($enable === [] && $disable === []) {
+            foreach ((array) config('client.features', []) as $key => $on) {
+                if ($this->modules->find($key) !== null) {
+                    $on ? $enable[] = $key : $disable[] = $key;
+                }
+            }
+        }
         $features = [];
         foreach ($enable as $key) {
             $features[$this->modules->find($key)::feature()->value] = true;

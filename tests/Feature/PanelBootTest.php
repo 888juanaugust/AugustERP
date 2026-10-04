@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Pengaturan\Preferensi;
+use App\Domain\Pengaturan\PreferensiKey;
 use App\Filament\Modul;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -9,9 +11,12 @@ use Tests\TestCase;
 
 class PanelBootTest extends TestCase
 {
-    public function test_the_login_page_renders(): void
+    public function test_the_login_page_carries_the_app_name_until_a_company_is_named(): void
     {
-        $this->get('/admin/login')->assertOk()->assertSee("August's ERP");
+        $this->get('/admin/login')->assertOk()->assertSee(config('app.name'));
+
+        app(Preferensi::class)->set(PreferensiKey::CompanyName, 'Example Co');
+        $this->get('/admin/login')->assertOk()->assertSee('Example Co');
     }
 
     public function test_an_active_administrator_reaches_the_dashboard(): void

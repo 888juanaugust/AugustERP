@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Domain\Pengaturan\Preferensi;
+use App\Domain\Pengaturan\PreferensiKey;
 use App\Filament\Modul;
 use App\Filament\Widgets\CompanyPulse;
 use App\Http\Controllers\PrintController;
@@ -27,11 +29,21 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
  * The one panel. Its look is docs/design/DESIGN.md (tokens in
- * resources/css/filament/admin/theme.css); its sidebar is the reference
- * system's ten modules (App\Filament\Modul), every screen in its studied place.
+ * resources/css/filament/admin/theme.css), its colours overridable per client
+ * in config/client.php; its sidebar is the ten standard module groups
+ * (App\Filament\Modul). The brand is the company's name once set in
+ * Preferences, else the app name.
  */
 class AdminPanelProvider extends PanelProvider
 {
+    /** The company's name from Preferences, else the app name; never fails, the login page needs it before anything else works. */
+    public static function brandName(): string
+    {
+        $company = rescue(fn () => (string) app(Preferensi::class)->get(PreferensiKey::CompanyName), '', false);
+
+        return trim($company) !== '' ? $company : (string) config('app.name');
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
@@ -43,15 +55,15 @@ class AdminPanelProvider extends PanelProvider
             ->multiFactorAuthentication([
                 AppAuthentication::make()->recoverable(),
             ])
-            ->brandName("August's ERP")
-            ->colors([
+            ->brandName(fn (): string => self::brandName())
+            ->colors(array_merge([
                 'primary' => '#2f5bea',
                 'gray' => Color::Slate,
                 'success' => '#166534',
                 'warning' => '#8a5a00',
                 'danger' => '#a11d1d',
                 'info' => '#2f5bea',
-            ])
+            ], array_filter((array) config('client.theme.colors', []))))
             ->font('Geist Variable', provider: LocalFontProvider::class)
             ->monoFont('Geist Mono Variable', provider: LocalFontProvider::class)
             ->viteTheme('resources/css/filament/admin/theme.css')

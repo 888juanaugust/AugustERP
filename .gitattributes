@@ -6,6 +6,13 @@
 *.md diff=markdown
 *.php diff=php
 
+# A client's repository keeps its own copy of these when it merges a template
+# update: run `git config merge.ours.driver true` once in the clone.
+/app/Client/** merge=ours
+/config/client.php merge=ours
+/lang/*.json merge=ours
+/.env.example merge=ours
+
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore

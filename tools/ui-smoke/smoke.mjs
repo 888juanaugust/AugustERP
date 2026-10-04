@@ -1,27 +1,26 @@
 #!/usr/bin/env node
 /**
- * Opens the running app in the study tool's Chromium, logs in as the seeded
- * administrator and screenshots the pages given (default: the dashboard), so a
- * change to the theme or a screen can be seen, not just tested.
+ * Opens the running app in Chromium, logs in as the administrator and
+ * screenshots the pages given (default: the dashboard), so a change to the
+ * theme or a screen can be seen, not just tested.
  *
  *   php artisan serve --port 8000 &
- *   node tools/ui-smoke/smoke.mjs [/admin /admin/sales/sales-invoice ...]
+ *   npm run smoke -- [/admin /admin/customer/sales-invoice ...]
  *
- * Writes storage/app/smoke/<slug>.png (gitignored). Reuses the Playwright
- * under tools/referensi-scan/node_modules; nothing else is installed.
+ * Writes storage/app/smoke/<slug>.png (gitignored). Playwright is a dev
+ * dependency of the root package.json; a pre-installed Chromium at
+ * /opt/pw-browsers/chromium is used when present, else Playwright's own.
  */
-import { createRequire } from 'node:module';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../..');
-const require = createRequire(path.join(root, 'tools/referensi-scan/package.json'));
-const { chromium } = require('playwright');
 
 const base = process.env.APP_URL_SMOKE ?? 'http://127.0.0.1:8000';
-const email = process.env.ADMIN_EMAIL ?? 'admin@august.test';
+const email = process.env.ADMIN_EMAIL ?? 'admin@example.test';
 const password = process.env.ADMIN_PASSWORD || 'password';
 const pages = process.argv.slice(2).length ? process.argv.slice(2) : ['/admin'];
 const out = path.join(root, 'storage/app/smoke');

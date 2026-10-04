@@ -1,11 +1,11 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "august/erp",
+    "name": "august/erp-template",
     "type": "project",
-    "description": "August's ERP: accounting, inventory, purchasing, sales, cash and bank, fixed assets, tax and reports for an Indonesian trading business. The spec is in docs/spec.",
+    "description": "A standard, modular ERP template: accounting, inventory, purchasing, sales, cash and bank, fixed assets, tax and reports. One install per client; the functional standard is in docs/standard.",
     "keywords": [
         "erp",
-        "akuntansi",
+        "accounting",
         "laravel",
         "filament"
     ],
