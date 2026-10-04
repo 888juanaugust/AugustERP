@@ -38,6 +38,17 @@ use App\Models\Company\Fob;
 use App\Models\Company\PaymentTerm;
 use App\Models\Company\Shipment;
 use App\Models\Company\TaxCode;
+use App\Models\FixedAssets\AssetCategory;
+use App\Models\FixedAssets\AssetChange;
+use App\Models\FixedAssets\AssetChangeExpenditure;
+use App\Models\FixedAssets\AssetDepreciation;
+use App\Models\FixedAssets\AssetDisposal;
+use App\Models\FixedAssets\AssetLocation;
+use App\Models\FixedAssets\AssetTransfer;
+use App\Models\FixedAssets\AssetTransferLine;
+use App\Models\FixedAssets\FiscalAssetCategory;
+use App\Models\FixedAssets\FixedAsset;
+use App\Models\FixedAssets\FixedAssetExpenditure;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\AccountingPeriod;
 use App\Models\GeneralLedger\AccountOpeningBalance;
@@ -207,6 +218,17 @@ class AppServiceProvider extends ServiceProvider
             'bank_reconciliation' => BankReconciliation::class,
             'bank_reconciliation_item' => BankReconciliationItem::class,
             'giro' => Giro::class,
+            'asset_category' => AssetCategory::class,
+            'fiscal_asset_category' => FiscalAssetCategory::class,
+            'asset_location' => AssetLocation::class,
+            'fixed_asset' => FixedAsset::class,
+            'fixed_asset_expenditure' => FixedAssetExpenditure::class,
+            'asset_depreciation' => AssetDepreciation::class,
+            'asset_change' => AssetChange::class,
+            'asset_change_expenditure' => AssetChangeExpenditure::class,
+            'asset_disposal' => AssetDisposal::class,
+            'asset_transfer' => AssetTransfer::class,
+            'asset_transfer_line' => AssetTransferLine::class,
         ]);
 
         // The stock ledger writes the movements every posting declares.

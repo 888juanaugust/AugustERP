@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             DocumentSeriesSeeder::class,
             AccessGroupSeeder::class,
             MasterDataSeeder::class,
+            FixedAssetSeeder::class,
         ]);
     }
 }
