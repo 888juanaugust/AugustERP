@@ -2,7 +2,7 @@
 
 ## Aset Tetap
 
-Rute: `#referensi__fixed-asset__fixed-asset`
+Rute: `fixed-asset__fixed-asset`
 
 **Judul layar:** Data Baru · Akun Pengeluaran
 
@@ -91,7 +91,7 @@ Rute: `#referensi__fixed-asset__fixed-asset`
 
 ## Kategori Aset
 
-Rute: `#referensi__fixed-asset__fa-type`
+Rute: `fixed-asset__fa-type`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -120,7 +120,7 @@ Rute: `#referensi__fixed-asset__fa-type`
 
 ## Kategori Aset Tetap Pajak
 
-Rute: `#referensi__fixed-asset__fiscal-fa-type`
+Rute: `fixed-asset__fiscal-fa-type`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -157,7 +157,7 @@ Rute: `#referensi__fixed-asset__fiscal-fa-type`
 
 ## Perubahan Aset Tetap
 
-Rute: `#referensi__fixed-asset__fixed-asset-edited`
+Rute: `fixed-asset__fixed-asset-edited`
 
 **Judul layar:** Data Baru · Info Lainnya
 
@@ -237,7 +237,7 @@ Rute: `#referensi__fixed-asset__fixed-asset-edited`
 
 ## Disposisi Aset Tetap
 
-Rute: `#referensi__fixed-asset__fixed-asset-disposed`
+Rute: `fixed-asset__fixed-asset-disposed`
 
 **Judul layar:** Data Baru · Informasi Umum
 
@@ -278,7 +278,7 @@ Rute: `#referensi__fixed-asset__fixed-asset-disposed`
 
 ## Pindah Aset
 
-Rute: `#referensi__fixed-asset__asset-transfer`
+Rute: `fixed-asset__asset-transfer`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -339,7 +339,7 @@ Rute: `#referensi__fixed-asset__asset-transfer`
 
 ## Aset per Lokasi
 
-Rute: `#referensi__fixed-asset__asset-location`
+Rute: `fixed-asset__asset-location`
 
 **Kolom daftar:** Nama · Alamat · Kuantitas
 

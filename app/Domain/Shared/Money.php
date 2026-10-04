@@ -1,0 +1,136 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Shared;
+
+use InvalidArgumentException;
+
+/**
+ * Rupiah arithmetic on integers. Every amount in the system is a whole number
+ * of rupiah (BIGINT); nothing here produces a float that reaches storage.
+ */
+final class Money
+{
+    /** amount × numerator ÷ denominator, rounded half-up away from zero, on integers only. */
+    public static function mulDiv(int $amount, int $numerator, int $denominator): int
+    {
+        if ($denominator === 0) {
+            throw new InvalidArgumentException('Division by zero.');
+        }
+
+        $product = $amount * $numerator;
+        $sign = ($product < 0) !== ($denominator < 0) ? -1 : 1;
+        $product = abs($product);
+        $denominator = abs($denominator);
+
+        return $sign * intdiv($product * 2 + $denominator, $denominator * 2);
+    }
+
+    /** A percentage given with up to four decimals ("11.5", "12", "0.25") of an amount, half-up. */
+    public static function percent(int $amount, string|int|float $percent): int
+    {
+        $bps = self::toBasisPoints($percent);
+
+        return self::mulDiv($amount, $bps, 10000);
+    }
+
+    /** "12.5" → 1250 basis points. Accepts an int, a float or a decimal string; four decimals at most. */
+    public static function toBasisPoints(string|int|float $percent): int
+    {
+        $text = is_string($percent) ? trim(str_replace(',', '.', $percent)) : (string) $percent;
+        if (! preg_match('/^(-?)(\d+)(?:\.(\d{1,4})\d*)?$/', $text, $m)) {
+            throw new InvalidArgumentException("Not a percentage: {$text}");
+        }
+        $fraction = str_pad($m[3] ?? '', 2, '0');
+        $bps = (int) $m[2] * 100 + (int) substr($fraction, 0, 2);
+        $tail = substr($fraction, 2, 2);
+        if ($tail !== '' && (int) $tail >= 50) {
+            $bps++;
+        }
+
+        return ($m[1] === '-' ? -1 : 1) * $bps;
+    }
+
+    /**
+     * Split an amount over weights so the parts add back up to it exactly
+     * (largest remainder); zero weights get zero. Deterministic on ties: the
+     * earlier part wins.
+     *
+     * @param  array<int|string, int>  $weights
+     * @return array<int|string, int>
+     */
+    public static function allocate(int $amount, array $weights): array
+    {
+        $total = array_sum($weights);
+        if ($total <= 0) {
+            throw new InvalidArgumentException('Weights must add up to more than zero.');
+        }
+
+        $parts = [];
+        $remainders = [];
+        $allocated = 0;
+        foreach ($weights as $key => $weight) {
+            $exact = $amount * $weight;
+            $part = intdiv($exact, $total);
+            $parts[$key] = $part;
+            $remainders[$key] = $exact - $part * $total;
+            $allocated += $part;
+        }
+
+        $left = $amount - $allocated;
+        $order = array_keys($remainders);
+        usort($order, fn ($a, $b) => $remainders[$b] <=> $remainders[$a] ?: array_search($a, array_keys($weights), true) <=> array_search($b, array_keys($weights), true));
+        $step = $left < 0 ? -1 : 1;
+        for ($i = 0; $i < abs($left); $i++) {
+            $parts[$order[$i % count($order)]] += $step;
+        }
+
+        return $parts;
+    }
+
+    /** 18450000 → "18.450.000" (Indonesian thousands separator, no decimals). */
+    public static function format(int $amount): string
+    {
+        return ($amount < 0 ? '-' : '').number_format(abs($amount), 0, ',', '.');
+    }
+
+    /** "Rp 18.450.000". */
+    public static function rupiah(int $amount): string
+    {
+        return ($amount < 0 ? '-Rp ' : 'Rp ').number_format(abs($amount), 0, ',', '.');
+    }
+
+    /** "18.450.000", "Rp 18.450.000", "18450000", "18.450.000,00" → 18450000; rounds half-up when decimals are present. */
+    public static function parse(string|int|float|null $text): int
+    {
+        if ($text === null || $text === '') {
+            return 0;
+        }
+        if (is_int($text)) {
+            return $text;
+        }
+        if (is_float($text)) {
+            return (int) round($text, 0, PHP_ROUND_HALF_UP);
+        }
+
+        $clean = preg_replace('/[^\d,.\-]/', '', $text) ?? '';
+        $negative = str_starts_with($clean, '-');
+        $clean = ltrim($clean, '-');
+        // Indonesian convention: "." groups thousands, "," starts decimals.
+        if (preg_match('/^(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d+))?$/', $clean, $m)) {
+            $whole = (int) str_replace('.', '', $m[1]);
+            $decimals = $m[2] ?? '';
+        } elseif (preg_match('/^(\d+)(?:\.(\d+))?$/', $clean, $m)) {
+            $whole = (int) $m[1];
+            $decimals = $m[2] ?? '';
+        } else {
+            throw new InvalidArgumentException("Not an amount: {$text}");
+        }
+        if ($decimals !== '' && (int) $decimals[0] >= 5) {
+            $whole++;
+        }
+
+        return $negative ? -$whole : $whole;
+    }
+}

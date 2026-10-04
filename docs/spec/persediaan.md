@@ -28,7 +28,7 @@ Modul sistem referensi `inventory`, 13 layar. Dibangkitkan; sunting `_catatan.js
 
 ## Permintaan Barang
 
-Rute di sistem referensi: `#referensi__vendor__purchase-requisition` · Jenis: layar
+Rute di sistem referensi: `vendor__purchase-requisition` · Jenis: layar
 
 ### Daftar
 
@@ -72,7 +72,7 @@ _(tidak ada isian terbaca)_
 
 ## Pemindahan Barang
 
-Rute di sistem referensi: `#referensi__inventory__item-transfer` · Jenis: layar
+Rute di sistem referensi: `inventory__item-transfer` · Jenis: layar
 
 ### Daftar
 
@@ -122,7 +122,7 @@ _(tidak ada isian terbaca)_
 
 ## Penyesuaian Persediaan
 
-Rute di sistem referensi: `#referensi__inventory__item-adjustment` · Jenis: layar
+Rute di sistem referensi: `inventory__item-adjustment` · Jenis: layar
 
 ### Daftar
 
@@ -165,7 +165,7 @@ _(tidak ada isian terbaca)_
 
 ## Perintah Stok Opname
 
-Rute di sistem referensi: `#referensi__inventory__stock-opname-order` · Jenis: layar
+Rute di sistem referensi: `inventory__stock-opname-order` · Jenis: layar
 
 ### Daftar
 
@@ -197,7 +197,7 @@ Rute di sistem referensi: `#referensi__inventory__stock-opname-order` · Jenis: 
 
 ## Hasil Stok Opname
 
-Rute di sistem referensi: `#referensi__inventory__stock-opname-result` · Jenis: layar
+Rute di sistem referensi: `inventory__stock-opname-result` · Jenis: layar
 
 ### Daftar
 
@@ -243,7 +243,7 @@ _(tidak ada isian terbaca)_
 
 ## Barang & Jasa
 
-Rute di sistem referensi: `#referensi__inventory__item` · Jenis: layar
+Rute di sistem referensi: `inventory__item` · Jenis: layar
 
 ### Daftar
 
@@ -323,7 +323,7 @@ _(tidak ada isian terbaca)_
 
 ## Gudang
 
-Rute di sistem referensi: `#referensi__inventory__warehouse` · Jenis: layar
+Rute di sistem referensi: `inventory__warehouse` · Jenis: layar
 
 ### Daftar
 
@@ -358,7 +358,7 @@ _(tidak ada isian terbaca)_
 
 ## Satuan Barang
 
-Rute di sistem referensi: `#referensi__inventory__unit` · Jenis: layar
+Rute di sistem referensi: `inventory__unit` · Jenis: layar
 
 ### Daftar
 
@@ -383,7 +383,7 @@ _(tidak ada isian terbaca)_
 
 ## Kategori Barang
 
-Rute di sistem referensi: `#referensi__inventory__item-category` · Jenis: layar
+Rute di sistem referensi: `inventory__item-category` · Jenis: layar
 
 ### Daftar
 
@@ -413,7 +413,7 @@ _(tidak ada isian terbaca)_
 
 ## Merek Barang
 
-Rute di sistem referensi: `#referensi__inventory__item-brand` · Jenis: layar
+Rute di sistem referensi: `inventory__item-brand` · Jenis: layar
 
 ### Daftar
 
@@ -437,7 +437,7 @@ _(tidak ada isian terbaca)_
 
 ## Pemenuhan Pesanan
 
-Rute di sistem referensi: `#referensi__inventory__backorder-inquiry` · Jenis: layar
+Rute di sistem referensi: `inventory__backorder-inquiry` · Jenis: layar
 
 ### Daftar
 
@@ -451,7 +451,7 @@ Rute di sistem referensi: `#referensi__inventory__backorder-inquiry` · Jenis: l
 
 ## Barang per Gudang
 
-Rute di sistem referensi: `#referensi__inventory__stock-warehouse` · Jenis: layar
+Rute di sistem referensi: `inventory__stock-warehouse` · Jenis: layar
 
 ### Daftar
 
@@ -469,7 +469,7 @@ Rute di sistem referensi: `#referensi__inventory__stock-warehouse` · Jenis: lay
 
 ## Barang Stok Minimum
 
-Rute di sistem referensi: `#referensi__inventory__minimum-stock-item` · Jenis: layar
+Rute di sistem referensi: `inventory__minimum-stock-item` · Jenis: layar
 
 ### Daftar
 

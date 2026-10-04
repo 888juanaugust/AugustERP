@@ -2,7 +2,7 @@
 
 ## Daftar Laporan
 
-Rute: `#referensi__report__report`
+Rute: `report__report`
 
 **Judul layar:** Memorize · Keuangan · Neraca (Standar) · Buku Besar · Buku Besar (BIAYA OPERASIONAL) · Buku Besar (tribus) · Diskon Penjualan Final · Histori Buku Besar · Keseluruhan Jurnal (cek) · NERACA SALDO · Neraca Percobaan (tribus) · RINCIAN JURNAL PEMBAYARAN · Rincian Buku Besar · Rincian Buku Besar (BEBAN OPERASIONAL RANGKUMAN)) · Rincian Buku Besar (BEBAN OPERASIONAL) · Rincian Buku Besar (cek) · Rincian Buku Besar (tribus) · Kas & Bank · Histori Bank · Piutang · Faktur Belum Lunas · Faktur Belum Lunas (UPDATE PIUTANG UNTUK KOMISI) · Faktur Belum Lunas (UPDATE SPREADSHEET) · Faktur Belum Lunas per Pelanggan (PIUTANG MONTHLY) · PIUTANG JAWA TIMUR · Pembayaran Per Pelanggan Per Faktur untuk Hitung Komisi · Piutang per Pelanggan · Rata-rata Pembayaran Pelanggan (CEK PEMBAYARAN TOKO) · Rincian Penerimaan Penjualan (DAILY UPDATE PIUTANG) · Rincian Umur Piutang (DAILY)
 
@@ -14,7 +14,7 @@ Rute: `#referensi__report__report`
 
 ## SPT PPN / PPNBM
 
-Rute: `#referensi__report__spt-masa`
+Rute: `report__spt-masa`
 
 **Judul layar:** Data Baru · Pajak Keluaran
 
@@ -66,11 +66,11 @@ Rute: `#referensi__report__spt-masa`
 
 ## Analisa AI
 
-Rute: `#referensi__report-insight-analysis`
+Rute: `report-insight-analysis`
 
 ## SPT PPh Ps.21
 
-Rute: `#referensi__report__formulir-1721-induk`
+Rute: `report__formulir-1721-induk`
 
 **Tombol:** Cetak Formulir 1721 · e-PPh 2126
 
@@ -144,7 +144,7 @@ Rute: `#referensi__report__formulir-1721-induk`
 
 ## Bukti Potong PPh Ps.21
 
-Rute: `#referensi__report__formulir-1721-bukti-potong`
+Rute: `report__formulir-1721-bukti-potong`
 
 **Tombol:** e-PPh 2126
 

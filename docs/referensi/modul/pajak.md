@@ -2,7 +2,7 @@
 
 ## e-Faktur CTAS
 
-Rute: `#referensi__company__efaktur-ctas`
+Rute: `company__efaktur-ctas`
 
 **Judul layar:** JAVA INDO
 
@@ -26,7 +26,7 @@ Rute: `#referensi__company__efaktur-ctas`
 
 ## Email Faktur Pajak
 
-Rute: `#referensi__customer__efaktur-send`
+Rute: `customer__efaktur-send`
 
 **Tombol:** Email Faktur Pajak
 
@@ -39,7 +39,7 @@ Rute: `#referensi__customer__efaktur-send`
 
 ## e-Faktur Legacy
 
-Rute: `#referensi__company__efaktur-online`
+Rute: `company__efaktur-online`
 
 **Judul layar:** JAVA INDO
 

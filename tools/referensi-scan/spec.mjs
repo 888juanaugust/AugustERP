@@ -28,6 +28,9 @@ const scan = JSON.parse(await fs.readFile(scanFile, 'utf8'));
 const notes = JSON.parse(await fs.readFile(notesFile, 'utf8').catch(() => '{}'));
 await fs.mkdir(outDir, { recursive: true });
 
+/** Study data as it may be printed: the vendor's route prefix and the vendor's own service names stay out of the generated pages. */
+const neutral = (s) => String(s ?? '').replace(/^#referensi__/, '').replace(/^Referensi Store$/, 'Add-on store (vendor service)').replace(/^Referensi Capital$/, 'Financing program (vendor service)');
+
 const used = new Set();
 const noteFor = (key) => {
     if (notes[key]) used.add(key);
@@ -53,9 +56,9 @@ function fieldRows(fields) {
 }
 
 function screenSpec(moduleLabel, item, entry) {
-    const out = [`## ${item}`, ''];
+    const out = [`## ${neutral(item)}`, ''];
     if (entry.error) return [...out, `_Layar ini gagal dibaca oleh pemindai (${entry.error}); lengkapi dengan tangan atau pindai ulang._`, ''];
-    out.push(`Rute di sistem referensi: \`${entry.hash ?? '—'}\` · Jenis: ${entry.kind === 'report' ? 'laporan' : entry.kind === 'preferences' ? 'preferensi' : 'layar'}`, '');
+    out.push(`Rute di sistem referensi: \`${neutral(entry.hash) || '—'}\` · Jenis: ${entry.kind === 'report' ? 'laporan' : entry.kind === 'preferences' ? 'preferensi' : 'layar'}`, '');
 
     const view = entry.view ?? {};
     if (view.columns?.length || view.filters?.length || view.buttons?.length || view.catalog?.length) {
@@ -98,7 +101,7 @@ function screenSpec(moduleLabel, item, entry) {
         }
     }
 
-    out.push(...notesSection(noteFor(`${moduleLabel}/${item}`), '###'));
+    out.push(...notesSection(noteFor(`${moduleLabel}/${neutral(item)}`), '###'));
     return out;
 }
 
@@ -113,7 +116,7 @@ for (const [moduleLabel, mod] of Object.entries(scan.modules ?? {})) {
 
     const page = [`# ${moduleLabel}`, '', `Modul sistem referensi \`${mod.key ?? ''}\`, ${items.length} layar. Dibangkitkan; sunting \`_catatan.json\`, bukan berkas ini.`, ''];
     page.push(...notesSection(noteFor(moduleLabel), '##'));
-    page.push('## Layar', '', ...items.map(([item, entry]) => `- [${item}](#${slug(item)})${entry.error ? ' _(gagal dibaca)_' : ''}`), '');
+    page.push('## Layar', '', ...items.map(([item, entry]) => `- [${neutral(item)}](#${slug(neutral(item))})${entry.error ? ' _(gagal dibaca)_' : ''}`), '');
     for (const [item, entry] of items) page.push(...screenSpec(moduleLabel, item, entry));
     await fs.writeFile(path.join(outDir, file), page.join('\n') + '\n');
 }

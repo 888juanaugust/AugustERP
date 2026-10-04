@@ -2,7 +2,7 @@
 
 ## Penawaran Penjualan
 
-Rute: `#referensi__customer__sales-quotation`
+Rute: `customer__sales-quotation`
 
 **Judul layar:** Data Baru · Biaya Lainnya
 
@@ -79,7 +79,7 @@ Rute: `#referensi__customer__sales-quotation`
 
 ## Pesanan Penjualan
 
-Rute: `#referensi__customer__sales-order`
+Rute: `customer__sales-order`
 
 **Judul layar:** Data Baru · Biaya Lainnya
 
@@ -160,7 +160,7 @@ Rute: `#referensi__customer__sales-order`
 
 ## Pengiriman Pesanan
 
-Rute: `#referensi__customer__delivery-order`
+Rute: `customer__delivery-order`
 
 **Judul layar:** Data Baru · Info lainnya · Info Tambahan
 
@@ -231,7 +231,7 @@ Rute: `#referensi__customer__delivery-order`
 
 ## Uang Muka Penjualan
 
-Rute: `#referensi__customer__sales-downpayment`
+Rute: `customer__sales-downpayment`
 
 **Judul layar:** Data Baru · Pembayaran melalui SmartLink e-Payment
 
@@ -304,7 +304,7 @@ Rute: `#referensi__customer__sales-downpayment`
 
 ## Faktur Penjualan
 
-Rute: `#referensi__customer__sales-invoice`
+Rute: `customer__sales-invoice`
 
 **Judul layar:** Data Baru · Pembayaran melalui SmartLink e-Payment
 
@@ -393,7 +393,7 @@ Rute: `#referensi__customer__sales-invoice`
 
 ## Penerimaan Penjualan
 
-Rute: `#referensi__customer__sales-receipt`
+Rute: `customer__sales-receipt`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -464,7 +464,7 @@ Rute: `#referensi__customer__sales-receipt`
 
 ## Retur Penjualan
 
-Rute: `#referensi__customer__sales-return`
+Rute: `customer__sales-return`
 
 **Judul layar:** Data Baru · Biaya Lainnya
 
@@ -546,7 +546,7 @@ Rute: `#referensi__customer__sales-return`
 
 ## Tukar Faktur
 
-Rute: `#referensi__customer__exchange-invoice`
+Rute: `customer__exchange-invoice`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -607,7 +607,7 @@ Rute: `#referensi__customer__exchange-invoice`
 
 ## Kategori Pelanggan
 
-Rute: `#referensi__customer__customer-category`
+Rute: `customer__customer-category`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -642,7 +642,7 @@ Rute: `#referensi__customer__customer-category`
 
 ## Kategori Penjualan
 
-Rute: `#referensi__customer__price-category`
+Rute: `customer__price-category`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -674,7 +674,7 @@ Rute: `#referensi__customer__price-category`
 
 ## Pelanggan
 
-Rute: `#referensi__customer__customer`
+Rute: `customer__customer`
 
 **Judul layar:** Data Baru · Pembatasan Piutang Pelanggan · Lain-lain
 
@@ -800,7 +800,7 @@ _(tidak ada isian)_
 
 ## Penyesuaian Harga/Diskon
 
-Rute: `#referensi__inventory__sellingprice-adjustment`
+Rute: `inventory__sellingprice-adjustment`
 
 **Judul layar:** Data Baru
 
@@ -841,7 +841,7 @@ Rute: `#referensi__inventory__sellingprice-adjustment`
 
 ## Komisi Penjual
 
-Rute: `#referensi__company__salesman-commission`
+Rute: `company__salesman-commission`
 
 **Judul layar:** Data Baru
 
@@ -915,7 +915,7 @@ _(tidak ada isian)_
 
 ## Target Penjualan
 
-Rute: `#referensi__budget-target__sales-target`
+Rute: `budget-target__sales-target`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -978,7 +978,7 @@ Rute: `#referensi__budget-target__sales-target`
 
 ## SmartLink e-Commerce
 
-Rute: `#referensi__customer__ecommerce-setting`
+Rute: `customer__ecommerce-setting`
 
 **Judul layar:** Data Baru
 
@@ -1033,7 +1033,7 @@ Rute: `#referensi__customer__ecommerce-setting`
 
 ## Check In
 
-Rute: `#referensi__customer__sales-check-in`
+Rute: `customer__sales-check-in`
 
 **Kolom daftar:** Tanggal · Nomor # · Nama Pelanggan (Saat Check In) · Sales · Transaksi
 

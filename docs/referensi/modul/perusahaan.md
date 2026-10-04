@@ -2,7 +2,7 @@
 
 ## Mata Uang
 
-Rute: `#referensi__company__currency`
+Rute: `company__currency`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -31,7 +31,7 @@ Rute: `#referensi__company__currency`
 
 ## Cabang
 
-Rute: `#referensi__company__branch`
+Rute: `company__branch`
 
 **Judul layar:** Data Baru · Akses Pengguna
 
@@ -72,7 +72,7 @@ Rute: `#referensi__company__branch`
 
 ## Pajak
 
-Rute: `#referensi__company__tax`
+Rute: `company__tax`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -112,7 +112,7 @@ Rute: `#referensi__company__tax`
 
 ## Syarat Pembayaran
 
-Rute: `#referensi__company__payment-term`
+Rute: `company__payment-term`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -155,7 +155,7 @@ Rute: `#referensi__company__payment-term`
 
 ## Pengiriman
 
-Rute: `#referensi__company__shipment`
+Rute: `company__shipment`
 
 **Judul layar:** Data Baru · Info Umum · Info Lainnya
 
@@ -192,7 +192,7 @@ Rute: `#referensi__company__shipment`
 
 ## FOB
 
-Rute: `#referensi__company__freeonboard`
+Rute: `company__freeonboard`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -221,7 +221,7 @@ Rute: `#referensi__company__freeonboard`
 
 ## Gaji/Tunjangan
 
-Rute: `#referensi__company__employee-fee`
+Rute: `company__employee-fee`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -258,7 +258,7 @@ Rute: `#referensi__company__employee-fee`
 
 ## Karyawan
 
-Rute: `#referensi__company__employee`
+Rute: `company__employee`
 
 **Judul layar:** Data Baru · Info Akun
 
@@ -348,7 +348,7 @@ _(tidak ada isian)_
 
 ## Transaksi Berulang
 
-Rute: `#referensi__company__recurring`
+Rute: `company__recurring`
 
 **Kolom daftar:** Kategori · Nama · Tipe Transaksi · Status
 
@@ -366,7 +366,7 @@ _(tidak ada isian)_
 
 ## Proses Akhir Bulan
 
-Rute: `#referensi__company__period-end`
+Rute: `company__period-end`
 
 **Judul layar:** Data Baru
 
@@ -404,7 +404,7 @@ Rute: `#referensi__company__period-end`
 
 ## Kontak
 
-Rute: `#referensi__company__contact`
+Rute: `company__contact`
 
 **Kolom daftar:** Nama Lengkap · Tipe · Perusahaan · Email · Handphone
 
@@ -426,7 +426,7 @@ Rute: `#referensi__company__contact`
 
 ## Transaksi Favorit
 
-Rute: `#referensi__company__memorize-transaction`
+Rute: `company__memorize-transaction`
 
 **Kolom daftar:** Nama Favorit · Tipe Transaksi · Daftar Pengguna
 
@@ -448,7 +448,7 @@ Rute: `#referensi__company__memorize-transaction`
 
 ## Kalender
 
-Rute: `#referensi__company__calendar`
+Rute: `company__calendar`
 
 **Judul layar:** Oktober 2026
 
@@ -470,7 +470,7 @@ _(tidak ada isian)_
 
 ## Log Aktifitas
 
-Rute: `#referensi__company__audit`
+Rute: `company__audit`
 
 **Kolom daftar:** Tgl Transaksi · No/Nama Referensi · Tipe Tindakan · Tipe Transaksi · Tanggal · Pengguna · Email · Alamat IP
 

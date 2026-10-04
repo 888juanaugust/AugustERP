@@ -21,7 +21,7 @@ Modul sistem referensi `cash-bank`, 9 layar. Dibangkitkan; sunting `_catatan.jso
 
 ## Pembayaran
 
-Rute di sistem referensi: `#referensi__cash-bank__other-payment` · Jenis: layar
+Rute di sistem referensi: `cash-bank__other-payment` · Jenis: layar
 
 ### Daftar
 
@@ -67,7 +67,7 @@ _(tidak ada isian terbaca)_
 
 ## Penerimaan
 
-Rute di sistem referensi: `#referensi__cash-bank__other-deposit` · Jenis: layar
+Rute di sistem referensi: `cash-bank__other-deposit` · Jenis: layar
 
 ### Daftar
 
@@ -113,7 +113,7 @@ _(tidak ada isian terbaca)_
 
 ## Transfer Bank
 
-Rute di sistem referensi: `#referensi__cash-bank__bank-transfer` · Jenis: layar
+Rute di sistem referensi: `cash-bank__bank-transfer` · Jenis: layar
 
 ### Daftar
 
@@ -152,7 +152,7 @@ _(tidak ada isian terbaca)_
 
 ## SmartLink e-Banking
 
-Rute di sistem referensi: `#referensi__cash-bank__internet-banking` · Jenis: layar
+Rute di sistem referensi: `cash-bank__internet-banking` · Jenis: layar
 
 ### Daftar
 
@@ -180,7 +180,7 @@ _(tidak ada isian terbaca)_
 
 ## Rekening Koran
 
-Rute di sistem referensi: `#referensi__cash-bank__bank-statement` · Jenis: layar
+Rute di sistem referensi: `cash-bank__bank-statement` · Jenis: layar
 
 ### Daftar
 
@@ -200,7 +200,7 @@ Rute di sistem referensi: `#referensi__cash-bank__bank-statement` · Jenis: laya
 
 ## Histori Bank
 
-Rute di sistem referensi: `#referensi__cash-bank__bank-book` · Jenis: layar
+Rute di sistem referensi: `cash-bank__bank-book` · Jenis: layar
 
 ### Daftar
 
@@ -220,7 +220,7 @@ Rute di sistem referensi: `#referensi__cash-bank__bank-book` · Jenis: layar
 
 ## Rekonsiliasi Bank
 
-Rute di sistem referensi: `#referensi__cash-bank__bank-reconcile` · Jenis: layar
+Rute di sistem referensi: `cash-bank__bank-reconcile` · Jenis: layar
 
 ### Isian
 
@@ -240,7 +240,7 @@ Rute di sistem referensi: `#referensi__cash-bank__bank-reconcile` · Jenis: laya
 
 ## SmartLink Virtual Account
 
-Rute di sistem referensi: `#referensi__company__application-virtual-account` · Jenis: layar
+Rute di sistem referensi: `company__application-virtual-account` · Jenis: layar
 
 ### Perilaku yang direplikasi
 
@@ -248,7 +248,7 @@ Rute di sistem referensi: `#referensi__company__application-virtual-account` · 
 
 ## SmartLink e-Payment
 
-Rute di sistem referensi: `#referensi__company__application-epayment` · Jenis: layar
+Rute di sistem referensi: `company__application-epayment` · Jenis: layar
 
 ### Perilaku yang direplikasi
 

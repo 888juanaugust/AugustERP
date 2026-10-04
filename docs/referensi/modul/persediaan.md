@@ -2,7 +2,7 @@
 
 ## Permintaan Barang
 
-Rute: `#referensi__vendor__purchase-requisition`
+Rute: `vendor__purchase-requisition`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -63,7 +63,7 @@ Rute: `#referensi__vendor__purchase-requisition`
 
 ## Pemindahan Barang
 
-Rute: `#referensi__inventory__item-transfer`
+Rute: `inventory__item-transfer`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -132,7 +132,7 @@ Rute: `#referensi__inventory__item-transfer`
 
 ## Penyesuaian Persediaan
 
-Rute: `#referensi__inventory__item-adjustment`
+Rute: `inventory__item-adjustment`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -189,7 +189,7 @@ Rute: `#referensi__inventory__item-adjustment`
 
 ## Perintah Stok Opname
 
-Rute: `#referensi__inventory__stock-opname-order`
+Rute: `inventory__stock-opname-order`
 
 **Judul layar:** Data Baru · Perintah Stok Opname
 
@@ -234,7 +234,7 @@ Rute: `#referensi__inventory__stock-opname-order`
 
 ## Hasil Stok Opname
 
-Rute: `#referensi__inventory__stock-opname-result`
+Rute: `inventory__stock-opname-result`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -293,7 +293,7 @@ Rute: `#referensi__inventory__stock-opname-result`
 
 ## Barang & Jasa
 
-Rute: `#referensi__inventory__item`
+Rute: `inventory__item`
 
 **Judul layar:** Data Baru · Info Lainnya · Dimensi & Berat
 
@@ -384,7 +384,7 @@ _(tidak ada isian)_
 
 ## Gudang
 
-Rute: `#referensi__inventory__warehouse`
+Rute: `inventory__warehouse`
 
 **Judul layar:** Data Baru · Akses Pengguna
 
@@ -427,7 +427,7 @@ Rute: `#referensi__inventory__warehouse`
 
 ## Satuan Barang
 
-Rute: `#referensi__inventory__unit`
+Rute: `inventory__unit`
 
 **Judul layar:** Data Baru · Info Umum · Info Pajak
 
@@ -459,7 +459,7 @@ Rute: `#referensi__inventory__unit`
 
 ## Kategori Barang
 
-Rute: `#referensi__inventory__item-category`
+Rute: `inventory__item-category`
 
 **Judul layar:** Data Baru · Info Akun
 
@@ -495,7 +495,7 @@ _(tidak ada isian)_
 
 ## Merek Barang
 
-Rute: `#referensi__inventory__item-brand`
+Rute: `inventory__item-brand`
 
 **Judul layar:** Data Baru · Info Umum
 
@@ -524,7 +524,7 @@ Rute: `#referensi__inventory__item-brand`
 
 ## Pemenuhan Pesanan
 
-Rute: `#referensi__inventory__backorder-inquiry`
+Rute: `inventory__backorder-inquiry`
 
 **Kolom daftar:** Pelanggan · No Pesanan # · Tanggal · Tgl Pengiriman · Terkirim · Dapat Dikirim
 
@@ -532,7 +532,7 @@ Rute: `#referensi__inventory__backorder-inquiry`
 
 ## Barang per Gudang
 
-Rute: `#referensi__inventory__stock-warehouse`
+Rute: `inventory__stock-warehouse`
 
 **Kolom daftar:** Gudang · Kuantitas Multi Satuan · Stok dapat dijual · Alamat
 
@@ -544,7 +544,7 @@ Rute: `#referensi__inventory__stock-warehouse`
 
 ## Barang Stok Minimum
 
-Rute: `#referensi__inventory__minimum-stock-item`
+Rute: `inventory__minimum-stock-item`
 
 **Kolom daftar:** Pemasok · Nama Barang · Kode Barang · Satuan · Stok tersedia · Dipesan · Diminta · Batas Minimum Stok
 

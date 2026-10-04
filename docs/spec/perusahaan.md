@@ -25,7 +25,7 @@ Modul sistem referensi `company`, 14 layar. Dibangkitkan; sunting `_catatan.json
 
 ## Mata Uang
 
-Rute di sistem referensi: `#referensi__company__currency` · Jenis: layar
+Rute di sistem referensi: `company__currency` · Jenis: layar
 
 ### Daftar
 
@@ -49,7 +49,7 @@ _(tidak ada isian terbaca)_
 
 ## Cabang
 
-Rute di sistem referensi: `#referensi__company__branch` · Jenis: layar
+Rute di sistem referensi: `company__branch` · Jenis: layar
 
 ### Daftar
 
@@ -84,7 +84,7 @@ _(tidak ada isian terbaca)_
 
 ## Pajak
 
-Rute di sistem referensi: `#referensi__company__tax` · Jenis: layar
+Rute di sistem referensi: `company__tax` · Jenis: layar
 
 ### Daftar
 
@@ -119,7 +119,7 @@ _(tidak ada isian terbaca)_
 
 ## Syarat Pembayaran
 
-Rute di sistem referensi: `#referensi__company__payment-term` · Jenis: layar
+Rute di sistem referensi: `company__payment-term` · Jenis: layar
 
 ### Daftar
 
@@ -149,7 +149,7 @@ _(tidak ada isian terbaca)_
 
 ## Pengiriman
 
-Rute di sistem referensi: `#referensi__company__shipment` · Jenis: layar
+Rute di sistem referensi: `company__shipment` · Jenis: layar
 
 ### Daftar
 
@@ -177,7 +177,7 @@ _(tidak ada isian terbaca)_
 
 ## FOB
 
-Rute di sistem referensi: `#referensi__company__freeonboard` · Jenis: layar
+Rute di sistem referensi: `company__freeonboard` · Jenis: layar
 
 ### Daftar
 
@@ -201,7 +201,7 @@ _(tidak ada isian terbaca)_
 
 ## Gaji/Tunjangan
 
-Rute di sistem referensi: `#referensi__company__employee-fee` · Jenis: layar
+Rute di sistem referensi: `company__employee-fee` · Jenis: layar
 
 ### Daftar
 
@@ -229,7 +229,7 @@ _(tidak ada isian terbaca)_
 
 ## Karyawan
 
-Rute di sistem referensi: `#referensi__company__employee` · Jenis: layar
+Rute di sistem referensi: `company__employee` · Jenis: layar
 
 ### Daftar
 
@@ -300,7 +300,7 @@ _(tidak ada isian terbaca)_
 
 ## Transaksi Berulang
 
-Rute di sistem referensi: `#referensi__company__recurring` · Jenis: layar
+Rute di sistem referensi: `company__recurring` · Jenis: layar
 
 ### Daftar
 
@@ -324,7 +324,7 @@ _(tidak ada isian terbaca)_
 
 ## Proses Akhir Bulan
 
-Rute di sistem referensi: `#referensi__company__period-end` · Jenis: layar
+Rute di sistem referensi: `company__period-end` · Jenis: layar
 
 ### Daftar
 
@@ -359,7 +359,7 @@ _(tidak ada isian terbaca)_
 
 ## Kontak
 
-Rute di sistem referensi: `#referensi__company__contact` · Jenis: layar
+Rute di sistem referensi: `company__contact` · Jenis: layar
 
 ### Daftar
 
@@ -381,7 +381,7 @@ Rute di sistem referensi: `#referensi__company__contact` · Jenis: layar
 
 ## Transaksi Favorit
 
-Rute di sistem referensi: `#referensi__company__memorize-transaction` · Jenis: layar
+Rute di sistem referensi: `company__memorize-transaction` · Jenis: layar
 
 ### Daftar
 
@@ -403,7 +403,7 @@ Rute di sistem referensi: `#referensi__company__memorize-transaction` · Jenis: 
 
 ## Kalender
 
-Rute di sistem referensi: `#referensi__company__calendar` · Jenis: layar
+Rute di sistem referensi: `company__calendar` · Jenis: layar
 
 ### Daftar
 
@@ -429,7 +429,7 @@ _(tidak ada isian terbaca)_
 
 ## Log Aktifitas
 
-Rute di sistem referensi: `#referensi__company__audit` · Jenis: layar
+Rute di sistem referensi: `company__audit` · Jenis: layar
 
 ### Daftar
 

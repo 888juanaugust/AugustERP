@@ -2,7 +2,7 @@
 
 ## Akun Perkiraan
 
-Rute: `#referensi__general-ledger__glaccount`
+Rute: `general-ledger__glaccount`
 
 **Judul layar:** Data Baru · Akses Pengguna
 
@@ -60,7 +60,7 @@ Rute: `#referensi__general-ledger__glaccount`
 
 ## Pencatatan Beban
 
-Rute: `#referensi__general-ledger__expense-accrual`
+Rute: `general-ledger__expense-accrual`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -123,7 +123,7 @@ Rute: `#referensi__general-ledger__expense-accrual`
 
 ## Pencatatan Gaji
 
-Rute: `#referensi__cash-bank__employee-payment`
+Rute: `cash-bank__employee-payment`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -198,7 +198,7 @@ Rute: `#referensi__cash-bank__employee-payment`
 
 ## Jurnal Umum
 
-Rute: `#referensi__general-ledger__journal-voucher`
+Rute: `general-ledger__journal-voucher`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -255,7 +255,7 @@ Rute: `#referensi__general-ledger__journal-voucher`
 
 ## Monitor Anggaran
 
-Rute: `#referensi__budget-target__accountbudget-monitor`
+Rute: `budget-target__accountbudget-monitor`
 
 **Kolom daftar:** Nama Akun · Kode# · Anggaran · Penggunaan Anggaran · Sisa Anggaran
 
@@ -268,7 +268,7 @@ Rute: `#referensi__budget-target__accountbudget-monitor`
 
 ## Transfer Anggaran
 
-Rute: `#referensi__budget-target__accountbudget-transfer`
+Rute: `budget-target__accountbudget-transfer`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -333,7 +333,7 @@ Rute: `#referensi__budget-target__accountbudget-transfer`
 
 ## Anggaran
 
-Rute: `#referensi__budget-target__accountbudget-target`
+Rute: `budget-target__accountbudget-target`
 
 **Judul layar:** Data Baru · Info lainnya
 
@@ -386,7 +386,7 @@ Rute: `#referensi__budget-target__accountbudget-target`
 
 ## Histori Akun
 
-Rute: `#referensi__general-ledger__account-history`
+Rute: `general-ledger__account-history`
 
 **Kolom daftar:** Tanggal · No. Sumber # · Tipe Transaksi · Keterangan · Mutasi · Tipe · Saldo
 
@@ -400,7 +400,7 @@ Rute: `#referensi__general-ledger__account-history`
 
 ## Log Aktifitas Jurnal
 
-Rute: `#referensi__company__audit-journal`
+Rute: `company__audit-journal`
 
 **Kolom daftar:** Tanggal · Nomor # · No. Trans # · Tipe Transaksi
 
