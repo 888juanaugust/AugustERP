@@ -75,7 +75,7 @@ class SellingPriceAdjustmentResource extends ErpResource
                             LineItemFields::item(),
                             LineItemFields::unit(),
                             TextInput::make('value')->numeric()->required()->minValue(0)
-                                ->prefix(fn (Get $get) => $get('../../sales_adjustment_type') === 'discount' ? '%' : 'Rp'),
+                                ->prefix(fn (Get $get) => $get('../../sales_adjustment_type') === 'discount' ? '%' : Format::symbol()),
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel('Add item'),
                 ]),

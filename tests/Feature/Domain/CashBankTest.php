@@ -6,8 +6,6 @@ use App\Domain\CashBank\GiroService;
 use App\Domain\CashBank\Reconciler;
 use App\Domain\CashBank\StatementImporter;
 use App\Domain\Documents\PaymentMethod;
-use App\Domain\Pengaturan\Preferensi;
-use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\AccountBalances;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Posting\Exceptions\DocumentLockedException;
@@ -49,7 +47,6 @@ class CashBankTest extends TestCase
         $this->docs = app(DocumentRepository::class);
         $this->bank = $this->account('1102');
         $this->cash = $this->account('1101');
-        app(Preferensi::class)->set(PreferensiKey::MarketingApprovalRequired, false);
     }
 
     private function account(string $no): int

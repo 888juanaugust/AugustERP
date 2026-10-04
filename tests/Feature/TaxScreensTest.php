@@ -35,7 +35,7 @@ class TaxScreensTest extends TestCase
         Storage::fake('local');
         $this->seed();
         $this->actingAsAdmin();
-        app(Preferensi::class)->setMany([PreferensiKey::MarketingApprovalRequired->value => false, PreferensiKey::CompanyNpwp->value => '01.234.567.8-901.000']);
+        app(Preferensi::class)->setMany([PreferensiKey::CompanyNpwp->value => '01.234.567.8-901.000']);
         $customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'wp_type' => 'npwp', 'wp_number' => '09.876.543.2-109.000', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
         $item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000]);
         $docs = app(DocumentRepository::class);

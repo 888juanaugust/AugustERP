@@ -14,6 +14,7 @@ use App\Filament\Resources\Sales\SalesOrders\Pages\ListSalesOrders;
 use App\Filament\Resources\Sales\SalesReceipts\Pages\CreateSalesReceipt;
 use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
+use App\Models\Company\TransactionApprover;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
@@ -25,7 +26,6 @@ use App\Models\Sales\PriceCategory;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesOrder;
 use App\Models\Sales\SalesReceipt;
-use App\Models\Settings\AccessGroup;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
@@ -53,9 +53,12 @@ class SalesScreensTest extends TestCase
         app(DocumentRepository::class)->created($opening);
     }
 
-    public function test_the_chain_runs_through_the_screens_with_marketing_approval(): void
+    public function test_the_chain_runs_through_the_screens_with_order_approval(): void
     {
-        app(Preferensi::class)->set(PreferensiKey::MarketingApprovalRequired, true);
+        app(Preferensi::class)->set(PreferensiKey::SalesOrderApproval, true);
+        $approver = User::factory()->create(['access_type' => 'administrator']);
+        $rule = TransactionApprover::query()->create(['transaction_type' => 'sales_order', 'min_amount' => 0, 'rule' => 'any_one', 'is_active' => true]);
+        $rule->approvers()->attach([auth()->id(), $approver->id]);
 
         Livewire::test(CreateSalesOrder::class)
             ->fillForm([
@@ -73,21 +76,23 @@ class SalesScreensTest extends TestCase
         $this->assertSame(1_665_000, $order->total);
         $this->assertSame('awaiting', $order->approval_status);
 
-        // Awaiting orders cannot ship; the admin who entered it cannot approve it either (segregation of duties).
+        // Awaiting orders cannot ship; the admin who entered it is named by the rule but cannot approve it (segregation of duties).
         Livewire::test(ListSalesOrders::class)
             ->assertTableActionHidden('deliver', $order)
             ->callTableAction('approve', $order)
             ->assertNotified('Cannot approve');
         $this->assertSame('awaiting', $order->fresh()->approval_status);
 
-        $marketing = User::factory()->create();
-        AccessGroup::query()->where('name', 'Marketing')->firstOrFail()->users()->attach($marketing);
-        $this->actingAs($marketing);
+        // Someone the rule does not name sees no approve button at all.
+        $this->actingAs(User::factory()->create(['access_type' => 'administrator']));
+        Livewire::test(ListSalesOrders::class)->assertTableActionHidden('approve', $order);
+
+        $this->actingAs($approver);
         Livewire::test(ListSalesOrders::class)
             ->callTableAction('approve', $order)
             ->assertNotified('SO-2611-0001 approved');
         $this->assertSame('approved', $order->fresh()->approval_status);
-        $this->assertSame($marketing->id, $order->fresh()->approved_by);
+        $this->assertSame($approver->id, $order->fresh()->approved_by);
 
         $this->actingAsAdmin();
         Livewire::test(ListSalesOrders::class)->assertTableActionVisible('deliver', $order);

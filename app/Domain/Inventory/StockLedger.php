@@ -7,7 +7,7 @@ namespace App\Domain\Inventory;
 use App\Domain\Inventory\Costing\CostEngine;
 use App\Domain\Inventory\Costing\Recoster;
 use App\Domain\Inventory\Exceptions\NegativeStockException;
-use App\Domain\Pengaturan\Saklar;
+use App\Domain\Pengaturan\BusinessRule;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Shared\Format;
 use App\Models\GeneralLedger\Posting;
@@ -91,7 +91,7 @@ final class StockLedger
      */
     private function assertStockStaysPositive(int $itemId, int $warehouseId, string $date, string $quantity): void
     {
-        if (Saklar::AllowNegativeStock->isOn()) {
+        if (BusinessRule::AllowNegativeStock->isOn()) {
             return;
         }
 

@@ -35,7 +35,6 @@ class TaxFilingTest extends TestCase
         $this->seed();
         $this->actingAsAdmin();
         app(Preferensi::class)->setMany([
-            PreferensiKey::MarketingApprovalRequired->value => false,
             PreferensiKey::CompanyNpwp->value => '01.234.567.8-901.000',
             PreferensiKey::TaxCompanyName->value => 'PT August Parts',
         ]);

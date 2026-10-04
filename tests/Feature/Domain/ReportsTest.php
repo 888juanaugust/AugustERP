@@ -4,8 +4,6 @@ namespace Tests\Feature\Domain;
 
 use App\Domain\FixedAssets\DepreciationMethod;
 use App\Domain\FixedAssets\DepreciationRun;
-use App\Domain\Pengaturan\Preferensi;
-use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Reports\CashAndAssetReports;
 use App\Domain\Reports\FinancialStatements;
@@ -43,7 +41,6 @@ class ReportsTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-30 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        app(Preferensi::class)->set(PreferensiKey::MarketingApprovalRequired, false);
         $docs = app(DocumentRepository::class);
         $acc = fn (string $no) => (int) Account::query()->where('no', $no)->value('id');
 

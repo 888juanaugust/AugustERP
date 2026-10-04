@@ -62,7 +62,7 @@ class ItemResource extends MasterResource
 
     private static function money(string $name, string $label): TextInput
     {
-        return TextInput::make($name)->label($label)->prefix('Rp')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0);
+        return TextInput::make($name)->label($label)->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0);
     }
 
     public static function form(Schema $schema): Schema
@@ -163,7 +163,7 @@ class ItemResource extends MasterResource
                                     DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
                                     TextInput::make('quantity')->numeric()->required(),
                                     Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder('Base unit'),
-                                    TextInput::make('unit_cost')->numeric()->prefix('Rp')->default(0)
+                                    TextInput::make('unit_cost')->numeric()->prefix(Format::symbol())->default(0)
                                         ->disabled(fn () => ! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost))->dehydrated(),
                                     Select::make('warehouse_id')->relationship('warehouse', 'name', fn ($query) => $query->where('is_active', true))->required()->native(false),
                                 ])

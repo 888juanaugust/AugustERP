@@ -103,7 +103,7 @@ final class PricedDocumentForm
         ];
         $pricesEditable ??= ! $salesman || app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ChangeSellingPrice);
         if ($prices) {
-            $fields[] = TextInput::make('unit_price')->numeric()->default(0)->live(onBlur: true)->prefix('Rp')->readOnly(! $pricesEditable);
+            $fields[] = TextInput::make('unit_price')->numeric()->default(0)->live(onBlur: true)->prefix(Format::symbol())->readOnly(! $pricesEditable);
             $fields[] = TextInput::make('discount_percent')->numeric()->default(0)->minValue(0)->maxValue(100)->live(onBlur: true);
             $fields[] = Placeholder::make('amount_preview')->hiddenLabel()->content(fn (Get $get) => Format::number(self::lineAmount($get)));
             $fields[] = Select::make('tax_code_id')->options(fn () => TaxCode::query()->where('is_active', true)->orderBy('description')->pluck('description', 'id'))->native(false)->live();

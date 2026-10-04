@@ -21,7 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
-/** Transaction Approvers: which documents need approval, from whom, by whom, under which rule. The marketing approval of sales orders is the seeded rule. */
+/** Transaction Approvers: which documents need approval, from whom, by whom, under which rule. Sales orders consult these when the Sales Order Approval rule is on. */
 class TransactionApproverResource extends MasterResource
 {
     protected static ?string $model = TransactionApprover::class;

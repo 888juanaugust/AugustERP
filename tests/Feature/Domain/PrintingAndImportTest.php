@@ -32,7 +32,7 @@ class PrintingAndImportTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        app(Preferensi::class)->setMany([PreferensiKey::MarketingApprovalRequired->value => false, PreferensiKey::CompanyName->value => 'PT August Parts', PreferensiKey::CompanyAddress->value => 'Jl. Industri 9, Jakarta']);
+        app(Preferensi::class)->setMany([PreferensiKey::CompanyName->value => 'PT August Parts', PreferensiKey::CompanyAddress->value => 'Jl. Industri 9, Jakarta']);
     }
 
     public function test_an_invoice_prints_under_its_layout_is_marked_printed_and_needs_the_right(): void

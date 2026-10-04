@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Sales\SalesOrders;
 
-use App\Domain\Access\HakAkses;
-use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Sales\OrderApproval;
@@ -39,7 +37,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
-/** Sales Orders: what the customer ordered; approved by marketing (the rule) before it ships; deliveries and invoices pull from it. */
+/** Sales Orders: what the customer ordered; approved under the approval rules before it ships; deliveries and invoices pull from it. */
 class SalesOrderResource extends ErpResource
 {
     protected static ?string $model = SalesOrder::class;
@@ -81,7 +79,7 @@ class SalesOrderResource extends ErpResource
             ->color('success')
             ->requiresConfirmation()
             ->modalDescription(fn (SalesOrder $record) => 'Credit check: '.CustomerFields::exposureSummary($record->customer).'. Approving lets the order ship.')
-            ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ApproveTransactions))
+            ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(OrderApproval::class)->canApprove($record, auth()->user()))
             ->action(function (SalesOrder $record): void {
                 try {
                     app(OrderApproval::class)->approve($record, auth()->user());
@@ -99,7 +97,7 @@ class SalesOrderResource extends ErpResource
             ->icon('heroicon-m-x-circle')
             ->color('danger')
             ->schema([Textarea::make('reason')->label('Reason')->required()->rows(2)])
-            ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ApproveTransactions))
+            ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(OrderApproval::class)->canApprove($record, auth()->user()))
             ->action(function (SalesOrder $record, array $data): void {
                 try {
                     app(OrderApproval::class)->reject($record, auth()->user(), $data['reason']);
