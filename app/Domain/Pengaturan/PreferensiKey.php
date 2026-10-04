@@ -6,7 +6,7 @@ namespace App\Domain\Pengaturan;
 
 /**
  * Every field of the Preferences screen, one case each: its tab, its type, its
- * default (the value the studied database had, docs/referensi/preferensi.md)
+ * default (what a trading company usually wants; see docs/standard/settings.md)
  * and its English label. The value is the key stored in the preferences table.
  */
 enum PreferensiKey: string

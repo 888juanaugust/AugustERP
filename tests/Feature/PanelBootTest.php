@@ -33,7 +33,7 @@ class PanelBootTest extends TestCase
         $this->get('/admin')->assertForbidden();
     }
 
-    public function test_the_sidebar_holds_the_ten_modules_in_the_studied_order(): void
+    public function test_the_sidebar_holds_the_ten_module_groups_in_order(): void
     {
         $this->actingAsAdmin();
 

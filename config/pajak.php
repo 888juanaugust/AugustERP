@@ -3,7 +3,7 @@
 /*
  * The tax office's own reference codes, printed on the e-Tax Invoice Export
  * screen and written into the Coretax bulk-import file. Confirm any change
- * with the accountant; see docs/spec/pajak.md.
+ * with the accountant; see docs/standard/tax.md.
  */
 return [
     // Which export the e-Tax screen produces by default: 'coretax' (XML bulk import) or 'legacy' (e-Faktur CSV).
