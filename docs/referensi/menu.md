@@ -1,0 +1,133 @@
+# Menu sistem referensi
+
+Dipelajari 2026-10-04T07:49:40.531Z. Setiap entri menu adalah rute hash di aplikasi sistem referensi.
+
+- **Pengaturan** (`setting`)
+  - Preferensi — `#accurate__company__preferences`
+  - Akses Grup — `#accurate__company__access-privilege`
+  - Pengguna — `#accurate__company__user-company`
+  - Penomoran — `#accurate__company__auto-number`
+  - Desain Cetakan — `#accurate__company__print-layout`
+  - Penyetuju Transaksi — `#accurate__company__user-approval`
+  - Accurate Store — `#accurate__company__application`
+  - Accurate Capital — `#accurate__company__capital-program`
+- **Perusahaan** (`company`)
+  - Mata Uang — `#accurate__company__currency`
+  - Cabang — `#accurate__company__branch`
+  - Pajak — `#accurate__company__tax`
+  - Syarat Pembayaran — `#accurate__company__payment-term`
+  - Pengiriman — `#accurate__company__shipment`
+  - FOB — `#accurate__company__freeonboard`
+  - Gaji/Tunjangan — `#accurate__company__employee-fee`
+  - Karyawan — `#accurate__company__employee`
+  - Transaksi Berulang — `#accurate__company__recurring`
+  - Proses Akhir Bulan — `#accurate__company__period-end`
+  - Kontak — `#accurate__company__contact`
+  - Transaksi Favorit — `#accurate__company__memorize-transaction`
+  - Kalender — `#accurate__company__calendar`
+  - Log Aktifitas — `#accurate__company__audit`
+- **Buku Besar** (`general-ledger`)
+  - Akun Perkiraan — `#accurate__general-ledger__glaccount`
+  - Pencatatan Beban — `#accurate__general-ledger__expense-accrual`
+  - Pencatatan Gaji — `#accurate__cash-bank__employee-payment`
+  - Jurnal Umum — `#accurate__general-ledger__journal-voucher`
+  - Monitor Anggaran — `#accurate__budget-target__accountbudget-monitor`
+  - Transfer Anggaran — `#accurate__budget-target__accountbudget-transfer`
+  - Anggaran — `#accurate__budget-target__accountbudget-target`
+  - Histori Akun — `#accurate__general-ledger__account-history`
+  - Log Aktifitas Jurnal — `#accurate__company__audit-journal`
+- **Kas & Bank** (`cash-bank`)
+  - Pembayaran — `#accurate__cash-bank__other-payment`
+  - Penerimaan — `#accurate__cash-bank__other-deposit`
+  - Transfer Bank — `#accurate__cash-bank__bank-transfer`
+  - SmartLink e-Banking — `#accurate__cash-bank__internet-banking`
+  - Rekening Koran — `#accurate__cash-bank__bank-statement`
+  - Histori Bank — `#accurate__cash-bank__bank-book`
+  - Rekonsiliasi Bank — `#accurate__cash-bank__bank-reconcile`
+  - SmartLink Virtual Account — `#accurate__company__application-virtual-account`
+  - SmartLink e-Payment — `#accurate__company__application-epayment`
+- **Penjualan** (`sales`)
+  - Penawaran Penjualan — `#accurate__customer__sales-quotation`
+  - Pesanan Penjualan — `#accurate__customer__sales-order`
+  - Pengiriman Pesanan — `#accurate__customer__delivery-order`
+  - Uang Muka Penjualan — `#accurate__customer__sales-downpayment`
+  - Faktur Penjualan — `#accurate__customer__sales-invoice`
+  - Penerimaan Penjualan — `#accurate__customer__sales-receipt`
+  - Retur Penjualan — `#accurate__customer__sales-return`
+  - Tukar Faktur — `#accurate__customer__exchange-invoice`
+  - Kategori Pelanggan — `#accurate__customer__customer-category`
+  - Kategori Penjualan — `#accurate__customer__price-category`
+  - Pelanggan — `#accurate__customer__customer`
+  - Penyesuaian Harga/Diskon — `#accurate__inventory__sellingprice-adjustment`
+  - Komisi Penjual — `#accurate__company__salesman-commission`
+  - Target Penjualan — `#accurate__budget-target__sales-target`
+  - SmartLink e-Commerce — `#accurate__customer__ecommerce-setting`
+  - Check In — `#accurate__customer__sales-check-in`
+- **Pembelian** (`purchase`)
+  - Pesanan Pembelian — `#accurate__vendor__purchase-order`
+  - Penerimaan Barang — `#accurate__vendor__receive-item`
+  - Uang Muka Pembelian — `#accurate__vendor__purchase-downpayment`
+  - Faktur Pembelian — `#accurate__vendor__purchase-invoice`
+  - Pembayaran Pembelian — `#accurate__vendor__purchase-payment`
+  - Retur Pembelian — `#accurate__vendor__purchase-return`
+  - Klaim Pemasok — `#accurate__vendor__vendor-claim`
+  - Harga Pemasok — `#accurate__inventory__vendor-price`
+  - Kategori Pemasok — `#accurate__vendor__vendor-category`
+  - Pemasok — `#accurate__vendor__vendor`
+  - Perintah Pembayaran — `#accurate__vendor__transfer-order`
+  - Transfer Pemasok — `#accurate__vendor__multi-vendor-transfer`
+- **Persediaan** (`inventory`)
+  - Permintaan Barang — `#accurate__vendor__purchase-requisition`
+  - Pemindahan Barang — `#accurate__inventory__item-transfer`
+  - Penyesuaian Persediaan — `#accurate__inventory__item-adjustment`
+  - Perintah Stok Opname — `#accurate__inventory__stock-opname-order`
+  - Hasil Stok Opname — `#accurate__inventory__stock-opname-result`
+  - Barang & Jasa — `#accurate__inventory__item`
+  - Gudang — `#accurate__inventory__warehouse`
+  - Satuan Barang — `#accurate__inventory__unit`
+  - Kategori Barang — `#accurate__inventory__item-category`
+  - Merek Barang — `#accurate__inventory__item-brand`
+  - Pemenuhan Pesanan — `#accurate__inventory__backorder-inquiry`
+  - Barang per Gudang — `#accurate__inventory__stock-warehouse`
+  - Barang Stok Minimum — `#accurate__inventory__minimum-stock-item`
+- **Aset Tetap** (`asset`)
+  - Aset Tetap — `#accurate__fixed-asset__fixed-asset`
+  - Kategori Aset — `#accurate__fixed-asset__fa-type`
+  - Kategori Aset Tetap Pajak — `#accurate__fixed-asset__fiscal-fa-type`
+  - Perubahan Aset Tetap — `#accurate__fixed-asset__fixed-asset-edited`
+  - Disposisi Aset Tetap — `#accurate__fixed-asset__fixed-asset-disposed`
+  - Pindah Aset — `#accurate__fixed-asset__asset-transfer`
+  - Aset per Lokasi — `#accurate__fixed-asset__asset-location`
+- **Pajak** (`smartlink-tax`)
+  - e-Faktur CTAS — `#accurate__company__efaktur-ctas`
+  - Email Faktur Pajak — `#accurate__customer__efaktur-send`
+  - e-Faktur Legacy — `#accurate__company__efaktur-online`
+- **Laporan** (`report`)
+  - Daftar Laporan — `#accurate__report__report`
+  - SPT PPN / PPNBM — `#accurate__report__spt-masa`
+  - Analisa AI — `#accurate__report-insight-analysis`
+  - SPT PPh Ps.21 — `#accurate__report__formulir-1721-induk`
+  - Bukti Potong PPh Ps.21 — `#accurate__report__formulir-1721-bukti-potong`
+
+## Permintaan yang ditolak pemindai
+
+Bukti bahwa tidak ada yang tersimpan ke sistem referensi selama studi:
+
+- `POST www.google.com/ccm/collect (third-party-write)`
+- `POST ad.doubleclick.net/ccm/s/collect (third-party-write)`
+- `POST www.google-analytics.com/j/collect (third-party-write)`
+- `POST analytics.google.com/g/collect (third-party-write)`
+- `POST www.google.com/g/collect (third-party-write)`
+- `POST www.google.com/rmkt/collect/:n/ (third-party-write)`
+- `POST googleads.g.doubleclick.net/pagead/viewthroughconversion/:n/ (third-party-write)`
+- `POST www.google.com/pagead/:np-conversion/:n/ (third-party-write)`
+- `POST morpheus.accurate.id/accurate/company/set-time-zone-offset.do (write-word, answered locally)`
+- `POST accurate.id/m:nl:n/as/p/c/:n/ (write-word)`
+- `POST analytics-ipv6.tiktokw.us/ipv:n/enrich_ipv:n (third-party-write)`
+- `POST analytics.tiktok.com/api/v:n/pixel (third-party-write)`
+- `POST px.ads.linkedin.com/wa/ (third-party-write)`
+- `POST analytics.tiktok.com/api/v:n/pixel/act (third-party-write)`
+- `POST b.clarity.ms/collect (third-party-write)`
+- `POST morpheus.accurate.id/accurate/update-global-search.do (write-word, answered locally)`
+- `POST accurate.id/cdn-cgi/rum (unclassified-write)`
+- `POST bzr.openai.com/v:n/sdk/events (third-party-write)`
