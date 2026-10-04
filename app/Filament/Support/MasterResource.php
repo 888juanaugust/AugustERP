@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Models\User;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 
 /**
@@ -17,7 +22,7 @@ abstract class MasterResource extends ErpResource
 {
     protected static ?string $recordTitleAttribute = 'name';
 
-    /** The reference system's "Non Aktif: Semua / Ya / Tidak" filter. */
+    /** The reference system's "Non Aktif: Semua / Ya / Tidak" filter, active records by default. */
     public static function activeFilter(): TernaryFilter
     {
         return TernaryFilter::make('is_active')
@@ -36,5 +41,44 @@ abstract class MasterResource extends ErpResource
     public static function activeToggle(): Toggle
     {
         return Toggle::make('is_active')->label(__('fields.is_active'))->default(true);
+    }
+
+    /** The reference system's "Daftar Pengguna" tab: everyone, or a chosen set of users. */
+    public static function usersTab(string $relationship = 'users'): Tab
+    {
+        return Tab::make('Users')
+            ->schema([
+                Toggle::make('used_all_user')->label(__('fields.used_all_user'))->default(true)->live(),
+                CheckboxList::make($relationship)
+                    ->label(__('fields.users'))
+                    ->relationship($relationship, 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
+                    ->columns(3)
+                    ->searchable()
+                    ->visible(fn (Get $get): bool => ! $get('used_all_user')),
+            ]);
+    }
+
+    /** "All users" or the names, as the reference system's list column. */
+    public static function usersColumn(string $relationship = 'users'): TextColumn
+    {
+        return TextColumn::make('used_all_user')
+            ->label(__('fields.users'))
+            ->state(fn ($record): string => $record->used_all_user
+                ? 'All users'
+                : $record->{$relationship}->pluck('name')->join(', '))
+            ->limit(60);
+    }
+
+    /** Users of a master the logged-in operator may use: everyone's, or theirs. */
+    public static function visibleToCurrentUser($query, string $relationship = 'users')
+    {
+        $user = auth()->user();
+        if ($user === null || $user instanceof User && $user->isAdministrator()) {
+            return $query;
+        }
+
+        return $query->where(fn ($q) => $q
+            ->where('used_all_user', true)
+            ->orWhereHas($relationship, fn ($u) => $u->whereKey($user->id)));
     }
 }

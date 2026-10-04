@@ -4,22 +4,45 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Access\Hak;
+use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
 use Filament\Panel;
 use Filament\Resources\Resource;
+use Illuminate\Auth\Access\Response;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 /**
  * Every resource of the product: it is one screen of the reference system's
  * menu (its MenuKey), sits in that screen's module at that screen's position,
  * and is named in English from lang/en/menu.php. Access is decided by the
- * access matrix (phase 1), not by per-model policies.
+ * access matrix, not by per-model policies.
  */
 abstract class ErpResource extends Resource
 {
     protected static bool $shouldCheckPolicyExistence = false;
 
     abstract public static function menuKey(): MenuKey;
+
+    public static function getAuthorizationResponse(string|UnitEnum $action, ?Model $record = null): Response
+    {
+        $ability = $action instanceof UnitEnum ? ($action->value ?? $action->name) : $action;
+        $hak = Hak::fromAbility((string) $ability);
+
+        if ($hak === null) {
+            return Response::deny();
+        }
+
+        return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), $hak)
+            ? Response::allow()
+            : Response::deny();
+    }
+
+    public static function canPrint(): bool
+    {
+        return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), Hak::Print);
+    }
 
     public static function getNavigationGroup(): string|UnitEnum|null
     {

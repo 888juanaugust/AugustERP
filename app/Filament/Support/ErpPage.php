@@ -4,15 +4,28 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Access\Hak;
+use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
 use Filament\Pages\Page;
 use Filament\Panel;
 use UnitEnum;
 
-/** A standalone screen (settings, inquiry, report): placed and named like a resource. */
+/** A standalone screen (settings, inquiry, report): placed, named and guarded like a resource. */
 abstract class ErpPage extends Page
 {
     abstract public static function menuKey(): MenuKey;
+
+    public static function canAccess(): bool
+    {
+        return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), Hak::View);
+    }
+
+    /** Whether the current user may change what this screen shows. */
+    public static function canUpdate(): bool
+    {
+        return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), Hak::Update);
+    }
 
     public static function getNavigationGroup(): string|UnitEnum|null
     {

@@ -70,3 +70,165 @@
  2026-10-04 16:27:14 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.18ms
  2026-10-04 16:27:14 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.03ms
  2026-10-04 16:27:14 /favicon.ico .. ~ 0.03ms
+ 2026-10-04 16:53:49 /admin/login .. ~ 0.20ms
+ 2026-10-04 16:54:10 /admin/login .. ~ 0.10ms
+ 2026-10-04 16:54:10 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.09ms
+ 2026-10-04 16:54:10 /build/assets/theme-BzFJirVt.css .. ~ 0.13ms
+ 2026-10-04 16:54:10 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.22ms
+ 2026-10-04 16:54:10 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.27ms
+ 2026-10-04 16:54:10 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.31ms
+ 2026-10-04 16:54:10 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.35ms
+ 2026-10-04 16:54:11 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.03ms
+ 2026-10-04 16:54:11 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.08ms
+ 2026-10-04 16:54:11 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.12ms
+ 2026-10-04 16:54:11 /livewire-78a8a0c6/livewire.js .. ~ 0.18ms
+ 2026-10-04 16:54:11 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.02ms
+ 2026-10-04 16:54:11 /favicon.ico .. ~ 0.11ms
+ 2026-10-04 16:54:11 /livewire-78a8a0c6/update .. ~ 500.46ms
+ 2026-10-04 16:54:12 /admin .. ~ 500.39ms
+ 2026-10-04 16:54:12 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.12ms
+ 2026-10-04 16:54:12 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.11ms
+ 2026-10-04 16:54:12 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.21ms
+ 2026-10-04 16:54:12 /build/assets/theme-BzFJirVt.css .. ~ 0.32ms
+ 2026-10-04 16:54:12 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.04ms
+ 2026-10-04 16:54:12 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.14ms
+ 2026-10-04 16:54:12 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.18ms
+ 2026-10-04 16:54:12 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.23ms
+ 2026-10-04 16:54:12 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.27ms
+ 2026-10-04 16:54:12 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.02ms
+ 2026-10-04 16:54:13 /admin/company/preferences .. ~ 500.49ms
+ 2026-10-04 16:54:13 /favicon.ico .. ~ 0.04ms
+ 2026-10-04 16:54:13 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.09ms
+ 2026-10-04 16:54:13 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.15ms
+ 2026-10-04 16:54:13 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.27ms
+ 2026-10-04 16:54:13 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.34ms
+ 2026-10-04 16:54:13 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.40ms
+ 2026-10-04 16:54:13 /build/assets/theme-BzFJirVt.css .. ~ 0.50ms
+ 2026-10-04 16:54:13 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.51ms
+ 2026-10-04 16:54:13 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.12ms
+ 2026-10-04 16:54:13 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.18ms
+ 2026-10-04 16:54:13 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.03ms
+ 2026-10-04 16:54:13 /js/filament/schemas/components/tabs.js?v=5.9.0.0  ~ 0.03ms
+ 2026-10-04 16:54:13 /favicon.ico .. ~ 0.03ms
+ 2026-10-04 16:54:13 /js/filament/forms/components/textarea.js?v=5.9.0.0  ~ 0.09ms
+ 2026-10-04 16:54:13 /js/filament/forms/components/date-time-picker.js?v=5.9.0.0  ~ 0.16ms
+ 2026-10-04 16:54:13 /js/filament/forms/components/select.js?v=5.9.0.0  ~ 0.21ms
+ 2026-10-04 16:54:14 /admin/company/access-privilege/1/edit .. ~ 500.49ms
+ 2026-10-04 16:54:15 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.10ms
+ 2026-10-04 16:54:15 /build/assets/theme-BzFJirVt.css .. ~ 0.17ms
+ 2026-10-04 16:54:15 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.09ms
+ 2026-10-04 16:54:15 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.18ms
+ 2026-10-04 16:54:15 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.27ms
+ 2026-10-04 16:54:15 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.33ms
+ 2026-10-04 16:54:15 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.43ms
+ 2026-10-04 16:54:15 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.49ms
+ 2026-10-04 16:54:15 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.09ms
+ 2026-10-04 16:54:15 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.03ms
+ 2026-10-04 16:54:15 /js/filament/forms/components/textarea.js?v=5.9.0.0  ~ 0.04ms
+ 2026-10-04 16:54:15 /js/filament/schemas/components/tabs.js?v=5.9.0.0  ~ 0.10ms
+ 2026-10-04 16:54:15 /favicon.ico .. ~ 0.03ms
+ 2026-10-04 16:54:15 /js/filament/forms/components/checkbox-list.js?v=5.9.0.0  ~ 0.04ms
+ 2026-10-04 16:54:16 /admin/company/auto-number .. ~ 0.10ms
+ 2026-10-04 16:54:17 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.15ms
+ 2026-10-04 16:54:17 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.21ms
+ 2026-10-04 16:54:17 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.27ms
+ 2026-10-04 16:54:17 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.35ms
+ 2026-10-04 16:54:17 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.39ms
+ 2026-10-04 16:54:17 /build/assets/theme-BzFJirVt.css .. ~ 0.47ms
+ 2026-10-04 16:54:17 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.05ms
+ 2026-10-04 16:54:17 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.15ms
+ 2026-10-04 16:54:17 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.23ms
+ 2026-10-04 16:54:17 /build/assets/geist-mono-latin-wght-normal-XN7g48iV.woff2  ~ 0.11ms
+ 2026-10-04 16:54:17 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.18ms
+ 2026-10-04 16:54:17 /favicon.ico .. ~ 0.02ms
+ 2026-10-04 16:54:18 /admin/company/tax .. ~ 0.13ms
+ 2026-10-04 16:54:18 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.11ms
+ 2026-10-04 16:54:18 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.18ms
+ 2026-10-04 16:54:18 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.27ms
+ 2026-10-04 16:54:18 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.34ms
+ 2026-10-04 16:54:18 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.43ms
+ 2026-10-04 16:54:18 /build/assets/theme-BzFJirVt.css .. ~ 0.56ms
+ 2026-10-04 16:54:19 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.06ms
+ 2026-10-04 16:54:19 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.21ms
+ 2026-10-04 16:54:19 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.38ms
+ 2026-10-04 16:54:19 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.04ms
+ 2026-10-04 16:54:19 /favicon.ico .. ~ 0.03ms
+ 2026-10-04 16:54:20 /admin/company/payment-term .. ~ 0.12ms
+ 2026-10-04 16:54:20 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.10ms
+ 2026-10-04 16:54:20 /build/assets/theme-BzFJirVt.css .. ~ 0.16ms
+ 2026-10-04 16:54:20 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.26ms
+ 2026-10-04 16:54:20 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.32ms
+ 2026-10-04 16:54:20 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.37ms
+ 2026-10-04 16:54:20 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.42ms
+ 2026-10-04 16:54:20 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.04ms
+ 2026-10-04 16:54:20 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.12ms
+ 2026-10-04 16:54:20 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.19ms
+ 2026-10-04 16:54:20 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.03ms
+ 2026-10-04 16:54:20 /favicon.ico .. ~ 0.03ms
+ 2026-10-04 16:54:21 /admin/company/audit .. ~ 0.13ms
+ 2026-10-04 16:54:22 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.10ms
+ 2026-10-04 16:54:22 /build/assets/theme-BzFJirVt.css .. ~ 0.19ms
+ 2026-10-04 16:54:22 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.31ms
+ 2026-10-04 16:54:22 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.48ms
+ 2026-10-04 16:54:22 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.56ms
+ 2026-10-04 16:54:22 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.65ms
+ 2026-10-04 16:54:22 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.41ms
+ 2026-10-04 16:54:22 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.16ms
+ 2026-10-04 16:54:22 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.27ms
+ 2026-10-04 16:54:22 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.14ms
+ 2026-10-04 16:54:22 /js/filament/forms/components/date-time-picker.js?v=5.9.0.0  ~ 0.02ms
+ 2026-10-04 16:54:22 /favicon.ico .. ~ 0.02ms
+ 2026-10-04 16:54:24 /admin/company/user-company .. ~ 500.53ms
+ 2026-10-04 16:54:24 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.15ms
+ 2026-10-04 16:54:24 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.20ms
+ 2026-10-04 16:54:24 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.26ms
+ 2026-10-04 16:54:24 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.37ms
+ 2026-10-04 16:54:24 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.44ms
+ 2026-10-04 16:54:24 /build/assets/theme-BzFJirVt.css .. ~ 0.55ms
+ 2026-10-04 16:54:24 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.04ms
+ 2026-10-04 16:54:24 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.67ms
+ 2026-10-04 16:54:24 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.18ms
+ 2026-10-04 16:54:24 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.02ms
+ 2026-10-04 16:54:24 /favicon.ico .. ~ 0.02ms
+ 2026-10-04 16:54:55 /admin/login .. ~ 0.10ms
+ 2026-10-04 16:54:55 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.04ms
+ 2026-10-04 16:54:55 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.12ms
+ 2026-10-04 16:54:55 /build/assets/theme-DKZzVn8f.css .. ~ 0.20ms
+ 2026-10-04 16:54:55 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.23ms
+ 2026-10-04 16:54:55 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.16ms
+ 2026-10-04 16:54:55 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.12ms
+ 2026-10-04 16:54:55 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.17ms
+ 2026-10-04 16:54:55 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.20ms
+ 2026-10-04 16:54:55 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.02ms
+ 2026-10-04 16:54:55 /livewire-78a8a0c6/livewire.js .. ~ 0.07ms
+ 2026-10-04 16:54:55 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.14ms
+ 2026-10-04 16:54:55 /favicon.ico .. ~ 0.02ms
+ 2026-10-04 16:54:56 /livewire-78a8a0c6/update .. ~ 500.47ms
+ 2026-10-04 16:54:56 /admin .. ~ 0.10ms
+ 2026-10-04 16:54:56 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.06ms
+ 2026-10-04 16:54:56 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.10ms
+ 2026-10-04 16:54:56 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.14ms
+ 2026-10-04 16:54:56 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.17ms
+ 2026-10-04 16:54:56 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.21ms
+ 2026-10-04 16:54:56 /build/assets/theme-DKZzVn8f.css .. ~ 0.27ms
+ 2026-10-04 16:54:56 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.03ms
+ 2026-10-04 16:54:56 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.08ms
+ 2026-10-04 16:54:56 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.12ms
+ 2026-10-04 16:54:56 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.02ms
+ 2026-10-04 16:54:57 /admin/company/preferences .. ~ 0.01ms
+ 2026-10-04 16:54:57 /favicon.ico .. ~ 0.02ms
+ 2026-10-04 16:54:57 /fonts/filament/filament/inter/index.css?v=5.9.0.0  ~ 0.05ms
+ 2026-10-04 16:54:57 /js/filament/actions/actions.js?v=5.9.0.0 .. ~ 0.08ms
+ 2026-10-04 16:54:57 /js/filament/notifications/notifications.js?v=5.9.0.0  ~ 0.12ms
+ 2026-10-04 16:54:57 /js/filament/schemas/schemas.js?v=5.9.0.0 .. ~ 0.15ms
+ 2026-10-04 16:54:57 /js/filament/support/support.js?v=5.9.0.0 .. ~ 0.19ms
+ 2026-10-04 16:54:57 /build/assets/theme-DKZzVn8f.css .. ~ 0.25ms
+ 2026-10-04 16:54:57 /js/filament/tables/tables.js?v=5.9.0.0 .. ~ 0.03ms
+ 2026-10-04 16:54:57 /js/filament/filament/echo.js?v=5.9.0.0 .. ~ 0.07ms
+ 2026-10-04 16:54:57 /js/filament/filament/app.js?v=5.9.0.0 .. ~ 0.12ms
+ 2026-10-04 16:54:57 /build/assets/geist-latin-wght-normal-BgDaEnEv.woff2  ~ 0.14ms
+ 2026-10-04 16:54:57 /js/filament/schemas/components/tabs.js?v=5.9.0.0  ~ 0.03ms
+ 2026-10-04 16:54:57 /favicon.ico .. ~ 0.03ms
+ 2026-10-04 16:54:57 /js/filament/forms/components/textarea.js?v=5.9.0.0  ~ 0.05ms
+ 2026-10-04 16:54:57 /js/filament/forms/components/date-time-picker.js?v=5.9.0.0  ~ 0.10ms
+ 2026-10-04 16:54:57 /js/filament/forms/components/select.js?v=5.9.0.0  ~ 0.17ms

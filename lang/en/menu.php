@@ -25,8 +25,8 @@ return [
         'company__auto-number' => 'Numbering', // Penomoran
         'company__print-layout' => 'Print Layouts', // Desain Cetakan
         'company__user-approval' => 'Transaction Approvers', // Penyetuju Transaksi
-        'company__application' => 'Add-on Store', // Accurate Store
-        'company__capital-program' => 'Financing Program', // Accurate Capital
+        'company__application' => 'Add-on Store', // Add-on store (vendor service)
+        'company__capital-program' => 'Financing Program', // Financing program (vendor service)
         'company__currency' => 'Currencies', // Mata Uang
         'company__branch' => 'Branches', // Cabang
         'company__tax' => 'Tax Codes', // Pajak
