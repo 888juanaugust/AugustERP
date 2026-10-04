@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             AccessGroupSeeder::class,
             MasterDataSeeder::class,
             FixedAssetSeeder::class,
+            CompanyExtrasSeeder::class,
         ]);
     }
 }

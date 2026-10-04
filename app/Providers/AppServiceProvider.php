@@ -18,6 +18,9 @@ use App\Domain\Posting\Blockers\SettledBlocker;
 use App\Domain\Posting\DocumentGuard;
 use App\Domain\Posting\PostingService;
 use App\Domain\Settlement\AllocationLedger;
+use App\Models\Budgeting\Budget;
+use App\Models\Budgeting\BudgetLine;
+use App\Models\Budgeting\BudgetTransfer;
 use App\Models\CashBank\BankReconciliation;
 use App\Models\CashBank\BankReconciliationItem;
 use App\Models\CashBank\BankStatement;
@@ -31,13 +34,21 @@ use App\Models\CashBank\CashReceiptLine;
 use App\Models\CashBank\Giro;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
+use App\Models\Company\CalendarEvent;
 use App\Models\Company\Contact;
 use App\Models\Company\Currency;
 use App\Models\Company\Employee;
 use App\Models\Company\Fob;
+use App\Models\Company\MemorizedTransaction;
 use App\Models\Company\PaymentTerm;
+use App\Models\Company\PayrollEntry;
+use App\Models\Company\PayrollEntryLine;
+use App\Models\Company\PrintLayout;
+use App\Models\Company\RecurringTransaction;
+use App\Models\Company\SalaryComponent;
 use App\Models\Company\Shipment;
 use App\Models\Company\TaxCode;
+use App\Models\Company\TransactionApprover;
 use App\Models\FixedAssets\AssetCategory;
 use App\Models\FixedAssets\AssetChange;
 use App\Models\FixedAssets\AssetChangeExpenditure;
@@ -233,6 +244,17 @@ class AppServiceProvider extends ServiceProvider
             'asset_transfer_line' => AssetTransferLine::class,
             'tax_filing' => TaxFiling::class,
             'tax_filing_document' => TaxFilingDocument::class,
+            'budget' => Budget::class,
+            'budget_line' => BudgetLine::class,
+            'budget_transfer' => BudgetTransfer::class,
+            'salary_component' => SalaryComponent::class,
+            'payroll_entry' => PayrollEntry::class,
+            'payroll_entry_line' => PayrollEntryLine::class,
+            'print_layout' => PrintLayout::class,
+            'transaction_approver' => TransactionApprover::class,
+            'recurring_transaction' => RecurringTransaction::class,
+            'memorized_transaction' => MemorizedTransaction::class,
+            'calendar_event' => CalendarEvent::class,
         ]);
 
         // The stock ledger writes the movements every posting declares.

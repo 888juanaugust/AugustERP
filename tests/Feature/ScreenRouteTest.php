@@ -109,14 +109,15 @@ class ScreenRouteTest extends TestCase
             MenuKey::ETaxInvoiceExport, MenuKey::LegacyETaxExport,
             // phase 10
             MenuKey::ReportCatalogue, MenuKey::VATReturn,
+            // phase 11
+            MenuKey::Budgets, MenuKey::BudgetMonitor, MenuKey::BudgetTransfers, MenuKey::SalaryComponents, MenuKey::PayrollEntries,
+            MenuKey::PrintLayouts, MenuKey::TransactionApprovers, MenuKey::RecurringTransactions, MenuKey::MemorizedTransactions, MenuKey::Calendar,
         ] as $key) {
             $this->assertContains($key->value, $built, $key->label());
             $this->assertNotContains($key->value, $placeholders, $key->label().' is a placeholder');
         }
 
         $this->assertEqualsCanonicalizing([
-            MenuKey::PrintLayouts->value, MenuKey::TransactionApprovers->value,
-            MenuKey::Budgets->value, MenuKey::BudgetMonitor->value, MenuKey::BudgetTransfers->value, MenuKey::PayrollEntries->value,
             MenuKey::ECommerceLinks->value, MenuKey::EmailTaxInvoice->value, MenuKey::IncomeTaxArt21Return->value, MenuKey::WithholdingSlips->value,
         ], $placeholders);
     }
