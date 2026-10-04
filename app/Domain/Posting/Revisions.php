@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Posting;
 
-use App\Domain\Posting\Contracts\Postable;
 use App\Models\GeneralLedger\DocumentRevision;
 use Illuminate\Database\Eloquent\Model;
 
 /** Writes the before/after record of every document change. Append-only. */
 final class Revisions
 {
-    public function record(Postable&Model $document, string $action, ?array $before, ?array $after): DocumentRevision
+    public function record(Model $document, string $action, ?array $before, ?array $after): DocumentRevision
     {
         $last = (int) DocumentRevision::query()
             ->where('document_type', $document->getMorphClass())
