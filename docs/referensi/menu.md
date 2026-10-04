@@ -1,0 +1,133 @@
+# Menu sistem referensi
+
+Dipelajari 2026-10-04T07:49:40.531Z. Setiap entri menu adalah rute hash di aplikasi sistem referensi.
+
+- **Pengaturan** (`setting`)
+  - Preferensi — `#referensi__company__preferences`
+  - Akses Grup — `#referensi__company__access-privilege`
+  - Pengguna — `#referensi__company__user-company`
+  - Penomoran — `#referensi__company__auto-number`
+  - Desain Cetakan — `#referensi__company__print-layout`
+  - Penyetuju Transaksi — `#referensi__company__user-approval`
+  - Referensi Store — `#referensi__company__application`
+  - Referensi Capital — `#referensi__company__capital-program`
+- **Perusahaan** (`company`)
+  - Mata Uang — `#referensi__company__currency`
+  - Cabang — `#referensi__company__branch`
+  - Pajak — `#referensi__company__tax`
+  - Syarat Pembayaran — `#referensi__company__payment-term`
+  - Pengiriman — `#referensi__company__shipment`
+  - FOB — `#referensi__company__freeonboard`
+  - Gaji/Tunjangan — `#referensi__company__employee-fee`
+  - Karyawan — `#referensi__company__employee`
+  - Transaksi Berulang — `#referensi__company__recurring`
+  - Proses Akhir Bulan — `#referensi__company__period-end`
+  - Kontak — `#referensi__company__contact`
+  - Transaksi Favorit — `#referensi__company__memorize-transaction`
+  - Kalender — `#referensi__company__calendar`
+  - Log Aktifitas — `#referensi__company__audit`
+- **Buku Besar** (`general-ledger`)
+  - Akun Perkiraan — `#referensi__general-ledger__glaccount`
+  - Pencatatan Beban — `#referensi__general-ledger__expense-accrual`
+  - Pencatatan Gaji — `#referensi__cash-bank__employee-payment`
+  - Jurnal Umum — `#referensi__general-ledger__journal-voucher`
+  - Monitor Anggaran — `#referensi__budget-target__accountbudget-monitor`
+  - Transfer Anggaran — `#referensi__budget-target__accountbudget-transfer`
+  - Anggaran — `#referensi__budget-target__accountbudget-target`
+  - Histori Akun — `#referensi__general-ledger__account-history`
+  - Log Aktifitas Jurnal — `#referensi__company__audit-journal`
+- **Kas & Bank** (`cash-bank`)
+  - Pembayaran — `#referensi__cash-bank__other-payment`
+  - Penerimaan — `#referensi__cash-bank__other-deposit`
+  - Transfer Bank — `#referensi__cash-bank__bank-transfer`
+  - SmartLink e-Banking — `#referensi__cash-bank__internet-banking`
+  - Rekening Koran — `#referensi__cash-bank__bank-statement`
+  - Histori Bank — `#referensi__cash-bank__bank-book`
+  - Rekonsiliasi Bank — `#referensi__cash-bank__bank-reconcile`
+  - SmartLink Virtual Account — `#referensi__company__application-virtual-account`
+  - SmartLink e-Payment — `#referensi__company__application-epayment`
+- **Penjualan** (`sales`)
+  - Penawaran Penjualan — `#referensi__customer__sales-quotation`
+  - Pesanan Penjualan — `#referensi__customer__sales-order`
+  - Pengiriman Pesanan — `#referensi__customer__delivery-order`
+  - Uang Muka Penjualan — `#referensi__customer__sales-downpayment`
+  - Faktur Penjualan — `#referensi__customer__sales-invoice`
+  - Penerimaan Penjualan — `#referensi__customer__sales-receipt`
+  - Retur Penjualan — `#referensi__customer__sales-return`
+  - Tukar Faktur — `#referensi__customer__exchange-invoice`
+  - Kategori Pelanggan — `#referensi__customer__customer-category`
+  - Kategori Penjualan — `#referensi__customer__price-category`
+  - Pelanggan — `#referensi__customer__customer`
+  - Penyesuaian Harga/Diskon — `#referensi__inventory__sellingprice-adjustment`
+  - Komisi Penjual — `#referensi__company__salesman-commission`
+  - Target Penjualan — `#referensi__budget-target__sales-target`
+  - SmartLink e-Commerce — `#referensi__customer__ecommerce-setting`
+  - Check In — `#referensi__customer__sales-check-in`
+- **Pembelian** (`purchase`)
+  - Pesanan Pembelian — `#referensi__vendor__purchase-order`
+  - Penerimaan Barang — `#referensi__vendor__receive-item`
+  - Uang Muka Pembelian — `#referensi__vendor__purchase-downpayment`
+  - Faktur Pembelian — `#referensi__vendor__purchase-invoice`
+  - Pembayaran Pembelian — `#referensi__vendor__purchase-payment`
+  - Retur Pembelian — `#referensi__vendor__purchase-return`
+  - Klaim Pemasok — `#referensi__vendor__vendor-claim`
+  - Harga Pemasok — `#referensi__inventory__vendor-price`
+  - Kategori Pemasok — `#referensi__vendor__vendor-category`
+  - Pemasok — `#referensi__vendor__vendor`
+  - Perintah Pembayaran — `#referensi__vendor__transfer-order`
+  - Transfer Pemasok — `#referensi__vendor__multi-vendor-transfer`
+- **Persediaan** (`inventory`)
+  - Permintaan Barang — `#referensi__vendor__purchase-requisition`
+  - Pemindahan Barang — `#referensi__inventory__item-transfer`
+  - Penyesuaian Persediaan — `#referensi__inventory__item-adjustment`
+  - Perintah Stok Opname — `#referensi__inventory__stock-opname-order`
+  - Hasil Stok Opname — `#referensi__inventory__stock-opname-result`
+  - Barang & Jasa — `#referensi__inventory__item`
+  - Gudang — `#referensi__inventory__warehouse`
+  - Satuan Barang — `#referensi__inventory__unit`
+  - Kategori Barang — `#referensi__inventory__item-category`
+  - Merek Barang — `#referensi__inventory__item-brand`
+  - Pemenuhan Pesanan — `#referensi__inventory__backorder-inquiry`
+  - Barang per Gudang — `#referensi__inventory__stock-warehouse`
+  - Barang Stok Minimum — `#referensi__inventory__minimum-stock-item`
+- **Aset Tetap** (`asset`)
+  - Aset Tetap — `#referensi__fixed-asset__fixed-asset`
+  - Kategori Aset — `#referensi__fixed-asset__fa-type`
+  - Kategori Aset Tetap Pajak — `#referensi__fixed-asset__fiscal-fa-type`
+  - Perubahan Aset Tetap — `#referensi__fixed-asset__fixed-asset-edited`
+  - Disposisi Aset Tetap — `#referensi__fixed-asset__fixed-asset-disposed`
+  - Pindah Aset — `#referensi__fixed-asset__asset-transfer`
+  - Aset per Lokasi — `#referensi__fixed-asset__asset-location`
+- **Pajak** (`smartlink-tax`)
+  - e-Faktur CTAS — `#referensi__company__efaktur-ctas`
+  - Email Faktur Pajak — `#referensi__customer__efaktur-send`
+  - e-Faktur Legacy — `#referensi__company__efaktur-online`
+- **Laporan** (`report`)
+  - Daftar Laporan — `#referensi__report__report`
+  - SPT PPN / PPNBM — `#referensi__report__spt-masa`
+  - Analisa AI — `#referensi__report-insight-analysis`
+  - SPT PPh Ps.21 — `#referensi__report__formulir-1721-induk`
+  - Bukti Potong PPh Ps.21 — `#referensi__report__formulir-1721-bukti-potong`
+
+## Permintaan yang ditolak pemindai
+
+Bukti bahwa tidak ada yang tersimpan ke sistem referensi selama studi:
+
+- `POST www.google.com/ccm/collect (third-party-write)`
+- `POST ad.doubleclick.net/ccm/s/collect (third-party-write)`
+- `POST www.google-analytics.com/j/collect (third-party-write)`
+- `POST analytics.google.com/g/collect (third-party-write)`
+- `POST www.google.com/g/collect (third-party-write)`
+- `POST www.google.com/rmkt/collect/:n/ (third-party-write)`
+- `POST googleads.g.doubleclick.net/pagead/viewthroughconversion/:n/ (third-party-write)`
+- `POST www.google.com/pagead/:np-conversion/:n/ (third-party-write)`
+- `POST morpheus.reference.example/referensi/company/set-time-zone-offset.do (write-word, answered locally)`
+- `POST reference.example/m:nl:n/as/p/c/:n/ (write-word)`
+- `POST analytics-ipv6.tiktokw.us/ipv:n/enrich_ipv:n (third-party-write)`
+- `POST analytics.tiktok.com/api/v:n/pixel (third-party-write)`
+- `POST px.ads.linkedin.com/wa/ (third-party-write)`
+- `POST analytics.tiktok.com/api/v:n/pixel/act (third-party-write)`
+- `POST b.clarity.ms/collect (third-party-write)`
+- `POST morpheus.reference.example/referensi/update-global-search.do (write-word, answered locally)`
+- `POST reference.example/cdn-cgi/rum (unclassified-write)`
+- `POST bzr.openai.com/v:n/sdk/events (third-party-write)`

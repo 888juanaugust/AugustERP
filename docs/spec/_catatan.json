@@ -1,0 +1,633 @@
+{
+  "_comment": "Catatan tangan untuk spec.mjs. Kunci: \"<Modul>/<Layar>\" (label menu sistem referensi persis seperti hasil pindai), \"<Modul>\", atau \"_global\". Nomor S-/P-/I-/G-/K-/A-/T-/X-/R- merujuk ke docs/referensi/PARITY-webtransaction.md, matriks yang dibuat sebelum pemindaian; setiap baris di sini sudah dicocokkan dengan menu sistem referensi yang sebenarnya.",
+  "_global": {
+    "perilaku": [
+      "August's ERP mereplikasi fungsi sistem referensi layar demi layar, lalu dimodifikasi dan diganti antarmukanya. Spesifikasi ini (docs/spec) adalah definisi selesai; antarmuka saat ini hanya pengganti sementara.",
+      "Uang disimpan sebagai BIGINT rupiah; DPP dan PPN dihitung dan disimpan per baris; posting (jurnal, mutasi stok, alokasi pembayaran) diturunkan dari dokumen oleh satu lapisan posting; log audit hanya bertambah (append-only).",
+      "Dokumen yang sudah tercatat boleh diubah dan dihapus seperti di sistem referensi, tunduk pada hak akses, kunci periode tertutup, dan pemblokir (sudah direkonsiliasi, sudah dilunasi, dirujuk dokumen lain).",
+      "Cabang adalah penanda (tag) dalam satu pembukuan, bukan pembukuan terpisah: satu buku besar, satu persediaan, satu HPP rata-rata.",
+      "Setiap layar transaksi sistem referensi punya pola yang sama: formulir \"Data Baru\" dengan kepala dokumen (pelanggan/pemasok, tanggal, nomor otomatis dengan saklar), tab Rincian Barang (grid baris), Info lainnya, Biaya Lainnya; tombol Daftar membuka daftar dokumen dengan saringan (Tanggal, Status, Sudah dicetak) dan Tambah Kriteria. Replikasi mengikuti pola ini untuk semua dokumen."
+    ],
+    "saklar": [
+      "Portal pembeli, situs publik, pipeline impor daftar harga, pemecahan pesanan antar gudang, reservasi stok saat disetujui, faktur sebelum kirim, komisi atas faktur lunas, kunjungan toko, ekspor Coretax XML, dan aturan dua kunci (pengaju ≠ pemverifikasi) adalah kelebihan WebTransaction yang tidak ada di sistem referensi. Masing-masing dipertahankan di balik saklar, bawaan: nyala."
+    ],
+    "pertanyaan": [
+      "Edisi sistem referensi yang dipindai (CV JAVAINDO 35) tidak menampilkan modul Manufaktur (M-01 s.d. M-06) maupun Departemen/Proyek (G-06, G-07). Replikasi mengikuti menu yang ada; keduanya masuk hanya jika pemilik mengaktifkan modulnya di sistem referensi dan pemindaian diulang.",
+      "Mata uang asing (X-11) tetap di luar lingkup; layar Mata Uang direplikasi hanya sebagai daftar satu mata uang (IDR)."
+    ]
+  },
+  "Pengaturan": {
+    "perilaku": [
+      "X-02 Preferensi sistem referensi adalah sumber kebenaran untuk saklar perilaku; setiap saklar WebTransaction yang dipertahankan muncul di layar Preferensi yang sama.",
+      "X-03/X-04 Hak akses sistem referensi: grup akses per menu (lihat/tambah/ubah/hapus/cetak) ditambah hak khusus, pengguna dibatasi ke cabang dan gudang tertentu; enam grup sistem di-seed agar matriks peran WebTransaction tereproduksi sel demi sel."
+    ]
+  },
+  "Pengaturan/Preferensi": {
+    "perilaku": [
+      "X-02: tab dan saklar seperti tersetel di database yang dipindai (lihat docs/referensi/preferensi.md) menjadi nilai bawaan August's ERP.",
+      "I-14: stok minus diizinkan/ditolak adalah preferensi, bukan aturan tetap.",
+      "I-10: metode HPP (rata-rata) dan urutan pembiayaan transaksi sehari diambil dari preferensi persediaan."
+    ],
+    "pertanyaan": [
+      "I-10: apakah HPP dirata-rata per barang seluruh perusahaan atau per gudang, dan apakah edisi ini menawarkan FIFO?",
+      "Dalam urutan apa transaksi sehari dibiayai: urutan input, atau masuk sebelum keluar?"
+    ]
+  },
+  "Pengaturan/Akses Grup": {
+    "perilaku": [
+      "X-03: hak per menu lihat/tambah/ubah/hapus/cetak ditambah hak khusus (lihat harga pokok, ubah harga jual, lihat data kredit, buka periode tertutup, dan lainnya yang terbaca di layar ini)."
+    ],
+    "saklar": [
+      "PemisahanTugas: pengaju klaim/retur/opname tidak boleh memverifikasinya sendiri; penyetuju kredit bukan penjual yang berkomisi. Tidak ada di sistem referensi; dipertahankan, bawaan nyala, mematikannya tercatat di audit."
+    ],
+    "pertanyaan": [
+      "X-03: hak khusus apa saja yang ada di luar lihat/tambah/ubah/hapus/cetak?"
+    ]
+  },
+  "Pengaturan/Pengguna": {
+    "perilaku": [
+      "X-04: setiap pengguna dibatasi ke cabang dan gudang yang ditetapkan; peran WebTransaction (sales, marketing, inventori, gudang, finance, owner) tinggal sebagai fungsi kerja (kursi komisi, ikatan gudang), bukan matriks akses."
+    ]
+  },
+  "Pengaturan/Penomoran": {
+    "perilaku": [
+      "X-06: format nomor dokumen dapat diatur per jenis dokumen (token, awalan, reset per periode) menggantikan format tetap PREFIX-CABANG-YYYYMM-NNNN."
+    ],
+    "pertanyaan": [
+      "X-06: token dan periode reset apa saja yang ditawarkan Penomoran?"
+    ]
+  },
+  "Pengaturan/Desain Cetakan": {
+    "perilaku": [
+      "X-07: tata letak cetakan per dokumen dapat didesain pengguna, menggantikan tampilan cetak HTML tetap."
+    ]
+  },
+  "Pengaturan/Penyetuju Transaksi": {
+    "perilaku": [
+      "X-05: aturan persetujuan dikonfigurasi per dokumen dan penyetuju, bukan dikodekan tetap."
+    ],
+    "saklar": [
+      "PersetujuanMarketingWajib: setiap pesanan menunggu persetujuan marketing yang memegang pelanggan. Menjadi aturan persetujuan yang di-seed."
+    ]
+  },
+  "Pengaturan/Referensi Store": {
+    "perilaku": [
+      "Pasar aplikasi tambahan sistem referensi; tidak direplikasi."
+    ]
+  },
+  "Pengaturan/Referensi Capital": {
+    "perilaku": [
+      "Program pembiayaan sistem referensi; tidak direplikasi."
+    ]
+  },
+  "Perusahaan": {
+    "perilaku": [
+      "X-01 Info perusahaan (nama, NPWP, alamat, rekening) adalah data master yang dicetak pada setiap dokumen dan faktur pajak."
+    ]
+  },
+  "Perusahaan/Mata Uang": {
+    "perilaku": [
+      "X-11: di luar lingkup; satu mata uang, IDR."
+    ]
+  },
+  "Perusahaan/Cabang": {
+    "perilaku": [
+      "G-10: cabang adalah penanda pada dokumen dan baris jurnal dalam satu pembukuan; laporan dapat disaring per cabang.",
+      "Dokumen yang dipecah antar gudang memakai cabang gudang pengirim (lihat saklar PecahGudang)."
+    ]
+  },
+  "Perusahaan/Pajak": {
+    "perilaku": [
+      "T-01: kode pajak per baris dengan tarif dan akun; harga dapat termasuk atau belum termasuk pajak (saklar Total termasuk Pajak di setiap dokumen). PPN 12% dengan DPP 11/12 (PMK 131/2024) menjadi satu kode pajak bawaan, bukan konstanta.",
+      "T-03: PPh pemotongan sebagai kode pajak terpisah."
+    ],
+    "pertanyaan": [
+      "T-01: perubahan logika pajak dikonfirmasi ke akuntan sebelum digabung.",
+      "T-03: apakah PPh pemotongan dipakai oleh bisnis ini?"
+    ]
+  },
+  "Perusahaan/Syarat Pembayaran": {
+    "perilaku": [
+      "S-14: syarat pembayaran bernama dengan jatuh tempo (hari), diskon pelunasan awal (mis. 2/10 n/30) dan masa diskon; dipilih pada pelanggan dan dokumen."
+    ]
+  },
+  "Perusahaan/Pengiriman": {
+    "perilaku": [
+      "S-15: metode pengiriman/ekspedisi sebagai data master, dipilih pada pesanan dan pengiriman."
+    ]
+  },
+  "Perusahaan/FOB": {
+    "perilaku": [
+      "Syarat penyerahan (FOB) sebagai data master pada pesanan dan pengiriman."
+    ]
+  },
+  "Perusahaan/Gaji/Tunjangan": {
+    "perilaku": [
+      "Komponen gaji dan tunjangan; dasar untuk Pencatatan Gaji di Buku Besar. Penggajian di luar lingkup replikasi."
+    ]
+  },
+  "Perusahaan/Karyawan": {
+    "perilaku": [
+      "S-11: penjual (salesman) adalah karyawan yang dicantumkan pada dokumen penjualan, bukan hanya pada pelanggan."
+    ],
+    "saklar": [
+      "Komisi: komisi penjual dihitung atas faktur yang lunas, dengan target per penjual (lihat Penjualan/Komisi Penjual dan Target Penjualan)."
+    ]
+  },
+  "Perusahaan/Transaksi Berulang": {
+    "perilaku": [
+      "Jadwal transaksi berulang (faktur, pembayaran) yang dibuatkan otomatis pada tanggalnya."
+    ]
+  },
+  "Perusahaan/Proses Akhir Bulan": {
+    "perilaku": [
+      "G-09: proses akhir bulan/tutup periode mengunci tanggal dan menghitung ulang; kunci periode berlaku untuk tanggal lama dan baru pada setiap perubahan dokumen."
+    ],
+    "pertanyaan": [
+      "G-09: apakah laba ditahan dibentuk oleh jurnal penutup, atau dihitung?"
+    ]
+  },
+  "Perusahaan/Kontak": {
+    "perilaku": [
+      "Kontak umum (bukan pelanggan/pemasok) sebagai data master."
+    ]
+  },
+  "Perusahaan/Transaksi Favorit": {
+    "perilaku": [
+      "Templat transaksi yang disimpan untuk dipakai ulang (memorize)."
+    ]
+  },
+  "Perusahaan/Kalender": {
+    "perilaku": [
+      "Kalender kegiatan dan pengingat jatuh tempo."
+    ]
+  },
+  "Perusahaan/Log Aktifitas": {
+    "perilaku": [
+      "X-08: riwayat aktivitas per pengguna dan dokumen; August's ERP menyimpannya sebagai log audit append-only ditambah revisi dokumen (sebelum/sesudah) untuk setiap ubah/hapus."
+    ]
+  },
+  "Buku Besar": {
+    "perilaku": [
+      "G-01 s.d. G-05: daftar akun dapat disunting dengan tipe akun sistem referensi, saldo awal per akun, dan preferensi akun bawaan (piutang, hutang, persediaan, HPP, pajak) yang dipakai lapisan posting."
+    ]
+  },
+  "Buku Besar/Akun Perkiraan": {
+    "perilaku": [
+      "G-01: daftar akun bertingkat (induk/anak) yang dapat ditambah, diubah, dinonaktifkan.",
+      "G-02: tipe akun sistem referensi (Kas & Bank, Piutang, Persediaan, Aktiva Lancar Lainnya, Aktiva Tetap, Hutang, Modal, Pendapatan, HPP, Beban, dan seterusnya) menentukan laporan.",
+      "G-04: saldo awal per akun per tanggal mulai.",
+      "G-05: akun bawaan ditetapkan di preferensi, bukan dikodekan."
+    ]
+  },
+  "Buku Besar/Pencatatan Beban": {
+    "perilaku": [
+      "K-02: pencatatan beban/akrual multi-baris ke akun mana pun, dengan pajak dan cabang per baris."
+    ]
+  },
+  "Buku Besar/Pencatatan Gaji": {
+    "perilaku": [
+      "Pencatatan gaji sebagai jurnal; penggajian di luar lingkup."
+    ]
+  },
+  "Buku Besar/Jurnal Umum": {
+    "perilaku": [
+      "G-03: jurnal umum manual multi-baris, harus seimbang, bisa diubah/dihapus sesuai hak dan kunci periode."
+    ]
+  },
+  "Buku Besar/Monitor Anggaran": {
+    "perilaku": [
+      "G-08: realisasi vs anggaran per akun per periode."
+    ]
+  },
+  "Buku Besar/Transfer Anggaran": {
+    "perilaku": [
+      "G-08: pemindahan anggaran antar akun/periode."
+    ]
+  },
+  "Buku Besar/Anggaran": {
+    "perilaku": [
+      "G-08: anggaran per akun per periode (bulanan)."
+    ]
+  },
+  "Buku Besar/Histori Akun": {
+    "perilaku": [
+      "R-04: buku besar per akun dengan saldo berjalan, dari jurnal yang diturunkan dokumen."
+    ]
+  },
+  "Buku Besar/Log Aktifitas Jurnal": {
+    "perilaku": [
+      "X-08: jejak perubahan jurnal."
+    ]
+  },
+  "Kas & Bank": {
+    "perilaku": [
+      "K-01: beberapa akun kas dan bank (tipe akun Kas & Bank), masing-masing dengan histori dan rekonsiliasi.",
+      "K-06: giro masuk/keluar dicatat pada pembayaran dan penerimaan dengan tanggal jatuh tempo dan status cair/tolak."
+    ]
+  },
+  "Kas & Bank/Pembayaran": {
+    "perilaku": [
+      "K-02: pengeluaran kas/bank multi-baris ke akun mana pun (bukan hanya beban), dengan pajak, cabang, dan giro."
+    ]
+  },
+  "Kas & Bank/Penerimaan": {
+    "perilaku": [
+      "K-03: penerimaan kas/bank lain-lain multi-baris."
+    ]
+  },
+  "Kas & Bank/Transfer Bank": {
+    "perilaku": [
+      "K-04: pemindahan antar akun kas/bank dengan biaya transfer."
+    ]
+  },
+  "Kas & Bank/SmartLink e-Banking": {
+    "perilaku": [
+      "Integrasi bank pihak ketiga sistem referensi; tidak direplikasi."
+    ]
+  },
+  "Kas & Bank/Rekening Koran": {
+    "perilaku": [
+      "K-05: impor rekening koran (CSV/Excel) sebagai dasar rekonsiliasi."
+    ]
+  },
+  "Kas & Bank/Histori Bank": {
+    "perilaku": [
+      "R-15: mutasi per akun kas/bank dengan saldo berjalan."
+    ]
+  },
+  "Kas & Bank/Rekonsiliasi Bank": {
+    "perilaku": [
+      "K-05: rekonsiliasi per akun bank per periode; transaksi yang sudah direkonsiliasi menjadi pemblokir perubahan dokumen."
+    ],
+    "pertanyaan": [
+      "K-05: bisakah transaksi diubah setelah baris banknya direkonsiliasi?"
+    ]
+  },
+  "Kas & Bank/SmartLink Virtual Account": {
+    "perilaku": [
+      "Layanan sistem referensi; tidak direplikasi (tidak ada gerbang pembayaran)."
+    ]
+  },
+  "Kas & Bank/SmartLink e-Payment": {
+    "perilaku": [
+      "Layanan sistem referensi; tidak direplikasi (tidak ada gerbang pembayaran)."
+    ]
+  },
+  "Penjualan": {
+    "perilaku": [
+      "Rantai dokumen sistem referensi: Penawaran → Pesanan → Pengiriman (boleh sebagian, boleh beberapa) → Faktur (dari satu/beberapa pengiriman, atau langsung) → Penerimaan. Status pemenuhan (menunggu/sebagian/terproses/ditutup) diturunkan dari kuantitas.",
+      "Harga jual diketik bebas (dengan hak), diskon per baris dan per dokumen, Biaya Lainnya ke akun mana pun, PPN termasuk/belum termasuk per dokumen."
+    ],
+    "saklar": [
+      "HargaHanyaDariResolver: harga jual hanya dari resolver harga per pelanggan; harga ketik manual dimatikan.",
+      "TagihSebelumKirim: faktur diterbitkan sebelum pengiriman (alur WebTransaction).",
+      "ReservasiStok: stok dicadangkan saat pesanan disetujui, bukan hanya saat dikirim.",
+      "PecahGudang: satu pesanan dipecah per gudang pengirim.",
+      "BekuKredit dan PeringatanPiutang: pemberitahuan umur 120 hari dan beku transaksi setelah 150 hari (S-16).",
+      "PortalPembeli: pelanggan memesan sendiri lewat portal dan membaca faktur serta surat jalannya."
+    ]
+  },
+  "Penjualan/Penawaran Penjualan": {
+    "perilaku": [
+      "S-01: penawaran dengan harga dan diskon ketik, dapat diubah/dihapus, satu penawaran dapat menjadi beberapa pesanan (Ambil dari penawaran)."
+    ]
+  },
+  "Penjualan/Pesanan Penjualan": {
+    "perilaku": [
+      "S-02: pesanan dengan No. PO pelanggan, tanggal kirim, metode pengiriman, FOB, gudang per baris; pengiriman sebagian; tutup pesanan; ubah/hapus sesuai hak."
+    ]
+  },
+  "Penjualan/Pengiriman Pesanan": {
+    "perilaku": [
+      "S-03: dokumen pengiriman tersendiri dengan nomor, menarik dari pesanan (Ambil), sebagian atau beberapa kali; stok keluar pada pengiriman; tombol Faktur membuat faktur dari pengiriman."
+    ],
+    "pertanyaan": [
+      "S-03/S-04: akun apa yang dipakai jurnal Pengiriman Pesanan (Barang Terkirim?) dan faktur yang menyusulnya?"
+    ]
+  },
+  "Penjualan/Uang Muka Penjualan": {
+    "perilaku": [
+      "S-06: faktur uang muka dengan PPN dan faktur pajaknya sendiri, dipotong pada faktur penjualan."
+    ]
+  },
+  "Penjualan/Faktur Penjualan": {
+    "perilaku": [
+      "S-04: faktur dengan baris sendiri, dari satu/beberapa pengiriman atau langsung; tanggal mundur; diskon baris dan dokumen; Biaya Lainnya; PPN termasuk/belum.",
+      "S-05: faktur tercatat dapat diubah/dihapus sesuai hak akses, kunci periode, dan pemblokir (sudah dilunasi, sudah direkonsiliasi, sudah ada faktur pajak)."
+    ]
+  },
+  "Penjualan/Penerimaan Penjualan": {
+    "perilaku": [
+      "S-07: penerimaan dengan nomor dokumen, melunasi banyak faktur sekaligus, diskon pelunasan, penghapusan selisih (write-off), giro; faktur berstatus lunas hanya lewat alokasi penerimaan."
+    ]
+  },
+  "Penjualan/Retur Penjualan": {
+    "perilaku": [
+      "S-08: retur merujuk faktur (atau tanpa faktur), barang kembali ke gudang, nota kredit otomatis."
+    ],
+    "saklar": [
+      "PemisahanTugas: retur diajukan sales, diposting Inventori (barang-sudah-kembali), tidak oleh pengajunya; final setelah diposting."
+    ]
+  },
+  "Penjualan/Tukar Faktur": {
+    "perilaku": [
+      "Tanda terima tukar faktur: beberapa faktur diserahkan ke pelanggan untuk dijadwalkan pembayarannya."
+    ]
+  },
+  "Penjualan/Kategori Pelanggan": {
+    "perilaku": [
+      "S-10: kategori pelanggan bebas (menggantikan jenis usaha tetap bengkel/toko/distributor)."
+    ]
+  },
+  "Penjualan/Kategori Penjualan": {
+    "perilaku": [
+      "S-12: kategori/level harga jual per pelanggan; harga per barang per kategori."
+    ]
+  },
+  "Penjualan/Pelanggan": {
+    "perilaku": [
+      "S-09: pelanggan dengan beberapa alamat (tagihan dan kirim), kategori, syarat pembayaran bawaan, batas kredit, penjual, NPWP/NIK/ID TKU untuk faktur pajak, diskon bawaan, termasuk pajak bawaan, saldo awal piutang."
+    ]
+  },
+  "Penjualan/Penyesuaian Harga/Diskon": {
+    "perilaku": [
+      "S-13: penyesuaian harga jual dan diskon massal per kategori harga, per barang, berlaku per tanggal (versi daftar harga)."
+    ]
+  },
+  "Penjualan/Komisi Penjual": {
+    "perilaku": [
+      "Skema komisi penjual sistem referensi (persentase per penjual/barang)."
+    ],
+    "saklar": [
+      "Komisi: komisi WebTransaction atas faktur lunas dengan target dan tarif yang ditetapkan Finance/Owner tetap berlaku sebagai skema tambahan."
+    ]
+  },
+  "Penjualan/Target Penjualan": {
+    "perilaku": [
+      "Target penjualan per penjual per periode, dibandingkan realisasi di dasbor."
+    ]
+  },
+  "Penjualan/SmartLink e-Commerce": {
+    "perilaku": [
+      "Integrasi marketplace sistem referensi; tidak direplikasi."
+    ]
+  },
+  "Penjualan/Check In": {
+    "perilaku": [
+      "Check-in kunjungan penjual ke pelanggan (lokasi, waktu)."
+    ],
+    "saklar": [
+      "KunjunganToko: log kunjungan toko WebTransaction dengan catatan dan pesanan dari kunjungan."
+    ]
+  },
+  "Pembelian": {
+    "perilaku": [
+      "Rantai: Permintaan Barang → Pesanan Pembelian → Penerimaan Barang (dari PO, sebagian) → Faktur Pembelian (dari penerimaan atau langsung, memindahkan stok bila langsung) → Pembayaran Pembelian. Diskon baris, kode pajak baris, Biaya Lainnya ke akun mana pun."
+    ]
+  },
+  "Pembelian/Pesanan Pembelian": {
+    "perilaku": [
+      "P-02: PO dengan diskon baris dan kode pajak; penerimaan dapat menarik dari PO (Ambil)."
+    ]
+  },
+  "Pembelian/Penerimaan Barang": {
+    "perilaku": [
+      "P-04: penerimaan per gudang, menarik dari PO, sebagian; dapat diubah/dihapus sesuai hak dan pemblokir."
+    ]
+  },
+  "Pembelian/Uang Muka Pembelian": {
+    "perilaku": [
+      "P-03: uang muka ke pemasok, dipotong pada faktur pembelian."
+    ]
+  },
+  "Pembelian/Faktur Pembelian": {
+    "perilaku": [
+      "P-05: faktur dari satu/beberapa penerimaan atau langsung; diskon; PPN termasuk/belum; faktur pajak masukan.",
+      "P-09: Biaya Lainnya ke akun mana pun, termasuk alokasi ke harga pokok barang (landed cost)."
+    ]
+  },
+  "Pembelian/Pembayaran Pembelian": {
+    "perilaku": [
+      "P-06: pembayaran dengan nomor dokumen, banyak faktur, diskon pembayaran, giro keluar."
+    ]
+  },
+  "Pembelian/Retur Pembelian": {
+    "perilaku": [
+      "P-07: retur ke pemasok merujuk penerimaan/faktur, nota debit otomatis."
+    ]
+  },
+  "Pembelian/Klaim Pemasok": {
+    "perilaku": [
+      "P-11: klaim/nota kredit dari pemasok tanpa barang kembali."
+    ]
+  },
+  "Pembelian/Harga Pemasok": {
+    "perilaku": [
+      "P-10: harga beli per pemasok per barang, dipakai sebagai harga bawaan PO."
+    ]
+  },
+  "Pembelian/Kategori Pemasok": {
+    "perilaku": [
+      "Kategori pemasok bebas."
+    ]
+  },
+  "Pembelian/Pemasok": {
+    "perilaku": [
+      "P-08: pemasok dengan syarat pembayaran, status PKP, NPWP, pajak bawaan, rekening bank, beberapa kontak, saldo awal hutang."
+    ]
+  },
+  "Pembelian/Perintah Pembayaran": {
+    "perilaku": [
+      "Perintah pembayaran (transfer order) ke bank untuk beberapa faktur pemasok."
+    ]
+  },
+  "Pembelian/Transfer Pemasok": {
+    "perilaku": [
+      "Pembayaran massal ke banyak pemasok dalam satu dokumen."
+    ]
+  },
+  "Persediaan": {
+    "perilaku": [
+      "Stok per gudang; HPP rata-rata per barang (lihat pertanyaan I-10); setiap mutasi membawa tanggal dokumennya dan perubahan mundur menghitung ulang HPP sesudahnya (tidak sebelum periode terbuka pertama)."
+    ],
+    "saklar": [
+      "PipelineImporHarga: impor daftar harga lewat staging, pratinjau selisih, dan rem pengaman (>20% berubah atau satu harga >50%)."
+    ]
+  },
+  "Persediaan/Permintaan Barang": {
+    "perilaku": [
+      "P-01: permintaan barang internal yang dapat ditarik menjadi PO."
+    ]
+  },
+  "Persediaan/Pemindahan Barang": {
+    "perilaku": [
+      "I-07: pemindahan antar gudang (lintas cabang), dengan atau tanpa tahap dalam perjalanan."
+    ],
+    "pertanyaan": [
+      "I-07: apakah Pemindahan Barang punya tahap in-transit?"
+    ]
+  },
+  "Persediaan/Penyesuaian Persediaan": {
+    "perilaku": [
+      "I-06: penyesuaian kuantitas dan/atau nilai per gudang ke akun penyesuaian; juga dipakai untuk saldo awal persediaan (I-09)."
+    ]
+  },
+  "Persediaan/Perintah Stok Opname": {
+    "perilaku": [
+      "I-08: perintah opname per gudang/kategori dengan daftar hitung."
+    ]
+  },
+  "Persediaan/Hasil Stok Opname": {
+    "perilaku": [
+      "I-08: hasil hitung dibandingkan sistem, selisih diposting sebagai penyesuaian."
+    ],
+    "saklar": [
+      "PemisahanTugas: penghitung bukan penyetuju selisih."
+    ]
+  },
+  "Persediaan/Barang & Jasa": {
+    "perilaku": [
+      "I-01: barang dapat dibuat di layar, bukan hanya impor.",
+      "I-02: jenis barang persediaan, non-persediaan, jasa, grup/rakitan (I-13).",
+      "I-04: beberapa satuan dengan rasio konversi dan harga per satuan.",
+      "I-11: stok minimum per barang (per gudang).",
+      "I-12: nomor seri/batch dan kedaluwarsa bila diaktifkan.",
+      "Harga jual per kategori harga, harga beli, akun bawaan, kode pajak, foto, dimensi."
+    ]
+  },
+  "Persediaan/Gudang": {
+    "perilaku": [
+      "I-05: gudang dengan alamat dan cabang, ditetapkan ke pengguna."
+    ]
+  },
+  "Persediaan/Satuan Barang": {
+    "perilaku": [
+      "I-04: satuan bernama; konversi diatur di barang."
+    ]
+  },
+  "Persediaan/Kategori Barang": {
+    "perilaku": [
+      "I-03: kategori barang bertingkat dengan akun bawaan (persediaan, penjualan, HPP, retur)."
+    ]
+  },
+  "Persediaan/Merek Barang": {
+    "perilaku": [
+      "Merek barang sebagai data master (YUHOLI, OSBORN, dan lainnya)."
+    ]
+  },
+  "Persediaan/Pemenuhan Pesanan": {
+    "perilaku": [
+      "R-08: pesanan belum terkirim/belum terpenuhi per barang (backorder)."
+    ]
+  },
+  "Persediaan/Barang per Gudang": {
+    "perilaku": [
+      "R-14: kuantitas dan nilai per barang per gudang."
+    ]
+  },
+  "Persediaan/Barang Stok Minimum": {
+    "perilaku": [
+      "I-11: barang di bawah stok minimum; dasar saran pemesanan ulang."
+    ]
+  },
+  "Aset Tetap": {
+    "perilaku": [
+      "A-01: aset dibeli tunai/kredit atau dari faktur pembelian; A-03: metode penyusutan garis lurus dan saldo menurun, umur dan nilai sisa; penyusutan bulanan diposting otomatis."
+    ],
+    "pertanyaan": [
+      "A-03: metode penyusutan apa saja yang tersedia di edisi ini?"
+    ]
+  },
+  "Aset Tetap/Aset Tetap": {
+    "perilaku": [
+      "A-01: aset dengan kategori, tanggal perolehan, nilai, akun aset/akumulasi/beban, lokasi, dapat diubah."
+    ]
+  },
+  "Aset Tetap/Kategori Aset": {
+    "perilaku": [
+      "A-02: kategori aset dengan akun bawaan dan metode/umur bawaan."
+    ]
+  },
+  "Aset Tetap/Kategori Aset Tetap Pajak": {
+    "perilaku": [
+      "Kelompok aset fiskal (golongan harta) untuk penyusutan pajak."
+    ]
+  },
+  "Aset Tetap/Perubahan Aset Tetap": {
+    "perilaku": [
+      "A-05: perubahan/revaluasi nilai aset dan penambahan biaya."
+    ]
+  },
+  "Aset Tetap/Disposisi Aset Tetap": {
+    "perilaku": [
+      "A-04: pelepasan aset dengan laba/rugi pelepasan."
+    ]
+  },
+  "Aset Tetap/Pindah Aset": {
+    "perilaku": [
+      "Pemindahan aset antar lokasi/cabang."
+    ]
+  },
+  "Aset Tetap/Aset per Lokasi": {
+    "perilaku": [
+      "Daftar aset per lokasi."
+    ]
+  },
+  "Pajak": {
+    "perilaku": [
+      "T-02: ekspor faktur pajak keluaran ke format impor Coretax (XML TaxInvoiceBulk) dan e-Faktur lama (CSV) tetap tersedia; NSFP yang kembali disimpan pada faktur."
+    ],
+    "saklar": [
+      "EksporCoretax: ekspor XML Coretax WebTransaction (CoretaxXmlWriter) dipertahankan sebagai jalur ekspor."
+    ]
+  },
+  "Pajak/e-Faktur CTAS": {
+    "perilaku": [
+      "T-02: pemilihan faktur, pembuatan berkas Coretax, pencatatan nomor seri faktur pajak kembali."
+    ]
+  },
+  "Pajak/Email Faktur Pajak": {
+    "perilaku": [
+      "Pengiriman faktur pajak ke pelanggan lewat email; pengiriman email di luar lingkup awal."
+    ]
+  },
+  "Pajak/e-Faktur Legacy": {
+    "perilaku": [
+      "T-02: format CSV e-Faktur lama, dipertahankan agar pelaporan lama dapat direproduksi."
+    ]
+  },
+  "Laporan": {
+    "perilaku": [
+      "R-01 s.d. R-17: setiap laporan di Daftar Laporan punya parameter (periode, cabang, gudang, pelanggan, pemasok, akun) dan dapat diekspor ke Excel dan PDF; angka laporan selalu dihitung dari jurnal dan ledger, tidak disimpan."
+    ],
+    "pertanyaan": [
+      "Daftar Laporan dipindai sebagai katalog nama laporan; parameter tiap laporan dilengkapi pada Fase laporan dengan membuka satu per satu."
+    ]
+  },
+  "Laporan/Daftar Laporan": {
+    "perilaku": [
+      "Katalog laporan sistem referensi per kelompok: Neraca (R-01, dengan kolom pembanding dan lancar/tidak lancar), Laba Rugi (R-02, per cabang), Neraca Saldo (R-03), Buku Besar (R-04), Arus Kas (R-05), Perubahan Modal (R-06), rincian penjualan per pelanggan/barang/penjual (R-07), pesanan belum dikirim/ditagih (R-08), umur piutang (R-09), rincian pembelian (R-10), PO belum diterima (R-11), umur hutang (R-12), kartu stok (R-13), nilai persediaan per gudang (R-14), mutasi kas & bank (R-15), jadwal penyusutan (R-16)."
+    ]
+  },
+  "Laporan/SPT PPN / PPNBM": {
+    "perilaku": [
+      "Rekap PPN keluaran dan masukan per masa pajak untuk SPT."
+    ]
+  },
+  "Laporan/Analisa AI": {
+    "perilaku": [
+      "Fitur analisa AI sistem referensi; tidak direplikasi."
+    ]
+  },
+  "Laporan/SPT PPh Ps.21": {
+    "perilaku": [
+      "Formulir 1721 induk; penggajian di luar lingkup, formulir ini menyusul bila penggajian masuk."
+    ]
+  },
+  "Laporan/Bukti Potong PPh Ps.21": {
+    "perilaku": [
+      "Bukti potong 1721; penggajian di luar lingkup."
+    ]
+  }
+}
