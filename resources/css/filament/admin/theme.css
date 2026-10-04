@@ -505,3 +505,17 @@
     font-size: 15px;
     font-weight: 600;
 }
+
+/* Report tables: totals bold on a sunken row, headings as section labels. */
+.fi-ta-row.ae-report-total > td {
+    font-weight: 600;
+    background: var(--ae-sunken, #f4f6fb);
+}
+
+.fi-ta-row.ae-report-heading > td {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ae-muted, #6b7280);
+    padding-top: 14px;
+}

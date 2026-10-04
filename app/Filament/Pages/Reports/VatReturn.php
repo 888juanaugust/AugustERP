@@ -1,0 +1,184 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Pages\Reports;
+
+use App\Domain\Access\MenuKey;
+use App\Domain\Reports\ExcelExport;
+use App\Domain\Shared\Enums\TaxDocumentCode;
+use App\Domain\Shared\Format;
+use App\Domain\Tax\FilingDocuments;
+use App\Filament\Support\ErpPage;
+use App\Models\Sales\SalesInvoice;
+use App\Models\Tax\TaxFiling;
+use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+/** VAT Return: the period's VAT out and VAT in, invoice by invoice, totalled for the return. */
+class VatReturn extends ErpPage implements HasTable
+{
+    use InteractsWithTable;
+
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedReceiptPercent;
+
+    protected string $view = 'filament.pages.reports.vat-return';
+
+    public ?array $filters = [];
+
+    public static function menuKey(): MenuKey
+    {
+        return MenuKey::VATReturn;
+    }
+
+    public function mount(): void
+    {
+        $this->form->fill([
+            'from' => today()->startOfMonth()->toDateString(),
+            'until' => today()->toDateString(),
+            'kind' => TaxFiling::OUT,
+            'document_code' => null,
+            'search' => null,
+        ]);
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Section::make()->columns(5)->schema([
+                    DatePicker::make('from')->label('From')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('until')->label('Until')->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    Select::make('kind')->label('Show')
+                        ->options([TaxFiling::OUT => 'VAT out (sales)', TaxFiling::IN => 'VAT in (purchases)', 'both' => 'Both'])
+                        ->default(TaxFiling::OUT)->native(false)->selectablePlaceholder(false)->live(),
+                    Select::make('document_code')->label('Document kind')
+                        ->options(TaxDocumentCode::options(TaxDocumentCode::forCustomers()))
+                        ->placeholder('All kinds')->nullable()->native(false)->live(),
+                    TextInput::make('search')->label('Search')->placeholder('Number, serial or name')->live(onBlur: true),
+                ]),
+            ])
+            ->statePath('filters');
+    }
+
+    public function updatedFilters(): void
+    {
+        $this->resetTable();
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->records(fn () => collect($this->rows()))
+            ->columns([
+                TextColumn::make('kind')->label('Tax'),
+                TextColumn::make('serial')->label('Tax invoice No.')->fontFamily('mono'),
+                TextColumn::make('number')->label('Transaction No.')->fontFamily('mono'),
+                TextColumn::make('trans_date')->label('Date')->formatStateUsing(fn ($state): string => $state ? Format::date($state) : ''),
+                TextColumn::make('document')->label('Document kind'),
+                TextColumn::make('description')->label('Description')->limit(40),
+                self::money('dpp', 'Tax base (DPP)'),
+                self::money('tax', 'VAT'),
+                TextColumn::make('party')->label('Customer / Vendor'),
+            ])
+            ->paginated(false)
+            ->recordClasses(fn (array $record): ?string => ($record['is_total'] ?? false) ? 'ae-report-total' : null)
+            ->emptyStateHeading('Nothing in this period');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('export')
+                ->label('Export to Excel')
+                ->icon('heroicon-m-arrow-down-tray')
+                ->color('gray')
+                ->action(fn (): BinaryFileResponse => ExcelExport::download(
+                    'VAT Return',
+                    Format::date($this->from()).' – '.Format::date($this->until()),
+                    ['Tax', 'Tax invoice No.', 'Transaction No.', 'Date', 'Document kind', 'Description', 'Tax base (DPP)', 'VAT', 'Customer / Vendor'],
+                    array_map(fn (array $row) => [$row['kind'], $row['serial'], $row['number'], $row['trans_date'], $row['document'], $row['description'], $row['dpp'], $row['tax'], $row['party']], $this->rows()),
+                )),
+        ];
+    }
+
+    /** @return list<array<string, mixed>> the documents of each kind asked for, then their totals */
+    protected function rows(): array
+    {
+        $kind = $this->filters['kind'] ?? TaxFiling::OUT;
+        $kinds = $kind === 'both' ? [TaxFiling::OUT, TaxFiling::IN] : [$kind];
+        $documentCode = $this->filters['document_code'] ?? null;
+        $search = $this->filters['search'] ?? null;
+
+        $rows = [];
+        $totals = [];
+        foreach ($kinds as $k) {
+            $totals[$k] = ['dpp' => 0, 'tax' => 0];
+            foreach (FilingDocuments::query($k, $this->from(), $this->until(), null, $search ?: null)->get() as $document) {
+                $party = $document instanceof SalesInvoice ? $document->customer : $document->vendor;
+                $code = $party?->document_code;
+                $code = $code instanceof TaxDocumentCode ? $code : TaxDocumentCode::tryFrom((string) $code);
+                if ($documentCode && $code?->value !== $documentCode) {
+                    continue;
+                }
+                $rows[] = [
+                    'id' => "{$k}-{$document->id}",
+                    'kind' => $k === TaxFiling::IN ? 'VAT in' : 'VAT out',
+                    'serial' => $document instanceof SalesInvoice ? $document->nsfp : $document->tax_invoice_number,
+                    'number' => $document->number,
+                    'trans_date' => $document->trans_date,
+                    'document' => $code?->getLabel(),
+                    'description' => $document->description,
+                    'dpp' => (int) $document->dpp_total,
+                    'tax' => (int) $document->tax_total,
+                    'party' => $party?->name,
+                ];
+                $totals[$k]['dpp'] += (int) $document->dpp_total;
+                $totals[$k]['tax'] += (int) $document->tax_total;
+            }
+        }
+
+        foreach ($totals as $k => $sum) {
+            $rows[] = $this->summaryRow("t-{$k}", $k === TaxFiling::IN ? 'Total VAT in' : 'Total VAT out', $sum['dpp'], $sum['tax']);
+        }
+        if (count($kinds) === 2) {
+            $rows[] = $this->summaryRow('t-payable', 'VAT payable (out − in)', null, $totals[TaxFiling::OUT]['tax'] - $totals[TaxFiling::IN]['tax']);
+        }
+
+        return $rows;
+    }
+
+    /** @return array<string, mixed> */
+    private function summaryRow(string $id, string $label, ?int $dpp, int $tax): array
+    {
+        return ['id' => $id, 'kind' => '', 'serial' => '', 'number' => '', 'trans_date' => null, 'document' => '', 'description' => $label, 'dpp' => $dpp, 'tax' => $tax, 'party' => '', 'is_total' => true];
+    }
+
+    private function from(): string
+    {
+        return $this->filters['from'] ?? today()->startOfMonth()->toDateString();
+    }
+
+    private function until(): string
+    {
+        return $this->filters['until'] ?? today()->toDateString();
+    }
+
+    /** As ReportPage::money formats an amount: thousands separated, blank when empty. */
+    private static function money(string $name, string $label): TextColumn
+    {
+        return TextColumn::make($name)->label($label)->alignEnd()
+            ->formatStateUsing(fn ($state): string => $state === '' || $state === null ? '' : Format::number((int) $state))
+            ->extraCellAttributes(['class' => 'ae-money']);
+    }
+}
