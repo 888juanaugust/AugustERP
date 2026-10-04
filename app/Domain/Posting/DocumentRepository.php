@@ -8,6 +8,7 @@ use App\Domain\Audit\Auditor;
 use App\Domain\CashBank\Contracts\GiroSource;
 use App\Domain\CashBank\GiroService;
 use App\Domain\Fulfilment\FulfilmentService;
+use App\Domain\Posting\Contracts\AppliesEffects;
 use App\Domain\Posting\Contracts\Postable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +39,9 @@ final class DocumentRepository
             if ($document instanceof Postable) {
                 $this->postings->post($document);
             }
+            if ($document instanceof AppliesEffects) {
+                $document->applyEffects();
+            }
             $this->fulfilment->refreshUpstream($document);
             $this->revisions->record($document, 'created', null, $this->snapshot($document));
             Auditor::log('created', $document, $this->number($document), [], $this->date($document));
@@ -63,6 +67,9 @@ final class DocumentRepository
             if ($document instanceof Postable) {
                 $this->postings->post($document);
             }
+            if ($document instanceof AppliesEffects) {
+                $document->applyEffects();
+            }
             $this->fulfilment->refreshUpstream($document, $before['sources'] ?? []);
             $after = $this->snapshot($document);
             unset($before['sources']);
@@ -86,6 +93,9 @@ final class DocumentRepository
             }
             if ($document instanceof GiroSource) {
                 $document->giro()->where('status', 'outstanding')->delete();
+            }
+            if ($document instanceof AppliesEffects) {
+                $document->revertEffects();
             }
             $this->revisions->record($document, 'deleted', $before, null);
             Auditor::log('deleted', $document, $this->number($document), ['before' => $before['header'] ?? null], $this->date($document));
