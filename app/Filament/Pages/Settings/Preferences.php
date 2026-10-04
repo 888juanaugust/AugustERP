@@ -30,7 +30,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
 /**
- * The Preferences screen: the reference system's ten tabs plus the Business
+ * The Preferences screen: the standard's ten tabs plus the Business
  * Rules tab, every field a PreferensiKey, saved through the audited store.
  */
 class Preferences extends ErpPage

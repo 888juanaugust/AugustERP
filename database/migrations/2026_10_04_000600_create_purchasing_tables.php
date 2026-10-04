@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /** The header every priced document carries (the reference system's common fields and the cached totals). */
+    /** The header every priced document carries (the standard's common fields and the cached totals). */
     private static function pricedHeader(Blueprint $table, string $party, string $partyTable): void
     {
         $table->id();

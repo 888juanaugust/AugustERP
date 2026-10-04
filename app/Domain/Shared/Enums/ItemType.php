@@ -6,7 +6,7 @@ namespace App\Domain\Shared\Enums;
 
 use Filament\Support\Contracts\HasLabel;
 
-/** The four item types of the reference system. */
+/** The four item types of the standard. */
 enum ItemType: string implements HasLabel
 {
     case Inventory = 'inventory';

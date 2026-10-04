@@ -26,7 +26,7 @@ return new class extends Migration
             $table->primary(['access_group_id', 'user_id']);
         });
 
-        // One row per screen the group may open; the five rights of the reference system.
+        // One row per screen the group may open; the five rights of the standard.
         Schema::create('access_group_rights', function (Blueprint $table) {
             $table->id();
             $table->foreignId('access_group_id')->constrained()->cascadeOnDelete();

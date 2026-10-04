@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Access;
 
-/** The five rights a group holds on a screen, as the reference system's Access Groups matrix has them. */
+/** The five rights a group holds on a screen, as the standard's Access Groups matrix has them. */
 enum Hak: string
 {
     case View = 'view';

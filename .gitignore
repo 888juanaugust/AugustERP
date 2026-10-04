@@ -24,10 +24,8 @@ yarn-error.log
 /.vscode
 /.zed
 
-# The reference study tool's working state: session cookies, recon dumps,
-# request logs and screenshots of live screens. Never committed.
-/tools/referensi-scan/.state
-/tools/referensi-scan/node_modules
+# UI smoke screenshots
+/storage/app/smoke
 
 # Local services
 /dump.rdb

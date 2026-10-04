@@ -41,7 +41,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
-/** The Vendor screen: every tab of the reference system's form. */
+/** The Vendor screen: every tab of the standard's form. */
 class VendorResource extends MasterResource
 {
     protected static ?string $model = Vendor::class;

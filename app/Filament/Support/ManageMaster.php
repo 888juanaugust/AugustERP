@@ -7,7 +7,7 @@ namespace App\Filament\Support;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 
-/** The one page of a small master: its list, with create and edit in a slide-over, as the reference system's "Data Baru". */
+/** The one page of a small master: its list, with create and edit in a slide-over, as the standard's "Data Baru". */
 abstract class ManageMaster extends ManageRecords
 {
     protected function getHeaderActions(): array

@@ -7,7 +7,7 @@ namespace App\Domain\Access;
 use App\Filament\Modul;
 
 /**
- * Every screen of the product, one case each, in the order the reference system's
+ * Every screen of the product, one case each, in the order the standard's
  * menus list them. The value is the screen's route key from the study (the vendor
  * prefix stripped), which is also the key of its rights in the access matrix and
  * of its English name in lang/en/menu.php. Generated from docs/referensi/scan.json;
@@ -134,110 +134,7 @@ enum MenuKey: string
         return __('menu.screens.'.$this->value);
     }
 
-    /** The screen's name in the reference system, as studied, so the spec stays traceable. */
-    public function source(): string
-    {
-        return match ($this) {
-            self::Preferences => 'Preferensi',
-            self::AccessGroups => 'Akses Grup',
-            self::Users => 'Pengguna',
-            self::Numbering => 'Penomoran',
-            self::PrintLayouts => 'Desain Cetakan',
-            self::TransactionApprovers => 'Penyetuju Transaksi',
-            self::AddOnStore => 'Add-on store (vendor service)',
-            self::FinancingProgram => 'Financing program (vendor service)',
-            self::Currencies => 'Mata Uang',
-            self::Branches => 'Cabang',
-            self::TaxCodes => 'Pajak',
-            self::PaymentTerms => 'Syarat Pembayaran',
-            self::ShippingMethods => 'Pengiriman',
-            self::FOBTerms => 'FOB',
-            self::SalaryComponents => 'Gaji/Tunjangan',
-            self::Employees => 'Karyawan',
-            self::RecurringTransactions => 'Transaksi Berulang',
-            self::MonthEndProcess => 'Proses Akhir Bulan',
-            self::Contacts => 'Kontak',
-            self::MemorizedTransactions => 'Transaksi Favorit',
-            self::Calendar => 'Kalender',
-            self::ActivityLog => 'Log Aktifitas',
-            self::ChartOfAccounts => 'Akun Perkiraan',
-            self::ExpenseAccruals => 'Pencatatan Beban',
-            self::PayrollEntries => 'Pencatatan Gaji',
-            self::JournalVouchers => 'Jurnal Umum',
-            self::BudgetMonitor => 'Monitor Anggaran',
-            self::BudgetTransfers => 'Transfer Anggaran',
-            self::Budgets => 'Anggaran',
-            self::AccountHistory => 'Histori Akun',
-            self::JournalActivityLog => 'Log Aktifitas Jurnal',
-            self::Payments => 'Pembayaran',
-            self::Receipts => 'Penerimaan',
-            self::BankTransfers => 'Transfer Bank',
-            self::InternetBanking => 'SmartLink e-Banking',
-            self::BankStatements => 'Rekening Koran',
-            self::BankBook => 'Histori Bank',
-            self::BankReconciliation => 'Rekonsiliasi Bank',
-            self::VirtualAccounts => 'SmartLink Virtual Account',
-            self::EPayment => 'SmartLink e-Payment',
-            self::SalesQuotations => 'Penawaran Penjualan',
-            self::SalesOrders => 'Pesanan Penjualan',
-            self::DeliveryOrders => 'Pengiriman Pesanan',
-            self::SalesDownPayments => 'Uang Muka Penjualan',
-            self::SalesInvoices => 'Faktur Penjualan',
-            self::SalesReceipts => 'Penerimaan Penjualan',
-            self::SalesReturns => 'Retur Penjualan',
-            self::InvoiceExchanges => 'Tukar Faktur',
-            self::CustomerCategories => 'Kategori Pelanggan',
-            self::PriceCategories => 'Kategori Penjualan',
-            self::Customers => 'Pelanggan',
-            self::PriceAndDiscountAdjustments => 'Penyesuaian Harga/Diskon',
-            self::SalesmanCommissions => 'Komisi Penjual',
-            self::SalesTargets => 'Target Penjualan',
-            self::ECommerceLinks => 'SmartLink e-Commerce',
-            self::CheckIns => 'Check In',
-            self::PurchaseOrders => 'Pesanan Pembelian',
-            self::GoodsReceipts => 'Penerimaan Barang',
-            self::PurchaseDownPayments => 'Uang Muka Pembelian',
-            self::PurchaseInvoices => 'Faktur Pembelian',
-            self::PurchasePayments => 'Pembayaran Pembelian',
-            self::PurchaseReturns => 'Retur Pembelian',
-            self::VendorClaims => 'Klaim Pemasok',
-            self::VendorPrices => 'Harga Pemasok',
-            self::VendorCategories => 'Kategori Pemasok',
-            self::Vendors => 'Pemasok',
-            self::PaymentOrders => 'Perintah Pembayaran',
-            self::VendorTransfers => 'Transfer Pemasok',
-            self::PurchaseRequisitions => 'Permintaan Barang',
-            self::ItemTransfers => 'Pemindahan Barang',
-            self::InventoryAdjustments => 'Penyesuaian Persediaan',
-            self::StockOpnameOrders => 'Perintah Stok Opname',
-            self::StockOpnameResults => 'Hasil Stok Opname',
-            self::ItemsAndServices => 'Barang & Jasa',
-            self::Warehouses => 'Gudang',
-            self::Units => 'Satuan Barang',
-            self::ItemCategories => 'Kategori Barang',
-            self::ItemBrands => 'Merek Barang',
-            self::OrderFulfilment => 'Pemenuhan Pesanan',
-            self::StockByWarehouse => 'Barang per Gudang',
-            self::MinimumStock => 'Barang Stok Minimum',
-            self::FixedAssets => 'Aset Tetap',
-            self::AssetCategories => 'Kategori Aset',
-            self::FiscalAssetCategories => 'Kategori Aset Tetap Pajak',
-            self::AssetChanges => 'Perubahan Aset Tetap',
-            self::AssetDisposals => 'Disposisi Aset Tetap',
-            self::AssetTransfers => 'Pindah Aset',
-            self::AssetsByLocation => 'Aset per Lokasi',
-            self::ETaxInvoiceExport => 'e-Faktur CTAS',
-            self::EmailTaxInvoice => 'Email Faktur Pajak',
-            self::LegacyETaxExport => 'e-Faktur Legacy',
-            self::ReportCatalogue => 'Daftar Laporan',
-            self::VATReturn => 'SPT PPN / PPNBM',
-            self::AIAnalysis => 'Analisa AI',
-            self::IncomeTaxArt21Return => 'SPT PPh Ps.21',
-            self::WithholdingSlips => 'Bukti Potong PPh Ps.21',
-        };
-    }
-
-    /** Position in the sidebar: the studied menu order, across all modules. */
+    /** Position in the sidebar, across all modules. */
     public function sort(): int
     {
         return match ($this) {
@@ -340,7 +237,7 @@ enum MenuKey: string
         };
     }
 
-    /** Screens the reference system offers that this product does not reproduce (vendor services). */
+    /** Screens of the standard menu that this product does not reproduce (vendor services of the original product). */
     public function isReplicated(): bool
     {
         return ! in_array($this, [

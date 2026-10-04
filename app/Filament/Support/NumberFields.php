@@ -13,7 +13,7 @@ use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Utilities\Get;
 
 /**
- * The reference system's number block on every master and document form: a
+ * The standard's number block on every master and document form: a
  * number drawn from a series when saved, or typed by hand when the switch is
  * on. On edit the number is shown as it is.
  */

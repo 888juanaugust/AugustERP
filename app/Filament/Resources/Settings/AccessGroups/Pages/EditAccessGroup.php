@@ -41,7 +41,7 @@ class EditAccessGroup extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            // The reference system's "Salin Hak": take another group's matrix as the starting point.
+            // The standard's "Salin Hak": take another group's matrix as the starting point.
             Action::make('copyRights')
                 ->label(__('Copy rights from…'))
                 ->icon('heroicon-o-document-duplicate')

@@ -38,7 +38,7 @@ use Filament\Support\RawJs;
 use Illuminate\Support\HtmlString;
 
 /**
- * The reference system's priced-document form, in DESIGN.md's skin: a header
+ * The standard's priced-document form, in DESIGN.md's skin: a header
  * (party, date, number), the line grid (item, quantity, unit, price, discount,
  * tax, warehouse), "Other info", "Other charges" and live totals computed by
  * the same LineCalculator the posting uses.

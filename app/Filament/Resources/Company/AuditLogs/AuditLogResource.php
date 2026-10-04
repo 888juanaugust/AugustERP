@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use UnitEnum;
 
-/** The Activity Log: read-only, the reference system's columns and filters. */
+/** The Activity Log: read-only, the standard's columns and filters. */
 class AuditLogResource extends ErpResource
 {
     protected static ?string $model = AuditLog::class;

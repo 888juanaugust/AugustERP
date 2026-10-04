@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // The reference system's Users screen: Operator or Administrator, a
+            // The standard's Users screen: Operator or Administrator, a
             // phone, and an active flag. An administrator passes every access
             // check; an operator is limited by their access groups (phase 1).
             $table->string('access_type', 20)->default('operator')->after('password');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Pengaturan;
 
-/** The tabs of the Preferences screen, in the reference system's order, plus one for the rules this product keeps. */
+/** The tabs of the Preferences screen, in the standard's order, plus one for the rules this product keeps. */
 enum PreferensiTab: string
 {
     case Company = 'company';

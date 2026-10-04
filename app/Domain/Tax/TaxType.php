@@ -6,7 +6,7 @@ namespace App\Domain\Tax;
 
 use Filament\Support\Contracts\HasLabel;
 
-/** The tax types of the Tax Codes screen, as the reference system lists them. */
+/** The tax types of the Tax Codes screen, as the standard lists them. */
 enum TaxType: string implements HasLabel
 {
     case Vat = 'vat';
