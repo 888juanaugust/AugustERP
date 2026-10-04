@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Gets a Claude Code cloud session to the point where the app and the reference
-# study tool both run: the local PostgreSQL 16 cluster with the role and databases
-# phpunit.xml expects, Redis, Composer and npm dependencies, and the browser's
-# trust in the session proxy. Idempotent; every step that depends on the
-# network fails soft, because the environment's egress policy decides what is
-# reachable, and a session that cannot install locally still has CI.
+# Gets a Claude Code cloud session to the point where the app runs: the local
+# PostgreSQL 16 cluster with the role and databases phpunit.xml expects, Redis,
+# Composer dependencies, an installed demo database, and the browser's trust in
+# the session proxy for the UI smoke script. Idempotent; every step that depends
+# on the network fails soft, because the environment's egress policy decides
+# what is reachable, and a session that cannot install locally still has CI.
 set -uo pipefail
 
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
@@ -47,11 +47,17 @@ if [ -f composer.json ]; then
     || composer install --no-interaction --no-progress -q \
     || say "composer install failed; tests run in CI"
   [ -f .env ] || { cp .env.example .env && php artisan key:generate -q; }
+  # A first session installs the demo company; later ones only migrate (the installer refuses a second run).
+  if pg_isready -q -h 127.0.0.1 -p 5432 && [ -d vendor ]; then
+    php artisan erp:install --no-interaction --demo -q 2>/dev/null \
+      || php artisan migrate --force -q 2>/dev/null \
+      || say "the database could not be installed or migrated"
+  fi
 fi
 
-# --- The reference study tool ------------------------------------------------
-if [ -f tools/referensi-scan/package.json ]; then
-  (cd tools/referensi-scan && npm ci --no-audit --no-fund -q 2>/dev/null) || say "npm ci for the study tool failed"
+# --- npm (the UI smoke script's Playwright) ------------------------------------
+if [ -f package.json ]; then
+  npm ci --no-audit --no-fund -q 2>/dev/null || say "npm ci failed"
 fi
 
 # The pre-installed Chromium trusts certificates through NSS, and the
@@ -62,7 +68,7 @@ if [ -n "${SSL_CERT_FILE:-}" ] && [ -f "$SSL_CERT_FILE" ]; then
   if ! command -v certutil >/dev/null 2>&1; then
     export DEBIAN_FRONTEND=noninteractive
     (apt-get update -qq >/dev/null 2>&1 && apt-get install -y -qq libnss3-tools >/dev/null 2>&1) \
-      || say "libnss3-tools not installed; the study tool's browser will not trust the proxy"
+      || say "libnss3-tools not installed; the smoke script's browser will not trust the proxy"
   fi
   if command -v certutil >/dev/null 2>&1; then
     mkdir -p "$HOME/.pki/nssdb"
