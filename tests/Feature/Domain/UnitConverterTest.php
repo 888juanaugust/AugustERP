@@ -5,7 +5,8 @@ namespace Tests\Feature\Domain;
 use App\Domain\Inventory\Units\UnitConverter;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\Unit;
-use Database\Seeders\MasterDataSeeder;
+use Database\Seeders\Defaults\UnitSeeder;
+use Database\Seeders\System\CoreMastersSeeder;
 use InvalidArgumentException;
 use Tests\TestCase;
 
@@ -13,12 +14,12 @@ class UnitConverterTest extends TestCase
 {
     public function test_quantities_convert_through_the_item_ratios(): void
     {
-        $this->seed(MasterDataSeeder::class);
+        $this->seed([CoreMastersSeeder::class, UnitSeeder::class]);
         $pcs = Unit::query()->where('name', 'PCS')->firstOrFail();
         $ctn = Unit::query()->where('name', 'CTN')->firstOrFail();
         $dozen = Unit::query()->where('name', 'DOZEN')->firstOrFail();
 
-        $item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => $pcs->id]);
+        $item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Widget', 'unit1_id' => $pcs->id]);
         $item->units()->create(['unit_id' => $ctn->id, 'ratio' => 24, 'sell_price' => 0]);
         $item->units()->create(['unit_id' => $dozen->id, 'ratio' => 12, 'sell_price' => 0]);
         $item->load('units');

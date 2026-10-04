@@ -11,17 +11,14 @@ use App\Domain\Reports\InventoryReports;
 use App\Domain\Reports\Period;
 use App\Domain\Reports\TradeReports;
 use App\Models\CashBank\CashReceipt;
-use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
 use App\Models\FixedAssets\AssetCategory;
 use App\Models\FixedAssets\FixedAsset;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
-use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Customer;
-use App\Models\Sales\PriceCategory;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesOrder;
 use Carbon\CarbonImmutable;
@@ -50,8 +47,8 @@ class ReportsTest extends TestCase
         $receipt->refreshTotal();
         $docs->created($receipt);
 
-        $this->customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
-        $this->item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000]);
+        $this->customer = $this->sampleCustomer();
+        $this->item = $this->sampleItem();
         $opening = InventoryAdjustment::query()->create(['number' => 'ADJ-OPEN', 'trans_date' => '2026-10-02', 'created_by' => auth()->id()]);
         $opening->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'adjustment_type' => 'quantity', 'quantity' => 20, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 20, 'unit_cost' => 100_000, 'total_cost' => 0, 'warehouse_id' => Warehouse::default()->id]);
         $docs->created($opening);
@@ -126,12 +123,12 @@ class ReportsTest extends TestCase
         $november = new Period('2026-11-01', '2026-11-30');
 
         $byCustomer = TradeReports::salesBy('party', $november);
-        $this->assertSame('Bengkel Maju', $byCustomer[0]['name']);
+        $this->assertSame('Acme Trading', $byCustomer[0]['name']);
         $this->assertSame(1_500_000, $byCustomer[0]['amount']);
         $this->assertSame(165_000, $byCustomer[0]['tax']);
         $this->assertSame('10.0000', $byCustomer[0]['quantity']);
         $this->assertSame(1_665_000, $this->row($byCustomer, 'total')['total']);
-        $this->assertSame('ITM-00001 · Brake pad', TradeReports::salesBy('item', $november)[0]['name']);
+        $this->assertSame('ITM-00001 · Widget', TradeReports::salesBy('item', $november)[0]['name']);
         $this->assertSame('(no salesperson)', TradeReports::salesBy('salesman', $november)[0]['name']);
 
         $open = TradeReports::openSalesOrders($november);

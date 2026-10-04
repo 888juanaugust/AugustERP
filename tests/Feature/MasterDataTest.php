@@ -7,7 +7,6 @@ use App\Filament\Resources\Inventory\Warehouses\WarehouseResource;
 use App\Filament\Resources\Purchasing\Vendors\Pages\CreateVendor;
 use App\Filament\Resources\Sales\Customers\Pages\CreateCustomer;
 use App\Filament\Resources\Sales\Customers\Pages\EditCustomer;
-use App\Models\Company\Employee;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
@@ -31,16 +30,16 @@ class MasterDataTest extends TestCase
 
     public function test_a_customer_is_created_through_every_tab_and_numbered_from_the_series(): void
     {
-        $salesman = Employee::query()->create(['number' => 'EMP-00001', 'name' => 'Budi', 'is_salesman' => true]);
+        $salesman = $this->sampleEmployee();
 
         Livewire::test(CreateCustomer::class)
             ->fillForm([
-                'name' => 'Bengkel Maju Jaya',
+                'name' => 'Acme Trading',
                 'work_phone' => '021-555',
-                'email' => 'maju@example.test',
+                'email' => 'acme@example.test',
                 'bill_street' => 'Jl. Raya 1',
                 'bill_city' => 'Jakarta',
-                'contacts' => [['name' => 'Pak Agus', 'position' => 'Owner', 'email' => 'agus@example.test', 'mobile_phone' => '0812']],
+                'contacts' => [['name' => 'Alex Doe', 'position' => 'Owner', 'email' => 'agus@example.test', 'mobile_phone' => '0812']],
                 'ship_same_as_bill' => false,
                 'ship_street' => 'Jl. Gudang 2',
                 'ship_city' => 'Bekasi',
@@ -50,7 +49,7 @@ class MasterDataTest extends TestCase
                 'default_inc_tax' => true,
                 'wp_type' => 'npwp',
                 'wp_number' => '01.234.567.8-901.000',
-                'wp_name' => 'PT Maju Jaya',
+                'wp_name' => 'Acme Trading Ltd',
                 'document_code' => 'tax_invoice',
                 'openingBalances' => [['trans_date' => '2026-09-30', 'amount' => 1500000, 'number' => 'INV-OLD-1', 'description' => 'carried in']],
                 'credit_limit_mode' => 'per_customer',
@@ -61,11 +60,11 @@ class MasterDataTest extends TestCase
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $customer = Customer::query()->where('name', 'Bengkel Maju Jaya')->firstOrFail();
+        $customer = Customer::query()->where('name', 'Acme Trading')->firstOrFail();
         $this->assertSame('C-00001', $customer->number);
         $this->assertSame('Jakarta', $customer->bill_city);
         $this->assertSame('Bekasi', $customer->ship_city);
-        $this->assertSame('Pak Agus', $customer->contacts()->first()->name);
+        $this->assertSame('Alex Doe', $customer->contacts()->first()->name);
         $this->assertSame(1, $customer->addresses()->count());
         $this->assertSame($salesman->id, $customer->salesman_id);
         $this->assertSame('2.5000', $customer->default_sales_disc);
@@ -75,20 +74,20 @@ class MasterDataTest extends TestCase
         $this->assertSame(PriceCategory::query()->where('is_default', true)->value('id'), $customer->price_category_id);
 
         Livewire::test(CreateCustomer::class)
-            ->fillForm(['name' => 'Toko Dua', 'manual_number' => true, 'number' => 'CUST-X'])
+            ->fillForm(['name' => 'Globex Two', 'manual_number' => true, 'number' => 'CUST-X'])
             ->call('create')
             ->assertHasNoFormErrors();
-        $this->assertDatabaseHas('customers', ['name' => 'Toko Dua', 'number' => 'CUST-X']);
+        $this->assertDatabaseHas('customers', ['name' => 'Globex Two', 'number' => 'CUST-X']);
 
-        Livewire::test(CreateCustomer::class)->fillForm(['name' => 'Toko Tiga'])->call('create')->assertHasNoFormErrors();
-        $this->assertSame('C-00002', Customer::query()->where('name', 'Toko Tiga')->value('number'), 'a manual number does not consume the counter');
+        Livewire::test(CreateCustomer::class)->fillForm(['name' => 'Globex Three'])->call('create')->assertHasNoFormErrors();
+        $this->assertSame('C-00002', Customer::query()->where('name', 'Globex Three')->value('number'), 'a manual number does not consume the counter');
 
         Livewire::test(EditCustomer::class, ['record' => $customer->getRouteKey()])
-            ->assertSchemaStateSet(['name' => 'Bengkel Maju Jaya', 'ship_city' => 'Bekasi'])
-            ->fillForm(['name' => 'Bengkel Maju Jaya Abadi'])
+            ->assertSchemaStateSet(['name' => 'Acme Trading', 'ship_city' => 'Bekasi'])
+            ->fillForm(['name' => 'Acme Trading Group'])
             ->call('save')
             ->assertHasNoFormErrors();
-        $this->assertSame('Bengkel Maju Jaya Abadi', $customer->fresh()->name);
+        $this->assertSame('Acme Trading Group', $customer->fresh()->name);
         $this->assertDatabaseHas('audit_logs', ['document_type' => 'customer', 'document_id' => $customer->id, 'action' => 'updated']);
     }
 
@@ -96,11 +95,11 @@ class MasterDataTest extends TestCase
     {
         Livewire::test(CreateVendor::class)
             ->fillForm([
-                'name' => 'PT Sumber Part',
+                'name' => 'Contoso Supplies',
                 'service_seller' => false,
                 'bill_street' => 'Jl. Industri 9',
                 'contacts' => [['name' => 'Ibu Sari']],
-                'bankAccounts' => [['bank_account' => '1234567890', 'bank_account_name' => 'PT Sumber Part']],
+                'bankAccounts' => [['bank_account' => '1234567890', 'bank_account_name' => 'Contoso Supplies']],
                 'default_purchase_disc' => 1,
                 'wp_type' => 'npwp',
                 'wp_number' => '02.000.000.0-000.000',
@@ -111,7 +110,7 @@ class MasterDataTest extends TestCase
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $vendor = Vendor::query()->where('name', 'PT Sumber Part')->firstOrFail();
+        $vendor = Vendor::query()->where('name', 'Contoso Supplies')->firstOrFail();
         $this->assertSame('V-00001', $vendor->number);
         $this->assertSame('1234567890', $vendor->bankAccounts()->first()->bank_account);
         $this->assertTrue($vendor->use_bill_number);
@@ -165,7 +164,7 @@ class MasterDataTest extends TestCase
         $insider = User::factory()->create();
         $outsider = User::factory()->create();
         $private->users()->attach($insider);
-        $group = AccessGroup::query()->where('name', 'Inventory')->firstOrFail();
+        $group = AccessGroup::query()->where('name', 'Warehouse')->firstOrFail();
         $group->users()->attach([$insider->id, $outsider->id]);
 
         $this->assertEqualsCanonicalizing(['Main Warehouse', 'Branch B store'], Warehouse::query()->where('is_system', false)->visibleTo($insider)->pluck('name')->all());

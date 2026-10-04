@@ -1,13 +1,13 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Defaults;
 
 use App\Domain\Numbering\TransactionType;
 use App\Models\Company\PrintLayout;
 use Illuminate\Database\Seeder;
 
-/** One default print layout per printable document. */
-class CompanyExtrasSeeder extends Seeder
+/** One default print layout per printable document, so every document prints from day one. */
+class PrintLayoutSeeder extends Seeder
 {
     public function run(): void
     {

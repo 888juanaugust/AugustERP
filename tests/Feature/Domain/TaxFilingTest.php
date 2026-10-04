@@ -7,14 +7,9 @@ use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Tax\FilingDocuments;
 use App\Domain\Tax\TaxFilingService;
-use App\Models\Company\PaymentTerm;
 use App\Models\Company\TaxCode;
 use App\Models\Inventory\InventoryAdjustment;
-use App\Models\Inventory\Item;
-use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
-use App\Models\Sales\Customer;
-use App\Models\Sales\PriceCategory;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
 use Carbon\CarbonImmutable;
@@ -36,11 +31,11 @@ class TaxFilingTest extends TestCase
         $this->actingAsAdmin();
         app(Preferensi::class)->setMany([
             PreferensiKey::CompanyNpwp->value => '01.234.567.8-901.000',
-            PreferensiKey::TaxCompanyName->value => 'PT August Parts',
+            PreferensiKey::TaxCompanyName->value => 'Example Co',
         ]);
 
-        $customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'wp_type' => 'npwp', 'wp_number' => '09.876.543.2-109.000', 'wp_name' => 'PT Maju Jaya', 'bill_street' => 'Jl. Raya 1', 'bill_city' => 'Jakarta', 'bill_zip_code' => '12345', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
-        $item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000, 'item_tax_code' => '270111']);
+        $customer = $this->sampleCustomer(['wp_type' => 'npwp', 'wp_number' => '09.876.543.2-109.000', 'wp_name' => 'Acme Trading Ltd', 'bill_street' => 'Jl. Raya 1', 'bill_city' => 'Jakarta', 'bill_zip_code' => '12345']);
+        $item = $this->sampleItem(['item_tax_code' => '270111']);
         $docs = app(DocumentRepository::class);
         $opening = InventoryAdjustment::query()->create(['number' => 'ADJ-OPEN', 'trans_date' => '2026-10-01', 'created_by' => auth()->id()]);
         $opening->lines()->create(['sort' => 0, 'item_id' => $item->id, 'adjustment_type' => 'quantity', 'quantity' => 20, 'unit_id' => $item->unit1_id, 'base_quantity' => 20, 'unit_cost' => 100_000, 'total_cost' => 0, 'warehouse_id' => Warehouse::default()->id]);
@@ -74,7 +69,7 @@ class TaxFilingTest extends TestCase
         $this->assertStringContainsString('<TIN>012345678901000</TIN>', $xml);
         $this->assertStringContainsString('<TrxCode>04</TrxCode>', $xml, 'the 11/12 base means transaction code 04');
         $this->assertStringContainsString('<BuyerTin>098765432109000</BuyerTin>', $xml);
-        $this->assertStringContainsString('<BuyerName>PT Maju Jaya</BuyerName>', $xml);
+        $this->assertStringContainsString('<BuyerName>Acme Trading Ltd</BuyerName>', $xml);
         $this->assertStringContainsString('<BuyerAdress>Jl. Raya 1, Jakarta, 12345</BuyerAdress>', $xml);
         $this->assertStringContainsString('<Code>270111</Code>', $xml);
         $this->assertStringContainsString('<Unit>UM.0018</Unit>', $xml);
@@ -103,9 +98,9 @@ class TaxFilingTest extends TestCase
         $this->assertStringStartsWith('FK,KD_JENIS_TRANSAKSI,FG_PENGGANTI,NOMOR_FAKTUR', $lines[0]);
         $this->assertStringStartsWith('LT,NPWP', $lines[1]);
         $this->assertStringStartsWith('OF,KODE_OBJEK', $lines[2]);
-        $this->assertSame('FK,01,0,0100022600000123,11,2026,05/11/2026,098765432109000,"PT Maju Jaya","Jl. Raya 1, Jakarta, 12345",1375000,165000,0,,0,0,0,0,INV-2611-0001', $lines[3]);
-        $this->assertStringStartsWith('LT,098765432109000,"PT Maju Jaya"', $lines[4]);
-        $this->assertSame('OF,270111,"Brake pad",150000,10,1500000,0,1375000,165000,0,0', $lines[5]);
+        $this->assertSame('FK,01,0,0100022600000123,11,2026,05/11/2026,098765432109000,"Acme Trading Ltd","Jl. Raya 1, Jakarta, 12345",1375000,165000,0,,0,0,0,0,INV-2611-0001', $lines[3]);
+        $this->assertStringStartsWith('LT,098765432109000,"Acme Trading Ltd"', $lines[4]);
+        $this->assertSame('OF,270111,Widget,150000,10,1500000,0,1375000,165000,0,0', $lines[5]);
         $this->assertStringEndsWith('.csv', $filing->file_name);
     }
 

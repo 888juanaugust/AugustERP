@@ -83,7 +83,7 @@ class CompanyExtrasTest extends TestCase
 
     public function test_a_payroll_entry_posts_gross_pay_tax_withheld_and_net_owed(): void
     {
-        $employee = Employee::query()->create(['number' => 'EMP-00001', 'name' => 'Budi', 'is_salesman' => false]);
+        $employee = $this->sampleEmployee(['is_salesman' => false]);
         $other = Employee::query()->create(['number' => 'EMP-00002', 'name' => 'Sari', 'is_salesman' => false]);
         $overtime = SalaryComponent::query()->where('name', 'Overtime')->firstOrFail();
 

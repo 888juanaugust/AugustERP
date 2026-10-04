@@ -9,7 +9,7 @@ use App\Domain\Numbering\TransactionType;
 use App\Models\Settings\DocumentSeries;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\DocumentSeriesSeeder;
+use Database\Seeders\System\DocumentSeriesSeeder;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Tests\TestCase;

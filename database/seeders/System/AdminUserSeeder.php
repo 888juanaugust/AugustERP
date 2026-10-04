@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\System;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -16,7 +16,7 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         User::query()->updateOrCreate(
-            ['email' => env('ADMIN_EMAIL') ?: 'admin@august.test'],
+            ['email' => env('ADMIN_EMAIL') ?: 'admin@example.test'],
             [
                 'name' => env('ADMIN_NAME') ?: 'Administrator',
                 'password' => Hash::make(env('ADMIN_PASSWORD') ?: 'password'),

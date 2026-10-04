@@ -9,7 +9,6 @@ use App\Filament\Resources\Budgeting\Budgets\Pages\CreateBudget;
 use App\Filament\Resources\Company\RecurringTransactions\Pages\ListRecurringTransactions;
 use App\Filament\Resources\GeneralLedger\PayrollEntries\Pages\CreatePayrollEntry;
 use App\Models\Budgeting\Budget;
-use App\Models\Company\Employee;
 use App\Models\Company\PayrollEntry;
 use App\Models\Company\RecurringTransaction;
 use App\Models\GeneralLedger\Account;
@@ -46,7 +45,7 @@ class CompanyExtrasScreensTest extends TestCase
 
         Livewire::test(BudgetMonitor::class)->set('filters.year', 2026)->set('filters.month', 11)->assertSee('Rent')->assertSee('5.000.000');
 
-        $employee = Employee::query()->create(['number' => 'EMP-00001', 'name' => 'Budi', 'is_salesman' => false]);
+        $employee = $this->sampleEmployee(['is_salesman' => false]);
         Livewire::test(CreatePayrollEntry::class)
             ->fillForm([
                 'payment_type' => 'monthly', 'period_month' => 11, 'period_year' => 2026, 'trans_date' => '2026-11-25', 'due_date' => '2026-11-30',

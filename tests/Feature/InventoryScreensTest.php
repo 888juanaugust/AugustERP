@@ -118,7 +118,7 @@ class InventoryScreensTest extends TestCase
         app(DocumentRepository::class)->created($adjustment);
 
         $counter = User::factory()->create();
-        $order = StockOpnameOrder::query()->create(['number' => 'SOO-1', 'trans_date' => '2026-11-09', 'start_date' => '2026-11-10', 'person_charged' => 'Budi', 'warehouse_id' => $this->main->id, 'created_by' => $counter->id]);
+        $order = StockOpnameOrder::query()->create(['number' => 'SOO-1', 'trans_date' => '2026-11-09', 'start_date' => '2026-11-10', 'person_charged' => 'Alex Doe', 'warehouse_id' => $this->main->id, 'created_by' => $counter->id]);
         $result = StockOpnameResult::query()->create(['number' => 'SOR-1', 'trans_date' => '2026-11-10', 'stock_opname_order_id' => $order->id, 'created_by' => $counter->id]);
         $result->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'counted_qty' => 13, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 13, 'system_qty' => 10]);
 

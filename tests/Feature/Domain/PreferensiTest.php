@@ -52,11 +52,11 @@ class PreferensiTest extends TestCase
 
         $prefs->set(PreferensiKey::AgingRangeDays, '120', $admin);
         $prefs->set(PreferensiKey::AllowNegativeStock, true, $admin);
-        $prefs->set(PreferensiKey::CompanyName, 'PT August Makmur', $admin);
+        $prefs->set(PreferensiKey::CompanyName, 'Example Co', $admin);
 
         $this->assertSame(120, $prefs->get(PreferensiKey::AgingRangeDays));
         $this->assertTrue(BusinessRule::AllowNegativeStock->isOn());
-        $this->assertSame('PT August Makmur', app(Preferensi::class)->get(PreferensiKey::CompanyName));
+        $this->assertSame('Example Co', app(Preferensi::class)->get(PreferensiKey::CompanyName));
 
         $this->assertDatabaseHas('preferences', ['key' => 'other.aging_range_days', 'updated_by' => $admin->id]);
 

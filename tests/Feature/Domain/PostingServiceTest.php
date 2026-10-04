@@ -17,7 +17,7 @@ use App\Models\GeneralLedger\JournalVoucher;
 use App\Models\GeneralLedger\Posting;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\ChartOfAccountsSeeder;
+use Database\Seeders\System\ChartOfAccountsSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;

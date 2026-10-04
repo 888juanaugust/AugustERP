@@ -51,9 +51,9 @@ final class MasterImporter
     public static function template(string $kind): string
     {
         $example = match ($kind) {
-            'customers' => ['', 'Bengkel Maju Jaya', '021-555123', 'maju@example.test', 'Jl. Raya 1', 'Jakarta', 'DKI Jakarta', '12345', '01.234.567.8-901.000', 'PT Maju Jaya', 'Default', 'Net 30', '25000000', ''],
-            'vendors' => ['', 'PT Sumber Part', '021-555999', 'sales@sumberpart.test', 'Jl. Industri 9', 'Bekasi', 'Jawa Barat', '17510', '02.345.678.9-012.000', 'PT Sumber Part', 'Net 30', ''],
-            'items' => ['', 'Brake pad YUHOLI 1234', 'inventory', 'Hydraulic Parts', 'YUHOLI', 'PCS', '150000', '100000', '10', '', '', ''],
+            'customers' => ['', 'Acme Trading', '021-555123', 'acme@example.test', 'Jl. Raya 1', 'Jakarta', 'DKI Jakarta', '12345', '01.234.567.8-901.000', 'Acme Trading Ltd', 'Default', 'Net 30', '25000000', ''],
+            'vendors' => ['', 'Contoso Supplies', '021-555999', 'sales@contoso.test', 'Jl. Industri 9', 'Bekasi', 'Jawa Barat', '17510', '02.345.678.9-012.000', 'Contoso Supplies', 'Net 30', ''],
+            'items' => ['', 'Widget Alpha 1234', 'inventory', 'Spare Parts', 'Alpha', 'PCS', '150000', '100000', '10', '', '', ''],
             default => [],
         };
         $out = fopen('php://memory', 'r+');

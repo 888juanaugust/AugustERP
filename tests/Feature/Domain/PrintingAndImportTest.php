@@ -7,16 +7,15 @@ use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\DocumentRepository;
 use App\Models\Company\AuditLog;
-use App\Models\Company\PaymentTerm;
 use App\Models\Company\PrintLayout;
 use App\Models\Company\TaxCode;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
-use App\Models\Inventory\Unit;
+use App\Models\Inventory\ItemBrand;
+use App\Models\Inventory\ItemCategory;
 use App\Models\Inventory\Warehouse;
 use App\Models\Purchasing\Vendor;
 use App\Models\Sales\Customer;
-use App\Models\Sales\PriceCategory;
 use App\Models\Sales\SalesInvoice;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -32,13 +31,13 @@ class PrintingAndImportTest extends TestCase
         CarbonImmutable::setTestNow('2026-11-15 09:00:00');
         $this->seed();
         $this->actingAsAdmin();
-        app(Preferensi::class)->setMany([PreferensiKey::CompanyName->value => 'PT August Parts', PreferensiKey::CompanyAddress->value => 'Jl. Industri 9, Jakarta']);
+        app(Preferensi::class)->setMany([PreferensiKey::CompanyName->value => 'Example Co', PreferensiKey::CompanyAddress->value => 'Jl. Industri 9, Jakarta']);
     }
 
     public function test_an_invoice_prints_under_its_layout_is_marked_printed_and_needs_the_right(): void
     {
-        $customer = Customer::query()->create(['number' => 'C-00001', 'name' => 'Bengkel Maju', 'bill_street' => 'Jl. Raya 1', 'bill_city' => 'Jakarta', 'price_category_id' => PriceCategory::query()->where('is_default', true)->value('id'), 'payment_term_id' => PaymentTerm::default()->id]);
-        $item = Item::query()->create(['number' => 'ITM-00001', 'name' => 'Brake pad', 'unit1_id' => Unit::query()->where('name', 'PCS')->value('id'), 'sell_price' => 150_000, 'purchase_price' => 100_000]);
+        $customer = $this->sampleCustomer(['bill_street' => 'Jl. Raya 1', 'bill_city' => 'Jakarta']);
+        $item = $this->sampleItem();
         $docs = app(DocumentRepository::class);
         $opening = InventoryAdjustment::query()->create(['number' => 'ADJ-OPEN', 'trans_date' => '2026-10-01', 'created_by' => auth()->id()]);
         $opening->lines()->create(['sort' => 0, 'item_id' => $item->id, 'adjustment_type' => 'quantity', 'quantity' => 20, 'unit_id' => $item->unit1_id, 'base_quantity' => 20, 'unit_cost' => 100_000, 'total_cost' => 0, 'warehouse_id' => Warehouse::default()->id]);
@@ -51,9 +50,9 @@ class PrintingAndImportTest extends TestCase
 
         $this->get(route('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))
             ->assertOk()
-            ->assertSee('PT August Parts')->assertSee('Jl. Industri 9')
-            ->assertSee('Invoice')->assertSee('INV-2611-0001')->assertSee('Bengkel Maju')->assertSee('Jl. Raya 1')
-            ->assertSee('Brake pad')->assertSee('ITM-00001')->assertSee('1.500.000')->assertSee('165.000')->assertSee('Rp 1.665.000')
+            ->assertSee('Example Co')->assertSee('Jl. Industri 9')
+            ->assertSee('Invoice')->assertSee('INV-2611-0001')->assertSee('Acme Trading')->assertSee('Jl. Raya 1')
+            ->assertSee('Widget')->assertSee('ITM-00001')->assertSee('1.500.000')->assertSee('165.000')->assertSee('Rp 1.665.000')
             ->assertSee('Thank you for your order')->assertSee('Prepared by');
         $this->assertTrue($invoice->fresh()->is_printed);
         $this->assertSame(1, AuditLog::query()->where('action', 'printed')->count());
@@ -78,10 +77,10 @@ class PrintingAndImportTest extends TestCase
         $csv = tempnam(sys_get_temp_dir(), 'imp').'.csv';
         file_put_contents($csv, implode("\n", [
             'number,name,phone,email,bill_city,wp_number,payment_term,credit_limit',
-            ',Bengkel Maju Jaya,021-555,maju@example.test,Jakarta,01.234.567.8-901.000,Net 30,"25.000.000"',
-            ',Toko Sparepart Abadi,,,Bekasi,,,',
+            ',Acme Trading,021-555,acme@example.test,Jakarta,01.234.567.8-901.000,Net 30,"25.000.000"',
+            ',Northwind Workshop,,,Bekasi,,,',
             ',,021-1,,,,,',
-            ',Bengkel Nakal,,,,,"Net 999",',
+            ',Broken Row,,,,,"Net 999",',
         ]));
         $result = app(MasterImporter::class)->import('customers', $csv);
         $this->assertSame(2, $result['created']);
@@ -89,35 +88,37 @@ class PrintingAndImportTest extends TestCase
         $this->assertCount(2, $result['errors']);
         $this->assertStringContainsString('"name" is required', $result['errors'][0]);
         $this->assertStringContainsString('payment term "Net 999"', $result['errors'][1]);
-        $maju = Customer::query()->where('name', 'Bengkel Maju Jaya')->firstOrFail();
+        $maju = Customer::query()->where('name', 'Acme Trading')->firstOrFail();
         $this->assertSame('C-00001', $maju->number);
         $this->assertSame(25_000_000, $maju->credit_limit_amount);
         $this->assertTrue($maju->credit_limit_amount_enabled);
         $this->assertSame('npwp', $maju->wp_type instanceof \BackedEnum ? $maju->wp_type->value : $maju->wp_type);
-        $this->assertSame('C-00002', Customer::query()->where('name', 'Toko Sparepart Abadi')->value('number'));
+        $this->assertSame('C-00002', Customer::query()->where('name', 'Northwind Workshop')->value('number'));
 
         // A row with the number updates instead of duplicating.
-        file_put_contents($csv, "number,name,phone\nC-00001,Bengkel Maju Jaya (new name),021-777\n");
+        file_put_contents($csv, "number,name,phone\nC-00001,Acme Trading (new name),021-777\n");
         $again = app(MasterImporter::class)->import('customers', $csv);
         $this->assertSame(['created' => 0, 'updated' => 1, 'errors' => []], $again);
-        $this->assertSame('Bengkel Maju Jaya (new name)', $maju->fresh()->name);
+        $this->assertSame('Acme Trading (new name)', $maju->fresh()->name);
         $this->assertSame(2, Customer::query()->count());
 
+        ItemBrand::query()->create(['name' => 'Alpha']);
+        ItemCategory::query()->create(['name' => 'Spare Parts']);
         file_put_contents($csv, implode("\n", [
             'number,name,item_type,category,brand,unit,sell_price,purchase_price,min_stock',
-            ',Brake pad YUHOLI 1234,inventory,Hydraulic Parts,YUHOLI,PCS,150000,100000,10',
-            ',Oil filter,inventory,,OSBORN,BOX,50000,30000,',
+            ',Widget Alpha 1234,inventory,Spare Parts,Alpha,PCS,150000,100000,10',
+            ',Oil filter,inventory,,,CRATE,50000,30000,',
         ]));
         $items = app(MasterImporter::class)->import('items', $csv);
         $this->assertSame(1, $items['created']);
-        $this->assertStringContainsString('Unit "BOX"', $items['errors'][0]);
-        $pad = Item::query()->where('name', 'Brake pad YUHOLI 1234')->firstOrFail();
+        $this->assertStringContainsString('Unit "CRATE"', $items['errors'][0]);
+        $pad = Item::query()->where('name', 'Widget Alpha 1234')->firstOrFail();
         $this->assertSame('ITM-00001', $pad->number);
         $this->assertSame(150_000, $pad->sell_price);
-        $this->assertSame('YUHOLI', $pad->brand?->name);
-        $this->assertSame('Hydraulic Parts', $pad->category?->name);
+        $this->assertSame('Alpha', $pad->brand?->name);
+        $this->assertSame('Spare Parts', $pad->category?->name);
 
-        file_put_contents($csv, "number,name\n,PT Sumber Part\n");
+        file_put_contents($csv, "number,name\n,Contoso Supplies\n");
         $this->assertSame(1, app(MasterImporter::class)->import('vendors', $csv)['created']);
         $this->assertSame('V-00001', Vendor::query()->value('number'));
 

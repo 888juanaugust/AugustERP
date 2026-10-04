@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Defaults;
 
 use App\Domain\Tax\TaxType;
 use App\Models\Company\TaxCode;
