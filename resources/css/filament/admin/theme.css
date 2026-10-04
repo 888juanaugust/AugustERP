@@ -313,13 +313,14 @@
 
 .fi-input-wrp {
     border-radius: var(--ae-radius-md);
-    box-shadow: none;
+    /* DESIGN.md: white fill, 1px --ae-input-edge border, radius 10. The ring Filament draws is a box-shadow, so the border is one too. */
+    box-shadow: inset 0 0 0 1px var(--ae-input-edge);
     --tw-ring-color: var(--ae-input-edge);
 }
 
 .fi-input-wrp:not(.fi-disabled):focus-within {
     --tw-ring-color: var(--ae-accent);
-    box-shadow: 0 0 0 3px var(--ae-focus-ring);
+    box-shadow: inset 0 0 0 1px var(--ae-accent), 0 0 0 3px var(--ae-focus-ring);
 }
 
 .fi-input-wrp.fi-disabled {

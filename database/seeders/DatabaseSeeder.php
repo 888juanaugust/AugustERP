@@ -10,6 +10,15 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AdminUserSeeder::class,
+            BranchSeeder::class,
+            CurrencySeeder::class,
+            BankSeeder::class,
+            ChartOfAccountsSeeder::class,
+            TaxCodeSeeder::class,
+            PaymentTermSeeder::class,
+            FobSeeder::class,
+            DocumentSeriesSeeder::class,
+            AccessGroupSeeder::class,
         ]);
     }
 }
