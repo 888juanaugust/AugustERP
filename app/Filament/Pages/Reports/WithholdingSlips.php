@@ -92,7 +92,7 @@ class WithholdingSlips extends ErpPage implements HasTable
                 $money('gross', __('Gross')),
                 $money('biaya_jabatan', __('Occupational cost')),
                 $money('pension', __('Pension contributions')),
-                $money('net_year', __('Net income')),
+                $money('net_year', __('Net income for the year')),
                 $money('ptkp', __('PTKP')),
                 $money('pkp', __('Taxable income')),
                 $money('tax_due', __('Tax for the year')),

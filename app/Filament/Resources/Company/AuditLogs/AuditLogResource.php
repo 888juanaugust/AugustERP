@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Company\AuditLogs;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
+use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\Company\AuditLogs\Pages\ListAuditLogs;
 use App\Filament\Support\Columns\Tanggal;
@@ -82,7 +83,8 @@ class AuditLogResource extends ErpResource
             ->modifyQueryUsing(fn (Builder $query) => $query->with('user'))
             ->columns([
                 Tanggal::make('trans_date')->label(__('Transaction date'))->placeholder('—'),
-                TextColumn::make('reference')->label(__('Reference'))->searchable()->limit(40)->placeholder('—'),
+                TextColumn::make('reference')->label(__('Reference'))->searchable()->limit(40)->placeholder('—')
+                    ->formatStateUsing(fn (?string $state, AuditLog $record) => self::reference($state, $record)),
                 TextColumn::make('action')->label(__('Action'))->badge()->formatStateUsing(fn (string $state) => self::actionLabel($state))
                     ->color(fn (string $state) => match ($state) {
                         'created', 'posted' => 'success',
@@ -128,6 +130,14 @@ class AuditLogResource extends ErpResource
     public static function actionLabel(string $action): string
     {
         return Format::code($action, 'audit');
+    }
+
+    /** A preference change names its preference in the reader's language, whatever the writer's was. */
+    public static function reference(?string $state, AuditLog $record): ?string
+    {
+        $key = $record->action === 'preference_changed' ? PreferensiKey::tryFrom((string) ($record->meta['key'] ?? '')) : null;
+
+        return $key?->label() ?? $state;
     }
 
     public static function typeLabel(?string $type): string

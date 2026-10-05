@@ -64,7 +64,7 @@ abstract class MasterResource extends ErpResource
         return TextColumn::make('used_all_user')
             ->label(__('fields.users'))
             ->state(fn ($record): string => $record->used_all_user
-                ? 'All users'
+                ? __('All users')
                 : $record->{$relationship}->pluck('name')->join(', '))
             ->limit(60);
     }

@@ -63,18 +63,18 @@ class InvoiceExchangeResource extends ErpResource
             ]),
             Tabs::make('exchange')->tabs([
                 Tab::make(__('Invoices'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([TableColumn::make(__('Invoice')), TableColumn::make(__('Invoice date')), TableColumn::make(__('Due'))])
                         ->schema([
-                            Select::make('sales_invoice_id')
+                            Select::make('sales_invoice_id')->label(__('Invoice'))
                                 ->options(fn (Get $get) => SalesInvoice::query()->where('customer_id', $get('../../customer_id'))->where('payment_status', '!=', 'paid')->orderByDesc('trans_date')->get()
                                     ->mapWithKeys(fn ($i) => [$i->id => "{$i->number} · ".Format::rupiah($i->total)]))
                                 ->required()->native(false)->live()->distinct(),
-                            Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($i = SalesInvoice::query()->find($get('sales_invoice_id'))) ? Format::date($i->trans_date) : ''),
-                            Placeholder::make('due')->hiddenLabel()->content(fn (Get $get) => ($i = SalesInvoice::query()->find($get('sales_invoice_id'))) ? Format::date($i->due_date) : ''),
+                            Placeholder::make('invoice_date')->label(__('Invoice date'))->hiddenLabel()->content(fn (Get $get) => ($i = SalesInvoice::query()->find($get('sales_invoice_id'))) ? Format::date($i->trans_date) : ''),
+                            Placeholder::make('due')->label(__('Due'))->hiddenLabel()->content(fn (Get $get) => ($i = SalesInvoice::query()->find($get('sales_invoice_id'))) ? Format::date($i->due_date) : ''),
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel(__('Add invoice')),
                 ]),
@@ -98,7 +98,7 @@ class InvoiceExchangeResource extends ErpResource
                 Rupiah::make('total')->label(__('Invoice total')),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), DocumentListFilters::dateRange('collect_date', 'Exchange date'), SelectFilter::make('customer_id')->label(__('fields.customer'))->relationship('customer', 'name')->searchable()])
+            ->filters([DocumentListFilters::dateRange(), DocumentListFilters::dateRange('collect_date', __('Exchange date')), SelectFilter::make('customer_id')->label(__('fields.customer'))->relationship('customer', 'name')->searchable()])
             ->recordActions([EditAction::make()]);
     }
 

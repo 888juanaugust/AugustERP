@@ -17,10 +17,10 @@ use Filament\Schemas\Components\Utilities\Set;
 /** The customer lookup every sales document opens with; picking one fills terms, address, tax default and the salesperson. */
 final class CustomerFields
 {
-    public static function select(bool $fillsTerms = true, string $label = 'Customer'): Select
+    public static function select(bool $fillsTerms = true, ?string $label = null): Select
     {
         return Select::make('customer_id')
-            ->label($label)
+            ->label($label ?? __('fields.customer'))
             ->options(fn () => Customer::query()->where('is_active', true)->orderBy('name')->get()->mapWithKeys(fn (Customer $c) => [$c->id => "{$c->name} ({$c->number})"]))
             ->searchable()
             ->required()

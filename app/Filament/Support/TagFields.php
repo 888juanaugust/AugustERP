@@ -84,14 +84,14 @@ final class TagFields
 
     private static function department(): Select
     {
-        return Select::make('department_id')
+        return Select::make('department_id')->label(__('Department'))
             ->options(fn ($state) => Department::options() + ($state ? Department::query()->whereKey($state)->get()->mapWithKeys(fn (Department $d) => [$d->id => "{$d->code} · {$d->name}"])->all() : []))
             ->searchable()->native(false)->nullable();
     }
 
     private static function project(): Select
     {
-        return Select::make('project_id')
+        return Select::make('project_id')->label(__('Project'))
             ->options(fn ($state) => Project::options() + ($state ? Project::query()->whereKey($state)->get()->mapWithKeys(fn (Project $p) => [$p->id => "{$p->code} · {$p->name}"])->all() : []))
             ->searchable()->native(false)->nullable();
     }

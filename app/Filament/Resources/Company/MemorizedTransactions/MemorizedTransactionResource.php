@@ -49,7 +49,7 @@ class MemorizedTransactionResource extends MasterResource
     /** @return array<string, string> the document types a form can be memorized from */
     public static function typeOptions(): array
     {
-        return [self::JOURNAL => 'Journal voucher', self::PAYMENT => 'Payment', self::RECEIPT => 'Receipt'];
+        return [self::JOURNAL => __('Journal voucher'), self::PAYMENT => __('Payment'), self::RECEIPT => __('Receipt')];
     }
 
     public static function typeLabel(string $type): string

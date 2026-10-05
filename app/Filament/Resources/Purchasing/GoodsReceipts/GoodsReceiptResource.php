@@ -50,12 +50,12 @@ class GoodsReceiptResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(VendorFields::select()->label(__('Received from')), TransactionType::GoodsReceipt, 'Form No.', [
+            PricedDocumentForm::header(VendorFields::select()->label(__('Received from')), TransactionType::GoodsReceipt, __('Form No.'), [
                 TextInput::make('receive_number')->label(__('Vendor\'s delivery note No.'))->maxLength(60),
             ]),
             Tabs::make('receipt')->tabs([
                 PricedDocumentForm::linesTab(
-                    before: [PullAction::make('Pull from orders', 'vendor_id',
+                    before: [PullAction::make(__('Pull from orders'), 'vendor_id',
                         fn (Get $get) => PurchaseOrder::query()->where('vendor_id', $get('vendor_id'))->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                         fn (int $id) => PricedDocumentForm::pulledLines(PurchaseOrder::query()->findOrFail($id)->lines()->with('item')->get(), 'purchase_order_line'),
                     )],

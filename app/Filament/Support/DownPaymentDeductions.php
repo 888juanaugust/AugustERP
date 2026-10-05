@@ -31,7 +31,7 @@ final class DownPaymentDeductions
      */
     public static function repeater(string $class, string $key, string $party): Repeater
     {
-        return Repeater::make('downPayments')
+        return Repeater::make('downPayments')->label(__('Down payments'))
             ->hiddenLabel()
             ->relationship()
             ->table([TableColumn::make(__('Down payment')), TableColumn::make(__('Amount deducted'))->alignment(Alignment::End)])

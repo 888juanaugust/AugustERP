@@ -6,6 +6,7 @@ Module group `settings`. 8 screens in the standard menu.
 
 - Preferences the release does not use yet (attachments, extra columns, financial categories, employee loans, the temporary payment account) are not offered on the screen; a stored value is kept. The company's fax prints on the letterhead; the data start date is the first day anything can be dated and the default date of opening balances.
 - Number and date formats (the Other tab): the number convention (1.234.567,89 or 1,234,567.89) governs every amount shown and typed; quantities show up to the chosen decimals; unit prices on printed documents the chosen decimals; date fields use the chosen date format, while tables keep "17 Oct 2026".
+- Language (the Other tab): the screens come in English or Bahasa Indonesia; the company's choice is everyone's default, and each user may pick their own on their profile (the avatar menu → Profile). Documents sent to customers (the tax invoice email and its PDF) go in the company's language. Month names and table dates follow the language; number and date formats are their own preferences. The template ships `lang/id.json` and `lang/id/*.php`; a client's own strings go in `app/Client/lang`.
 - Preferences are the one source of truth for every switch: the company's identity, the modules that are on, the default accounts the posting layer uses, the business rules, the aging basis, the attachments and extra columns. Every change is audited with the old and the new value.
 - Users are never deleted: they are deactivated, which stops sign-in at once (a session already open ends at its next click, back on the sign-in page with the reason) and keeps their name on everything they entered, approved or changed. Deactivating is refused for yourself, for the last active administrator, and for anyone an approval still needs: a named approver on an approval rule, the only active member of an approving group, or the person a waiting document cannot be approved without. Replace them on the rule first; a document already half approved waits for them to decide, or is edited so it asks again under the current rules. Reactivating restores access.
 - The activity log records that a hidden field changed (a two-factor secret, recovery codes) but never its value; passwords and remember tokens are not logged.
@@ -130,6 +131,7 @@ Menu key `company__preferences` · module `settings`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Language | `other__language` | select |  |
 | Number format | `other__decimal_format` | select |  |
 | Decimals on quantities | `other__quantity_decimals` | select |  |
 | Decimals on prices | `other__price_decimals` | select |  |

@@ -110,7 +110,7 @@ class PayrollEntryResource extends ErpResource
                 Select::make('payment_type')->label(__('Payment type'))->options(['monthly' => __('Monthly'), 'non_monthly' => __('Non-monthly')])->default('monthly')->required()->native(false),
                 Select::make('period_month')->label(__('Period month'))->options(Months::options())->required()->native(false)->default(today()->month),
                 TextInput::make('period_year')->label(__('Period year'))->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
-                NumberFields::make(TransactionType::PayrollEntry, 'Entry No.'),
+                NumberFields::make(TransactionType::PayrollEntry, __('Entry No.')),
                 DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->default(today()),
                 Placeholder::make('totals')->label(__('Net to pay'))->content(fn (Get $get): string => Format::rupiah(LineTotals::sum($get('lines'), 'net_amount'))),
@@ -151,7 +151,7 @@ class PayrollEntryResource extends ErpResource
                         ->color('gray')
                         ->visible(fn (Get $get): bool => array_filter((array) $get('lines'), fn ($line) => ! empty($line['employee_id'])) !== [])
                         ->action(fn (Set $set, Get $get, ?PayrollEntry $record) => self::fillLines($set, $get, $record, true)),
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -167,10 +167,10 @@ class PayrollEntryResource extends ErpResource
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            Select::make('employee_id')->options(fn () => Employee::query()->orderBy('name')->pluck('name', 'id')->all())->searchable()->required()->native(false),
-                            Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->native(false)->nullable()->placeholder(__('Basic salary account'))
+                            Select::make('employee_id')->label(__('Employee'))->options(fn () => Employee::query()->orderBy('name')->pluck('name', 'id')->all())->searchable()->required()->native(false),
+                            Select::make('salary_component_id')->label(__('Component'))->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->native(false)->nullable()->placeholder(__('Basic salary account'))
                                 ->live()->afterStateUpdated(fn (Set $set, $state) => $state ? $set('fee_type', SalaryComponent::query()->find($state)?->fee_type) : null),
-                            Select::make('fee_type')->options(fn () => SalaryComponent::feeTypes())->native(false)->placeholder(__('Salary')),
+                            Select::make('fee_type')->label(__('Kind'))->options(fn () => SalaryComponent::feeTypes())->native(false)->placeholder(__('Salary')),
                             PricedDocumentForm::money('gross_amount', __('Gross pay'))->required()->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
                             PricedDocumentForm::money('income_tax', __('Income tax'))->live(onBlur: true)
@@ -179,7 +179,7 @@ class PayrollEntryResource extends ErpResource
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
                             PricedDocumentForm::money('net_amount', __('Net pay'))->required()->readOnly(),
                             ...TagFields::lineFields(),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                             Hidden::make('tax_method'),
                             Hidden::make('ter_category'),
                             Hidden::make('ter_rate'),

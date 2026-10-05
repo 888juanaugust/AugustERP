@@ -64,11 +64,11 @@ Menu key `customer__sales-quotation` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Salesperson · Processed · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Salesperson · Processed · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -86,7 +86,7 @@ Menu key `customer__sales-quotation` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Department · Project · Description
+**Line grid "Other charges":** Charge · Amount · Department · Project · Description
 
 ## Sales Orders
 
@@ -115,11 +115,11 @@ Menu key `customer__sales-order` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Processed · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Processed · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -141,7 +141,7 @@ Menu key `customer__sales-order` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Department · Project · Description
+**Line grid "Other charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull from quotations
 
@@ -173,7 +173,7 @@ Menu key `customer__delivery-order` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Warehouse · Salesperson · Processed · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Warehouse · Salesperson · Processed · Department · Project · Memo
 
 #### Tab: Other info
 
@@ -269,11 +269,11 @@ Menu key `customer__sales-invoice` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -297,7 +297,7 @@ Menu key `customer__sales-invoice` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Department · Project · Description
+**Line grid "Other charges":** Charge · Amount · Department · Project · Description
 
 #### Tab: Down payments
 
@@ -344,7 +344,7 @@ Menu key `customer__sales-receipt` · module `sales`
 
 #### Tab: Invoices
 
-**Line grid "Lines":** Invoice · Invoice date · Invoice total · Open balance · Pay · Discount · Discount account
+**Line grid "Line items":** Invoice · Invoice date · Invoice total · Open balance · Pay · Discount · Discount account
 
 #### Tab: Other info
 
@@ -386,11 +386,11 @@ Menu key `customer__sales-return` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -407,7 +407,7 @@ Menu key `customer__sales-return` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Department · Project · Description
+**Line grid "Other charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull the lines of the document
 
@@ -437,7 +437,7 @@ Menu key `customer__exchange-invoice` · module `sales`
 
 #### Tab: Invoices
 
-**Line grid "Lines":** Invoice · Invoice date · Due
+**Line grid "Line items":** Invoice · Invoice date · Due
 
 #### Tab: Other info
 
@@ -605,7 +605,7 @@ Menu key `customer__customer` · module `sales`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Credit limit mode | `credit_limit_mode` | radio |  |
+| Credit limit | `credit_limit_mode` | radio |  |
 | Parent customer | `parent_customer_id` | select |  |
 | Block when an invoice is older than | `credit_limit_age_enabled` | toggle |  |
 | days | `credit_limit_age_days` | number |  |
@@ -644,7 +644,7 @@ Menu key `inventory__sellingprice-adjustment` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Unit · From quantity · New value
+**Line grid "Line items":** Item · Unit · From quantity · New value
 
 #### Tab: Other info
 
@@ -726,7 +726,7 @@ Menu key `budget-target__sales-target` · module `sales-extras` · switched by P
 
 #### Tab: Targets
 
-**Line grid "Lines":** For · Quantity · Value
+**Line grid "Line items":** For · Quantity · Value
 
 #### Tab: Progress
 

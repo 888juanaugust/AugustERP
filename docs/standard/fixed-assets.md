@@ -225,7 +225,7 @@ Menu key `fixed-asset__asset-transfer` · module `fixed-assets` · switched by P
 
 #### Tab: Asset details
 
-**Line grid "Lines":** Asset code · Asset name · Quantity · Memo
+**Line grid "Line items":** Asset code · Asset name · Quantity · Memo
 
 #### Tab: Other info
 

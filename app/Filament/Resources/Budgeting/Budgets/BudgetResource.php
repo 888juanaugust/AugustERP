@@ -90,7 +90,7 @@ class BudgetResource extends ErpResource
                             $set('lines', DocumentPages::keyedRows($rows));
                             Notification::make()->title(__(':count account(s) pulled', ['count' => count($rows)]))->success()->send();
                         }),
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -100,10 +100,10 @@ class BudgetResource extends ErpResource
                             TableColumn::make(__('Amount'))->alignment(Alignment::End),
                         ])
                         ->schema([
-                            Select::make('account_id')->options(fn () => self::accountOptions())->searchable()->required()->native(false)->live()
+                            Select::make('account_id')->label(__('Account'))->options(fn () => self::accountOptions())->searchable()->required()->native(false)->live()
                                 ->distinct()
                                 ->validationMessages(['distinct' => 'That account is already on the budget.']),
-                            Placeholder::make('code')->hiddenLabel()
+                            Placeholder::make('code')->label(__('Code'))->hiddenLabel()
                                 ->content(fn (Get $get): string => $get('account_id') ? (string) (Account::query()->find($get('account_id'))?->no ?? '—') : '—'),
                             PricedDocumentForm::money('amount', __('Budget'))->required()->live(onBlur: true),
                         ])

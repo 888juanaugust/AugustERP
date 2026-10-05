@@ -9,7 +9,7 @@ repository, never here, unless they are right for every client.
 |---|---|---|---|
 | 1 | Payroll completion (done 2026-10) | Payroll runs from salary components with BPJS and income tax Art. 21 (TER, the year in the last month), and the two Article 21 forms (the monthly return and the A1 withholding slips) | Both forms produce the tax office's file for a demo payroll; the payroll module's defaults seed their accounts |
 | 2 | Email tax invoice (done 2026-10) | Sending a customer its tax invoice by email once the serial number is back, with the mail log on the invoice | The placeholder screen is real; a test sends through the mail fake |
-| 3 | Indonesian UI | `lang/id.json` ships with the template, covering every string the panels show (number and date formats already follow Preferences) | Switching the locale to Indonesian leaves no English on any screen |
+| 3 | Indonesian UI (done 2026-10) | `lang/id.json` ships with the template, covering every string the panels show (number and date formats already follow Preferences) | Switching the locale to Indonesian leaves no English on any screen |
 | 4 | Multiple currencies (done 2026-10) | Documents in a foreign currency with a rate per document and realised differences on settlement, behind the Multiple currencies switch | A sales invoice in USD settles in IDR with the difference posted |
 | 5 | Client extensions guide (done 2026-10) | A worked example of a client module under `app/Client` (resources, migrations, seeders, notes), merged from a template update without conflict | The example lives in `examples/client` and its merge into a client made from the previous commit is tested in CI |
 

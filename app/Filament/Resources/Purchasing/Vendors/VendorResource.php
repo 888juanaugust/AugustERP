@@ -62,7 +62,7 @@ class VendorResource extends MasterResource
                 ->columns(3)
                 ->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(150)->columnSpan(2),
-                    NumberFields::make(TransactionType::Vendor, 'Vendor ID'),
+                    NumberFields::make(TransactionType::Vendor, __('Vendor ID')),
                     Select::make('category_id')->label(__('Category'))->relationship('category', 'name')->preload()->searchable()->native(false)
                         ->default(fn () => VendorCategory::query()->where('is_default', true)->value('id')),
                     Select::make('vendor_type_id')->label(__('Vendor type'))->relationship('vendorType', 'name')->preload()->native(false),
@@ -79,9 +79,9 @@ class VendorResource extends MasterResource
             Tabs::make('vendor')
                 ->persistTabInQueryString()
                 ->tabs([
-                    Tab::make(__('Address'))->schema([AddressFields::make('bill', 'Payment address')]),
+                    Tab::make(__('Address'))->schema([AddressFields::make('bill', __('Payment address'))]),
                     Tab::make(__('Contacts'))->schema([
-                        Repeater::make('contacts')
+                        Repeater::make('contacts')->label(__('Contacts'))
                             ->hiddenLabel()
                             ->relationship()
                             ->orderColumn('sort')
@@ -114,7 +114,7 @@ class VendorResource extends MasterResource
                             ->relationship()
                             ->orderColumn('sort')
                             ->table([
-                                TableColumn::make(__('Account number')),
+                                TableColumn::make(__('Bank account number')),
                                 TableColumn::make(__('Account holder')),
                                 TableColumn::make(__('Bank')),
                             ])
@@ -136,7 +136,7 @@ class VendorResource extends MasterResource
                             Select::make('document_code')->label(__('Transaction type'))->options(TaxDocumentCode::options(TaxDocumentCode::forVendors()))->native(false),
                         ]),
                         Toggle::make('tax_same_as_bill')->label(__('Tax address is the payment address'))->default(true)->live(),
-                        AddressFields::make('tax', 'Tax address')->visible(fn (Get $get) => ! $get('tax_same_as_bill')),
+                        AddressFields::make('tax', __('Tax address'))->visible(fn (Get $get) => ! $get('tax_same_as_bill')),
                     ]),
                     Tab::make(__('Opening balance'))->schema([
                         OpeningBalanceFields::repeater(__('Add open bill')),

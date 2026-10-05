@@ -65,7 +65,7 @@ class AssetChangeResource extends ErpResource
             Section::make()->columns(3)->schema([
                 Select::make('change_type')->label(__('Kind of change'))->options([AssetChange::DATA => __('Data'), AssetChange::REVALUATION => __('Revaluation')])->default(AssetChange::DATA)->required()->native(false),
                 AssetFields::select(),
-                NumberFields::make(TransactionType::FixedAssetChange, 'Change No.'),
+                NumberFields::make(TransactionType::FixedAssetChange, __('Change No.')),
                 DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 Select::make('new_depreciation_method')->label(__('New depreciation method'))->options(DepreciationMethod::class)->native(false)->placeholder(__('Unchanged')),
                 PricedDocumentForm::money('new_salvage_value', __('New salvage value'))->default(null)->nullable(),
@@ -74,7 +74,7 @@ class AssetChangeResource extends ErpResource
             ]),
             Tabs::make('change')->tabs([
                 Tab::make(__('Expenditure'))->schema([
-                    Repeater::make('expenditures')
+                    Repeater::make('expenditures')->label(__('Expenditures'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -84,8 +84,8 @@ class AssetChangeResource extends ErpResource
                             TableColumn::make(__('Amount'))->alignment(Alignment::End),
                         ])
                         ->schema([
-                            Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
-                            TextInput::make('description')->maxLength(255),
+                            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->required()->native(false),
+                            TextInput::make('description')->label(__('Description'))->maxLength(255),
                             PricedDocumentForm::money('amount', __('Amount'))->required()->live(onBlur: true),
                         ])
                         ->defaultItems(0)->live()

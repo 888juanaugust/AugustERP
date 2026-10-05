@@ -64,7 +64,7 @@ class SalesTargetResource extends ErpResource
             ]),
             Tabs::make('target')->tabs([
                 Tab::make(__('Targets'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -72,9 +72,9 @@ class SalesTargetResource extends ErpResource
                         ->schema([
                             LineItemFields::item()->visible(fn (Get $get) => $get('../../target_type') === 'per_item')->required(false),
                             Select::make('item_category_id')->relationship('itemCategory', 'name')->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_category'),
-                            Select::make('salesman_id')->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_salesman'),
-                            Select::make('month')->options(collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => date('F', mktime(0, 0, 0, $m, 1))])->all())->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_month'),
-                            TextInput::make('quantity')->numeric()->default(0),
+                            Select::make('salesman_id')->label(__('fields.salesman'))->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_salesman'),
+                            Select::make('month')->label(__('Month'))->options(Format::months())->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_month'),
+                            TextInput::make('quantity')->label(__('Quantity'))->numeric()->default(0),
                             PricedDocumentForm::money('value', __('Value')),
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel(__('Add target')),

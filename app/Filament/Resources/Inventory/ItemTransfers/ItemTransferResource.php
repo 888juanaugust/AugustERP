@@ -74,12 +74,12 @@ class ItemTransferResource extends ErpResource
                     Select::make('warehouse_id')->label(__('From warehouse'))->options($warehouses)->required()->native(false)->default(fn () => Warehouse::default()?->id),
                     Select::make('reference_warehouse_id')->label(__('To warehouse'))->options($warehouses)->required()->native(false)->different('warehouse_id'),
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
-                    NumberFields::make(TransactionType::ItemTransfer, 'Transfer No.'),
+                    NumberFields::make(TransactionType::ItemTransfer, __('Transfer No.')),
                     BranchFields::select(),
                 ]),
             Tabs::make('transfer')->tabs([
                 Tab::make(__('fields.lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -92,10 +92,10 @@ class ItemTransferResource extends ErpResource
                         ])
                         ->schema([
                             LineItemFields::item(stockedOnly: true),
-                            Placeholder::make('category')->hiddenLabel()->content(fn (Get $get) => $get('item_id') ? (Item::query()->with('category')->find($get('item_id'))?->category?->name ?? '—') : ''),
+                            Placeholder::make('category')->label(__('Category'))->hiddenLabel()->content(fn (Get $get) => $get('item_id') ? (Item::query()->with('category')->find($get('item_id'))?->category?->name ?? '—') : ''),
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                             LineItemFields::baseQuantity(),
                         ])
                         ->minItems(1)
@@ -162,7 +162,7 @@ class ItemTransferResource extends ErpResource
                     ->schema([
                         TextInput::make('item')->disabled()->dehydrated(false),
                         TextInput::make('remaining')->disabled()->dehydrated(false),
-                        TextInput::make('quantity')->numeric()->minValue(0)->required(),
+                        TextInput::make('quantity')->label(__('Quantity'))->numeric()->minValue(0)->required(),
                         Hidden::make('line_id'),
                     ])
                     ->default($record->load('lines.item')->remainingLines()->map(fn ($l) => [

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Pengaturan;
 
+use App\Domain\Shared\Format;
+use App\Domain\Shared\Locales;
+
 /**
  * Every field of the Preferences screen, one case each: its tab, its type, its
  * default (what a trading company usually wants; see docs/standard/settings.md)
@@ -97,6 +100,7 @@ enum PreferensiKey: string
     case BpjsExpenseAccount = 'accounts.bpjs_expense';
 
     // Other
+    case Language = 'other.language';
     case DecimalFormat = 'other.decimal_format';
     case QuantityDecimals = 'other.quantity_decimals';
     case PriceDecimals = 'other.price_decimals';
@@ -136,7 +140,7 @@ enum PreferensiKey: string
             self::DataStartDate, self::PkpDate, self::LastPriceCutoffDate => PreferensiType::Date,
             self::AccessFrom, self::AccessUntil => PreferensiType::Time,
             self::FiscalYearStartMonth, self::CogsSource, self::ReturnCostCharge, self::AccessRestriction,
-            self::DecimalFormat, self::QuantityDecimals, self::PriceDecimals, self::DateFormat,
+            self::Language, self::DecimalFormat, self::QuantityDecimals, self::PriceDecimals, self::DateFormat,
             self::AgingBasis, self::CommissionBasis => PreferensiType::Select,
             self::ReturnCostAccount, self::TemporaryPaymentAccount, self::ReceivableAccount,
             self::CustomerDownPaymentAccount, self::SalesDiscountAccount, self::PayableAccount,
@@ -169,6 +173,7 @@ enum PreferensiKey: string
             self::TransactionExtraColumns => array_fill(0, 15, null),
             self::ItemExtraColumns => array_fill(0, 10, null),
             self::ExtraDateColumns => array_fill(0, 2, null),
+            self::Language => 'en',
             self::DecimalFormat => 'id',
             self::QuantityDecimals => '4',
             self::PriceDecimals => '0',
@@ -191,10 +196,11 @@ enum PreferensiKey: string
     public function options(): array
     {
         return match ($this) {
-            self::FiscalYearStartMonth => collect(range(1, 12))->mapWithKeys(fn (int $m) => [(string) $m => date('F', mktime(0, 0, 0, $m, 1))])->all(),
+            self::FiscalYearStartMonth => collect(Format::months())->mapWithKeys(fn (string $name, int $m) => [(string) $m => $name])->all(),
             self::CogsSource => ['last_purchase_cost' => __('Last purchase price / landed cost'), 'sales_invoice_cogs' => __('Cost of sales on the sales invoice')],
             self::ReturnCostCharge => ['item_cogs_account' => "Charge to the item's cost of sales account", 'account' => __('Charge to a fixed account')],
             self::AccessRestriction => ['none' => __('Not restricted'), 'all' => __('Restricted for everyone'), 'time_window' => __('Access only within a time window')],
+            self::Language => Locales::names(),
             self::DecimalFormat => ['id' => '1.234.567,89', 'en' => '1,234,567.89'],
             self::QuantityDecimals, self::PriceDecimals => ['0' => '0', '1' => '1', '2' => '2', '3' => '3', '4' => '4'],
             self::DateFormat => ['d/m/Y' => '17/10/2026', 'd-m-Y' => '17-10-2026', 'Y-m-d' => '2026-10-17'],
@@ -274,6 +280,7 @@ enum PreferensiKey: string
             self::Pph21PayableAccount => __('Income tax Art. 21 withheld'),
             self::BpjsPayableAccount => __('BPJS contributions owed'),
             self::BpjsExpenseAccount => __('BPJS contributions paid by the employer'),
+            self::Language => __('Language'),
             self::DecimalFormat => __('Number format'),
             self::QuantityDecimals => __('Decimals on quantities'),
             self::PriceDecimals => __('Decimals on prices'),
@@ -301,6 +308,7 @@ enum PreferensiKey: string
             self::SalesOrderApproval => __('Who approves is set under Settings → Transaction Approvers. Without a rule that covers the order, anyone with the "approve transactions" right may.'),
             self::CreditNoticeDays => __('The customer is flagged on sales documents and the invoice list. 0 switches this off.'),
             self::CreditFreezeDays => __('No order is approved for the customer until the aged invoice is settled. 0 switches this off.'),
+            self::Language => __('The language of the screens and of documents sent to customers; each user may choose their own on their profile.'),
             self::DecimalFormat => __('How every number and amount reads and is typed.'),
             self::QuantityDecimals => __('Quantities show up to this many decimals; trailing zeros are dropped.'),
             self::PriceDecimals => __('Unit prices on printed documents show this many decimals.'),

@@ -65,8 +65,8 @@ class AccountingPeriodResource extends ErpResource
             ])
             ->defaultSort('year', 'desc')
             ->filters([
-                SelectFilter::make('year')->options(fn () => AccountingPeriod::query()->distinct()->orderByDesc('year')->pluck('year', 'year')->all()),
-                SelectFilter::make('month')->options(collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => date('F', mktime(0, 0, 0, $m, 1))])->all()),
+                SelectFilter::make('year')->label(__('Year'))->options(fn () => AccountingPeriod::query()->distinct()->orderByDesc('year')->pluck('year', 'year')->all()),
+                SelectFilter::make('month')->label(__('Month'))->options(Format::months()),
             ])
             ->recordActions([
                 Action::make('reopen')

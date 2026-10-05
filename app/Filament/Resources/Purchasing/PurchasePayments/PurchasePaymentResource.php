@@ -80,7 +80,7 @@ class PurchasePaymentResource extends ErpResource
                 Select::make('payment_method')->label(__('Payment method'))->options(PaymentMethod::class)->default(PaymentMethod::BankTransfer)->required()->native(false)->live(),
                 DatePicker::make('trans_date')->label(__('Payment date'))->required()->native(false)->default(today())->live(onBlur: true)
                     ->afterStateUpdated(fn (Set $set, Get $get) => Currencies::isForeign($get('currency_id')) ? CurrencyFields::fillRates($set, $get, $get('currency_id')) : null),
-                NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
+                NumberFields::make(TransactionType::CashBankVoucher, __('Voucher No.')),
                 Placeholder::make('amount_preview')->label(__('Amount paid'))->content(fn (Get $get) => SettlementLineFields::sum($get('lines'), $get('currency_id'))),
                 ...CurrencyFields::header(taxRate: false),
                 TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
@@ -101,7 +101,7 @@ class PurchasePaymentResource extends ErpResource
                             $set('lines', $rows);
                             Notification::make()->title(__(':count open document(s) pulled', ['count' => count($rows)]))->success()->send();
                         }),
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -113,7 +113,7 @@ class PurchasePaymentResource extends ErpResource
                             TableColumn::make(__('Discount account')),
                         ])
                         ->schema([
-                            Select::make('payable_key')
+                            Select::make('payable_key')->label(__('Document'))
                                 ->options(fn (Get $get) => PayableFields::openFor((int) $get('../../vendor_id'), $get('../../currency_id'))->map(fn ($o) => $o['label'])->all())
                                 ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
                                 ->required()->native(false)->live()
@@ -124,7 +124,7 @@ class PurchasePaymentResource extends ErpResource
                                     $set('amount', $proposal['amount']);
                                     $set('discount', $proposal['discount']);
                                 }),
-                            Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
+                            Placeholder::make('open')->label(__('Open balance'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
                             SettlementLineFields::amount('amount', __('Pay'))->required()->live(onBlur: true)
                                 ->rule(fn (Get $get) => SettlementLineFields::notNegativeUnlessCredit(fn () => ($key = $get('payable_key')) ? PayableFields::resolve($key) : null)),
                             SettlementLineFields::amount('discount', __('Discount'))->live(onBlur: true),
@@ -178,7 +178,7 @@ class PurchasePaymentResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                DocumentListFilters::dateRange('cheque_date', 'Cheque date'),
+                DocumentListFilters::dateRange('cheque_date', __('Cheque date')),
                 SelectFilter::make('payment_method')->label(__('Method'))->options(PaymentMethod::class),
                 SelectFilter::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('vendor_id')->label(__('Paid to'))->relationship('vendor', 'name')->searchable(),

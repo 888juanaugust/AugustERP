@@ -27,7 +27,7 @@ use SensitiveParameter;
  * A staff account. Administrators pass every access check; operators hold
  * rights through their access groups and are limited to their branches.
  */
-#[Fillable(['name', 'email', 'password', 'access_type', 'phone', 'is_active'])]
+#[Fillable(['name', 'email', 'password', 'access_type', 'phone', 'is_active', 'locale'])]
 #[Hidden(['password', 'remember_token', 'app_authentication_secret', 'app_authentication_recovery_codes'])]
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasAuditReference
 {

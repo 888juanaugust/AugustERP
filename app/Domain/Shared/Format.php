@@ -162,6 +162,18 @@ final class Format
         return self::carbon($date)?->format(self::dateInputFormat()) ?? '';
     }
 
+    /** A month's name in the current language (1 = January). */
+    public static function monthName(int $month): string
+    {
+        return CarbonImmutable::create(2000, $month, 1)->translatedFormat('F');
+    }
+
+    /** @return array<int, string> 1..12 → month name, for a month picker */
+    public static function months(): array
+    {
+        return array_combine(range(1, 12), array_map(self::monthName(...), range(1, 12)));
+    }
+
     public static function dateTime(DateTimeInterface|string|null $date): string
     {
         return self::carbon($date)?->translatedFormat('j M Y H:i') ?? '';
@@ -196,6 +208,6 @@ final class Format
         $model = Relation::getMorphedModel($alias);
         $key = $model !== null ? app(MenuRegistry::class)->menuKeyForModel($model) : null;
 
-        return $key?->label() ?? ucfirst(str_replace('_', ' ', $alias));
+        return $key?->label() ?? self::code($alias, 'record');
     }
 }

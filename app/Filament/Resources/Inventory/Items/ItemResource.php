@@ -77,7 +77,7 @@ class ItemResource extends MasterResource
                 ->columns(3)
                 ->schema([
                     TextInput::make('name')->label(__('Item name'))->required()->maxLength(200)->columnSpan(2),
-                    NumberFields::make(TransactionType::Item, 'Item code'),
+                    NumberFields::make(TransactionType::Item, __('Item code')),
                     Select::make('item_type')->label(__('Item type'))->options(ItemType::class)->default(ItemType::Inventory)->required()->native(false)->live(),
                     TextInput::make('upc_no')->label(__('UPC / barcode'))->maxLength(50),
                     Select::make('unit1_id')->label(__('Base unit'))->relationship('unit1', 'name')->preload()->required()->native(false)
@@ -110,8 +110,8 @@ class ItemResource extends MasterResource
                                 ->relationship()
                                 ->table([TableColumn::make(__('Warehouse')), TableColumn::make(__('Minimum'))->alignment(Alignment::End)])
                                 ->schema([
-                                    Select::make('warehouse_id')->options(fn () => Warehouse::query()->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->distinct()->native(false),
-                                    TextInput::make('quantity')->numeric()->minValue(0)->required()->default(0),
+                                    Select::make('warehouse_id')->label(__('Warehouse'))->options(fn () => Warehouse::query()->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->distinct()->native(false),
+                                    TextInput::make('quantity')->label(__('Quantity'))->numeric()->minValue(0)->required()->default(0),
                                 ])
                                 ->defaultItems(0)->addActionLabel(__('Add warehouse'))->columnSpanFull()
                                 ->visible(fn (Get $get) => ($get('item_type') instanceof ItemType ? $get('item_type') : ItemType::tryFrom((string) $get('item_type'))) === ItemType::Inventory),
@@ -176,12 +176,12 @@ class ItemResource extends MasterResource
                                     TableColumn::make(__('Warehouse')),
                                 ])
                                 ->schema([
-                                    DatePicker::make('trans_date')->required()->native(false)->default(fn () => DataStart::openingDate()),
-                                    TextInput::make('quantity')->numeric()->required(),
+                                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(fn () => DataStart::openingDate()),
+                                    TextInput::make('quantity')->label(__('Quantity'))->numeric()->required(),
                                     Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
-                                    TextInput::make('unit_cost')->numeric()->prefix(Format::symbol())->default(0)
+                                    TextInput::make('unit_cost')->label(__('Unit cost'))->numeric()->prefix(Format::symbol())->default(0)
                                         ->disabled(fn () => ! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost))->dehydrated(),
-                                    Select::make('warehouse_id')->relationship('warehouse', 'name', fn ($query) => $query->where('is_active', true))->required()->native(false),
+                                    Select::make('warehouse_id')->label(__('Warehouse'))->relationship('warehouse', 'name', fn ($query) => $query->where('is_active', true))->required()->native(false),
                                 ])
                                 ->addActionLabel(__('Add opening stock'))
                                 ->defaultItems(0),
@@ -200,7 +200,7 @@ class ItemResource extends MasterResource
                                 ])
                                 ->schema([
                                     Select::make('item_id')->relationship('item', 'name', fn ($query) => $query->where('item_type', '!=', ItemType::Group->value))->searchable()->required()->native(false),
-                                    TextInput::make('quantity')->numeric()->required()->default(1),
+                                    TextInput::make('quantity')->label(__('Quantity'))->numeric()->required()->default(1),
                                     Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
                                 ])
                                 ->addActionLabel(__('Add component'))

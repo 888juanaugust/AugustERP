@@ -64,7 +64,7 @@ class PurchaseRequisitionResource extends ErpResource
             ]),
             Tabs::make('requisition')->tabs([
                 Tab::make(__('fields.lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -80,9 +80,9 @@ class PurchaseRequisitionResource extends ErpResource
                             LineItemFields::item(groups: false),
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
-                            DatePicker::make('requested_date')->native(false),
-                            TextInput::make('estimated_price')->numeric()->default(0)->prefix(Format::symbol()),
-                            TextInput::make('memo')->maxLength(255),
+                            DatePicker::make('requested_date')->label(__('Requested date'))->native(false),
+                            TextInput::make('estimated_price')->label(__('Estimated price'))->numeric()->default(0)->prefix(Format::symbol()),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                             LineItemFields::baseQuantity(),
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel(__('Add line'))

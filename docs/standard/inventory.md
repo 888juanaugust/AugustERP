@@ -51,7 +51,7 @@ Menu key `vendor__purchase-requisition` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Requested for · Estimated price · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Requested for · Estimated price · Memo
 
 #### Tab: Other info
 
@@ -86,7 +86,7 @@ Menu key `inventory__item-transfer` · module `inventory`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Category · Quantity · Unit · Memo
+**Line grid "Line items":** Item · Category · Quantity · Unit · Memo
 
 #### Tab: Other info
 
@@ -120,7 +120,7 @@ Menu key `inventory__item-adjustment` · module `inventory`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Type · Quantity · Unit · Unit cost · Warehouse · Department · Project · Memo
+**Line grid "Line items":** Item · Type · Quantity · Unit · Unit cost · Warehouse · Department · Project · Memo
 
 #### Tab: Other info
 
@@ -188,7 +188,7 @@ Menu key `inventory__stock-opname-result` · module `inventory`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Counted · Unit · System
+**Line grid "Line items":** Item · Counted · Unit · System
 
 #### Tab: Other info
 

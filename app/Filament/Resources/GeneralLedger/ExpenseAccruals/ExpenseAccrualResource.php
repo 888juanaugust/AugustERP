@@ -70,11 +70,11 @@ class ExpenseAccrualResource extends ErpResource
                     Select::make('payable_account_id')->label(__('Expense payable'))->options(fn () => Account::options(AccountType::AccountsPayable, AccountType::OtherCurrentLiability))->searchable()->required()->native(false)
                         ->default(fn () => Account::query()->where('no', '2230')->value('id')),
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today())->live(onBlur: true),
-                    NumberFields::make(TransactionType::ExpenseAccrual, 'Expense No.'),
+                    NumberFields::make(TransactionType::ExpenseAccrual, __('Expense No.')),
                 ]),
             Tabs::make('accrual')->tabs([
                 Tab::make(__('Expense lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -86,17 +86,17 @@ class ExpenseAccrualResource extends ErpResource
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::FixedAsset))->searchable()->required()->native(false),
-                            MoneyInput::make('amount')->required()->minValue(1)->live(onBlur: true),
+                            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::FixedAsset))->searchable()->required()->native(false),
+                            MoneyInput::make('amount')->label(__('Amount'))->required()->minValue(1)->live(onBlur: true),
                             ...LineTaxFields::fields(),
                             ...TagFields::lineFields(),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                         ])
                         ->live()
                         ->minItems(1)
                         ->defaultItems(1)
                         ->addActionLabel(__('Add line')),
-                    Placeholder::make('total')
+                    Placeholder::make('total')->label(__('Total'))
                         ->hiddenLabel()
                         ->content(fn (Get $get): string => 'Total '.Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
                 ]),

@@ -6,6 +6,7 @@ namespace App\Filament\Resources\GeneralLedger\AccountingPeriods\Pages;
 
 use App\Domain\Audit\Auditor;
 use App\Domain\Posting\PeriodLock;
+use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\AccountingPeriods\AccountingPeriodResource;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
@@ -28,7 +29,7 @@ class ManageAccountingPeriods extends ManageRecords
                 ->visible(fn () => AccountingPeriodResource::canCreate())
                 ->schema([
                     Select::make('month')->label(__('Month'))
-                        ->options(collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => date('F', mktime(0, 0, 0, $m, 1))])->all())
+                        ->options(Format::months())
                         ->default(fn () => $lock->nextToClose()->month)->required()->native(false),
                     Select::make('year')->label(__('Year'))
                         ->options(collect(range((int) date('Y') - 6, (int) date('Y')))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())

@@ -61,17 +61,17 @@ class PurchaseInvoiceResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(VendorFields::select(), TransactionType::PurchaseInvoice, 'Form No.', [
+            PricedDocumentForm::header(VendorFields::select(), TransactionType::PurchaseInvoice, __('Form No.'), [
                 TextInput::make('bill_number')->label(__('Vendor\'s invoice No.'))->maxLength(60),
             ]),
             Tabs::make('invoice')->tabs([
                 PricedDocumentForm::linesTab(
                     before: [
-                        PullAction::make('Pull from receipts', 'vendor_id',
+                        PullAction::make(__('Pull from receipts'), 'vendor_id',
                             fn (Get $get) => GoodsReceipt::query()->where('vendor_id', $get('vendor_id'))->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                             fn (int $id) => PricedDocumentForm::pulledLines(GoodsReceipt::query()->findOrFail($id)->lines()->with('item')->get(), 'goods_receipt_line'),
                         ),
-                        PullAction::make('Pull from orders', 'vendor_id',
+                        PullAction::make(__('Pull from orders'), 'vendor_id',
                             fn (Get $get) => PurchaseOrder::query()->where('vendor_id', $get('vendor_id'))->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                             fn (int $id) => PricedDocumentForm::pulledLines(PurchaseOrder::query()->findOrFail($id)->lines()->with('item')->get(), 'purchase_order_line'),
                         )->name('pullOrders'),

@@ -80,7 +80,7 @@ class EmployeeResource extends MasterResource
             Section::make(__('Employment'))
                 ->columns(3)
                 ->schema([
-                    NumberFields::make(TransactionType::Employee, 'Employee ID'),
+                    NumberFields::make(TransactionType::Employee, __('Employee ID')),
                     TextInput::make('position')->label(__('Position'))->maxLength(100),
                     DatePicker::make('join_date')->label(__('Join date'))->native(false),
                     DatePicker::make('exit_date')->label(__('Exit date'))->native(false)->afterOrEqual('join_date')
@@ -91,7 +91,7 @@ class EmployeeResource extends MasterResource
                     Textarea::make('notes')->label(__('fields.memo'))->rows(2)->columnSpanFull(),
                 ]),
             Tabs::make('employee')->tabs([
-                Tab::make(__('Address'))->schema([AddressFields::make('', 'Home address')]),
+                Tab::make(__('Address'))->schema([AddressFields::make('', __('Home address'))]),
                 Tab::make(__('Income tax'))->schema([
                     Toggle::make('withhold_income_tax')->label(__('Withhold income tax (Art. 21)'))->live(),
                     Grid::make(2)
@@ -102,7 +102,7 @@ class EmployeeResource extends MasterResource
                             Select::make('tax_status')->label(__('Non-taxable income status (PTKP)'))->options(PtkpStatus::class)->native(false),
                             Grid::make(2)->schema([
                                 Select::make('start_month_payment')->label(__('Tax counted from month'))
-                                    ->options(collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => date('F', mktime(0, 0, 0, $m, 1))])->all())->native(false),
+                                    ->options(Format::months())->native(false),
                                 Select::make('start_year_payment')->label(__('year'))
                                     ->options(collect(range((int) date('Y') - 5, (int) date('Y') + 1))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())->native(false),
                             ]),
@@ -118,8 +118,8 @@ class EmployeeResource extends MasterResource
                             ->orderColumn('sort')
                             ->table([TableColumn::make(__('Component')), TableColumn::make(__('Amount'))->alignment(Alignment::End)])
                             ->schema([
-                                Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->required()->native(false)->distinct(),
-                                MoneyInput::make('amount')->required()->default(0),
+                                Select::make('salary_component_id')->label(__('Component'))->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->required()->native(false)->distinct(),
+                                MoneyInput::make('amount')->label(__('Amount'))->required()->default(0),
                             ])
                             ->defaultItems(0)
                             ->addActionLabel(__('Add a component'))
@@ -135,7 +135,7 @@ class EmployeeResource extends MasterResource
                 Tab::make(__('Salary account'))->schema([
                     Grid::make(3)->schema([
                         Select::make('bank_id')->label(__('Bank'))->relationship('bank', 'name')->preload()->searchable()->native(false),
-                        TextInput::make('bank_account')->label(__('Account number'))->maxLength(50),
+                        TextInput::make('bank_account')->label(__('Bank account number'))->maxLength(50),
                         TextInput::make('bank_account_name')->label(__('Account holder'))->maxLength(150),
                     ]),
                 ]),

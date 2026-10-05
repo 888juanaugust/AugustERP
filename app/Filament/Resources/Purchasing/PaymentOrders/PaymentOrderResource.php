@@ -64,13 +64,13 @@ class PaymentOrderResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 DatePicker::make('trans_date')->label(__('Transfer deadline'))->required()->native(false)->default(today()),
-                NumberFields::make(TransactionType::PaymentOrder, 'Voucher No.'),
+                NumberFields::make(TransactionType::PaymentOrder, __('Voucher No.')),
                 Select::make('payment_method')->label(__('Payment method'))->options([PaymentMethod::BankTransfer->value => __('Bank transfer'), PaymentMethod::VirtualAccount->value => __('Virtual account'), PaymentMethod::Cheque->value => __('Cheque / giro')])->default('bank_transfer')->required()->native(false),
                 Select::make('bank_account_id')->label(__('Pay from bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false),
             ]),
             Tabs::make('order')->tabs([
                 Tab::make(__('Invoices'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -84,7 +84,7 @@ class PaymentOrderResource extends ErpResource
                             TableColumn::make(__('Discount'))->alignment(Alignment::End),
                         ])
                         ->schema([
-                            Select::make('payable_key')
+                            Select::make('payable_key')->label(__('Invoice'))
                                 ->options(fn () => PurchaseInvoice::query()->where('payment_status', '!=', 'paid')->with('vendor')->orderBy('due_date')->limit(200)->get()
                                     ->mapWithKeys(fn ($i) => ['purchase_invoice:'.$i->id => $i->number.' · '.$i->vendor->name.' · '.__('due :date', ['date' => Format::date($i->due_date)]).' · '.__('open').' '.Format::rupiah(app(SettlementService::class)->balance($i))]))
                                 ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
@@ -94,10 +94,10 @@ class PaymentOrderResource extends ErpResource
                                     $set('vendor_id', $doc?->vendor_id);
                                     $set('amount', $doc ? app(SettlementService::class)->balance($doc) : 0);
                                 }),
-                            Placeholder::make('vendor')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? $doc->vendor->name : ''),
-                            Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
-                            Placeholder::make('invoice_total')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number((int) $doc->total) : ''),
-                            Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
+                            Placeholder::make('vendor')->label(__('fields.vendor'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? $doc->vendor->name : ''),
+                            Placeholder::make('invoice_date')->label(__('Invoice date'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
+                            Placeholder::make('invoice_total')->label(__('Invoice total'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number((int) $doc->total) : ''),
+                            Placeholder::make('open')->label(__('Open balance'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
                             PricedDocumentForm::money('amount', __('Pay'))->required()->minValue(1),
                             PricedDocumentForm::money('discount', __('Discount')),
                             Hidden::make('vendor_id'),
@@ -145,7 +145,7 @@ class PaymentOrderResource extends ErpResource
                 Rupiah::make('total')->label(__('fields.total')),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('status')->options(['pending' => __('Pending'), 'partial' => __('Partial'), 'processed' => __('Processed')])])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('status')->label(__('Status'))->options(['pending' => __('Pending'), 'partial' => __('Partial'), 'processed' => __('Processed')])])
             ->recordActions([EditAction::make()]);
     }
 

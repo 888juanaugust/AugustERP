@@ -64,10 +64,10 @@ final class LineItemFields
             ->native(false);
     }
 
-    public static function quantity(string $name = 'quantity', string $label = 'Quantity'): TextInput
+    public static function quantity(string $name = 'quantity', ?string $label = null): TextInput
     {
         return TextInput::make($name)
-            ->label($label)
+            ->label($label ?? __('fields.quantity'))
             ->numeric()
             ->required()
             ->live(onBlur: true)

@@ -31,6 +31,7 @@ class InstallCommand extends Command
         {--email= : The company email}
         {--currency=IDR : The base currency: IDR, USD, SGD, MYR or EUR}
         {--fiscal-year-start=1 : The month the fiscal year starts in (1-12)}
+        {--locale= : The language of the screens: en or id (each user may choose their own later)}
         {--admin-name= : The first administrator\'s name}
         {--admin-email= : The first administrator\'s email (defaults to ADMIN_EMAIL)}
         {--admin-password= : The first administrator\'s password (defaults to ADMIN_PASSWORD)}
@@ -77,6 +78,7 @@ class InstallCommand extends Command
             demo: (bool) $demo,
             fresh: (bool) $this->option('fresh'),
             force: (bool) $this->option('force'),
+            locale: $this->option('locale') ?: null,
         );
 
         try {

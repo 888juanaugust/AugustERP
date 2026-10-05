@@ -205,7 +205,7 @@ class BankReconciliation extends ErpPage implements HasTable
             'statement_balance' => Format::rupiah($summary['statement_balance']),
             'difference' => Format::rupiah($summary['difference']),
             'balanced' => $summary['difference'] === 0,
-            'status' => $reconciliation->isClosed() ? 'Closed on '.Format::date($reconciliation->closed_at) : 'Open',
+            'status' => $reconciliation->isClosed() ? __('Closed on :date', ['date' => Format::date($reconciliation->closed_at)]) : __('Open'),
         ];
     }
 

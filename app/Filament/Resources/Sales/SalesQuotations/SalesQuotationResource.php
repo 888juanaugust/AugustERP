@@ -50,7 +50,7 @@ class SalesQuotationResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(CustomerFields::select(label: 'Ordered by'), TransactionType::SalesQuotation),
+            PricedDocumentForm::header(CustomerFields::select(label: __('Ordered by')), TransactionType::SalesQuotation),
             Tabs::make('quotation')->tabs([
                 SalesLinesTab::make(warehouse: false, processed: true),
                 PricedDocumentForm::otherInfoTab([CustomerFields::paymentTerm()], shipping: false),

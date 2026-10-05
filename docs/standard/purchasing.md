@@ -55,11 +55,11 @@ Menu key `vendor__purchase-order` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Processed · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Processed · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -81,7 +81,7 @@ Menu key `vendor__purchase-order` · module `purchasing`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Department · Project · Description
+**Line grid "Other charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull from requisitions
 
@@ -113,7 +113,7 @@ Menu key `vendor__receive-item` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Warehouse · Processed · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Warehouse · Processed · Department · Project · Memo
 
 #### Tab: Other info
 
@@ -207,11 +207,11 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -235,7 +235,7 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Department · Project · Description · Into item cost
+**Line grid "Other charges":** Charge · Amount · Department · Project · Description · Into item cost
 
 #### Tab: Down payments
 
@@ -274,7 +274,7 @@ Menu key `vendor__purchase-payment` · module `purchasing`
 
 #### Tab: Invoices
 
-**Line grid "Lines":** Document · Open balance · Pay · Discount · Discount account
+**Line grid "Line items":** Document · Open balance · Pay · Discount · Discount account
 
 #### Tab: Other info
 
@@ -316,11 +316,11 @@ Menu key `vendor__purchase-return` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -337,7 +337,7 @@ Menu key `vendor__purchase-return` · module `purchasing`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Department · Project · Description
+**Line grid "Other charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull the lines of the document
 
@@ -366,7 +366,7 @@ Menu key `vendor__vendor-claim` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Department · Project · Memo
+**Line grid "Line items":** Item · Quantity · Unit · Department · Project · Memo
 
 #### Tab: Other info
 
@@ -403,7 +403,7 @@ Menu key `inventory__vendor-price` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Unit · New price
+**Line grid "Line items":** Item · Unit · New price
 
 #### Tab: Other info
 
@@ -490,7 +490,7 @@ Menu key `vendor__vendor` · module `purchasing`
 | Payable account | `payable_account_id` | select |  |
 | Down payment account | `down_payment_account_id` | select |  |
 
-**Line grid "Bank accounts":** Account number · Account holder · Bank
+**Line grid "Bank accounts":** Bank account number · Account holder · Bank
 
 #### Tab: Tax
 
@@ -550,7 +550,7 @@ Menu key `vendor__transfer-order` · module `purchasing`
 
 #### Tab: Invoices
 
-**Line grid "Lines":** Invoice · Vendor · Invoice date · Invoice total · Open balance · Pay · Discount
+**Line grid "Line items":** Invoice · Vendor · Invoice date · Invoice total · Open balance · Pay · Discount
 
 #### Tab: Other info
 

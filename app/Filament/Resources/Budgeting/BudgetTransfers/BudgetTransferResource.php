@@ -59,7 +59,7 @@ class BudgetTransferResource extends ErpResource
             Section::make()->columns(3)->schema([
                 TextInput::make('year')->label(__('Year'))->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
                 Select::make('scope')->label(__('Type'))->options(['general' => __('General')])->default('general')->required()->native(false),
-                NumberFields::make(TransactionType::BudgetTransfer, 'Transfer No.'),
+                NumberFields::make(TransactionType::BudgetTransfer, __('Transfer No.')),
                 DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
             ]),
             Section::make(__('From budget'))->columns(2)->schema([

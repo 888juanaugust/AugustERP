@@ -67,15 +67,15 @@ class DocumentSeriesResource extends MasterResource
                     Section::make(__('Components'))
                         ->description(__('The number is the components in this order. Exactly one must be the counter.'))
                         ->schema([
-                            Repeater::make('pattern')
+                            Repeater::make('pattern')->label(__('Pattern'))
                                 ->hiddenLabel()
                                 ->table([
                                     TableColumn::make(__('Component')),
                                     TableColumn::make(__('Text')),
                                 ])
                                 ->schema([
-                                    Select::make('token')->options(PatternToken::class)->required()->native(false)->live(),
-                                    TextInput::make('text')->maxLength(20)->placeholder(__('only for separator text'))->live(onBlur: true)
+                                    Select::make('token')->label(__('Component'))->options(PatternToken::class)->required()->native(false)->live(),
+                                    TextInput::make('text')->label(__('Text'))->maxLength(20)->placeholder(__('only for separator text'))->live(onBlur: true)
                                         ->disabled(fn (Get $get) => $get('token') !== PatternToken::Text->value)
                                         ->dehydrated(),
                                 ])

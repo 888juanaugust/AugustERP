@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sales;
 
+use App\Domain\Shared\Format;
 use App\Models\Sales\SalesInvoiceLine;
 use App\Models\Sales\SalesReturnLine;
 use App\Models\Sales\SalesTarget;
@@ -79,7 +80,7 @@ final class SalesTargetProgress
             'per_item' => $line->item?->name ?? '—',
             'per_category' => $line->itemCategory?->name ?? '—',
             'per_salesman' => $line->salesman?->name ?? '—',
-            'per_month' => $line->month ? date('F', mktime(0, 0, 0, (int) $line->month, 1)) : '—',
+            'per_month' => $line->month ? Format::monthName((int) $line->month) : '—',
             default => '—',
         };
     }

@@ -69,13 +69,13 @@ class InventoryAdjustmentResource extends ErpResource
                 ->columns(3)
                 ->schema([
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
-                    NumberFields::make(TransactionType::InventoryAdjustment, 'Adjustment No.'),
+                    NumberFields::make(TransactionType::InventoryAdjustment, __('Adjustment No.')),
                     BranchFields::select(),
                     ...TagFields::header(),
                 ]),
             Tabs::make('adjustment')->tabs([
                 Tab::make(__('fields.lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -91,15 +91,15 @@ class InventoryAdjustmentResource extends ErpResource
                         ])
                         ->schema([
                             LineItemFields::item(stockedOnly: true),
-                            Select::make('adjustment_type')->options(['quantity' => __('Quantity'), 'value' => __('Value')])->default('quantity')->required()->native(false)->live(),
+                            Select::make('adjustment_type')->label(__('Adjustment type'))->options(['quantity' => __('Quantity'), 'value' => __('Value')])->default('quantity')->required()->native(false)->live(),
                             LineItemFields::quantity()->placeholder(__('negative = out'))->disabled(fn (Get $get) => $get('adjustment_type') === 'value')->dehydrated(),
                             LineItemFields::unit(),
-                            TextInput::make('unit_cost')->numeric()->default(0)->prefix(Format::symbol())
+                            TextInput::make('unit_cost')->label(__('Unit cost'))->numeric()->default(0)->prefix(Format::symbol())
                                 ->disabled(fn (Get $get) => ! $seesCost || $get('adjustment_type') === 'value')->dehydrated(),
-                            Select::make('warehouse_id')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false)
+                            Select::make('warehouse_id')->label(__('Warehouse'))->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false)
                                 ->default(fn () => Warehouse::default()?->id),
                             ...TagFields::lineFields(),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                             TextInput::make('total_cost')->label(__('Value change'))->numeric()->default(0)->prefix(Format::symbol())
                                 ->visible(fn (Get $get) => $get('adjustment_type') === 'value'),
                             Select::make('adjustment_account_id')->label(__('Adjustment account'))->options(fn () => Account::options(AccountType::CostOfSales, AccountType::Expense, AccountType::OtherExpense, AccountType::OtherIncome, AccountType::Equity))->searchable()->native(false)->placeholder(__('Inventory Adjustments (default)')),

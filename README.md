@@ -2,8 +2,8 @@
 
 A standard, modular ERP template for trading companies: accounting, inventory, purchasing,
 sales, cash and bank, fixed assets, tax and reports. Laravel 13 and Filament 5 on
-PostgreSQL. English interface, translatable; Indonesian number, date and tax conventions by
-default. The screen is a workspace: an icon rail of the modules, a tile menu per module, and
+PostgreSQL. English and Indonesian interface (a company default, changeable per user);
+Indonesian number, date and tax conventions by default. The screen is a workspace: an icon rail of the modules, a tile menu per module, and
 every screen open as a live tab. One installation per client: create a repository from this template, run the
 installer, switch off what the client does not need, and keep merging template updates.
 
@@ -80,15 +80,22 @@ Redis, installs dependencies and installs the demo database.
 
 ## Translating
 
-The English text of the UI is the translation key. For a new locale:
+English and Indonesian ship with the template. The English text of the UI is the
+translation key; `lang/id.json` and `lang/id/{menu,fields,status}.php` hold the Indonesian.
+The company's language is set at install (`--locale=id`) or in Preferences → Other →
+Language, and each user may pick their own on their profile.
+
+After changing the UI:
 
 ```bash
-node tools/i18n/extract-strings.mjs id       # writes lang/id.json with every key, to fill in
-cp -r lang/en/fields.php lang/id/ ; cp lang/en/status.php lang/id/   # lang/id/menu.php already exists
+node tools/i18n/wrap-literals.mjs            # wraps any literal left outside __()
+node tools/i18n/extract-strings.mjs id       # adds new keys to lang/id.json, empty, to translate
 ```
 
-Set `APP_LOCALE=id`. `node tools/i18n/wrap-literals.mjs` wraps any new literal a developer
-left unwrapped, and `TranslationGuardTest` fails the build on one.
+`TranslationGuardTest` fails the build on an unwrapped literal; `IndonesianTranslationTest`
+fails it on a missing translation, a field without a label, or English text on an
+Indonesian screen. Another language is added the same way: `extract-strings.mjs <locale>`,
+copies of `lang/en/{menu,fields,status}.php`, and an entry in `Locales::names()`.
 
 ## History
 

@@ -56,7 +56,7 @@ Menu key `general-ledger__glaccount` · module `general-ledger`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Bank | `bank_id` | select |  |
-| Account number | `bank_account` | text |  |
+| Bank account number | `bank_account` | text |  |
 | Account holder | `bank_account_name` | text |  |
 | Currency | `currency_id` | select |  |
 
@@ -98,7 +98,7 @@ Menu key `general-ledger__expense-accrual` · module `general-ledger`
 
 #### Tab: Expense lines
 
-**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
+**Line grid "Line items":** Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -143,7 +143,7 @@ Menu key `cash-bank__employee-payment` · module `payroll` · switched by Prefer
 
 #### Tab: Employees
 
-**Line grid "Lines":** Employee · Component · Kind · Gross pay · Income tax · Contribution / deduction · Net pay · Department · Project · Memo
+**Line grid "Line items":** Employee · Component · Kind · Gross pay · Income tax · Contribution / deduction · Net pay · Department · Project · Memo
 
 #### Tab: Other info
 
@@ -180,11 +180,11 @@ Menu key `general-ledger__journal-voucher` · module `general-ledger`
 
 #### Tab: Journal lines
 
-**Line grid "Lines":** Account · Debit · Credit · Department · Project · Memo
+**Line grid "Line items":** Account · Debit · Credit · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Totals | `totals` | computed |  |
+| Total | `totals` | computed |  |
 
 #### Tab: Other info
 
@@ -275,7 +275,7 @@ Menu key `budget-target__accountbudget-target` · module `budgets` · switched b
 
 #### Tab: Budget lines
 
-**Line grid "Lines":** Account (income / expense) · Code · Amount
+**Line grid "Line items":** Account (income / expense) · Code · Amount
 
 | Field | Column | Type | Required |
 |---|---|---|---|

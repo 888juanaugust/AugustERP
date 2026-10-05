@@ -68,7 +68,7 @@ class StockOpnameResultResource extends ErpResource
                         ->options(fn () => StockOpnameOrder::query()->where('status', 'open')->orderByDesc('trans_date')->get()->mapWithKeys(fn ($o) => [$o->id => "{$o->number} · {$o->warehouse->name}"]))
                         ->required()->native(false)->live()
                         ->disabled(fn (?StockOpnameResult $record) => $record !== null)->dehydrated(),
-                    NumberFields::make(TransactionType::StockOpnameResult, 'Count No.'),
+                    NumberFields::make(TransactionType::StockOpnameResult, __('Count No.')),
                 ]),
             Tabs::make('result')->tabs([
                 Tab::make(__('fields.lines'))->schema([
@@ -92,7 +92,7 @@ class StockOpnameResultResource extends ErpResource
                             }
                             $set('lines', array_filter($lines, fn ($l) => ! empty($l['item_id'])));
                         }),
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -104,7 +104,7 @@ class StockOpnameResultResource extends ErpResource
                         ])
                         ->schema([
                             LineItemFields::item(stockedOnly: true),
-                            LineItemFields::quantity('counted_qty', 'Counted')->minValue(0),
+                            LineItemFields::quantity('counted_qty', __('Counted'))->minValue(0),
                             LineItemFields::unit(),
                             TextInput::make('system_qty')->numeric()->disabled()->dehydrated()->default(0),
                             LineItemFields::baseQuantity(),
@@ -160,7 +160,7 @@ class StockOpnameResultResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('status')->options(['draft' => __('Draft'), 'approved' => __('Approved')]),
+                SelectFilter::make('status')->label(__('Status'))->options(['draft' => __('Draft'), 'approved' => __('Approved')]),
             ])
             ->recordActions([EditAction::make(), self::approveAction()]);
     }
