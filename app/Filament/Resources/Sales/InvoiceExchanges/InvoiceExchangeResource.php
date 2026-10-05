@@ -56,10 +56,10 @@ class InvoiceExchangeResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 CustomerFields::select(fillsTerms: false),
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::InvoiceExchange),
-                DatePicker::make('collect_date')->label(__('Exchange date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->addDays(30)),
+                DatePicker::make('collect_date')->label(__('Exchange date'))->required()->native(false)->default(today()),
+                DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->default(fn () => today()->addDays(30)),
             ]),
             Tabs::make('exchange')->tabs([
                 Tab::make(__('Invoices'))->schema([

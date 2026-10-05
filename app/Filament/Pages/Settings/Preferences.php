@@ -9,7 +9,6 @@ use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Pengaturan\PreferensiTab;
 use App\Domain\Pengaturan\PreferensiType;
-use App\Domain\Shared\Format;
 use App\Filament\Support\ErpPage;
 use App\Models\GeneralLedger\Account;
 use Filament\Actions\Action;
@@ -104,7 +103,7 @@ class Preferences extends ErpPage
         $component = match ($key->type()) {
             PreferensiType::Bool => Toggle::make($name)->inline(),
             PreferensiType::Int => TextInput::make($name)->numeric()->minValue(0)->maxWidth('xs'),
-            PreferensiType::Date => DatePicker::make($name)->native(false)->displayFormat(Format::DATE_INPUT),
+            PreferensiType::Date => DatePicker::make($name)->native(false),
             PreferensiType::Time => TimePicker::make($name)->seconds(false),
             PreferensiType::Select => Select::make($name)->options($key->options())->native(false)->selectablePlaceholder(false),
             PreferensiType::Account => Select::make($name)->options(fn () => Account::options())->searchable()->native(false),

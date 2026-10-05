@@ -22,6 +22,7 @@ use App\Filament\Support\AddressFields;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\MasterResource;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Models\Company\Employee;
 use App\Models\Company\PaymentTerm;
@@ -47,7 +48,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -171,8 +171,8 @@ class CustomerResource extends MasterResource
                                 TableColumn::make(__('Description')),
                             ])
                             ->schema([
-                                DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
-                                TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix(Format::symbol()),
+                                DatePicker::make('trans_date')->required()->native(false)->default(fn () => DataStart::openingDate()),
+                                MoneyInput::make('amount')->required()->prefix(Format::symbol()),
                                 Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
                                 TextInput::make('number')->maxLength(60),
                                 TextInput::make('description')->maxLength(255),
@@ -195,7 +195,7 @@ class CustomerResource extends MasterResource
                                 Toggle::make('credit_limit_age_enabled')->label(__('Block when an invoice is older than'))->live()->inline(false),
                                 TextInput::make('credit_limit_age_days')->label(__('days'))->numeric()->integer()->minValue(0)->default(0)->visible(fn (Get $get) => $get('credit_limit_age_enabled')),
                                 Toggle::make('credit_limit_amount_enabled')->label(__('Block when receivables and open orders exceed'))->live()->inline(false),
-                                TextInput::make('credit_limit_amount')->label(__('amount'))->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0)->visible(fn (Get $get) => $get('credit_limit_amount_enabled')),
+                                MoneyInput::make('credit_limit_amount')->label(__('amount'))->prefix(Format::symbol())->default(0)->visible(fn (Get $get) => $get('credit_limit_amount_enabled')),
                             ])->visible(fn (Get $get) => $get('credit_limit_mode') === 'per_customer'),
                         ]),
                         Select::make('default_warehouse_id')->label(__('Default warehouse'))->relationship('defaultWarehouse', 'name', fn ($query) => $query->where('is_active', true))->preload()->native(false),

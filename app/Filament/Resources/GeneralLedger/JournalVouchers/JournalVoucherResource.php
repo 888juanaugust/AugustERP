@@ -13,6 +13,7 @@ use App\Filament\Resources\GeneralLedger\JournalVouchers\Pages\ListJournalVouche
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalVoucher;
@@ -30,7 +31,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Table;
 
 /** Journal Vouchers: the manual journal form; the list shows every journal entry the books hold. */
@@ -51,7 +51,7 @@ class JournalVoucherResource extends ErpResource
 
     public static function money(string $name, string $label): TextInput
     {
-        return TextInput::make($name)->label($label)->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0)->live(onBlur: true);
+        return MoneyInput::make($name)->label($label)->default(0)->live(onBlur: true);
     }
 
     public static function form(Schema $schema): Schema
@@ -60,7 +60,7 @@ class JournalVoucherResource extends ErpResource
             Section::make()
                 ->columns(3)
                 ->schema([
-                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                     NumberFields::make(TransactionType::JournalVoucher, 'Number'),
                     BranchFields::select(),
                 ]),

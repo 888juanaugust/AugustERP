@@ -35,7 +35,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Enums\Alignment;
-use Filament\Support\RawJs;
 use Illuminate\Support\HtmlString;
 
 /**
@@ -52,7 +51,7 @@ final class PricedDocumentForm
             ->columns(3)
             ->schema([
                 $party->columnSpan(1),
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today())->live(onBlur: true),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today())->live(onBlur: true),
                 NumberFields::make($type, $numberLabel),
                 ...$extra,
             ]);
@@ -60,7 +59,7 @@ final class PricedDocumentForm
 
     public static function money(string $name, string $label): TextInput
     {
-        return TextInput::make($name)->label($label)->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0);
+        return MoneyInput::make($name)->label($label)->default(0);
     }
 
     /**
@@ -255,7 +254,7 @@ final class PricedDocumentForm
             Toggle::make('inclusive_tax')->label(__('fields.inclusive_tax'))->default(false)->live(),
             TextInput::make('discount_percent')->label(__('Discount on the total (%)'))->numeric()->minValue(0)->maxValue(100)->default(0)->live(onBlur: true),
             ...($shipping ? [
-                DatePicker::make('ship_date')->label(__('fields.ship_date'))->native(false)->displayFormat(Format::DATE_INPUT),
+                DatePicker::make('ship_date')->label(__('fields.ship_date'))->native(false),
                 Select::make('shipment_id')->label(__('fields.shipment'))->relationship('shipment', 'name')->preload()->native(false),
                 Select::make('fob_id')->label(__('fields.fob'))->relationship('fob', 'name')->preload()->native(false),
             ] : []),

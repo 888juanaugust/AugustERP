@@ -54,8 +54,8 @@ class AccountHistory extends ErpPage implements HasTable
             ->components([
                 Section::make()->columns(3)->schema([
                     Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->native(false)->live(),
-                    DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('from')->label(__('From'))->native(false)->live(),
+                    DatePicker::make('until')->label(__('Until'))->native(false)->live(),
                 ]),
             ])
             ->statePath('filters');

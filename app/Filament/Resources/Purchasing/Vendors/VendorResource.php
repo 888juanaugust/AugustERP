@@ -17,6 +17,7 @@ use App\Filament\Resources\Purchasing\Vendors\Pages\ListVendors;
 use App\Filament\Support\AddressFields;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\MasterResource;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\Purchasing\Vendor;
@@ -37,7 +38,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -151,8 +151,8 @@ class VendorResource extends MasterResource
                                 TableColumn::make(__('Description')),
                             ])
                             ->schema([
-                                DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
-                                TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix(Format::symbol()),
+                                DatePicker::make('trans_date')->required()->native(false)->default(fn () => DataStart::openingDate()),
+                                MoneyInput::make('amount')->required()->prefix(Format::symbol()),
                                 Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
                                 TextInput::make('number')->maxLength(60),
                                 TextInput::make('description')->maxLength(255),

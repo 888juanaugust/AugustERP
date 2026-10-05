@@ -100,16 +100,16 @@ class AuditLogResource extends ErpResource
             ->filters([
                 Filter::make('trans_date')
                     ->schema([
-                        DatePicker::make('trans_from')->label(__('Transaction date from'))->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('trans_until')->label(__('until'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('trans_from')->label(__('Transaction date from'))->native(false),
+                        DatePicker::make('trans_until')->label(__('until'))->native(false),
                     ])
                     ->query(fn (Builder $q, array $data) => $q
                         ->when($data['trans_from'] ?? null, fn ($query, $d) => $query->whereDate('trans_date', '>=', $d))
                         ->when($data['trans_until'] ?? null, fn ($query, $d) => $query->whereDate('trans_date', '<=', $d))),
                 Filter::make('created_at')
                     ->schema([
-                        DatePicker::make('from')->label(__('Logged from'))->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('until')->label(__('until'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from')->label(__('Logged from'))->native(false),
+                        DatePicker::make('until')->label(__('until'))->native(false),
                     ])
                     ->query(fn (Builder $q, array $data) => $q
                         ->when($data['from'] ?? null, fn ($query, $d) => $query->whereDate('created_at', '>=', $d))

@@ -69,8 +69,8 @@ class RecurringTransactionResource extends ErpResource
                     TextInput::make('category')->label(__('Category'))->maxLength(50)->datalist(fn () => self::categories()),
                     Select::make('transaction_type')->label(__('Document'))->options(RecurringTransaction::types())->required()->native(false)->live(),
                     Select::make('frequency')->label(__('Frequency'))->options(RecurringTransaction::frequencies())->default('monthly')->required()->native(false),
-                    DatePicker::make('next_run_on')->label(__('Next run'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                    DatePicker::make('end_on')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->nullable(),
+                    DatePicker::make('next_run_on')->label(__('Next run'))->required()->native(false)->default(today()),
+                    DatePicker::make('end_on')->label(__('Until'))->native(false)->nullable(),
                     Select::make('status')->label(__('fields.status'))->options(self::STATUSES)->default('active')->required()->native(false),
                 ]),
             Section::make(__('Template'))

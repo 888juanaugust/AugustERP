@@ -6,7 +6,6 @@ namespace App\Filament\Resources\Purchasing\VendorClaims;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\CreateVendorClaim;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\EditVendorClaim;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\ListVendorClaims;
@@ -59,7 +58,7 @@ class VendorClaimResource extends ErpResource
                 Select::make('claim_type')->label(__('Claim type'))->options(['send' => __('Send goods to the vendor'), 'receive' => __('Receive goods from the vendor')])->default('send')->required()->native(false),
                 VendorFields::select(),
                 NumberFields::make(TransactionType::VendorClaim, 'Claim No.'),
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
             ]),
             Tabs::make('claim')->tabs([
                 Tab::make(__('fields.lines'))->schema([

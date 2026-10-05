@@ -50,8 +50,8 @@ class SalesmanCommissionResource extends MasterResource
                     TextInput::make('name')->label(__('Rule name'))->required()->maxLength(100),
                     Radio::make('active_period')->label(__('In force'))->options(['forever' => __('Always'), 'period' => __('For a period')])->default('forever')->live()->inline(),
                     Grid::make(2)->visible(fn (Get $get) => $get('active_period') === 'period')->schema([
-                        DatePicker::make('from_date')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('to_date')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from_date')->label(__('From'))->native(false),
+                        DatePicker::make('to_date')->label(__('Until'))->native(false),
                     ]),
                     Radio::make('salesman_scope')->label(__('Salespeople'))->options(['all' => __('Everyone'), 'specific' => __('Chosen ones')])->default('all')->live()->inline(),
                     CheckboxList::make('salesmen')->label(__('Chosen salespeople'))->relationship('salesmen', 'name', fn ($query) => $query->where('is_salesman', true))->columns(3)

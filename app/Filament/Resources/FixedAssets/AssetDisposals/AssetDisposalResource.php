@@ -60,7 +60,7 @@ class AssetDisposalResource extends ErpResource
                 AssetFields::select()
                     ->afterStateUpdated(fn (Set $set, $state) => $set('quantity', $state ? FixedAsset::query()->find($state)?->quantityRemaining() : null)),
                 NumberFields::make(TransactionType::FixedAssetDisposal, 'Disposal No.'),
-                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 TextInput::make('quantity')->label(__('Quantity'))->numeric()->required()->minValue(0.0001),
                 Select::make('gain_loss_account_id')->label(__('Gain / loss account'))->options(fn () => Account::options(AccountType::OtherIncome, AccountType::OtherExpense))->searchable()->required()->native(false),
                 Select::make('location_id')->label(__('Asset location'))->options(fn () => AssetLocation::options())->native(false),

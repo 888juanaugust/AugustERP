@@ -63,7 +63,7 @@ class PaymentOrderResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('trans_date')->label(__('Transfer deadline'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Transfer deadline'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::PaymentOrder, 'Voucher No.'),
                 Select::make('payment_method')->label(__('Payment method'))->options([PaymentMethod::BankTransfer->value => __('Bank transfer'), PaymentMethod::VirtualAccount->value => __('Virtual account'), PaymentMethod::Cheque->value => __('Cheque / giro')])->default('bank_transfer')->required()->native(false),
                 Select::make('bank_account_id')->label(__('Pay from bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false),

@@ -11,6 +11,7 @@ use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\Accounts\Pages\ManageAccounts;
 use App\Filament\Support\MasterResource;
+use App\Filament\Support\MoneyInput;
 use App\Models\GeneralLedger\Account;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -24,7 +25,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -73,9 +73,9 @@ class AccountResource extends MasterResource
                         TextInput::make('bank_account_name')->label(__('Account holder'))->maxLength(150),
                     ]),
                 Tab::make(__('Opening balance'))->schema([
-                    TextInput::make('opening_amount')->label(__('Balance'))->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()
+                    MoneyInput::make('opening_amount')->label(__('Balance'))->prefix(Format::symbol())
                         ->helperText(__('With the account\'s normal sign: a positive liability is a credit balance. Posted against Opening Balance Equity.')),
-                    DatePicker::make('opening_date')->label(__('As of'))->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
+                    DatePicker::make('opening_date')->label(__('As of'))->native(false)->default(fn () => DataStart::openingDate()),
                 ]),
                 self::usersTab(),
             ]),

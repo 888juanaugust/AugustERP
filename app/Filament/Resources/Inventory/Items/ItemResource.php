@@ -20,6 +20,7 @@ use App\Filament\Resources\Inventory\Items\Pages\ListItems;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\MasterResource;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
@@ -45,7 +46,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -66,7 +66,7 @@ class ItemResource extends MasterResource
 
     private static function money(string $name, string $label): TextInput
     {
-        return TextInput::make($name)->label($label)->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0);
+        return MoneyInput::make($name)->label($label)->prefix(Format::symbol())->default(0);
     }
 
     public static function form(Schema $schema): Schema
@@ -175,7 +175,7 @@ class ItemResource extends MasterResource
                                     TableColumn::make(__('Warehouse')),
                                 ])
                                 ->schema([
-                                    DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
+                                    DatePicker::make('trans_date')->required()->native(false)->default(fn () => DataStart::openingDate()),
                                     TextInput::make('quantity')->numeric()->required(),
                                     Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
                                     TextInput::make('unit_cost')->numeric()->prefix(Format::symbol())->default(0)

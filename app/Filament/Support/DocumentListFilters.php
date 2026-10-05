@@ -16,8 +16,8 @@ final class DocumentListFilters
     {
         return Filter::make($column)
             ->schema([
-                DatePicker::make('from')->label(__(':label from', ['label' => $label]))->native(false)->displayFormat(Format::DATE_INPUT),
-                DatePicker::make('until')->label(__('until'))->native(false)->displayFormat(Format::DATE_INPUT),
+                DatePicker::make('from')->label(__(':label from', ['label' => $label]))->native(false),
+                DatePicker::make('until')->label(__('until'))->native(false),
             ])
             ->query(fn (Builder $query, array $data) => $query
                 ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate($column, '>=', $d))

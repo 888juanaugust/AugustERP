@@ -60,8 +60,8 @@ class SellingPriceAdjustmentResource extends ErpResource
                 Select::make('price_category_id')->label(__('Price category'))->relationship('priceCategory', 'name')->preload()->required()->native(false),
                 Select::make('sales_adjustment_type')->label(__('Adjustment type'))->options(['price' => __('Price'), 'discount' => __('Discount (%)')])->default('price')->required()->native(false)->live(),
                 NumberFields::make(TransactionType::PriceAdjustment),
-                DatePicker::make('trans_date')->label(__('Effective from'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                DatePicker::make('end_date')->label(__('Ends on'))->native(false)->displayFormat(Format::DATE_INPUT),
+                DatePicker::make('trans_date')->label(__('Effective from'))->required()->native(false)->default(today()),
+                DatePicker::make('end_date')->label(__('Ends on'))->native(false),
                 Toggle::make('is_active')->label(__('fields.is_active'))->default(true)->inline(false),
             ]),
             Tabs::make('adjustment')->tabs([

@@ -59,8 +59,8 @@ class SalesTargetResource extends ErpResource
                 TextInput::make('name')->label(__('Target name'))->required()->maxLength(100),
                 Select::make('target_type')->label(__('Target type'))->options($types)->default('per_salesman')->required()->native(false)->live(),
                 BranchFields::select(__('Branch sales'), defaulted: false),
-                DatePicker::make('from_date')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => FiscalYear::startOf()->toDateString()),
-                DatePicker::make('to_date')->label(__('Until'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => FiscalYear::endOf()->toDateString()),
+                DatePicker::make('from_date')->label(__('From'))->native(false)->default(fn () => FiscalYear::startOf()->toDateString()),
+                DatePicker::make('to_date')->label(__('Until'))->required()->native(false)->default(fn () => FiscalYear::endOf()->toDateString()),
             ]),
             Tabs::make('target')->tabs([
                 Tab::make(__('Targets'))->schema([

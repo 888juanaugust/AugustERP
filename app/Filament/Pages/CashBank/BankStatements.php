@@ -60,8 +60,8 @@ class BankStatements extends ErpPage implements HasTable
             ->components([
                 Section::make()->columns(3)->schema([
                     Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
-                    DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('from')->label(__('From'))->native(false)->live(),
+                    DatePicker::make('until')->label(__('Until'))->native(false)->live(),
                 ]),
             ])
             ->statePath('filters');

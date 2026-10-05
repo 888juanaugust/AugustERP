@@ -6,7 +6,6 @@ namespace App\Filament\Pages\Company;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Company\CalendarFeed;
-use App\Domain\Shared\Format;
 use App\Filament\Support\ErpPage;
 use App\Models\Company\CalendarEvent;
 use Carbon\CarbonImmutable;
@@ -105,7 +104,7 @@ class Calendar extends ErpPage
                 ->visible(fn (): bool => static::canUpdate())
                 ->schema([
                     TextInput::make('title')->label(__('Title'))->required()->maxLength(200),
-                    DatePicker::make('starts_on')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('starts_on')->label(__('Date'))->required()->native(false)->default(today()),
                     Textarea::make('notes')->label(__('Notes'))->rows(3),
                 ])
                 ->action(function (array $data): void {

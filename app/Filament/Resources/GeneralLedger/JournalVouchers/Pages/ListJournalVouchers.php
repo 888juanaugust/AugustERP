@@ -59,8 +59,8 @@ class ListJournalVouchers extends ListRecords
                     ->multiple(),
                 Filter::make('trans_date')
                     ->schema([
-                        DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from')->label(__('From'))->native(false),
+                        DatePicker::make('until')->label(__('Until'))->native(false),
                     ])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))

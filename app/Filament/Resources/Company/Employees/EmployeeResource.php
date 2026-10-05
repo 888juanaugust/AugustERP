@@ -15,6 +15,7 @@ use App\Filament\Resources\Company\Employees\Pages\ListEmployees;
 use App\Filament\Support\AddressFields;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\MasterResource;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Models\Company\Employee;
 use Filament\Actions\DeleteAction;
@@ -31,7 +32,6 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -74,7 +74,7 @@ class EmployeeResource extends MasterResource
                 ->schema([
                     NumberFields::make(TransactionType::Employee, 'Employee ID'),
                     TextInput::make('position')->label(__('Position'))->maxLength(100),
-                    DatePicker::make('join_date')->label(__('Join date'))->native(false)->displayFormat(Format::DATE_INPUT),
+                    DatePicker::make('join_date')->label(__('Join date'))->native(false),
                     BranchFields::select(defaulted: false),
                     Toggle::make('is_salesman')->label(__('Salesperson: may be named on sales documents'))->inline(false),
                     self::activeToggle()->inline(false),
@@ -96,8 +96,8 @@ class EmployeeResource extends MasterResource
                                 Select::make('start_year_payment')->label(__('year'))
                                     ->options(collect(range((int) date('Y') - 5, (int) date('Y') + 1))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())->native(false),
                             ]),
-                            TextInput::make('previous_income')->label(__('Income earned before joining'))->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
-                            TextInput::make('previous_tax')->label(__('Tax withheld before joining'))->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0),
+                            MoneyInput::make('previous_income')->label(__('Income earned before joining'))->prefix(Format::symbol())->default(0),
+                            MoneyInput::make('previous_tax')->label(__('Tax withheld before joining'))->prefix(Format::symbol())->default(0),
                         ]),
                 ]),
                 Tab::make(__('Salary account'))->schema([

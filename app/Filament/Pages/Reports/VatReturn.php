@@ -66,8 +66,8 @@ class VatReturn extends ErpPage implements HasTable
         return $schema
             ->components([
                 Section::make()->columns(5)->schema([
-                    DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                    DatePicker::make('from')->label(__('From'))->native(false)->live(),
+                    DatePicker::make('until')->label(__('Until'))->native(false)->live(),
                     Select::make('kind')->label(__('Show'))
                         ->options([TaxFiling::OUT => __('VAT out (sales)'), TaxFiling::IN => __('VAT in (purchases)'), 'both' => __('Both')])
                         ->default(TaxFiling::OUT)->native(false)->selectablePlaceholder(false)->live(),

@@ -9,18 +9,17 @@ use App\Domain\CashBank\Reconciler;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
 use App\Filament\Support\ErpPage;
+use App\Filament\Support\MoneyInput;
 use App\Models\CashBank\BankReconciliation as Reconciliation;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalLine;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -68,10 +67,9 @@ class BankReconciliation extends ErpPage implements HasTable
             ->components([
                 Section::make()->columns(4)->schema([
                     Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->native(false)->live(),
-                    DatePicker::make('start')->label(__('Period from'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    DatePicker::make('end')->label(__('Period until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                    TextInput::make('statement_balance')->label(__('Statement ending balance'))
-                        ->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->default(0)->live(onBlur: true),
+                    DatePicker::make('start')->label(__('Period from'))->native(false)->live(),
+                    DatePicker::make('end')->label(__('Period until'))->native(false)->live(),
+                    MoneyInput::make('statement_balance')->label(__('Statement ending balance'))->default(0)->live(onBlur: true),
                 ]),
             ])
             ->statePath('filters');

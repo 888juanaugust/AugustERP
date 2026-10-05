@@ -85,7 +85,7 @@ class SalesInvoiceResource extends ErpResource
                 PricedDocumentForm::otherInfoTab([
                     CustomerFields::paymentTerm(),
                     TextInput::make('po_number')->label(__('fields.po_number'))->maxLength(60),
-                    DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat(Format::DATE_INPUT)->helperText(__('Blank: from the payment term.')),
+                    DatePicker::make('due_date')->label(__('Due date'))->native(false)->helperText(__('Blank: from the payment term.')),
                     TextInput::make('nsfp')->label(__('Tax invoice serial (NSFP)'))->maxLength(40)->helperText(__('Pasted back from the tax office after filing.')),
                 ]),
                 PricedDocumentForm::chargesTab(),

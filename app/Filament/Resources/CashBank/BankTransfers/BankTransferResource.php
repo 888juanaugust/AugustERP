@@ -61,7 +61,7 @@ class BankTransferResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::BankTransfer, 'Transfer No.'),
                 Select::make('from_bank_account_id')->label(__('From cash / bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)->live(),
                 PricedDocumentForm::money('amount', 'Amount transferred')->required()->live(onBlur: true),

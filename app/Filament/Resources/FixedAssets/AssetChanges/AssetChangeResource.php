@@ -66,7 +66,7 @@ class AssetChangeResource extends ErpResource
                 Select::make('change_type')->label(__('Kind of change'))->options([AssetChange::DATA => __('Data'), AssetChange::REVALUATION => __('Revaluation')])->default(AssetChange::DATA)->required()->native(false),
                 AssetFields::select(),
                 NumberFields::make(TransactionType::FixedAssetChange, 'Change No.'),
-                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 Select::make('new_depreciation_method')->label(__('New depreciation method'))->options(DepreciationMethod::class)->native(false)->placeholder(__('Unchanged')),
                 PricedDocumentForm::money('new_salvage_value', 'New salvage value')->default(null)->nullable(),
                 TextInput::make('new_useful_life_months')->label(__('New useful life (months)'))->numeric()->integer()->nullable(),

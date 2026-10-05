@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Pengaturan;
 
 use App\Domain\Audit\Auditor;
+use App\Domain\Shared\Format;
 use App\Models\Preference;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -84,6 +85,7 @@ final class Preferensi
     {
         $this->raw = null;
         Cache::forget(self::CACHE_KEY);
+        Format::forget(); // number and date formats are read from here
     }
 
     private function normalise(PreferensiKey $key, mixed $value): mixed

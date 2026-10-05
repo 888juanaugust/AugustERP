@@ -7,7 +7,6 @@ namespace App\Filament\Resources\Inventory\StockOpnameResults;
 use App\Domain\Access\MenuKey;
 use App\Domain\Inventory\OpnameApprover;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\StockOpnameResults\Pages\CreateStockOpnameResult;
 use App\Filament\Resources\Inventory\StockOpnameResults\Pages\EditStockOpnameResult;
 use App\Filament\Resources\Inventory\StockOpnameResults\Pages\ListStockOpnameResults;
@@ -63,7 +62,7 @@ class StockOpnameResultResource extends ErpResource
             Section::make()
                 ->columns(3)
                 ->schema([
-                    DatePicker::make('trans_date')->label(__('Count date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('trans_date')->label(__('Count date'))->required()->native(false)->default(today()),
                     Select::make('stock_opname_order_id')->label(__('Count order'))
                         ->options(fn () => StockOpnameOrder::query()->where('status', 'open')->orderByDesc('trans_date')->get()->mapWithKeys(fn ($o) => [$o->id => "{$o->number} · {$o->warehouse->name}"]))
                         ->required()->native(false)->live()
