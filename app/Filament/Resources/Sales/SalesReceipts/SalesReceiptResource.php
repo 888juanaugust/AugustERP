@@ -107,6 +107,8 @@ class SalesReceiptResource extends ErpResource
                         ->orderColumn('sort')
                         ->table([
                             TableColumn::make(__('Invoice')),
+                            TableColumn::make(__('Invoice date')),
+                            TableColumn::make(__('Invoice total'))->alignment(Alignment::End),
                             TableColumn::make(__('Open balance'))->alignment(Alignment::End),
                             TableColumn::make(__('Pay'))->alignment(Alignment::End),
                             TableColumn::make(__('Discount'))->alignment(Alignment::End),
@@ -124,6 +126,8 @@ class SalesReceiptResource extends ErpResource
                                     $set('amount', $proposal['pay']);
                                     $set('discount', $proposal['discount']);
                                 }),
+                            Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
+                            Placeholder::make('invoice_total')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number((int) $doc->total) : ''),
                             Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
                             PricedDocumentForm::money('amount', 'Pay')->required()->live(onBlur: true),
                             PricedDocumentForm::money('discount', 'Discount')->live(onBlur: true),
@@ -174,6 +178,7 @@ class SalesReceiptResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
+                DocumentListFilters::dateRange('cheque_date', 'Cheque date'),
                 SelectFilter::make('payment_method')->label(__('Method'))->options(PaymentMethod::class),
                 SelectFilter::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('customer_id')->label(__('Received from'))->relationship('customer', 'name')->searchable(),

@@ -10,7 +10,7 @@ Module group `company`. 14 screens in the standard menu.
 - Payment terms name a due period in days, an early-payment discount and its window; chosen per customer or vendor and per document.
 - Shipping methods and FOB terms are masters chosen on orders and deliveries.
 - Employees are the salespeople named on sales documents, customers and commissions; salary components feed payroll entries when the payroll module is on.
-- Recurring transactions make their document (journal voucher, payment or receipt) on schedule; memorized transactions are templates filled in by hand. The calendar shows what falls due: receivables, payables, maturing giros, recurring runs, notes and month end.
+- Recurring transactions make their document (journal voucher, payment or receipt) on schedule; memorized transactions are templates filled in by hand. The calendar shows what falls due: receivables, payables, maturing giros, recurring runs, notes and month end, by month, by week, or as an agenda of the next 30 days.
 - Month-end process closes months in order; a closed month refuses any addition, change or deletion dated in it, on the old and the new date of an edit; reopening takes a special right and is audited.
 - The activity log is the append-only record of who did what, with the document's revisions before and after each change.
 
@@ -229,7 +229,7 @@ Menu key `company__employee` · module `company`
 
 ### List
 
-**Columns:** Name · Position · Email · Mobile · Employee ID · PTKP · Employment · Sales
+**Columns:** Name · Position · Email · Mobile · Employee ID · PTKP · Employment · Sales · Open payroll
 
 **Filters:** Active · Salesperson · Employment status
 

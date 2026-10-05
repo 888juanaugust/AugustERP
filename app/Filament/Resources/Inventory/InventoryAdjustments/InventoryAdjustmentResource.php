@@ -15,6 +15,7 @@ use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\EditInventoryAdj
 use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\ListInventoryAdjustments;
 use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
+use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
@@ -135,6 +136,7 @@ class InventoryAdjustmentResource extends ErpResource
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(60)->placeholder('—'),
                 TextColumn::make('lines_count')->label(__('Lines'))->counts('lines')->alignEnd(),
+                Rupiah::make('lines_sum_total_cost')->label(__('Total cost'))->sum('lines', 'total_cost')->visible(fn () => HakAkses::canSpecial(HakKhusus::SeeCost)),
                 IconColumn::make('is_opening')->label(__('Opening'))->boolean()->toggleable(isToggledHiddenByDefault: true),
                 ApprovalActions::column(),
             ])

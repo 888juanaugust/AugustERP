@@ -9,6 +9,7 @@ use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Tax\TaxInvoiceBlocker;
 use App\Models\Tax\TaxFiling;
 use App\Models\Tax\TaxFilingDocument;
+use App\Models\Tax\VatReturnRecord;
 use App\Modules\BaseModule;
 use App\Modules\ModuleContext;
 
@@ -32,7 +33,7 @@ final class TaxModule extends BaseModule
 
     public static function morphMap(): array
     {
-        return ['tax_filing' => TaxFiling::class, 'tax_filing_document' => TaxFilingDocument::class];
+        return ['tax_filing' => TaxFiling::class, 'tax_filing_document' => TaxFilingDocument::class, 'vat_return' => VatReturnRecord::class];
     }
 
     public static function boot(ModuleContext $context): void

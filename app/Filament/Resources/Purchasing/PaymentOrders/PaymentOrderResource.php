@@ -77,6 +77,8 @@ class PaymentOrderResource extends ErpResource
                         ->table([
                             TableColumn::make(__('Invoice')),
                             TableColumn::make(__('Vendor')),
+                            TableColumn::make(__('Invoice date')),
+                            TableColumn::make(__('Invoice total'))->alignment(Alignment::End),
                             TableColumn::make(__('Open balance'))->alignment(Alignment::End),
                             TableColumn::make(__('Pay'))->alignment(Alignment::End),
                             TableColumn::make(__('Discount'))->alignment(Alignment::End),
@@ -93,6 +95,8 @@ class PaymentOrderResource extends ErpResource
                                     $set('amount', $doc ? app(SettlementService::class)->balance($doc) : 0);
                                 }),
                             Placeholder::make('vendor')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? $doc->vendor->name : ''),
+                            Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
+                            Placeholder::make('invoice_total')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number((int) $doc->total) : ''),
                             Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
                             PricedDocumentForm::money('amount', 'Pay')->required()->minValue(1),
                             PricedDocumentForm::money('discount', 'Discount'),

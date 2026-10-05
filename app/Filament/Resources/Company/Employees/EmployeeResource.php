@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Company\Employees;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
+use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Enums\PtkpStatus;
 use App\Domain\Shared\Enums\WorkStatus;
 use App\Domain\Shared\Format;
@@ -14,10 +15,12 @@ use App\Filament\Resources\Company\Employees\Pages\EditEmployee;
 use App\Filament\Resources\Company\Employees\Pages\ListEmployees;
 use App\Filament\Support\AddressFields;
 use App\Filament\Support\BranchFields;
+use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Models\Company\Employee;
+use App\Models\Company\PayrollEntry;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -111,6 +114,27 @@ class EmployeeResource extends MasterResource
         ])->columns(1);
     }
 
+    /** @return array<int, int> employee id → net pay on payroll entries not yet paid, in proportion to what each entry still owes */
+    private static function openPayroll(): array
+    {
+        return once(function (): array {
+            $settlement = app(SettlementService::class);
+            $open = [];
+            foreach (PayrollEntry::query()->where('payment_status', '!=', 'paid')->with('lines')->get() as $entry) {
+                $total = (int) $entry->lines->sum('net_amount');
+                if ($total <= 0) {
+                    continue;
+                }
+                $balance = $settlement->balance($entry);
+                foreach ($entry->lines as $line) {
+                    $open[$line->employee_id] = ($open[$line->employee_id] ?? 0) + intdiv((int) $line->net_amount * $balance, $total);
+                }
+            }
+
+            return $open;
+        });
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -123,6 +147,7 @@ class EmployeeResource extends MasterResource
                 TextColumn::make('tax_status')->label(__('PTKP'))->placeholder('—')->formatStateUsing(fn ($state) => $state instanceof PtkpStatus ? $state->value : ''),
                 TextColumn::make('work_status')->label(__('Employment'))->placeholder('—'),
                 IconColumn::make('is_salesman')->label(__('Sales'))->boolean(),
+                Rupiah::make('open_payroll')->label(__('Open payroll'))->state(fn (Employee $r) => self::openPayroll()[$r->id] ?? 0)->toggleable(),
             ])
             ->defaultSort('name')
             ->filters([

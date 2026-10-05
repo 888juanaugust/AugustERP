@@ -4,7 +4,7 @@ Module group `tax`. 3 screens in the standard menu.
 
 ## Behaviours
 
-- Output tax invoices export to the tax office's bulk-import XML; the older CSV layout stays selectable so an earlier filing can be reproduced. The serial numbers the tax office returns are pasted back onto the invoices. An invoice with a serial is locked as reported; "Clear serial" on the e-Tax screen unlocks it for a correction and keeps the old serial in the activity log.
+- Output tax invoices export to the tax office's bulk-import XML; the older CSV layout stays selectable so an earlier filing can be reproduced. The serial numbers the tax office returns are pasted back onto the invoices. The e-Tax screen filters by document (a tax invoice to a buyer with a tax ID, or aggregated when the buyer has none) and by status (draft, exported, numbered); a document exported more than once shows as a replacement, and the Info column says what the file will make of it (no buyer tax ID, items without a goods code). The VAT return can be saved for its period as a numbered record with its totals. An invoice with a serial is locked as reported; "Clear serial" on the e-Tax screen unlocks it for a correction and keeps the old serial in the activity log.
 - Emailing tax invoices to customers is planned for a later release.
 
 ## Screens
@@ -27,11 +27,13 @@ Menu key `company__efaktur-ctas` · module `tax` · switched by Preferences → 
 | From day | `day_from` | select |  |
 | To day | `day_to` | select |  |
 | Branch | `branch_id` | select |  |
+| Document | `document` | select |  |
+| Status | `status` | select |  |
 | Search | `search` | text |  |
 
 ### List
 
-**Columns:** Tax date · Transaction No. · Tax invoice No. · Tax base (DPP) · VAT · Document · Status · Tax ID · Name
+**Columns:** Tax date · Transaction No. · Tax invoice No. · Tax base (DPP) · VAT · Document · Status · Correction · Tax ID · Name · Info
 
 **Actions:** Clear serial · Export selected
 
@@ -55,11 +57,13 @@ Menu key `company__efaktur-online` · module `tax` · switched by Preferences �
 | From day | `day_from` | select |  |
 | To day | `day_to` | select |  |
 | Branch | `branch_id` | select |  |
+| Document | `document` | select |  |
+| Status | `status` | select |  |
 | Search | `search` | text |  |
 
 ### List
 
-**Columns:** Tax date · Transaction No. · Tax invoice No. · Tax base (DPP) · VAT · Document · Status · Tax ID · Name
+**Columns:** Tax date · Transaction No. · Tax invoice No. · Tax base (DPP) · VAT · Document · Status · Correction · Tax ID · Name · Info
 
 **Actions:** Clear serial · Export selected
 
