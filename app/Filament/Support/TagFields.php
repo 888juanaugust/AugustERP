@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Posting\Tags;
 use App\Models\Company\Department;
 use App\Models\Company\Project;
 use App\Modules\ModuleRegistry;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * The department and project pickers, present only while the Departments or
@@ -62,6 +64,12 @@ final class TagFields
             self::departmentsOn() ? self::department()->label(__('Department'))->placeholder(__('All departments'))->live() : null,
             self::projectsOn() ? self::project()->label(__('Project'))->placeholder(__('All projects'))->live() : null,
         ]));
+    }
+
+    /** @return array{department_id: ?int, project_id: ?int} a source document's header tags, for the document made from it */
+    public static function from(Model $source): array
+    {
+        return Tags::of($source)->toArray();
     }
 
     /** A picked filter value as an id, or null for all (and when the module is off). */

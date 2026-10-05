@@ -10,6 +10,7 @@ use App\Filament\Resources\Sales\SalesOrders\SalesOrderResource;
 use App\Filament\Support\CreateDocument;
 use App\Filament\Support\PrefillsFromSource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\TagFields;
 use App\Models\Sales\SalesQuotation;
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,6 +47,7 @@ class CreateSalesOrder extends CreateDocument
             'to_address' => $source->to_address,
             'discount_percent' => (string) $source->discount_percent,
             'description' => "From quotation {$source->number}",
+            ...TagFields::from($source),
             'lines' => PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), 'sales_quotation_line'),
         ];
     }

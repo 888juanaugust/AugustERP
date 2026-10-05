@@ -9,6 +9,7 @@ use App\Filament\Resources\Purchasing\PurchaseInvoices\PurchaseInvoiceResource;
 use App\Filament\Support\CreateDocument;
 use App\Filament\Support\DocumentPages;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\TagFields;
 use App\Models\Purchasing\GoodsReceipt;
 use App\Models\Purchasing\PurchaseOrder;
 
@@ -42,6 +43,7 @@ class CreatePurchaseInvoice extends CreateDocument
             'payment_term_id' => $source->payment_term_id ?? $source->vendor?->payment_term_id,
             'to_address' => $source->to_address,
             'description' => "From {$source->number}",
+            ...TagFields::from($source),
         ]));
         $this->data['lines'] = DocumentPages::keyedRows(
             PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), $kind === 'receipt' ? 'goods_receipt_line' : 'purchase_order_line'),

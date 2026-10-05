@@ -10,6 +10,7 @@ use App\Domain\Inventory\GroupItems;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use App\Models\Inventory\StockMovement;
 use Illuminate\Database\Eloquent\Model;
@@ -36,7 +37,7 @@ class Delivery extends Model implements Postable
 
     public function lines(): HasMany
     {
-        return $this->hasMany(DeliveryLine::class)->orderBy('sort');
+        return $this->hasMany(DeliveryLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function customer(): BelongsTo
@@ -59,8 +60,8 @@ class Delivery extends Model implements Postable
                 $cost = $engine->issueCost($piece['item']->id, $line->warehouse_id, $this->trans_date, $piece['base_quantity']);
                 $builder->stock(['item_id' => $piece['item']->id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => $piece['base_quantity'],
                     'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'delivery_line', 'source_line_id' => $line->id]);
-                $builder->debit($transit, $cost['total_cost'], $line->memo);
-                $builder->credit(Accounts::inventory($piece['item']), $cost['total_cost'], $line->memo);
+                $builder->debit($transit, $cost['total_cost'], $line->memo, tags: Tags::of($line));
+                $builder->credit(Accounts::inventory($piece['item']), $cost['total_cost'], $line->memo, tags: Tags::of($line));
             }
         }
     }

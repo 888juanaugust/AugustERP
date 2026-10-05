@@ -22,6 +22,7 @@ use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PrintAction;
+use App\Filament\Support\TagFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Warehouse;
@@ -70,6 +71,7 @@ class InventoryAdjustmentResource extends ErpResource
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                     NumberFields::make(TransactionType::InventoryAdjustment, 'Adjustment No.'),
                     BranchFields::select(),
+                    ...TagFields::header(),
                 ]),
             Tabs::make('adjustment')->tabs([
                 Tab::make(__('fields.lines'))->schema([
@@ -84,6 +86,7 @@ class InventoryAdjustmentResource extends ErpResource
                             TableColumn::make(__('Unit')),
                             TableColumn::make(__('Unit cost'))->alignment(Alignment::End),
                             TableColumn::make(__('Warehouse')),
+                            ...TagFields::columns(),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
@@ -95,6 +98,7 @@ class InventoryAdjustmentResource extends ErpResource
                                 ->disabled(fn (Get $get) => ! $seesCost || $get('adjustment_type') === 'value')->dehydrated(),
                             Select::make('warehouse_id')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false)
                                 ->default(fn () => Warehouse::default()?->id),
+                            ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                             TextInput::make('total_cost')->label(__('Value change'))->numeric()->default(0)->prefix(Format::symbol())
                                 ->visible(fn (Get $get) => $get('adjustment_type') === 'value'),

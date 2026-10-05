@@ -9,6 +9,7 @@ use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use Brick\Math\BigDecimal;
@@ -59,8 +60,8 @@ class InventoryAdjustment extends Model implements Postable
             if ($line->adjustment_type === InventoryAdjustmentLine::VALUE) {
                 $delta = (int) $line->total_cost;
                 $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => '0', 'unit_cost' => 0, 'total_cost' => $delta, 'source_line_type' => 'inventory_adjustment_line', 'source_line_id' => $line->id]);
-                $builder->signed($inventoryAccount, $delta, $line->memo ?? 'Value adjustment');
-                $builder->signed($adjustmentAccount, -$delta, $line->memo ?? 'Value adjustment');
+                $builder->signed($inventoryAccount, $delta, $line->memo ?? 'Value adjustment', tags: Tags::of($line));
+                $builder->signed($adjustmentAccount, -$delta, $line->memo ?? 'Value adjustment', tags: Tags::of($line));
 
                 continue;
             }
@@ -68,14 +69,14 @@ class InventoryAdjustment extends Model implements Postable
             if ($qty->isPositive()) {
                 $total = (int) $line->total_cost ?: CostEngine::money(BigDecimal::of((string) $line->unit_cost)->multipliedBy($qty)->toScale(0, RoundingMode::HalfUp)->toInt());
                 $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => (string) $qty, 'unit_cost' => (string) $line->unit_cost, 'total_cost' => $total, 'source_line_type' => 'inventory_adjustment_line', 'source_line_id' => $line->id]);
-                $builder->debit($inventoryAccount, $total, $line->memo);
-                $builder->credit($adjustmentAccount, $total, $line->memo);
+                $builder->debit($inventoryAccount, $total, $line->memo, tags: Tags::of($line));
+                $builder->credit($adjustmentAccount, $total, $line->memo, tags: Tags::of($line));
             } elseif ($qty->isNegative()) {
                 $out = (string) $qty->abs();
                 $cost = $engine->issueCost($line->item_id, $line->warehouse_id, $this->trans_date, $out);
                 $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => $out, 'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'inventory_adjustment_line', 'source_line_id' => $line->id]);
-                $builder->debit($adjustmentAccount, $cost['total_cost'], $line->memo);
-                $builder->credit($inventoryAccount, $cost['total_cost'], $line->memo);
+                $builder->debit($adjustmentAccount, $cost['total_cost'], $line->memo, tags: Tags::of($line));
+                $builder->credit($inventoryAccount, $cost['total_cost'], $line->memo, tags: Tags::of($line));
             }
         }
     }

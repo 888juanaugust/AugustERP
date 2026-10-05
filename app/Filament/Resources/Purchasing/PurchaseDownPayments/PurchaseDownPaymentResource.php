@@ -17,6 +17,7 @@ use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\TagFields;
 use App\Filament\Support\VendorFields;
 use App\Models\Company\TaxCode;
 use App\Models\Purchasing\PurchaseDownPayment;
@@ -69,6 +70,7 @@ class PurchaseDownPaymentResource extends ErpResource
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     BranchFields::select(),
+                    ...TagFields::header(),
                     VendorFields::bankAccount(),
                     Textarea::make('to_address')->label(__('Address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),

@@ -28,7 +28,7 @@ class SalesQuotation extends Model implements HasAuditReference
 
     public function lines(): HasMany
     {
-        return $this->hasMany(SalesQuotationLine::class)->orderBy('sort');
+        return $this->hasMany(SalesQuotationLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function charges(): HasMany

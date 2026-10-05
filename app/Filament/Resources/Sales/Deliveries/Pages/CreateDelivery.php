@@ -9,6 +9,7 @@ use App\Filament\Resources\Sales\Deliveries\DeliveryResource;
 use App\Filament\Support\CreateDocument;
 use App\Filament\Support\PrefillsFromSource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\TagFields;
 use App\Models\Sales\SalesOrder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,6 +40,7 @@ class CreateDelivery extends CreateDocument
             'shipment_id' => $source->shipment_id,
             'fob_id' => $source->fob_id,
             'description' => "From order {$source->number}",
+            ...TagFields::from($source),
             'lines' => $source->isApproved() ? PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), 'sales_order_line') : [],
         ];
     }
