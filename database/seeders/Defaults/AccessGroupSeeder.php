@@ -41,7 +41,7 @@ class AccessGroupSeeder extends Seeder
             ],
             'Accounting' => [
                 'rights' => $this->grant($byModule(Modul::GeneralLedger, Modul::CashBank, Modul::Tax, Modul::Reports, Modul::FixedAssets), self::ALL)
-                    + $this->grant([MenuKey::Currencies, MenuKey::TaxCodes, MenuKey::PaymentTerms, MenuKey::Employees, MenuKey::SalaryComponents, MenuKey::MonthEndProcess, MenuKey::RecurringTransactions, MenuKey::MemorizedTransactions, MenuKey::Contacts, MenuKey::Calendar, MenuKey::ActivityLog], self::ALL)
+                    + $this->grant([MenuKey::Currencies, MenuKey::TaxCodes, MenuKey::PaymentTerms, MenuKey::Employees, MenuKey::SalaryComponents, MenuKey::MonthEndProcess, MenuKey::RecurringTransactions, MenuKey::MemorizedTransactions, MenuKey::Contacts, MenuKey::Calendar, MenuKey::ActivityLog, MenuKey::Departments, MenuKey::Projects], self::ALL)
                     + $this->grant($byModule(Modul::Sales, Modul::Purchasing), self::READ)
                     + $this->grant([MenuKey::ItemsAndServices, MenuKey::StockByWarehouse, MenuKey::InventoryAdjustments], self::READ),
                 'special' => [HakKhusus::OpenClosedPeriod, HakKhusus::BackdateTransactions, HakKhusus::DeletePostedTransactions, HakKhusus::ExportData, HakKhusus::SeeCost],
@@ -49,23 +49,23 @@ class AccessGroupSeeder extends Seeder
             'Finance' => [
                 'rights' => $this->grant($byModule(Modul::CashBank), self::ALL)
                     + $this->grant([MenuKey::SalesInvoices, MenuKey::SalesReceipts, MenuKey::SalesDownPayments, MenuKey::InvoiceExchanges, MenuKey::PurchaseInvoices, MenuKey::PurchasePayments, MenuKey::PurchaseDownPayments, MenuKey::PaymentOrders, MenuKey::ExpenseAccruals], self::WORK)
-                    + $this->grant([MenuKey::Customers, MenuKey::Vendors, MenuKey::SalesOrders, MenuKey::PurchaseOrders, MenuKey::DeliveryOrders, MenuKey::GoodsReceipts, MenuKey::ReportCatalogue, MenuKey::AccountHistory, MenuKey::Calendar, MenuKey::Contacts], self::READ),
+                    + $this->grant([MenuKey::Customers, MenuKey::Vendors, MenuKey::SalesOrders, MenuKey::PurchaseOrders, MenuKey::DeliveryOrders, MenuKey::GoodsReceipts, MenuKey::ReportCatalogue, MenuKey::AccountHistory, MenuKey::Calendar, MenuKey::Contacts, MenuKey::Departments, MenuKey::Projects], self::READ),
                 'special' => [HakKhusus::SeeCreditData, HakKhusus::OverrideCreditLimit, HakKhusus::ApproveTransactions, HakKhusus::ExportData],
             ],
             'Sales' => [
                 'rights' => $this->grant([MenuKey::SalesQuotations, MenuKey::SalesOrders, MenuKey::SalesReturns, MenuKey::Customers, MenuKey::CheckIns], self::WORK)
-                    + $this->grant([MenuKey::DeliveryOrders, MenuKey::SalesInvoices, MenuKey::SalesReceipts, MenuKey::CustomerCategories, MenuKey::PriceCategories, MenuKey::ItemsAndServices, MenuKey::StockByWarehouse, MenuKey::OrderFulfilment, MenuKey::SalesTargets, MenuKey::SalesmanCommissions, MenuKey::Calendar, MenuKey::Contacts], self::READ),
+                    + $this->grant([MenuKey::DeliveryOrders, MenuKey::SalesInvoices, MenuKey::SalesReceipts, MenuKey::CustomerCategories, MenuKey::PriceCategories, MenuKey::ItemsAndServices, MenuKey::StockByWarehouse, MenuKey::OrderFulfilment, MenuKey::SalesTargets, MenuKey::SalesmanCommissions, MenuKey::Calendar, MenuKey::Contacts, MenuKey::Departments, MenuKey::Projects], self::READ),
                 'special' => [],
             ],
             'Purchasing' => [
                 'rights' => $this->grant([MenuKey::PurchaseRequisitions, MenuKey::PurchaseOrders, MenuKey::PurchaseReturns, MenuKey::VendorClaims, MenuKey::VendorPrices, MenuKey::Vendors], self::WORK)
-                    + $this->grant([MenuKey::GoodsReceipts, MenuKey::PurchaseInvoices, MenuKey::VendorCategories, MenuKey::ItemsAndServices, MenuKey::StockByWarehouse, MenuKey::MinimumStock, MenuKey::Calendar, MenuKey::Contacts], self::READ),
+                    + $this->grant([MenuKey::GoodsReceipts, MenuKey::PurchaseInvoices, MenuKey::VendorCategories, MenuKey::ItemsAndServices, MenuKey::StockByWarehouse, MenuKey::MinimumStock, MenuKey::Calendar, MenuKey::Contacts, MenuKey::Departments, MenuKey::Projects], self::READ),
                 'special' => [HakKhusus::SeeCost],
             ],
             'Warehouse' => [
                 'rights' => $this->grant($byModule(Modul::Inventory), self::ALL)
                     + $this->grant([MenuKey::DeliveryOrders, MenuKey::GoodsReceipts], self::WORK)
-                    + $this->grant([MenuKey::SalesOrders, MenuKey::PurchaseOrders, MenuKey::PurchaseReturns, MenuKey::SalesReturns], self::READ),
+                    + $this->grant([MenuKey::SalesOrders, MenuKey::PurchaseOrders, MenuKey::PurchaseReturns, MenuKey::SalesReturns, MenuKey::Departments, MenuKey::Projects], self::READ),
                 'special' => [HakKhusus::SeeCost, HakKhusus::ApproveTransactions],
             ],
         ];

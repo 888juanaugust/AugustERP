@@ -6,6 +6,7 @@ use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Filament\Pages\Reports\DepreciationSchedule;
 use App\Filament\Pages\Reports\ReportRegistry;
+use App\Filament\Resources\Company\Departments\DepartmentResource;
 use App\Filament\Resources\FixedAssets\FixedAssets\FixedAssetResource;
 use App\Filament\Resources\GeneralLedger\PayrollEntries\PayrollEntryResource;
 use App\Filament\Resources\Sales\CheckIns\CheckInResource;
@@ -52,12 +53,16 @@ class ModuleToggleTest extends TestCase
     {
         $this->assertFalse(app(ModuleRegistry::class)->isEnabled('payroll'));
         $this->assertFalse(app(ModuleRegistry::class)->isEnabled('sales-extras'));
+        $this->assertFalse(app(ModuleRegistry::class)->isEnabled('departments'));
+        $this->assertFalse(app(ModuleRegistry::class)->isEnabled('projects'));
+        $this->get(DepartmentResource::getUrl('index'))->assertForbidden();
         $this->get(PayrollEntryResource::getUrl('index'))->assertForbidden();
         $this->get(CheckInResource::getUrl('index'))->assertForbidden();
         $this->get('/admin')->assertOk()->assertDontSee('Payroll Entries')->assertDontSee('Check-ins');
 
-        app(Preferensi::class)->setMany([PreferensiKey::Payroll->value => true, PreferensiKey::SalesExtras->value => true]);
+        app(Preferensi::class)->setMany([PreferensiKey::Payroll->value => true, PreferensiKey::SalesExtras->value => true, PreferensiKey::Department->value => true]);
         $this->freshRequest();
+        $this->get(DepartmentResource::getUrl('index'))->assertOk();
         $this->get(PayrollEntryResource::getUrl('index'))->assertOk();
         $this->get(CheckInResource::getUrl('index'))->assertOk();
         $this->get('/admin')->assertSee('Payroll Entries')->assertSee('Check-ins');

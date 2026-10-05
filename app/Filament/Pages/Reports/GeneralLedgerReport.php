@@ -16,6 +16,11 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class GeneralLedgerReport extends ReportPage
 {
+    protected function usesTags(): bool
+    {
+        return true;
+    }
+
     public static function reportKey(): string
     {
         return 'general-ledger';
@@ -54,11 +59,10 @@ class GeneralLedgerReport extends ReportPage
         $accountId = isset($this->filters['account_id']) && $this->filters['account_id'] !== '' ? (int) $this->filters['account_id'] : null;
         $opening = Ledger::openingNet($period);
 
-        $lines = JournalLine::query()->active()
+        $lines = $period->applyTo(JournalLine::query()->active())
             ->with('entry')
             ->when($accountId, fn (Builder $query) => $query->where('journal_lines.account_id', $accountId))
             ->whereBetween('journal_lines.trans_date', [$period->fromDate(), $period->untilDate()])
-            ->when($period->branchId, fn (Builder $query) => $query->where('journal_lines.branch_id', $period->branchId))
             ->orderBy('journal_lines.trans_date')->orderBy('journal_lines.id')
             ->get()
             ->groupBy('account_id');

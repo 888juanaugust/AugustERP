@@ -21,6 +21,7 @@ use App\Filament\Support\LineTotals;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayAction;
+use App\Filament\Support\TagFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\ExpenseAccrual;
 use Filament\Actions\EditAction;
@@ -81,12 +82,14 @@ class ExpenseAccrualResource extends ErpResource
                             TableColumn::make(__('Account')),
                             TableColumn::make(__('Amount'))->alignment(Alignment::End),
                             ...LineTaxFields::columns(),
+                            ...TagFields::columns(),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::FixedAsset))->searchable()->required()->native(false),
                             MoneyInput::make('amount')->required()->minValue(1)->live(onBlur: true),
                             ...LineTaxFields::fields(),
+                            ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->live()
@@ -101,6 +104,7 @@ class ExpenseAccrualResource extends ErpResource
                     DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)
                         ->default(fn () => today()->addDays(30)),
                     BranchFields::select(),
+                    ...TagFields::header(),
                     LineTaxFields::inclusiveToggle(),
                     Textarea::make('description')->label(__('fields.description'))->rows(3),
                 ]),

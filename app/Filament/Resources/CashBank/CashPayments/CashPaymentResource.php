@@ -24,6 +24,7 @@ use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\PrintAction;
+use App\Filament\Support\TagFields;
 use App\Models\CashBank\CashPayment;
 use App\Models\Company\MemorizedTransaction;
 use App\Models\GeneralLedger\Account;
@@ -109,6 +110,7 @@ class CashPaymentResource extends ErpResource
                             TableColumn::make(__('Account')),
                             TableColumn::make(__('Amount'))->alignment(Alignment::End),
                             ...LineTaxFields::columns(),
+                            ...TagFields::columns(),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
@@ -127,6 +129,7 @@ class CashPaymentResource extends ErpResource
                                 ->disabled(fn (Get $get) => filled($get('payable_key')))->dehydrated(),
                             PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
                             ...LineTaxFields::fields(fn (Get $get) => filled($get('payable_key'))),
+                            ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->minItems(1)->defaultItems(1)->live()
@@ -137,6 +140,7 @@ class CashPaymentResource extends ErpResource
                 ]),
                 Tab::make(__('Other info'))->schema([
                     BranchFields::select(),
+                    ...TagFields::header(),
                     LineTaxFields::inclusiveToggle(),
                     TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->helperText(__('Filling this registers a giro that clears or bounces later.')),
                     DatePicker::make('cheque_date')->label(__('Giro due date'))->native(false),

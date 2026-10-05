@@ -8,6 +8,7 @@ use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Domain\Settlement\Contracts\PaidByPayment;
 use App\Domain\Settlement\SettlementService;
 use App\Models\Company\Branch;
@@ -50,9 +51,9 @@ class ExpenseAccrual extends Model implements PaidByPayment, Postable
         foreach ($this->lines()->with('taxCode')->get() as $line) {
             // The expense without its tax; the tax to the tax code's VAT-in account.
             $net = LineTax::net($line, $inclusive);
-            $builder->debit($line->account_id, $net, $line->memo, $line->branch_id);
+            $builder->debit($line->account_id, $net, $line->memo, $line->branch_id, Tags::of($line));
             if ((int) $line->tax_amount !== 0) {
-                $builder->debit(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, $line->tax_invoice_number ? "VAT in {$line->tax_invoice_number}" : 'VAT in', $line->branch_id);
+                $builder->debit(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, $line->tax_invoice_number ? "VAT in {$line->tax_invoice_number}" : 'VAT in', $line->branch_id, Tags::of($line));
             }
             $total += $net + (int) $line->tax_amount;
         }

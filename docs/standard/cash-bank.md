@@ -48,13 +48,15 @@ Menu key `cash-bank__other-payment` · module `cash-bank`
 
 #### Tab: Payment details
 
-**Line grid "Lines":** Settles · Account · Amount · Tax · Tax invoice No. · Branch · Memo
+**Line grid "Lines":** Settles · Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
 
 #### Tab: Other info
 
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Amounts include tax | `inclusive_tax` | toggle |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Giro due date | `cheque_date` | date |  |
@@ -88,13 +90,15 @@ Menu key `cash-bank__other-deposit` · module `cash-bank`
 
 #### Tab: Receipt details
 
-**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Memo
+**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
 
 #### Tab: Other info
 
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Amounts include tax | `inclusive_tax` | toggle |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Giro due date | `cheque_date` | date |  |

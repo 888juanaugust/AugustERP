@@ -10,6 +10,7 @@ use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use Illuminate\Database\Eloquent\Model;
@@ -78,9 +79,9 @@ class CashReceipt extends Model implements GiroSource, Postable
         foreach ($this->lines()->with('taxCode')->get() as $line) {
             // The income without its tax; the tax to the tax code's VAT-out account.
             $net = LineTax::net($line, $inclusive);
-            $builder->signed($line->account_id, -$net, $line->memo, $line->branch_id);
+            $builder->signed($line->account_id, -$net, $line->memo, $line->branch_id, Tags::of($line));
             if ((int) $line->tax_amount !== 0) {
-                $builder->signed(Accounts::vatOut($line->taxCode), -(int) $line->tax_amount, 'VAT out', $line->branch_id);
+                $builder->signed(Accounts::vatOut($line->taxCode), -(int) $line->tax_amount, 'VAT out', $line->branch_id, Tags::of($line));
             }
             $total += $net + (int) $line->tax_amount;
         }

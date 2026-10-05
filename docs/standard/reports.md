@@ -5,6 +5,7 @@ Module group `reports`. 5 screens in the standard menu.
 ## Behaviours
 
 - Every report in the catalogue takes its filters (period, branch, and the report's own), is computed from the journal and the stock ledger when it opens, and exports to Excel. Nothing is stored.
+- With departments or projects on, the income statement and the general ledger also filter by department (the department with every department under it) and by project. The balance sheet and the other reports stay whole-company.
 - The VAT return summarises output and input tax per tax period, headed by the company's VAT identity (registered name, tax ID, VAT registration number and date, business type, KLU). The two Article 21 income-tax forms wait for the payroll module's completion.
 - The balance sheet shows the income of fiscal years before the current one as retained earnings and the current fiscal year's as "Net income this year"; the fiscal year starts in the month Preferences name. The income statement, statement of changes in equity and cash flow open on the fiscal year to date; the other reports on the current month.
 - Receivable and payable aging use the buckets Preferences set (an interval up to a range, then everything older: current, 1–30, 31–60, 61–90 and over 90 days to start) and age from the invoice date or the due date as Preferences say, which a report may change.
@@ -80,8 +81,8 @@ Every figure is computed from the journal and the stock ledger when the report o
 | Depreciation Schedule | Fixed Assets | `fixed-assets` | From · Until · Books · Asset category | Every asset with its cost, the period's depreciation, accumulated depreciation and book value at the period's end, in the commercial books or the tax books. |
 | Balance Sheet | Financial | always on | From · Until · Branch | Assets, liabilities and equity as at the end of the period, current and non-current, with the income to date. |
 | Cash Flow Statement | Financial | always on | From · Until · Branch | Cash in and out by operating, investing and financing activities, from the counter-accounts of every cash posting. |
-| General Ledger | Financial | always on | From · Until · Branch · Account | Every posting of every account in the period, with running balances. |
-| Income Statement | Financial | always on | From · Until · Branch | Revenue, cost of sales, expenses and the net income of the period, per branch when asked. |
+| General Ledger | Financial | always on | From · Until · Branch · Department · Project · Account | Every posting of every account in the period, with running balances. |
+| Income Statement | Financial | always on | From · Until · Branch · Department · Project | Revenue, cost of sales, expenses and the net income of the period, per branch when asked. |
 | Statement of Changes in Equity | Financial | always on | From · Until · Branch | Equity at the start, capital movements, the period's income, equity at the end. |
 | Trial Balance | Financial | always on | From · Until · Branch | Every account with its opening balance, the period's debits and credits, and the closing balance. |
 

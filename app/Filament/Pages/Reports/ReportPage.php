@@ -13,6 +13,7 @@ use App\Domain\Reports\Period;
 use App\Domain\Shared\Format;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpPage;
+use App\Filament\Support\TagFields;
 use App\Modules\ModuleRegistry;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -112,6 +113,12 @@ abstract class ReportPage extends ErpPage implements HasTable
         return true;
     }
 
+    /** Whether the report filters by department and project (shown only while those modules are on). */
+    protected function usesTags(): bool
+    {
+        return false;
+    }
+
     /** Whether the report opens on the fiscal year to date (the income statement, say) rather than this month. */
     protected function yearToDate(): bool
     {
@@ -130,6 +137,8 @@ abstract class ReportPage extends ErpPage implements HasTable
             'from' => $this->defaultFrom(),
             'until' => today()->toDateString(),
             'branch_id' => BranchFields::reportBranch(null),
+            'department_id' => null,
+            'project_id' => null,
         ];
     }
 
@@ -154,6 +163,9 @@ abstract class ReportPage extends ErpPage implements HasTable
         if ($this->usesBranch()) {
             $fields[] = BranchFields::filter();
         }
+        if ($this->usesTags()) {
+            array_push($fields, ...TagFields::filters());
+        }
 
         return $schema->components([Section::make()->columns(4)->schema(array_merge($fields, $this->extraFilters()))])->statePath('filters');
     }
@@ -169,6 +181,8 @@ abstract class ReportPage extends ErpPage implements HasTable
             $this->filters['from'] ?? $this->defaultFrom(),
             $this->filters['until'] ?? today()->toDateString(),
             BranchFields::reportBranch($this->filters['branch_id'] ?? null),
+            $this->usesTags() ? TagFields::picked($this->filters['department_id'] ?? null, 'departments') : null,
+            $this->usesTags() ? TagFields::picked($this->filters['project_id'] ?? null, 'projects') : null,
         );
     }
 
