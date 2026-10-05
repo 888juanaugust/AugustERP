@@ -41,4 +41,10 @@ enum PreferensiTab: string
     {
         return array_values(array_filter(PreferensiKey::cases(), fn (PreferensiKey $key) => $key->tab() === $this));
     }
+
+    /** @return list<PreferensiKey> the keys the Preferences screen offers on this tab */
+    public function offeredKeys(): array
+    {
+        return array_values(array_filter($this->keys(), fn (PreferensiKey $key) => $key->isOffered()));
+    }
 }

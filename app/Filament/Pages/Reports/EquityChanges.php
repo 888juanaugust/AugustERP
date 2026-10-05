@@ -9,6 +9,11 @@ use App\Domain\Reports\FinancialStatements;
 /** Statement of Changes in Equity (R-06): opening equity to closing equity. */
 class EquityChanges extends ReportPage
 {
+    protected function yearToDate(): bool
+    {
+        return true;
+    }
+
     public static function reportKey(): string
     {
         return 'equity-changes';

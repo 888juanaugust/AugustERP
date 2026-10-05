@@ -9,6 +9,11 @@ use App\Domain\Reports\FinancialStatements;
 /** Income Statement (R-02): the period's result, section by section. */
 class IncomeStatement extends ReportPage
 {
+    protected function yearToDate(): bool
+    {
+        return true;
+    }
+
     public static function reportKey(): string
     {
         return 'income-statement';

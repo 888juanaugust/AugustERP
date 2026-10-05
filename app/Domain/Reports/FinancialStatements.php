@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports;
 
+use App\Domain\Company\FiscalYear;
 use App\Domain\Shared\Enums\AccountType;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalLine;
@@ -43,8 +44,14 @@ final class FinancialStatements
                 }
             }
             if ($section === 'equity') {
+                // Income of the fiscal years before this one is retained earnings; this year's stands apart.
                 $income = Ledger::netIncome($net, $accounts);
-                $rows[] = ['id' => 'net-income', 'section' => $section, 'no' => '', 'name' => 'Net income to date', 'level' => 1, 'amount' => $income, 'is_total' => false, 'is_heading' => false];
+                $yearStart = FiscalYear::startOf($period->untilDate());
+                $retained = Ledger::netIncome(Ledger::closingNet(new Period($yearStart->subYears(100)->toDateString(), $yearStart->subDay()->toDateString(), $period->branchId)), $accounts);
+                if ($retained !== 0) {
+                    $rows[] = ['id' => 'retained-earnings', 'section' => $section, 'no' => '', 'name' => 'Retained earnings', 'level' => 1, 'amount' => $retained, 'is_total' => false, 'is_heading' => false];
+                }
+                $rows[] = ['id' => 'net-income', 'section' => $section, 'no' => '', 'name' => 'Net income this year', 'level' => 1, 'amount' => $income - $retained, 'is_total' => false, 'is_heading' => false];
                 $sum += $income;
             }
             $totals[$section] = $sum;

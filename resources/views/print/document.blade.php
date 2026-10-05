@@ -52,7 +52,7 @@
             @if ($s['show_logo'] ?? true)<div class="logo">{{ mb_substr($company['name'], 0, 1) }}</div>@endif
             <h1>{{ $company['name'] }}</h1>
             @if (($s['show_company_address'] ?? true) && $company['address'])<p>{{ $company['address'] }}</p>@endif
-            @if ($company['phone'] || $company['email'])<p>{{ trim($company['phone'].'  '.$company['email']) }}</p>@endif
+            @if ($company['phone'] || $company['fax'] || $company['email'])<p>{{ collect([$company['phone'] ? __('Phone :number', ['number' => $company['phone']]) : null, $company['fax'] ? __('Fax :number', ['number' => $company['fax']]) : null, $company['email'] ?: null])->filter()->join('  ·  ') }}</p>@endif
             @if (($s['show_tax_id'] ?? true) && $company['npwp'])<p>NPWP {{ $company['npwp'] }}</p>@endif
         </div>
         <div class="meta">

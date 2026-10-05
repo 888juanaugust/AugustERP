@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\Reports;
 
+use App\Domain\Reports\AgingBuckets;
 use App\Domain\Reports\TradeReports;
 use Filament\Forms\Components\Select;
 
@@ -27,12 +28,12 @@ class PayableAging extends ReportPage
 
     public static function description(): string
     {
-        return "Open payables per vendor by age at the period's end: current, 1–30, 31–60, 61–90, 91–120 and over 120 days.";
+        return "Open payables per vendor by age at the period's end, in the buckets Preferences set (current, 1–30, 31–60, 61–90 and over 90 days to start).";
     }
 
     protected function defaultFilters(): array
     {
-        return parent::defaultFilters() + ['basis' => 'invoice_date'];
+        return parent::defaultFilters() + ['basis' => AgingBuckets::defaultBasis()];
     }
 
     protected function extraFilters(): array
@@ -41,7 +42,7 @@ class PayableAging extends ReportPage
             Select::make('basis')
                 ->label(__('Age from'))
                 ->options(['invoice_date' => __('Invoice date'), 'due_date' => __('Due date')])
-                ->default('invoice_date')
+                ->default(fn () => AgingBuckets::defaultBasis())
                 ->native(false)
                 ->live(),
         ];
@@ -49,7 +50,7 @@ class PayableAging extends ReportPage
 
     protected function rows(): array
     {
-        return TradeReports::payableAging($this->period(), $this->filters['basis'] ?? 'invoice_date');
+        return TradeReports::payableAging($this->period(), $this->filters['basis'] ?? AgingBuckets::defaultBasis());
     }
 
     protected function columns(): array
@@ -57,12 +58,7 @@ class PayableAging extends ReportPage
         return [
             static::text('name', 'Vendor'),
             static::text('invoices', 'Open')->alignEnd(),
-            static::money('current', 'Current'),
-            static::money('1_30', '1–30'),
-            static::money('31_60', '31–60'),
-            static::money('61_90', '61–90'),
-            static::money('91_120', '91–120'),
-            static::money('over_120', '> 120'),
+            ...array_map(fn (array $bucket) => static::money($bucket['key'], $bucket['label']), AgingBuckets::all()),
             static::money('total', 'Total'),
             static::text('oldest_days', 'Oldest (days)')->alignEnd(),
         ];
@@ -70,22 +66,11 @@ class PayableAging extends ReportPage
 
     protected function exportHeaders(): array
     {
-        return ['Vendor', 'Open', 'Current', '1–30', '31–60', '61–90', '91–120', '> 120', 'Total', 'Oldest (days)'];
+        return ['Vendor', 'Open', ...array_column(AgingBuckets::all(), 'label'), 'Total', 'Oldest (days)'];
     }
 
     protected function exportRow(array $row): array
     {
-        return [
-            $row['name'],
-            $row['invoices'],
-            $row['current'],
-            $row['1_30'],
-            $row['31_60'],
-            $row['61_90'],
-            $row['91_120'],
-            $row['over_120'],
-            $row['total'],
-            $row['oldest_days'],
-        ];
+        return [$row['name'], $row['invoices'], ...array_map(fn (array $bucket) => $row[$bucket['key']], AgingBuckets::all()), $row['total'], $row['oldest_days']];
     }
 }

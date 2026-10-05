@@ -30,8 +30,8 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
 /**
- * The Preferences screen: the standard's ten tabs plus the Business
- * Rules tab, every field a PreferensiKey, saved through the audited store.
+ * The Preferences screen: the standard's tabs plus the Business Rules tab,
+ * every offered field a PreferensiKey, saved through the audited store.
  */
 class Preferences extends ErpPage
 {
@@ -59,7 +59,7 @@ class Preferences extends ErpPage
                 Tabs::make('preferences')
                     ->extraAttributes(['class' => 'ae-tabs-labelled'])
                     ->persistTabInQueryString()
-                    ->tabs(array_map(fn (PreferensiTab $tab) => $this->tab($tab), PreferensiTab::cases())),
+                    ->tabs(array_map(fn (PreferensiTab $tab) => $this->tab($tab), array_values(array_filter(PreferensiTab::cases(), fn (PreferensiTab $tab) => $tab->offeredKeys() !== [])))),
             ])
             ->statePath('data')
             ->disabled(! static::canUpdate());
@@ -69,6 +69,7 @@ class Preferences extends ErpPage
     {
         abort_unless(static::canUpdate(), 403);
 
+        // Only offered keys are on the form, so a hidden key keeps its stored value.
         app(Preferensi::class)->setMany(self::fromForm($this->form->getState()));
 
         Notification::make()->title(__('Preferences saved'))->success()->send();
@@ -86,7 +87,7 @@ class Preferences extends ErpPage
 
     private function tab(PreferensiTab $tab): Tab
     {
-        $fields = array_map(fn (PreferensiKey $key) => $this->field($key), $tab->keys());
+        $fields = array_map(fn (PreferensiKey $key) => $this->field($key), $tab->offeredKeys());
 
         return Tab::make($tab->value)
             ->label($tab->label())

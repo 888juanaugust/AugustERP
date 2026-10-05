@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Posting;
 
+use App\Domain\Company\DataStart;
 use App\Domain\Posting\Exceptions\PeriodClosedException;
+use App\Domain\Shared\Format;
 use App\Models\GeneralLedger\AccountingPeriod;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
@@ -12,9 +14,10 @@ use Illuminate\Support\Carbon;
 use RuntimeException;
 
 /**
- * Closed months refuse every posting dated inside them. Months close in
- * order (the month after the last closed one) and reopen in reverse, so the
- * closed range is always one contiguous stretch from the first close.
+ * Closed months refuse every posting dated inside them, and nothing posts
+ * before the data start date in Preferences. Months close in order (the
+ * month after the last closed one) and reopen in reverse, so the closed range
+ * is always one contiguous stretch from the first close.
  */
 final class PeriodLock
 {
@@ -31,6 +34,10 @@ final class PeriodLock
 
     public function assertOpen(DateTimeInterface|string $date, string $what = 'This transaction'): void
     {
+        $start = DataStart::date();
+        if ($start !== null && Carbon::parse($date)->startOfDay()->lt($start)) {
+            throw new PeriodClosedException(__(':what is dated before the data start date, :date; the books begin there.', ['what' => $what, 'date' => Format::date($start)]));
+        }
         if ($this->isClosed($date)) {
             $label = Carbon::parse($date)->format('F Y');
             throw new PeriodClosedException("{$what} is dated in {$label}, which is closed. Reopen the month first.");
