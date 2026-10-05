@@ -6,6 +6,7 @@ namespace App\Filament\Resources\FixedAssets\FixedAssets;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\FixedAssets\DepreciationMethod;
+use App\Domain\FixedAssets\FiscalDepreciator;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
@@ -27,6 +28,7 @@ use App\Models\GeneralLedger\Account;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
@@ -45,6 +47,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 /**
  * Fixed Assets: bought from the accounts on the expenditure tab, depreciated
@@ -116,6 +119,7 @@ class FixedAssetResource extends ErpResource
                             ])
                             ->createOptionUsing(fn (array $data) => AssetLocation::query()->create($data + ['is_active' => true])->id),
                         Textarea::make('notes')->label(__('Notes'))->rows(3)->columnSpanFull(),
+                        Hidden::make('purchase_invoice_line_id')->dehydrated(),
                         Toggle::make('fiscal')->label(__('Fiscal asset'))->live()->inline(false),
                         Select::make('fiscal_asset_category_id')->label(__('Fiscal asset group'))
                             ->options(fn () => FiscalAssetCategory::query()->orderBy('name')->pluck('name', 'id'))
@@ -123,6 +127,12 @@ class FixedAssetResource extends ErpResource
                             ->visible(fn (Get $get): bool => (bool) $get('fiscal')),
                         BranchFields::select(__('Branch')),
                     ]),
+                    Tab::make(__('Fiscal'))
+                        ->visible(fn (?FixedAsset $record) => $record?->fiscal && $record->fiscal_asset_category_id)
+                        ->schema([
+                            Placeholder::make('fiscal_schedule')->hiddenLabel()
+                                ->content(fn (?FixedAsset $record) => $record ? new HtmlString(view('filament.fixed-assets.fiscal-schedule', ['years' => FiscalDepreciator::years($record->loadMissing('fiscalCategory'))])->render()) : null),
+                        ]),
                     Tab::make(__('Expenditure accounts'))->schema([
                         Repeater::make('expenditures')
                             ->hiddenLabel()

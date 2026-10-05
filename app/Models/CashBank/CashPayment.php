@@ -5,6 +5,7 @@ namespace App\Models\CashBank;
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\CashBank\Contracts\GiroSource;
 use App\Domain\CashBank\GiroDetails;
+use App\Domain\CashBank\LineTax;
 use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
@@ -61,7 +62,7 @@ class CashPayment extends Model implements GiroSource, Postable
 
     public function refreshTotal(): void
     {
-        $this->forceFill(['amount' => (int) $this->lines()->sum('amount')])->saveQuietly();
+        $this->forceFill(['amount' => LineTax::refresh($this, fn ($line) => filled($line->payable_type))])->saveQuietly();
     }
 
     public function giroDetails(): ?GiroDetails
@@ -80,7 +81,8 @@ class CashPayment extends Model implements GiroSource, Postable
         }
         $settlement = app(SettlementService::class);
         $total = 0;
-        foreach ($this->lines()->with('payable')->get() as $line) {
+        $inclusive = (bool) $this->inclusive_tax;
+        foreach ($this->lines()->with(['payable', 'taxCode'])->get() as $line) {
             $amount = (int) $line->amount;
             $payable = $line->payable;
             if ($payable instanceof PaidByPayment) {
@@ -92,7 +94,12 @@ class CashPayment extends Model implements GiroSource, Postable
                 $builder->signed($payable->settlementAccountId(), $amount, $line->memo ?: $payable->number, $line->branch_id);
                 $builder->allocate(['receivable_type' => $line->payable_type, 'receivable_id' => $line->payable_id, 'amount' => $amount, 'discount' => 0]);
             } else {
-                $builder->signed($line->account_id, $amount, $line->memo, $line->branch_id);
+                // The expense without its tax; the tax to the tax code's VAT-in account.
+                $builder->signed($line->account_id, LineTax::net($line, $inclusive), $line->memo, $line->branch_id);
+                if ((int) $line->tax_amount !== 0) {
+                    $builder->signed(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, $line->tax_invoice_number ? "VAT in {$line->tax_invoice_number}" : 'VAT in', $line->branch_id);
+                }
+                $amount = LineTax::net($line, $inclusive) + (int) $line->tax_amount;
             }
             $total += $amount;
         }

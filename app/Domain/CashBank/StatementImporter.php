@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\CashBank;
 
 use App\Domain\Audit\Auditor;
+use App\Domain\Imports\SpreadsheetReader;
 use App\Models\CashBank\BankStatement;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Reads a bank's CSV export into statement lines (K-05). Banks name columns
+ * Reads a bank's export (CSV, or an Excel workbook) into statement lines. Banks name columns
  * differently, so the header is matched by meaning: a date, a description,
  * and either one signed amount (with an optional DB/CR type column) or a
  * debit and a credit column; a balance and a reference when present.
@@ -65,54 +66,30 @@ final class StatementImporter
     /** @return list<array{trans_date: string, description: ?string, reference: ?string, amount: int, balance: ?int}> */
     public function rows(string $path): array
     {
-        $handle = fopen($path, 'r');
-        if ($handle === false) {
-            throw new RuntimeException('The file could not be read.');
-        }
-        try {
-            $delimiter = $this->delimiter($handle);
-            $columns = null;
-            $rows = [];
-            while (($cells = fgetcsv($handle, 0, $delimiter, '"', '\\')) !== false) {
-                if ($cells === [null] || implode('', array_map('trim', array_map('strval', $cells))) === '') {
-                    continue;
-                }
-                if ($columns === null) {
-                    $columns = $this->columns($cells);
-                    if ($columns === null) {
-                        continue; // a title row above the header
-                    }
-                    if (! isset($columns['date']) || (! isset($columns['amount']) && ! isset($columns['debit']) && ! isset($columns['credit']))) {
-                        throw new RuntimeException('The header needs a date column and an amount, or debit and credit, column.');
-                    }
-
-                    continue;
-                }
-                $row = $this->row($cells, $columns);
-                if ($row !== null) {
-                    $rows[] = $row;
-                }
+        $columns = null;
+        $rows = [];
+        foreach (SpreadsheetReader::rows($path) as $cells) {
+            if (implode('', array_map(fn ($c) => trim((string) $c), $cells)) === '') {
+                continue;
             }
-        } finally {
-            fclose($handle);
+            if ($columns === null) {
+                $columns = $this->columns($cells);
+                if ($columns === null) {
+                    continue; // a title row above the header
+                }
+                if (! isset($columns['date']) || (! isset($columns['amount']) && ! isset($columns['debit']) && ! isset($columns['credit']))) {
+                    throw new RuntimeException('The header needs a date column and an amount, or debit and credit, column.');
+                }
+
+                continue;
+            }
+            $row = $this->row($cells, $columns);
+            if ($row !== null) {
+                $rows[] = $row;
+            }
         }
 
         return $rows;
-    }
-
-    /** @param  resource  $handle */
-    private function delimiter($handle): string
-    {
-        $counts = [',' => 0, ';' => 0, "\t" => 0];
-        for ($i = 0; $i < 10 && ($line = fgets($handle)) !== false; $i++) {
-            foreach ($counts as $char => $n) {
-                $counts[$char] = $n + substr_count($line, $char);
-            }
-        }
-        rewind($handle);
-        arsort($counts);
-
-        return (string) array_key_first($counts);
     }
 
     /** @return array<string, int>|null column role → index, or null when this is not the header */

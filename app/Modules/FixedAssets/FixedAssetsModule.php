@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\FixedAssets;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\FixedAssets\AssetFromBill;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\FixedAssets\AssetCategory;
 use App\Models\FixedAssets\AssetChange;
@@ -18,6 +19,7 @@ use App\Models\FixedAssets\FiscalAssetCategory;
 use App\Models\FixedAssets\FixedAsset;
 use App\Models\FixedAssets\FixedAssetExpenditure;
 use App\Modules\BaseModule;
+use App\Modules\ModuleContext;
 use Database\Seeders\Defaults\FixedAssetSeeder;
 
 /** Fixed assets and their monthly depreciation. Switched by the Fixed assets feature. */
@@ -53,6 +55,12 @@ final class FixedAssetsModule extends BaseModule
             'asset_transfer' => AssetTransfer::class,
             'asset_transfer_line' => AssetTransferLine::class,
         ];
+    }
+
+    public static function boot(ModuleContext $context): void
+    {
+        // A purchase invoice an asset was recorded from stays as it was while the asset exists.
+        $context->guard->addBlocker(new AssetFromBill);
     }
 
     public static function defaultSeeders(): array

@@ -27,5 +27,7 @@ Confirm with the client's accountant before relying on these figures:
 - Same-day costing order: movements are costed by date, receipts before issues on the same day, then in entry order.
 - Retained earnings on the balance sheet are computed from the income statement (prior fiscal years' income), not formed by a closing entry.
 - Withholding tax codes are modelled as a tax type but take part in no posting.
+- VAT on payment, receipt and accrual lines is booked to the tax code's VAT in or out account; these lines do not appear in the VAT return or the e-Tax export.
+- Fiscal depreciation follows the fiscal group's method and rate with the rest in the last year of the useful life; the groups, rates and the first-year month count are for the accountant to confirm.
 - The early-payment discount is proposed on the open balance including VAT; whether the VAT on it should be corrected (a credit note on the tax invoice) is for the accountant.
 - Cost is a moving average per warehouse; FIFO is not offered.

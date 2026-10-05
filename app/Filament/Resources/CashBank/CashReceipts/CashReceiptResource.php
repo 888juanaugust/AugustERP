@@ -18,6 +18,7 @@ use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\GiroActions;
+use App\Filament\Support\LineTaxFields;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PricedDocumentForm;
@@ -80,11 +81,13 @@ class CashReceiptResource extends ErpResource
                         ->table([
                             TableColumn::make(__('Account')),
                             TableColumn::make(__('Amount'))->alignment(Alignment::End),
+                            ...LineTaxFields::columns(),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
                             PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
+                            ...LineTaxFields::fields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->minItems(1)->defaultItems(1)->live()
@@ -92,6 +95,7 @@ class CashReceiptResource extends ErpResource
                 ]),
                 Tab::make(__('Other info'))->schema([
                     BranchFields::select(),
+                    LineTaxFields::inclusiveToggle(),
                     TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->helperText(__('Filling this registers a giro received that clears or bounces later.')),
                     DatePicker::make('cheque_date')->label(__('Giro due date'))->native(false)->displayFormat(Format::DATE_INPUT),
                     Textarea::make('payer')->label(__('Payer'))->rows(2),

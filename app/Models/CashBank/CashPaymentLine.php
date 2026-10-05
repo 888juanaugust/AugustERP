@@ -2,6 +2,7 @@
 
 namespace App\Models\CashBank;
 
+use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,11 @@ class CashPaymentLine extends Model
     public function cashPayment(): BelongsTo
     {
         return $this->belongsTo(CashPayment::class);
+    }
+
+    public function taxCode(): BelongsTo
+    {
+        return $this->belongsTo(TaxCode::class);
     }
 
     public function account(): BelongsTo

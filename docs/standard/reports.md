@@ -77,7 +77,7 @@ Every figure is computed from the journal and the stock ledger when the report o
 | Inventory Value by Warehouse | Inventory | always on | Warehouse · Item category | Quantity on hand, average cost and value of every item per warehouse, from the stock ledger's cost cache. |
 | Stock Card | Inventory | always on | From · Until · Item · Warehouse | One item's movements in and out with the running quantity and value, per warehouse or across all. |
 | Cash & Bank Mutations | Cash & Bank | always on | From · Until · Branch | Opening balance, money in, money out and closing balance of every cash and bank account over the period. |
-| Depreciation Schedule | Fixed Assets | `fixed-assets` | From · Until · Asset category | Every asset with its cost, the period's depreciation, accumulated depreciation and book value at the period's end. |
+| Depreciation Schedule | Fixed Assets | `fixed-assets` | From · Until · Books · Asset category | Every asset with its cost, the period's depreciation, accumulated depreciation and book value at the period's end, in the commercial books or the tax books. |
 | Balance Sheet | Financial | always on | From · Until · Branch | Assets, liabilities and equity as at the end of the period, current and non-current, with the income to date. |
 | Cash Flow Statement | Financial | always on | From · Until · Branch | Cash in and out by operating, investing and financing activities, from the counter-accounts of every cash posting. |
 | General Ledger | Financial | always on | From · Until · Branch · Account | Every posting of every account in the period, with running balances. |

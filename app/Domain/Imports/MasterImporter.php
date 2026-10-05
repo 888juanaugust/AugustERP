@@ -20,8 +20,6 @@ use App\Models\Sales\PriceCategory;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use OpenSpout\Reader\CSV\Reader as CsvReader;
-use OpenSpout\Reader\XLSX\Reader as XlsxReader;
 use RuntimeException;
 
 /**
@@ -184,21 +182,7 @@ final class MasterImporter
     /** @return list<array<int, mixed>> */
     private function rows(string $path): array
     {
-        $reader = str_ends_with(strtolower($path), '.xlsx') ? new XlsxReader : new CsvReader;
-        $reader->open($path);
-        $rows = [];
-        try {
-            foreach ($reader->getSheetIterator() as $sheet) {
-                foreach ($sheet->getRowIterator() as $row) {
-                    $rows[] = array_map(fn ($cell) => $cell instanceof \DateTimeInterface ? CarbonImmutable::instance($cell)->toDateString() : $cell, $row->toArray());
-                }
-                break; // the first sheet
-            }
-        } finally {
-            $reader->close();
-        }
-
-        return $rows;
+        return SpreadsheetReader::rows($path);
     }
 
     private function lookup(string $model, string $name, string $what): ?int

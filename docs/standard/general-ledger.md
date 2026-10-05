@@ -95,7 +95,7 @@ Menu key `general-ledger__expense-accrual` · module `general-ledger`
 
 #### Tab: Expense lines
 
-**Line grid "Lines":** Account · Amount · Memo
+**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -107,6 +107,7 @@ Menu key `general-ledger__expense-accrual` · module `general-ledger`
 |---|---|---|---|
 | Due date | `due_date` | date | yes |
 | Branch | `branch_id` | select |  |
+| Amounts include tax | `inclusive_tax` | toggle |  |
 | Notes | `description` | textarea |  |
 
 ## Payroll Entries

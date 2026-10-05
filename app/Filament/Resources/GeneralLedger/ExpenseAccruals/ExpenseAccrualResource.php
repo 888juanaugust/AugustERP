@@ -16,6 +16,7 @@ use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\ErpResource;
+use App\Filament\Support\LineTaxFields;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayAction;
@@ -79,11 +80,13 @@ class ExpenseAccrualResource extends ErpResource
                         ->table([
                             TableColumn::make(__('Account')),
                             TableColumn::make(__('Amount'))->alignment(Alignment::End),
+                            ...LineTaxFields::columns(),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::FixedAsset))->searchable()->required()->native(false),
                             TextInput::make('amount')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->required()->minValue(1)->live(onBlur: true),
+                            ...LineTaxFields::fields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->live()
@@ -98,6 +101,7 @@ class ExpenseAccrualResource extends ErpResource
                     DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)
                         ->default(fn () => today()->addDays(30)),
                     BranchFields::select(),
+                    LineTaxFields::inclusiveToggle(),
                     Textarea::make('description')->label(__('fields.description'))->rows(3),
                 ]),
             ]),

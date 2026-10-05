@@ -3,6 +3,8 @@
 namespace App\Models\GeneralLedger;
 
 use App\Domain\Approval\RequiresApproval;
+use App\Domain\CashBank\LineTax;
+use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
@@ -44,16 +46,22 @@ class ExpenseAccrual extends Model implements PaidByPayment, Postable
     public function buildPostings(PostingBuilder $builder): void
     {
         $total = 0;
-        foreach ($this->lines as $line) {
-            $builder->debit($line->account_id, (int) $line->amount, $line->memo, $line->branch_id);
-            $total += (int) $line->amount;
+        $inclusive = (bool) $this->inclusive_tax;
+        foreach ($this->lines()->with('taxCode')->get() as $line) {
+            // The expense without its tax; the tax to the tax code's VAT-in account.
+            $net = LineTax::net($line, $inclusive);
+            $builder->debit($line->account_id, $net, $line->memo, $line->branch_id);
+            if ((int) $line->tax_amount !== 0) {
+                $builder->debit(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, $line->tax_invoice_number ? "VAT in {$line->tax_invoice_number}" : 'VAT in', $line->branch_id);
+            }
+            $total += $net + (int) $line->tax_amount;
         }
         $builder->credit($this->payable_account_id, $total, $this->description);
     }
 
     public function refreshTotal(): void
     {
-        $this->forceFill(['total' => (int) $this->lines()->sum('amount')])->saveQuietly();
+        $this->forceFill(['total' => LineTax::refresh($this)])->saveQuietly();
         app(SettlementService::class)->refresh($this);
     }
 

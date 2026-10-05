@@ -33,7 +33,7 @@ class DepreciationSchedule extends ReportPage
 
     public static function description(): string
     {
-        return "Every asset with its cost, the period's depreciation, accumulated depreciation and book value at the period's end.";
+        return "Every asset with its cost, the period's depreciation, accumulated depreciation and book value at the period's end, in the commercial books or the tax books.";
     }
 
     protected function usesBranch(): bool
@@ -43,12 +43,19 @@ class DepreciationSchedule extends ReportPage
 
     protected function defaultFilters(): array
     {
-        return parent::defaultFilters() + ['category_id' => null];
+        return parent::defaultFilters() + ['category_id' => null, 'book' => 'commercial'];
     }
 
     protected function extraFilters(): array
     {
         return [
+            Select::make('book')
+                ->label(__('Books'))
+                ->options(['commercial' => __('Commercial'), 'fiscal' => __('Fiscal (tax)')])
+                ->default('commercial')
+                ->selectablePlaceholder(false)
+                ->native(false)
+                ->live(),
             Select::make('category_id')
                 ->label(__('Asset category'))
                 ->options(fn () => AssetCategory::query()->orderBy('name')->pluck('name', 'id'))
@@ -63,7 +70,7 @@ class DepreciationSchedule extends ReportPage
     {
         $categoryId = $this->filters['category_id'] ?? null;
 
-        return CashAndAssetReports::depreciationSchedule($this->period(), $categoryId ? (int) $categoryId : null);
+        return CashAndAssetReports::depreciationSchedule($this->period(), $categoryId ? (int) $categoryId : null, (string) ($this->filters['book'] ?? 'commercial'));
     }
 
     protected function columns(): array

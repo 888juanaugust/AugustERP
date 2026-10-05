@@ -102,8 +102,8 @@ class BankStatements extends ErpPage implements HasTable
                         ->options(fn () => Account::options(AccountType::CashBank))
                         ->searchable()->native(false)->required()
                         ->default(fn () => $this->filters['bank_account_id'] ?? null),
-                    FileUpload::make('file')->label(__('CSV file'))
-                        ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel'])
+                    FileUpload::make('file')->label(__('CSV or Excel file'))
+                        ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
                         ->disk('local')
                         ->directory('bank-statements')
                         ->required()
