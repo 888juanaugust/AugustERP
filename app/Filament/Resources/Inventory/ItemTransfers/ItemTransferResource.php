@@ -70,7 +70,7 @@ class ItemTransferResource extends ErpResource
                     Select::make('item_transfer_type')->label(__('Process'))->options(['send' => __('Send goods'), 'receive' => __('Receive goods')])->default('send')->disabled()->dehydrated()->native(false),
                     Select::make('warehouse_id')->label(__('From warehouse'))->options($warehouses)->required()->native(false)->default(fn () => Warehouse::default()?->id),
                     Select::make('reference_warehouse_id')->label(__('To warehouse'))->options($warehouses)->required()->native(false)->different('warehouse_id'),
-                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                     NumberFields::make(TransactionType::ItemTransfer, 'Transfer No.'),
                     BranchFields::select(),
                 ]),
@@ -149,7 +149,7 @@ class ItemTransferResource extends ErpResource
             ->visible(fn (ItemTransfer $record) => $record->isSend() && in_array($record->status, ['pending', 'partial'], true) && static::canCreate())
             ->modalHeading(fn (ItemTransfer $record) => "Receive {$record->number} into {$record->referenceWarehouse->name}")
             ->schema(fn (ItemTransfer $record) => [
-                DatePicker::make('trans_date')->label(__('Receipt date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Receipt date'))->required()->native(false)->default(today()),
                 Repeater::make('quantities')
                     ->label(__('Quantities received'))
                     ->table([TableColumn::make(__('Item')), TableColumn::make(__('Still in transit')), TableColumn::make(__('Receive now'))])

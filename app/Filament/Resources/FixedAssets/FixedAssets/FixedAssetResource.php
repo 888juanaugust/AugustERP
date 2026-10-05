@@ -75,8 +75,8 @@ class FixedAssetResource extends ErpResource
                 ->columns(3)
                 ->schema([
                     TextInput::make('name')->label(__('Name'))->required()->maxLength(255),
-                    DatePicker::make('trans_date')->label(__('Purchase date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today())->live(),
-                    DatePicker::make('usage_date')->label(__('In use from'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('trans_date')->label(__('Purchase date'))->required()->native(false)->default(today())->live(),
+                    DatePicker::make('usage_date')->label(__('In use from'))->required()->native(false)->default(today()),
                     NumberFields::make(TransactionType::FixedAsset, 'Asset code'),
                     Select::make('asset_category_id')->label(__('Asset category'))
                         ->options(fn () => AssetCategory::query()->active()->orderBy('name')->pluck('name', 'id'))
@@ -147,7 +147,7 @@ class FixedAssetResource extends ErpResource
                             ->schema([
                                 Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
                                 TextInput::make('description')->maxLength(255),
-                                DatePicker::make('trans_date')->native(false)->displayFormat(Format::DATE_INPUT)->default(fn (Get $get) => $get('../../trans_date')),
+                                DatePicker::make('trans_date')->native(false)->default(fn (Get $get) => $get('../../trans_date')),
                                 PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
                             ])
                             ->minItems(1)

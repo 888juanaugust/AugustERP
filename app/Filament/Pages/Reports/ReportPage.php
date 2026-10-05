@@ -148,8 +148,8 @@ abstract class ReportPage extends ErpPage implements HasTable
     {
         $fields = [];
         if ($this->usesPeriod()) {
-            $fields[] = DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live();
-            $fields[] = DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live();
+            $fields[] = DatePicker::make('from')->label(__('From'))->native(false)->live();
+            $fields[] = DatePicker::make('until')->label(__('Until'))->native(false)->live();
         }
         if ($this->usesBranch()) {
             $fields[] = BranchFields::filter();

@@ -54,8 +54,8 @@ class CommissionStatement extends Page implements HasTable
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
-                DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live(),
+                DatePicker::make('from')->label(__('From'))->native(false)->live(),
+                DatePicker::make('until')->label(__('Until'))->native(false)->live(),
                 Select::make('basis')->label(__('Commission is calculated from'))->options(PreferensiKey::CommissionBasis->options())->native(false)->selectablePlaceholder(false)->live(),
             ]),
         ])->statePath('filters');

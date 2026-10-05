@@ -6,7 +6,6 @@ namespace App\Filament\Resources\Purchasing\PurchaseDownPayments;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\CreatePurchaseDownPayment;
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\EditPurchaseDownPayment;
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\ListPurchaseDownPayments;
@@ -57,7 +56,7 @@ class PurchaseDownPaymentResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 VendorFields::select(),
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::PurchaseInvoice, 'Form No.'),
             ]),
             Tabs::make('down-payment')->tabs([

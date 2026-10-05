@@ -59,7 +59,7 @@ class SalesDownPaymentResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 CustomerFields::select(),
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::SalesInvoice, 'Invoice No.'),
             ]),
             Tabs::make('down-payment')->tabs([

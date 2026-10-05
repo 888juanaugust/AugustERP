@@ -7,7 +7,6 @@ namespace App\Filament\Resources\Budgeting\BudgetTransfers;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Budgeting\BudgetTransfers\Pages\CreateBudgetTransfer;
 use App\Filament\Resources\Budgeting\BudgetTransfers\Pages\EditBudgetTransfer;
 use App\Filament\Resources\Budgeting\BudgetTransfers\Pages\ListBudgetTransfers;
@@ -61,7 +60,7 @@ class BudgetTransferResource extends ErpResource
                 TextInput::make('year')->label(__('Year'))->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
                 Select::make('scope')->label(__('Type'))->options(['general' => __('General')])->default('general')->required()->native(false),
                 NumberFields::make(TransactionType::BudgetTransfer, 'Transfer No.'),
-                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
             ]),
             Section::make(__('From budget'))->columns(2)->schema([
                 Select::make('from_month')->label(__('Month'))->options(Months::options())->required()->native(false),

@@ -56,11 +56,11 @@ class VendorPriceResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 VendorFields::select(fillsTerms: false),
-                DatePicker::make('trans_date')->label(__('Effective from'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Effective from'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::VendorPrice),
                 Toggle::make('has_end_date')->label(__('Set an end date'))->live()->dehydrated(false)
                     ->afterStateHydrated(fn (Toggle $component, ?VendorPrice $record) => $component->state($record?->end_date !== null)),
-                DatePicker::make('end_date')->label(__('Ends on'))->native(false)->displayFormat(Format::DATE_INPUT)->visible(fn (Get $get) => (bool) $get('has_end_date')),
+                DatePicker::make('end_date')->label(__('Ends on'))->native(false)->visible(fn (Get $get) => (bool) $get('has_end_date')),
             ]),
             Tabs::make('prices')->tabs([
                 Tab::make(__('fields.lines'))->schema([

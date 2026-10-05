@@ -68,7 +68,7 @@ class CashReceiptResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 Select::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
-                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
                 Placeholder::make('amount_preview')->label(__('Amount'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
             ]),
@@ -97,7 +97,7 @@ class CashReceiptResource extends ErpResource
                     BranchFields::select(),
                     LineTaxFields::inclusiveToggle(),
                     TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->helperText(__('Filling this registers a giro received that clears or bounces later.')),
-                    DatePicker::make('cheque_date')->label(__('Giro due date'))->native(false)->displayFormat(Format::DATE_INPUT),
+                    DatePicker::make('cheque_date')->label(__('Giro due date'))->native(false),
                     Textarea::make('payer')->label(__('Payer'))->rows(2),
                     Textarea::make('description')->label(__('Notes'))->rows(3),
                 ])->columns(2),

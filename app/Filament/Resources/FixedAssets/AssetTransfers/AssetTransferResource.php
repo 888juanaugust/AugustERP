@@ -6,7 +6,6 @@ namespace App\Filament\Resources\FixedAssets\AssetTransfers;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\FixedAssets\AssetTransfers\Pages\CreateAssetTransfer;
 use App\Filament\Resources\FixedAssets\AssetTransfers\Pages\EditAssetTransfer;
 use App\Filament\Resources\FixedAssets\AssetTransfers\Pages\ListAssetTransfers;
@@ -57,7 +56,7 @@ class AssetTransferResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::AssetTransfer, 'Transfer No.'),
                 Select::make('from_location_id')->label(__('From location'))->options(fn () => AssetLocation::options())->required()->native(false)->live(),
                 Select::make('to_location_id')->label(__('To location'))->options(fn () => AssetLocation::options())->required()->native(false)

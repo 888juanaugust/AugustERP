@@ -100,7 +100,7 @@
                     <td>{{ $line->item?->name }}@if ($line->memo)<br><small>{{ $line->memo }}</small>@endif</td>
                     <td class="num">{{ Format::quantity($line->quantity) }}</td>
                     @if ($s['show_unit'] ?? true)<td>{{ $line->unit?->name }}</td>@endif
-                    <td class="num">{{ Format::number((int) round((float) $line->unit_price)) }}</td>
+                    <td class="num">{{ Format::price($line->unit_price) }}</td>
                     @if ($s['show_discount'] ?? true)<td class="num">{{ $line->discount_amount ? Format::number((int) $line->discount_amount) : '' }}</td>@endif
                     @if ($s['show_tax'] ?? true)<td class="num">{{ $line->tax_amount ? Format::number((int) $line->tax_amount) : '' }}</td>@endif
                     <td class="num">{{ Format::number((int) $line->amount) }}</td>

@@ -57,7 +57,7 @@ class PurchaseRequisitionResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                 Select::make('requisition_type')->label(__('Request type'))->options(['buy' => __('Buy items'), 'send' => __('Send items')])->default('buy')->required()->native(false),
                 NumberFields::make(TransactionType::PurchaseRequisition),
             ]),
@@ -79,7 +79,7 @@ class PurchaseRequisitionResource extends ErpResource
                             LineItemFields::item(groups: false),
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
-                            DatePicker::make('requested_date')->native(false)->displayFormat(Format::DATE_INPUT),
+                            DatePicker::make('requested_date')->native(false),
                             TextInput::make('estimated_price')->numeric()->default(0)->prefix(Format::symbol()),
                             TextInput::make('memo')->maxLength(255),
                             LineItemFields::baseQuantity(),

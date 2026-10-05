@@ -30,7 +30,7 @@ final class GiroActions
                 ->color('success')
                 ->visible(fn (Model $record) => $record->giro?->isOutstanding() ?? false)
                 ->schema([
-                    DatePicker::make('on')->label(__('Cleared on'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('on')->label(__('Cleared on'))->required()->native(false)->default(today()),
                 ])
                 ->requiresConfirmation()
                 ->modalDescription(fn (Model $record) => 'Giro '.$record->giro->number.' for '.Format::rupiah($record->giro->amount).' leaves giros receivable/payable for the bank on that day.')
@@ -48,7 +48,7 @@ final class GiroActions
                 ->color('danger')
                 ->visible(fn (Model $record) => $record->giro?->isOutstanding() ?? false)
                 ->schema([
-                    DatePicker::make('on')->label(__('Bounced on'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('on')->label(__('Bounced on'))->required()->native(false)->default(today()),
                     Textarea::make('reason')->label(__('Reason'))->rows(2),
                 ])
                 ->requiresConfirmation()

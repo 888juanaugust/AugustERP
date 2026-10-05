@@ -85,7 +85,7 @@ class PurchaseInvoiceResource extends ErpResource
                 PricedDocumentForm::otherInfoTab([
                     VendorFields::paymentTerm(),
                     VendorFields::bankAccount(),
-                    DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat(Format::DATE_INPUT)->helperText(__('Blank: from the payment term.')),
+                    DatePicker::make('due_date')->label(__('Due date'))->native(false)->helperText(__('Blank: from the payment term.')),
                     TextInput::make('tax_invoice_number')->label(__('Tax invoice No. (vendor)'))->maxLength(40),
                 ]),
                 PricedDocumentForm::chargesTab(allocateToCost: true),

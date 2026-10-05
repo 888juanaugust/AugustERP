@@ -89,10 +89,10 @@ final class Money
         return $parts;
     }
 
-    /** 18450000 → "18.450.000" (Indonesian thousands separator, no decimals). */
+    /** 18450000 → "18.450.000" (or "18,450,000" under the English convention in Preferences), no decimals. */
     public static function format(int $amount): string
     {
-        return ($amount < 0 ? '-' : '').number_format(abs($amount), 0, ',', '.');
+        return ($amount < 0 ? '-' : '').number_format(abs($amount), 0, Format::decimalSeparator(), Format::thousandsSeparator());
     }
 
     /** "Rp 18.450.000", under the base currency's symbol. */
@@ -101,7 +101,7 @@ final class Money
         return Format::money($amount);
     }
 
-    /** "18.450.000", "Rp 18.450.000", "18450000", "18.450.000,00" → 18450000; rounds half-up when decimals are present. */
+    /** "18.450.000", "Rp 18.450.000", "18450000", "18.450.000,00" → 18450000 (English: "18,450,000.00"); rounds half-up when decimals are present. */
     public static function parse(string|int|float|null $text): int
     {
         if ($text === null || $text === '') {
@@ -117,9 +117,11 @@ final class Money
         $clean = preg_replace('/[^\d,.\-]/', '', $text) ?? '';
         $negative = str_starts_with($clean, '-');
         $clean = ltrim($clean, '-');
-        // Indonesian convention: "." groups thousands, "," starts decimals.
-        if (preg_match('/^(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d+))?$/', $clean, $m)) {
-            $whole = (int) str_replace('.', '', $m[1]);
+        // The convention in Preferences: Indonesian "." groups thousands and "," starts decimals; English the reverse.
+        $group = preg_quote(Format::thousandsSeparator(), '/');
+        $point = preg_quote(Format::decimalSeparator(), '/');
+        if (preg_match('/^(\d{1,3}(?:'.$group.'\d{3})*|\d+)(?:'.$point.'(\d+))?$/', $clean, $m)) {
+            $whole = (int) str_replace(Format::thousandsSeparator(), '', $m[1]);
             $decimals = $m[2] ?? '';
         } elseif (preg_match('/^(\d+)(?:\.(\d+))?$/', $clean, $m)) {
             $whole = (int) $m[1];

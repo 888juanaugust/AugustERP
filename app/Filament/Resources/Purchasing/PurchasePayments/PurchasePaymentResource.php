@@ -76,11 +76,11 @@ class PurchasePaymentResource extends ErpResource
                 VendorFields::select(fillsTerms: false)->label(__('Paid to')),
                 Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
                 Select::make('payment_method')->label(__('Payment method'))->options(PaymentMethod::class)->default(PaymentMethod::BankTransfer)->required()->native(false)->live(),
-                DatePicker::make('trans_date')->label(__('Payment date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Payment date'))->required()->native(false)->default(today()),
                 NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
                 Placeholder::make('amount_preview')->label(__('Amount paid'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
                 TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
-                DatePicker::make('cheque_date')->label(__('Cheque date'))->native(false)->displayFormat(Format::DATE_INPUT)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
+                DatePicker::make('cheque_date')->label(__('Cheque date'))->native(false)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
             ]),
             Tabs::make('payment')->tabs([
                 Tab::make(__('Invoices'))->schema([

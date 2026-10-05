@@ -38,7 +38,7 @@ class ListFixedAssets extends ListDocuments
                 ->icon('heroicon-m-calculator')
                 ->color('gray')
                 ->schema([
-                    DatePicker::make('until')->label(__('Up to the month of'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('until')->label(__('Up to the month of'))->required()->native(false)->default(today()),
                 ])
                 ->requiresConfirmation()
                 ->modalDescription(__('Posts one month of depreciation for every asset in use, for each month not yet posted up to that month. Months already posted are left alone.'))

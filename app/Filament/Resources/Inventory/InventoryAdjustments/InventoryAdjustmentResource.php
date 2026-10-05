@@ -66,7 +66,7 @@ class InventoryAdjustmentResource extends ErpResource
             Section::make()
                 ->columns(3)
                 ->schema([
-                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                     NumberFields::make(TransactionType::InventoryAdjustment, 'Adjustment No.'),
                     BranchFields::select(),
                 ]),

@@ -6,7 +6,6 @@ namespace App\Filament\Resources\Inventory\StockOpnameOrders;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\StockOpnameOrders\Pages\CreateStockOpnameOrder;
 use App\Filament\Resources\Inventory\StockOpnameOrders\Pages\EditStockOpnameOrder;
 use App\Filament\Resources\Inventory\StockOpnameOrders\Pages\ListStockOpnameOrders;
@@ -51,9 +50,9 @@ class StockOpnameOrderResource extends ErpResource
             Section::make(__('Order'))
                 ->columns(3)
                 ->schema([
-                    DatePicker::make('trans_date')->label(__('Order date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('trans_date')->label(__('Order date'))->required()->native(false)->default(today()),
                     NumberFields::make(TransactionType::StockOpnameOrder, 'Order No.'),
-                    DatePicker::make('start_date')->label(__('Count starts'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                    DatePicker::make('start_date')->label(__('Count starts'))->required()->native(false)->default(today()),
                     TextInput::make('person_charged')->label(__('Person in charge'))->required()->maxLength(100),
                     Select::make('users')->label(__('Counted by'))->relationship('users', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))->multiple()->preload()->required()->native(false),
                     Select::make('warehouse_id')->label(__('Warehouse'))->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->native(false),

@@ -88,8 +88,8 @@ class PayrollEntryResource extends ErpResource
                 Select::make('period_month')->label(__('Period month'))->options(Months::options())->required()->native(false)->default(today()->month),
                 TextInput::make('period_year')->label(__('Period year'))->numeric()->required()->minValue(2000)->maxValue(2100)->default(today()->year),
                 NumberFields::make(TransactionType::PayrollEntry, 'Entry No.'),
-                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
-                DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
+                DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
+                DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->default(today()),
                 Placeholder::make('totals')->label(__('Net to pay'))->content(fn (Get $get): string => Format::rupiah(LineTotals::sum($get('lines'), 'net_amount'))),
             ]),
             Tabs::make('payroll')->tabs([

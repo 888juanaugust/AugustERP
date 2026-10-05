@@ -18,6 +18,7 @@ use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTaxFields;
 use App\Filament\Support\LineTotals;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayAction;
 use App\Models\GeneralLedger\Account;
@@ -37,7 +38,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
-use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -68,7 +68,7 @@ class ExpenseAccrualResource extends ErpResource
                 ->schema([
                     Select::make('payable_account_id')->label(__('Expense payable'))->options(fn () => Account::options(AccountType::AccountsPayable, AccountType::OtherCurrentLiability))->searchable()->required()->native(false)
                         ->default(fn () => Account::query()->where('no', '2230')->value('id')),
-                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today())->live(onBlur: true),
+                    DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today())->live(onBlur: true),
                     NumberFields::make(TransactionType::ExpenseAccrual, 'Expense No.'),
                 ]),
             Tabs::make('accrual')->tabs([
@@ -85,7 +85,7 @@ class ExpenseAccrualResource extends ErpResource
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::FixedAsset))->searchable()->required()->native(false),
-                            TextInput::make('amount')->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->required()->minValue(1)->live(onBlur: true),
+                            MoneyInput::make('amount')->required()->minValue(1)->live(onBlur: true),
                             ...LineTaxFields::fields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
@@ -98,7 +98,7 @@ class ExpenseAccrualResource extends ErpResource
                         ->content(fn (Get $get): string => 'Total '.Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
                 ]),
                 Tab::make(__('Other info'))->schema([
-                    DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)
+                    DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)
                         ->default(fn () => today()->addDays(30)),
                     BranchFields::select(),
                     LineTaxFields::inclusiveToggle(),
@@ -132,8 +132,8 @@ class ExpenseAccrualResource extends ErpResource
                 SelectFilter::make('payment_status')->label(__('fields.status'))->options(['unpaid' => __('Unpaid'), 'partial' => __('Partially paid'), 'paid' => __('Paid')]),
                 Filter::make('trans_date')
                     ->schema([
-                        DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT),
-                        DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT),
+                        DatePicker::make('from')->label(__('From'))->native(false),
+                        DatePicker::make('until')->label(__('Until'))->native(false),
                     ])
                     ->query(fn (Builder $query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))
