@@ -2,6 +2,7 @@
 
 namespace App\Models\Company;
 
+use App\Domain\Access\GuardsUserList;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /** A designable print layout for one document type (X-07): paper, heading, what prints, who may use it. */
 class PrintLayout extends Model
 {
-    use RecordsActivity;
+    use GuardsUserList, RecordsActivity;
 
     public const DEFAULTS = [
         'paper' => 'A4', 'orientation' => 'portrait', 'show_logo' => true, 'title' => null, 'show_company_address' => true,

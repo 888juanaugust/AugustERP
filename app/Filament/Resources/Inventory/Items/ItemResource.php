@@ -186,6 +186,8 @@ class ItemResource extends MasterResource
                                     Select::make('warehouse_id')->label(__('Warehouse'))->relationship('warehouse', 'name', fn ($query) => $query->where('is_active', true))->required()->native(false),
                                 ])
                                 ->addActionLabel(__('Add opening stock'))
+                                // The cost never reaches the page of someone who may not see it (the list is not saved for them).
+                                ->mutateRelationshipDataBeforeFillUsing(fn (array $data): array => app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost) ? $data : ['unit_cost' => null] + $data)
                                 ->defaultItems(0),
                         ]),
                     Tab::make(__('Components'))

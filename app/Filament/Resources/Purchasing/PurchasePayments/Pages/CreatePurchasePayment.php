@@ -12,6 +12,7 @@ use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\DocumentPages;
 use App\Filament\Support\PayableFields;
 use App\Filament\Support\SettlementLineFields;
+use App\Filament\Support\SourceDocument;
 
 /** Opened with ?source=purchase_invoice:ID (or a down payment, a return), the payment starts with that document's balance. */
 class CreatePurchasePayment extends CreateDocument
@@ -28,7 +29,7 @@ class CreatePurchasePayment extends CreateDocument
         parent::mount();
 
         $key = (string) request()->query('source');
-        $doc = $key ? PayableFields::resolve($key) : null;
+        $doc = $key ? SourceDocument::check(PayableFields::resolve($key)) : null; // only one the user may see
         if ($doc === null) {
             return;
         }

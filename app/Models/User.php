@@ -69,6 +69,10 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             if ($wasAdministrator && $user->isDirty()) {
                 throw ValidationException::withMessages(['data.name' => __('Only an administrator changes an administrator\'s account.')]);
             }
+            // Another user's sign-in (password, email) is an administrator's to change; a user changes their own on the profile page.
+            if ($user->exists && (int) $user->getKey() !== (int) $actor->getKey() && $user->isDirty(['password', 'email'])) {
+                throw ValidationException::withMessages(['data.password' => __('Only an administrator changes another user\'s password or email.')]);
+            }
         });
         static::updating(function (User $user): void {
             if ($user->isDirty('is_active') && ! $user->is_active && (bool) $user->getOriginal('is_active')) {

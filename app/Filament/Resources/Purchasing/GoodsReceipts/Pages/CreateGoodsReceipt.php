@@ -40,7 +40,7 @@ class CreateGoodsReceipt extends CreateDocument
             'fob_id' => $source->fob_id,
             'description' => "From order {$source->number}",
             ...TagFields::from($source),
-            'lines' => PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), 'purchase_order_line'),
+            'lines' => PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), 'purchase_order_line', withPrices: false),
         ];
     }
 }

@@ -37,6 +37,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Enums\Alignment;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\HtmlString;
 
 /**
@@ -70,7 +71,8 @@ final class PricedDocumentForm
      * @param  list<Component>  $before  components shown above the grid (a Pull action, say)
      * @param  bool  $groupItems  offer group items (selling documents only; a group is never bought)
      */
-    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null, bool $groupItems = false): Tab
+    /** @param  bool  $receipt  a goods receipt: the price the goods came in at is set on the server, never taken from the page */
+    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null, bool $groupItems = false, bool $receipt = false): Tab
     {
         $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
         $columns = [TableColumn::make(__('Item'))];
@@ -95,18 +97,19 @@ final class PricedDocumentForm
         $columns[] = TableColumn::make(__('Memo'));
 
         $fields = [
-            LineItemFields::item(groups: $groupItems)->afterStateUpdated(function (Set $set, Get $get, $state) use ($priceResolver): void {
+            LineItemFields::item(groups: $groupItems)->afterStateUpdated(function (Set $set, Get $get, $state) use ($priceResolver, $receipt): void {
                 $item = $state ? Item::query()->find($state) : null;
                 $set('unit_id', $item?->unit1_id);
-                if ($item && ! $get('source_line_id')) {
+                if ($item && ! $get('source_line_id') && ! $receipt) { // a receipt's price is set on the server
                     self::setPrice($set, $get, $priceResolver ? $priceResolver($item, $get) : (string) $item->purchase_price);
                     $set('tax_code_id', $item->tax1_id ?? TaxCode::default()?->id);
                 }
                 LineItemFields::syncBase($set, $get);
-            }),
+            })->disabled(fn (Get $get) => filled($get('source_line_id')))->dehydrated(), // a pulled line keeps its item (SourceLineGuard)
             LineItemFields::quantity()->minValue(0.0001)->afterStateUpdated(fn (Set $set, Get $get) => self::reprice($set, $get, $priceResolver))
                 ->rules($salesman ? [fn (Get $get): Closure => self::minimumSaleRule($get)] : []),
-            LineItemFields::unit()->afterStateUpdated(fn (Set $set, Get $get) => self::reprice($set, $get, $priceResolver)),
+            LineItemFields::unit()->afterStateUpdated(fn (Set $set, Get $get) => self::reprice($set, $get, $priceResolver))
+                ->disabled(fn (Get $get) => filled($get('source_line_id')))->dehydrated(), // and its unit
         ];
         $pricesEditable ??= ! $salesman || app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ChangeSellingPrice);
         if ($prices) {
@@ -151,9 +154,9 @@ final class PricedDocumentForm
                 ->defaultItems(1)
                 ->live()
                 ->addActionLabel(__('Add line'))
-                ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => self::fillLine($data))
-                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => self::normaliseLine($data, $get('currency_id'), $get('exchange_rate')))
-                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => self::normaliseLine($data, $get('currency_id'), $get('exchange_rate'))),
+                ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => $receipt && ! $seesCost ? ['unit_price' => null, 'discount_percent' => null, 'tax_code_id' => null] + $data : self::fillLine($data))
+                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => self::normaliseLine($receipt ? self::receiptPrice($data) : $data, $get('currency_id'), $get('exchange_rate')))
+                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => self::normaliseLine($receipt ? self::receiptPrice($data) : $data, $get('currency_id'), $get('exchange_rate'))),
             ...($prices ? [self::totals()] : []),
         ]);
     }
@@ -209,6 +212,23 @@ final class PricedDocumentForm
     }
 
     /** A saved line as the grid shows it: a foreign document's prices in its own currency. */
+    /**
+     * What goods came in at, on a receipt: the order line's price when the line was pulled from an order (in the
+     * order's currency, as typed prices are), else the item's purchase price. The page never sends it.
+     */
+    private static function receiptPrice(array $data): array
+    {
+        $class = filled($data['source_line_type'] ?? null) ? Relation::getMorphedModel((string) $data['source_line_type']) : null;
+        $source = $class !== null && filled($data['source_line_id'] ?? null) ? $class::query()->find($data['source_line_id']) : null;
+        if ($source !== null && $source->getAttribute('unit_price') !== null) {
+            return ['unit_price' => (string) ($source->getAttribute('fc_unit_price') ?? $source->getAttribute('unit_price')),
+                'discount_percent' => (string) ($source->getAttribute('discount_percent') ?? 0), 'discount_amount' => 0, 'tax_code_id' => $source->getAttribute('tax_code_id')] + $data;
+        }
+        $item = filled($data['item_id'] ?? null) ? Item::query()->find($data['item_id']) : null;
+
+        return ['unit_price' => (string) ($item?->purchase_price ?? 0), 'discount_percent' => 0, 'discount_amount' => 0, 'tax_code_id' => $item?->tax1_id] + $data;
+    }
+
     public static function fillLine(array $data): array
     {
         if (($data['fc_unit_price'] ?? null) !== null) {

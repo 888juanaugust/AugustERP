@@ -10,6 +10,7 @@ use App\Filament\Support\CreateDocument;
 use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\DocumentPages;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\SourceDocument;
 use App\Filament\Support\TagFields;
 use App\Models\Sales\Delivery;
 use App\Models\Sales\DeliveryLine;
@@ -31,12 +32,13 @@ class CreateSalesInvoice extends CreateDocument
         parent::mount();
 
         [$kind, $id] = array_pad(explode(':', (string) request()->query('source'), 2), 2, null);
+        // Only a document the user may see: in their branches, with the view right on its screen, approved.
         $source = match ($kind) {
-            'delivery' => Delivery::query()->find((int) $id),
-            'order' => SalesOrder::query()->find((int) $id),
+            'delivery' => SourceDocument::find(Delivery::class, (int) $id),
+            'order' => SourceDocument::find(SalesOrder::class, (int) $id),
             default => null,
         };
-        if ($source === null || ($source instanceof SalesOrder && ! $source->isApproved())) {
+        if ($source === null) {
             return;
         }
         $state = $this->form->getRawState();

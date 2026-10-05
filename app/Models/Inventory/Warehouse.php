@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventory;
 
+use App\Domain\Access\GuardsUserList;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\Company\Branch;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Warehouse extends Model implements HasAuditReference
 {
-    use RecordsActivity;
+    use GuardsUserList, RecordsActivity;
 
     protected $guarded = [];
 

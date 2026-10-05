@@ -23,7 +23,12 @@ class EditUser extends EditRecord
 
     protected function afterSave(): void
     {
-        $this->getRecord()->logMembershipChange($this->membershipsBefore);
+        $user = $this->getRecord();
+        // A password someone else chose is the user's to replace at their next sign-in.
+        if ($user->wasChanged('password') && (int) $user->getKey() !== (int) auth()->id()) {
+            $user->forceFill(['password_change_required' => true])->save();
+        }
+        $user->logMembershipChange($this->membershipsBefore);
         app(HakAkses::class)->forget();
     }
 

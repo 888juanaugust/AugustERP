@@ -43,17 +43,24 @@ abstract class MasterResource extends ErpResource
         return Toggle::make('is_active')->label(__('fields.is_active'))->default(true);
     }
 
-    /** The standard's "Daftar Pengguna" tab: everyone, or a chosen set of users. */
+    /**
+     * The standard's "Daftar Pengguna" tab: everyone, or a chosen set of users. Who may use a record is an
+     * administrator's to say (an operator could otherwise add themselves to a branch); for others it is read-only,
+     * and a disabled list is not saved.
+     */
     public static function usersTab(string $relationship = 'users'): Tab
     {
+        $locked = fn (): bool => ! (auth()->user()?->isAdministrator() ?? false);
+
         return Tab::make(__('Users'))
             ->schema([
-                Toggle::make('used_all_user')->label(__('fields.used_all_user'))->default(true)->live(),
+                Toggle::make('used_all_user')->label(__('fields.used_all_user'))->default(true)->live()->disabled($locked),
                 CheckboxList::make($relationship)
                     ->label(__('fields.users'))
                     ->relationship($relationship, 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
                     ->columns(3)
                     ->searchable()
+                    ->disabled($locked)
                     ->visible(fn (Get $get): bool => ! $get('used_all_user')),
             ]);
     }

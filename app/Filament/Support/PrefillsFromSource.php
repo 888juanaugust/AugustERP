@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
-use App\Domain\Access\BranchLimit;
-use App\Domain\Access\Hak;
-use App\Domain\Access\HakAkses;
-use App\Domain\Access\MenuRegistry;
-use App\Domain\Approval\ApprovalEngine;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -30,16 +24,7 @@ trait PrefillsFromSource
 
         $id = request()->integer('source');
         if ($id > 0) {
-            // Only a document the user may see: in their branches, with the view right on its screen.
-            $source = BranchLimit::apply($this->sourceModel()::query(), auth()->user())->find($id);
-            $screen = $source !== null ? app(MenuRegistry::class)->menuKeyForModel($source::class) : null;
-            if ($screen !== null && ! app(HakAkses::class)->allows(auth()->user(), $screen, Hak::View)) {
-                $source = null;
-            }
-            if ($source !== null && ! app(ApprovalEngine::class)->isApproved($source)) {
-                Notification::make()->title(__(':number is not approved; nothing can be made from it yet.', ['number' => $source->getAttribute('number')]))->warning()->send();
-                $source = null;
-            }
+            $source = SourceDocument::find($this->sourceModel(), $id);
             if ($source !== null) {
                 $data = $this->dataFromSource($source);
                 $lines = $data['lines'] ?? null;

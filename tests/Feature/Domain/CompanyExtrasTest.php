@@ -7,6 +7,7 @@ use App\Domain\Company\CalendarFeed;
 use App\Domain\Company\RecurringRunner;
 use App\Domain\Posting\AccountBalances;
 use App\Domain\Posting\DocumentRepository;
+use App\Filament\Resources\Company\RecurringTransactions\RecurringTransactionResource;
 use App\Models\Budgeting\Budget;
 use App\Models\Budgeting\BudgetTransfer;
 use App\Models\CashBank\CashPayment;
@@ -144,6 +145,21 @@ class CompanyExtrasTest extends TestCase
         $this->assertSame([], $result['made']);
         $this->assertStringContainsString('may not make', $result['failed'][0]);
         $this->assertSame(0, JournalVoucher::query()->count());
+
+        // An author who has left runs nothing, whatever their rights were.
+        $accountant = User::factory()->create();
+        AccessGroup::query()->where('name', 'Accounting')->firstOrFail()->users()->attach($accountant);
+        $recurring->forceFill(['created_by' => $accountant->id])->saveQuietly();
+        $accountant->forceFill(['is_active' => false])->saveQuietly();
+        $this->assertStringContainsString('no longer active', app(RecurringRunner::class)->runDue('2026-11-15')['failed'][0]);
+
+        // Someone else's schedule is theirs to change only with the "edit other users' transactions" right.
+        $other = User::factory()->create();
+        AccessGroup::query()->where('name', 'Accounting')->firstOrFail()->users()->attach($other);
+        $this->actingAs($other);
+        $this->freshRequest();
+        $this->assertFalse(RecurringTransactionResource::canEdit($recurring->fresh()));
+        $this->assertFalse(RecurringTransactionResource::canDelete($recurring->fresh()));
     }
 
     public function test_a_recurring_journal_runs_on_its_dates_and_never_twice_for_one_date(): void

@@ -13,6 +13,8 @@ class CreateUser extends CreateRecord
 
     protected function afterCreate(): void
     {
+        // The first password is chosen by whoever made the account: the user replaces it at the first sign-in.
+        $this->getRecord()->forceFill(['password_change_required' => true])->save();
         $this->getRecord()->logMembershipChange(['groups' => [], 'branches' => []]);
     }
 }

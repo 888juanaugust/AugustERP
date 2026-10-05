@@ -35,6 +35,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
 /** Recurring Transactions: a journal, payment or receipt that repeats; each run makes and posts the document on its date, by hand from here or by the daily schedule. */
@@ -57,6 +58,27 @@ class RecurringTransactionResource extends ErpResource
     public static function menuKey(): MenuKey
     {
         return MenuKey::RecurringTransactions;
+    }
+
+    /**
+     * A schedule runs as its author: someone else changing it (its account, its amounts) takes the "edit other
+     * users' transactions" right, as changing their documents would.
+     */
+    public static function canEdit(Model $record): bool
+    {
+        return parent::canEdit($record) && self::ownOrAllowed($record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return parent::canDelete($record) && self::ownOrAllowed($record);
+    }
+
+    private static function ownOrAllowed(Model $record): bool
+    {
+        $creator = $record->getAttribute('created_by');
+
+        return $creator === null || (int) $creator === (int) auth()->id() || HakAkses::canSpecial(HakKhusus::EditOthersTransactions);
     }
 
     private static function isJournal(Get $get, string $path = 'transaction_type'): bool

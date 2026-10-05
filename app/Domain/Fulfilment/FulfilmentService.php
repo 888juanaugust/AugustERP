@@ -24,6 +24,12 @@ final class FulfilmentService
         $this->downstream[$upstreamLineClass][] = $downstreamLineClass;
     }
 
+    /** Whether a line of the second class may pull from a line of the first (an invoice line from a delivery line). */
+    public function pulls(string $upstreamLineClass, string $downstreamLineClass): bool
+    {
+        return in_array($downstreamLineClass, $this->downstream[$upstreamLineClass] ?? [], true);
+    }
+
     /** After a downstream document was saved or deleted: refresh every upstream line and document it touched. */
     public function refreshUpstream(Model $document, array $previousSources = []): void
     {

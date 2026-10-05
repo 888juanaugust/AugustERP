@@ -110,6 +110,8 @@ class InventoryAdjustmentResource extends ErpResource
                         ->minItems(1)
                         ->defaultItems(1)
                         ->addActionLabel(__('Add line'))
+                        // Without the "see cost" right the costs never reach the page (a save sets them again from the current cost).
+                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data): array => $seesCost ? $data : ['unit_cost' => null, 'total_cost' => null] + $data)
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::normaliseLine($data))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::normaliseLine($data)),
                 ]),

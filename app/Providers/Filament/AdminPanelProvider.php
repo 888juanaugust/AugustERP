@@ -131,7 +131,10 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.shell.head'))
             ->renderHook(
                 PanelsRenderHook::LAYOUT_START,
-                fn (array $scopes): View => in_array(Workspace::class, $scopes, true) ? view('filament.shell.rail') : view('filament.shell.deep-link'),
+                // A page opened on its own reopens in the workspace, except while the user must first change their
+                // password: then the profile page stands alone (the workspace would only send them back to it).
+                fn (array $scopes): View|string => in_array(Workspace::class, $scopes, true) ? view('filament.shell.rail')
+                    : (auth()->user()?->getAttribute('password_change_required') ? '' : view('filament.shell.deep-link')),
             )
             // The topbar is its own component and renders hooks without page scopes; the button shows on narrow screens only.
             ->renderHook(PanelsRenderHook::TOPBAR_START, fn (): View => view('filament.shell.menu-button'))

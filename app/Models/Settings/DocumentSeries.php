@@ -2,6 +2,7 @@
 
 namespace App\Models\Settings;
 
+use App\Domain\Access\GuardsUserList;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Domain\Numbering\NumberPattern;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** A number format of the Numbering screen. */
 class DocumentSeries extends Model implements HasAuditReference
 {
-    use RecordsActivity;
+    use GuardsUserList, RecordsActivity;
 
     protected $table = 'document_series';
 

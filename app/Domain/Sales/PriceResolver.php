@@ -37,7 +37,8 @@ final class PriceResolver
         $categoryId = $customer?->price_category_id;
         $discountCategoryId = $customer?->discount_price_category_id ?? $categoryId;
         $item->loadMissing(['units', 'prices']);
-        $discount = (string) ($customer?->default_sales_disc ?? $item->default_discount ?? 0);
+        // A line's own discount is the item's; the customer's default discount is on the total (the header), not here too.
+        $discount = (string) ($item->default_discount ?? 0);
         $quantity = $item->use_wholesale_price && $baseQuantity !== null ? $baseQuantity : '0';
 
         if ($discountCategoryId !== null) {

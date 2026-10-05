@@ -2,6 +2,7 @@
 
 namespace App\Models\GeneralLedger;
 
+use App\Domain\Access\GuardsUserList;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Domain\Shared\Enums\AccountType;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** An account of the chart of accounts. */
 class Account extends Model implements HasAuditReference
 {
-    use RecordsActivity;
+    use GuardsUserList, RecordsActivity;
 
     protected $guarded = [];
 

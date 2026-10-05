@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Company;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
@@ -93,6 +94,11 @@ final class RecurringRunner
     private function assertMayMake(RecurringTransaction $recurring, ?int $userId): void
     {
         $user = $userId !== null ? User::query()->find($userId) : null;
+        // The schedule runs as a person: one who has left, or who may not book in its branch, makes nothing.
+        $branch = $recurring->template['branch_id'] ?? null;
+        if ($user !== null && (! $user->is_active || ! BranchLimit::allows($user, filled($branch) ? (int) $branch : null))) {
+            throw new RuntimeException(__(':name runs as :user, who is no longer active or not in its branch; it is not run.', ['user' => $user->name, 'name' => $recurring->name]));
+        }
         $screen = match ($recurring->transaction_type) {
             'journal_voucher' => MenuKey::JournalVouchers,
             'cash_payment' => MenuKey::Payments,

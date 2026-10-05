@@ -12,6 +12,7 @@ use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\DocumentPages;
 use App\Filament\Support\ReceivableFields;
 use App\Filament\Support\SettlementLineFields;
+use App\Filament\Support\SourceDocument;
 
 /** Opened with ?source=sales_invoice:ID (or a down payment), the receipt starts with that document's balance. */
 class CreateSalesReceipt extends CreateDocument
@@ -28,7 +29,7 @@ class CreateSalesReceipt extends CreateDocument
         parent::mount();
 
         $key = (string) request()->query('source');
-        $doc = $key ? ReceivableFields::resolve($key) : null;
+        $doc = $key ? SourceDocument::check(ReceivableFields::resolve($key)) : null; // only one the user may see
         if ($doc === null) {
             return;
         }

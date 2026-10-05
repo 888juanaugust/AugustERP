@@ -57,10 +57,11 @@ class GoodsReceiptResource extends ErpResource
                 PricedDocumentForm::linesTab(
                     before: [PullAction::make(__('Pull from orders'), 'vendor_id',
                         fn (Get $get) => PurchaseOrder::query()->where('vendor_id', $get('vendor_id'))->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
-                        fn (int $id) => PricedDocumentForm::pulledLines(PurchaseOrder::query()->findOrFail($id)->lines()->with('item')->get(), 'purchase_order_line'),
+                        fn (int $id) => PricedDocumentForm::pulledLines(PurchaseOrder::query()->findOrFail($id)->lines()->with('item')->get(), 'purchase_order_line', withPrices: false),
                     )],
                     prices: false,
                     processed: true,
+                    receipt: true,
                 ),
                 PricedDocumentForm::otherInfoTab(),
             ]),

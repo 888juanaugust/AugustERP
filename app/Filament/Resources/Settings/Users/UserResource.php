@@ -51,14 +51,17 @@ class UserResource extends ErpResource
                 ->columns(2)
                 ->schema([
                     TextInput::make('name')->label(__('Name'))->required()->maxLength(100),
-                    TextInput::make('email')->label(__('Email'))->email()->required()->maxLength(150)->unique(ignoreRecord: true),
+                    // Who signs in as an existing user is an administrator's to change: an operator managing users could
+                    // otherwise reset a colleague's password or email and sign in as them.
+                    TextInput::make('email')->label(__('Email'))->email()->required()->maxLength(150)->unique(ignoreRecord: true)
+                        ->disabled(fn (?User $record): bool => $record?->exists === true && ! self::actorIsAdministrator()),
                     TextInput::make('phone')->label(__('Mobile number'))->tel()->maxLength(30),
                     TextInput::make('password')
                         ->label(__('Password'))
                         ->password()
                         ->revealable()
                         ->required(fn (string $operation) => $operation === 'create')
-                        ->disabled(fn (?User $record): bool => ($record?->isAdministrator() ?? false) && ! self::actorIsAdministrator())
+                        ->disabled(fn (?User $record): bool => $record?->exists === true && ! self::actorIsAdministrator())
                         ->dehydrated(fn ($state) => filled($state))
                         ->rule(Password::defaults())
                         ->helperText(fn (string $operation) => $operation === 'edit' ? __('Leave blank to keep the current password.') : null),

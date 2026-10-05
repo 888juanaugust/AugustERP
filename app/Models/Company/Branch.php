@@ -2,6 +2,7 @@
 
 namespace App\Models\Company;
 
+use App\Domain\Access\GuardsUserList;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\User;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Branch extends Model implements HasAuditReference
 {
-    use RecordsActivity;
+    use GuardsUserList, RecordsActivity;
 
     protected $guarded = [];
 

@@ -16,9 +16,16 @@ use App\Domain\Tax\TaxFilingService;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Reports\InventoryValue;
 use App\Filament\Pages\Reports\TrialBalance;
+use App\Filament\Pages\Workspace;
+use App\Filament\Resources\Company\Branches\Pages\ManageBranches;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\JournalVoucherResource;
+use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\EditInventoryAdjustment;
+use App\Filament\Resources\Inventory\Items\Pages\EditItem;
+use App\Filament\Resources\Purchasing\GoodsReceipts\Pages\CreateGoodsReceipt;
 use App\Filament\Resources\Sales\Customers\CustomerResource;
 use App\Filament\Resources\Sales\Customers\Pages\EditCustomer;
+use App\Filament\Resources\Sales\SalesInvoices\Pages\CreateSalesInvoice;
+use App\Filament\Resources\Sales\SalesReceipts\Pages\CreateSalesReceipt;
 use App\Filament\Resources\Settings\AccessGroups\AccessGroupResource;
 use App\Filament\Resources\Settings\Users\Pages\EditUser;
 use App\Filament\Support\BranchFields;
@@ -26,12 +33,17 @@ use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalVoucher;
+use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Warehouse;
+use App\Models\Purchasing\GoodsReceipt;
+use App\Models\Purchasing\PurchaseOrder;
 use App\Models\Sales\SalesInvoice;
+use App\Models\Sales\SalesOrder;
 use App\Models\Settings\AccessGroup;
 use App\Models\User;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -186,12 +198,15 @@ class AccessControlTest extends TestCase
         $this->freshRequest();
 
         $this->get(CustomerResource::getUrl())->assertRedirect(EditProfile::getUrl());
-        $this->get(EditProfile::getUrl())->assertOk();
+        $this->withHeader('X-Livewire', '1')->get(CustomerResource::getUrl())->assertRedirect(EditProfile::getUrl()); // a header proves nothing
+        // The profile page stands alone: reopening it in the workspace would only be sent back here, round and round.
+        $this->get(EditProfile::getUrl())->assertOk()->assertDontSee('#open=', false);
 
         Livewire::test(EditProfile::class)
             ->fillForm(['password' => 'my-own-password-1', 'passwordConfirmation' => 'my-own-password-1', 'currentPassword' => 'chosen-by-installer'])
             ->call('save')
-            ->assertHasNoFormErrors();
+            ->assertHasNoFormErrors()
+            ->assertRedirect(Workspace::getUrl());
         $this->assertFalse($admin->fresh()->password_change_required, 'changed: the screens open again');
     }
 
@@ -209,6 +224,38 @@ class AccessControlTest extends TestCase
 
         $this->operator('Finance'); // reads the reports, no "see cost"
         Livewire::test(InventoryValue::class)->assertTableColumnHidden('avg_cost')->assertTableColumnHidden('value')->assertTableColumnVisible('quantity');
+    }
+
+    public function test_a_storekeeper_without_the_cost_right_never_gets_a_cost_or_purchase_price(): void
+    {
+        $this->actingAsAdmin();
+        $vendor = $this->sampleVendor();
+        $item = $this->sampleItem(['purchase_price' => 66_000]);
+        $order = PurchaseOrder::query()->create(['number' => 'PO-1', 'trans_date' => '2026-11-10', 'vendor_id' => $vendor->id, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $order->lines()->create(['sort' => 0, 'item_id' => $item->id, 'quantity' => 4, 'unit_id' => $item->unit1_id, 'base_quantity' => 4, 'unit_price' => 77_000, 'warehouse_id' => Warehouse::default()->id]);
+        $order->refreshTotal();
+        $this->docs->created($order);
+        $adjustment = InventoryAdjustment::query()->create(['number' => 'ADJ-1', 'trans_date' => '2026-11-10', 'created_by' => auth()->id()]);
+        $adjustment->lines()->create(['sort' => 0, 'item_id' => $item->id, 'adjustment_type' => 'quantity', 'quantity' => 2, 'unit_id' => $item->unit1_id, 'base_quantity' => 2, 'unit_cost' => 55_555, 'total_cost' => 0, 'warehouse_id' => Warehouse::default()->id]);
+        $this->docs->created($adjustment);
+        $item->openingStocks()->create(['trans_date' => '2026-11-01', 'quantity' => 1, 'unit_cost' => 44_444, 'warehouse_id' => Warehouse::default()->id]);
+
+        $storekeepers = AccessGroup::query()->create(['name' => 'Storekeepers']);
+        $storekeepers->syncRights([MenuKey::GoodsReceipts->value => ['view', 'create', 'update'], MenuKey::InventoryAdjustments->value => ['view', 'create', 'update'], MenuKey::ItemsAndServices->value => ['view', 'update'], MenuKey::PurchaseOrders->value => ['view']]);
+        $keeper = User::factory()->create();
+        $storekeepers->users()->attach($keeper);
+        $this->actingAs($keeper);
+        $this->freshRequest();
+
+        $receipt = Livewire::withQueryParams(['source' => $order->id])->test(CreateGoodsReceipt::class);
+        $this->assertEquals(0, Arr::first($receipt->get('data.lines'))['unit_price'] ?? 0, 'the order price is not on the page');
+        $receipt->assertDontSee('77000')->call('create')->assertHasNoFormErrors();
+        $this->assertSame('77000.0000', (string) GoodsReceipt::query()->sole()->lines()->sole()->unit_price, 'the server takes it from the order');
+
+        $edit = Livewire::test(EditInventoryAdjustment::class, ['record' => $adjustment->getRouteKey()]);
+        $this->assertNull(Arr::first($edit->get('data.lines'))['unit_cost']);
+        $edit->assertDontSee('55555')->assertDontSee('55.555');
+        $this->assertNull(Arr::first(Livewire::test(EditItem::class, ['record' => $item->getRouteKey()])->get('data.openingStocks'))['unit_cost']);
     }
 
     public function test_an_import_changes_only_what_the_user_may_change(): void
@@ -284,6 +331,82 @@ class AccessControlTest extends TestCase
         $this->assertNull(Branch::limitsOf($clerk), 'assigned to every closed branch, the user is not limited');
         $this->docs->created($this->voucher('2026-11-16', $east->id, 'JV-EAST-3'));
         $this->assertNotNull(Warehouse::default());
+
+        // Someone limited to no branch at all reports on none, never on all of them.
+        $head->forceFill(['used_all_user' => false])->saveQuietly();
+        $this->operator('Accounting');
+        $this->assertSame(-1, BranchFields::reportBranch(null));
+    }
+
+    public function test_a_create_page_opened_from_a_document_in_another_branch_starts_empty(): void
+    {
+        $east = Branch::query()->create(['name' => 'East', 'used_all_user' => false]);
+        $this->actingAsAdmin();
+        $customer = $this->sampleCustomer();
+        $item = $this->sampleItem();
+        $order = SalesOrder::query()->create(['number' => 'SO-EAST', 'trans_date' => '2026-11-10', 'customer_id' => $customer->id, 'branch_id' => $east->id, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $order->lines()->create(['sort' => 0, 'item_id' => $item->id, 'quantity' => 1, 'unit_id' => $item->unit1_id, 'base_quantity' => 1, 'unit_price' => 123_456, 'warehouse_id' => Warehouse::default()->id]);
+        $this->docs->created($order);
+        $invoice = SalesInvoice::query()->create(['number' => 'INV-EAST', 'trans_date' => '2026-11-10', 'customer_id' => $customer->id, 'branch_id' => $east->id, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $invoice->lines()->create(['sort' => 0, 'item_id' => $item->id, 'quantity' => 1, 'unit_id' => $item->unit1_id, 'base_quantity' => 1, 'unit_price' => 1_000, 'warehouse_id' => Warehouse::default()->id]);
+        $invoice->refreshTotal();
+
+        $this->operator('Sales', 'Finance'); // the head office only
+        Livewire::withQueryParams(['source' => 'order:'.$order->id])->test(CreateSalesInvoice::class)
+            ->assertSchemaStateSet(['customer_id' => null])->assertDontSee('123456')->assertDontSee('123.456');
+        Livewire::withQueryParams(['source' => 'sales_invoice:'.$invoice->id])->test(CreateSalesReceipt::class)
+            ->assertSchemaStateSet(['customer_id' => null]);
+
+        $east->users()->attach(auth()->user());
+        $this->freshRequest();
+        Livewire::withQueryParams(['source' => 'order:'.$order->id])->test(CreateSalesInvoice::class)->assertSchemaStateSet(['customer_id' => $customer->id]);
+    }
+
+    public function test_only_an_administrator_says_who_may_use_a_branch(): void
+    {
+        $east = Branch::query()->create(['name' => 'East', 'used_all_user' => false]);
+        $this->actingAsAdmin();
+        $keepers = AccessGroup::query()->create(['name' => 'Branch keepers']);
+        $keepers->syncRights([MenuKey::Branches->value => ['view', 'update']]);
+        $clerk = User::factory()->create();
+        $keepers->users()->attach($clerk);
+        $this->actingAs($clerk);
+        $this->freshRequest();
+
+        Livewire::test(ManageBranches::class)
+            ->mountTableAction('edit', $east)
+            ->setTableActionData(['used_all_user' => true]) // sent anyway
+            ->callMountedTableAction();
+        $this->assertFalse($east->fresh()->used_all_user, 'a disabled list is not saved');
+        $this->assertSame([], $east->users()->pluck('users.id')->all());
+        $this->assertThrows(fn () => $east->fresh()->update(['used_all_user' => true]), ValidationException::class, 'Only an administrator');
+    }
+
+    public function test_only_an_administrator_sets_another_users_password_or_email(): void
+    {
+        $admin = $this->actingAsAdmin();
+        $colleague = User::factory()->create(['email' => 'approver@example.test']);
+        $managers = AccessGroup::query()->create(['name' => 'User managers']);
+        $managers->syncRights([MenuKey::Users->value => ['view', 'create', 'update']]);
+        $manager = User::factory()->create();
+        $managers->users()->attach($manager);
+        $this->actingAs($manager);
+        $this->freshRequest();
+
+        Livewire::test(EditUser::class, ['record' => $colleague->getRouteKey()])
+            ->assertFormFieldIsDisabled('password')->assertFormFieldIsDisabled('email')
+            ->fillForm(['password' => 'taken-over-12345', 'email' => 'mine@example.test'])
+            ->call('save');
+        $this->assertSame('approver@example.test', $colleague->fresh()->email);
+        $this->assertFalse(Hash::check('taken-over-12345', $colleague->fresh()->password));
+        $this->assertThrows(fn () => $colleague->fresh()->update(['password' => 'taken-over-12345']), ValidationException::class, 'Only an administrator');
+
+        // An administrator's reset is the user's to replace at the next sign-in.
+        $this->actingAs($admin);
+        $this->freshRequest();
+        Livewire::test(EditUser::class, ['record' => $colleague->getRouteKey()])
+            ->fillForm(['password' => 'temporary-12345'])->call('save')->assertHasNoFormErrors();
+        $this->assertTrue($colleague->fresh()->password_change_required);
     }
 
     public function test_the_access_window_turns_operators_away_outside_their_hours(): void

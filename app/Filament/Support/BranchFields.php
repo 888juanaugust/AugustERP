@@ -48,7 +48,13 @@ final class BranchFields
             return $picked;
         }
 
-        return $picked !== null && in_array($picked, $limits, true) ? $picked : Branch::defaultFor(auth()->user())?->id;
+        if ($picked !== null && in_array($picked, $limits, true)) {
+            return $picked;
+        }
+
+        // A limited user with no branch at all reports on none (-1 matches no branch, and still filters where a
+        // query asks ->when($branchId)), never on every branch.
+        return Branch::defaultFor(auth()->user())?->id ?? -1;
     }
 
     /** @return array<int, string> the user's branches, plus the record's own when it is outside them */

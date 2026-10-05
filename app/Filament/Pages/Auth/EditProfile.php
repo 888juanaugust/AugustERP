@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages\Auth;
 
 use App\Domain\Shared\Locales;
+use App\Filament\Pages\Workspace;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
@@ -34,6 +35,9 @@ class EditProfile extends BaseEditProfile
         $user = $this->getUser();
         if ($user->wasChanged('password') && $user->getAttribute('password_change_required')) {
             $user->forceFill(['password_change_required' => false])->save();
+            $this->redirect(Workspace::getUrl(), navigate: false); // the screens are open now
+
+            return;
         }
         // The new language shows from the next request on.
         $this->redirect(static::getUrl(), navigate: false);

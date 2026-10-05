@@ -19,8 +19,10 @@ class RequirePasswordChange
         if (! $user instanceof User || ! $user->password_change_required) {
             return $next($request);
         }
-        // The profile page itself, its Livewire requests and signing out stay open.
-        if ($request->routeIs('filament.admin.auth.profile', 'filament.admin.auth.logout') || $request->hasHeader('X-Livewire')) {
+        // The profile page itself and signing out stay open. A Livewire request runs this middleware again against the
+        // route of the page its component lives on (it is registered as persistent), so the profile page's own
+        // requests pass by their route; a header the browser sends proves nothing.
+        if ($request->routeIs('filament.admin.auth.profile', 'filament.admin.auth.logout')) {
             return $next($request);
         }
 
