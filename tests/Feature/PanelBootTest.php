@@ -5,8 +5,8 @@ namespace Tests\Feature;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Filament\Modul;
+use App\Filament\Shell\Menu;
 use App\Models\User;
-use Filament\Facades\Filament;
 use Tests\TestCase;
 
 class PanelBootTest extends TestCase
@@ -23,7 +23,8 @@ class PanelBootTest extends TestCase
     {
         $this->actingAsAdmin();
 
-        $this->get('/admin')->assertOk()->assertSee('Sales this month');
+        $this->get('/admin/dashboard')->assertOk()->assertSee('Sales this month');
+        $this->get('/admin')->assertOk()->assertSee('aeWorkspace', false)->assertSee('ae-rail', false);
     }
 
     public function test_an_inactive_account_cannot_open_the_panel(): void
@@ -33,19 +34,15 @@ class PanelBootTest extends TestCase
         $this->get('/admin')->assertForbidden();
     }
 
-    public function test_the_sidebar_holds_the_ten_module_groups_in_order(): void
+    public function test_the_rail_holds_the_ten_module_groups_in_order(): void
     {
+        $this->seed();
+        $this->enableAllModules();
         $this->actingAsAdmin();
 
-        $groups = collect(Filament::getPanel('admin')->getNavigationGroups())
-            ->map(fn ($group) => $group->getLabel())
-            ->values()
-            ->all();
+        $groups = array_column(Menu::forUser(), 'label');
 
-        $this->assertSame(
-            array_map(fn (Modul $m) => $m->getLabel(), Modul::cases()),
-            $groups,
-        );
+        $this->assertSame(array_map(fn (Modul $m) => $m->getLabel(), Modul::cases()), $groups);
         $this->assertSame(['Settings', 'Company', 'General Ledger', 'Cash & Bank', 'Sales', 'Purchasing', 'Inventory', 'Fixed Assets', 'Tax', 'Reports'], $groups);
     }
 

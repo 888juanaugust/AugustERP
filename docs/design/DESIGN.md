@@ -46,6 +46,25 @@ Status colors (badge background / text). These are separate from the accent; nev
 
 Trend text: up `#15803d`, down `#b42318`.
 
+### Workspace shell and module tiles
+
+| Token | Value | Use |
+|---|---|---|
+| `--ae-rail-width` | `56px` | The icon rail on the left |
+| `--ae-rail-bg` | `--ae-ink` | Rail background |
+| `--ae-rail-icon` | `#c3cbdc` | Rail icons at rest (white when open or hovered) |
+| `--ae-topbar-height` | `56px` | Topbar of the workspace |
+| `--ae-tabstrip-height` | `38px` | Strip of open screens under the topbar |
+| `--ae-side-tabs-width` | `48px` | Column of icon tabs at the left of a form |
+
+Tiles in a module menu are coloured by what the screen is for (`MenuKey::kind()`):
+
+| Kind | Background | Edge | Icon | Screens |
+|---|---|---|---|---|
+| Setup | `#eaf0fd` | `#bfd0f6` | `#2f5bea` | Masters and settings: customers, items, accounts, tax codes |
+| Work | `#e7f6ec` | `#b7e0c3` | `#166534` | Documents and processes: orders, invoices, payments, month-end |
+| Tool | `#f2edfd` | `#d7c9f6` | `#6941c6` | Inquiries, tools and reports: stock inquiries, calendar, activity log, reports |
+
 ### Color (dark mode, proposed, not yet reviewed)
 
 | Token | Value |
@@ -112,22 +131,31 @@ Every card = white surface + 1px `--ae-card-edge` border + `--ae-shadow-card`. N
 
 ```
 +--------------------------------------------------------------------------+
-| canvas (#e3e7f2)                                                          |
-|  +-----------+  +------------------------------------------------------+ |
-|  | FLOATING  |  | Topbar: breadcrumb ......... [search 220px] [avatar] | |
-|  | SIDEBAR   |  +------------------------------------------------------+ |
-|  | 200px     |  | Page header: Title + subtitle  ......  [secondary][+] | |
-|  | 12px from |  +------------------------------------------------------+ |
-|  | edges,    |  | Content cards (12px gap)                             | |
-|  | radius 14 |  |                                                      | |
-|  | shadow    |  |                                                      | |
-|  +-----------+  +------------------------------------------------------+ |
+| +----+ Topbar: company name ....................... [search] [avatar]   |
+| |RAIL| [Dashboard] [Sales Invoices x] [Items & Services x] [Warehouses x]|  <- tab strip
+| |    | +---------------------------------------------------------------+ |
+| |home| | the active tab: a live screen in its own frame                | |
+| |mod | |   Page header: title ................ [secondary][+ primary]  | |
+| |mod | |   Content cards (12px gap)                                     | |
+| |... | |                                                               | |
+| +----+ +---------------------------------------------------------------+ |
 +--------------------------------------------------------------------------+
 ```
 
-- Sidebar floats: 12px margin top, left and bottom; white; radius 14; card shadow. Collapsible to icons on desktop.
-- Sidebar order: brand (logo + the company name, else the app name), then nav groups. Active item = `--ae-accent-soft` fill + accent text + accent icon.
-- Topbar sits on the canvas (no white bar). Breadcrumb left, global search and user menu right.
+- **Icon rail.** 56px, dark (`--ae-ink`), full height on the left: Dashboard first, then one icon per
+  module group (`App\Filament\Modul`), the module name as a tooltip. A module with no screen the user may
+  open is not shown.
+- **Module menu.** Clicking a rail icon opens a white card (radius 14, pop shadow) next to the rail: the
+  module name over an accent rule, then a grid of tiles (about 120px, two-line labels, the screen's own
+  icon at 34px), coloured by kind. Escape or a click elsewhere closes it; arrow keys move between tiles.
+- **Tabs.** Every screen opens as a tab in the strip under the topbar; the dashboard is the first,
+  pinned tab. Each tab is a live frame: switching tabs keeps what was typed. Up to 10 tabs; the list of
+  tabs (not their typing) comes back after a reload. Closing a tab with unsaved changes asks first. A link
+  to another screen opens a new tab; list → record → back stays inside its tab. A page opened on its own
+  (bookmark, email link) opens as a tab of the workspace.
+- **Inside a tab** the page has no topbar or rail of its own: page header, then content.
+- **Narrow screens** (< 1024px): the rail is hidden; a menu button in the topbar opens it as a sheet.
+- Topbar sits on the canvas (no white bar): company name left, global search and user menu right.
 - Page header: title (and one-line context such as period or warehouse) on the left, actions on the right. Max one primary button per page, placed rightmost.
 - Content max width: full width for list and report pages; 1100px for create/edit forms.
 
@@ -214,6 +242,9 @@ Label (12px muted) → value (22px bold, tabular) → trend line (12px, green or
 
 ### Tabs
 Pill tabs: active = `--ae-accent-soft` fill + accent text; inactive = muted text. Show counts in a lighter weight.
+Form tabs (lines, other info, other charges, addresses…) stand down the left side of the form as a 48px
+column of icons, the tab name as a tooltip (`App\Filament\Support\SideTabIcons` holds one icon per tab
+name). Status tabs above a list stay as pills on top. Preferences keeps its tab names visible.
 
 ### Badges
 Pill, 3px 9px padding, 6px colored dot before label, status colors from section 1.
@@ -239,7 +270,7 @@ Surface white, radius 14, `--ae-shadow-pop`, backdrop `rgb(15 18 25 / .35)` with
 | Accent `#2f5bea` | `->colors(['primary' => Color::hex('#2f5bea')])` |
 | Gray scale | `'gray' => Color::Slate` |
 | Geist font | self-hosted, set in `theme.css` (see file) |
-| Floating sidebar | `->sidebarCollapsibleOnDesktop()` + CSS in `theme.css` |
+| Icon rail, module menu, tabs | `->navigation(false)`, render hooks in `AdminPanelProvider`, `App\Filament\Pages\Workspace`, `resources/js/shell/*.js`, CSS in `theme.css` |
 | Status colors | `->colors(['success' => …, 'warning' => …, 'danger' => …, 'info' => …])` and `Badge::color()` per status enum |
 | Full-width lists | `->maxContentWidth(Width::Full)` |
 | Layered canvas, cards, tables, inputs | `theme.css` |

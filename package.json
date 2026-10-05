@@ -5,7 +5,8 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "smoke": "node tools/ui-smoke/smoke.mjs"
+        "smoke": "node tools/ui-smoke/smoke.mjs",
+        "smoke:shell": "node tools/ui-smoke/shell.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.3.3",

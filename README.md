@@ -3,7 +3,8 @@
 A standard, modular ERP template for trading companies: accounting, inventory, purchasing,
 sales, cash and bank, fixed assets, tax and reports. Laravel 13 and Filament 5 on
 PostgreSQL. English interface, translatable; Indonesian number, date and tax conventions by
-default. One installation per client: create a repository from this template, run the
+default. The screen is a workspace: an icon rail of the modules, a tile menu per module, and
+every screen open as a live tab. One installation per client: create a repository from this template, run the
 installer, switch off what the client does not need, and keep merging template updates.
 
 ## Modules
@@ -69,6 +70,7 @@ php artisan test            # against the erp_test database (phpunit.xml)
 vendor/bin/pint --test
 php artisan erp:standard --check
 npm run smoke -- /admin     # screenshots of running pages into storage/app/smoke (php artisan serve first)
+npm run smoke:shell         # drives the workspace: tiles, tabs that keep their typing, reload, deep links
 ```
 
 In a Claude Code cloud session, `.claude/hooks/session-start.sh` brings up PostgreSQL and
