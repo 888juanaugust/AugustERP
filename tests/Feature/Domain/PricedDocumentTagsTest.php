@@ -13,6 +13,7 @@ use App\Filament\Resources\Sales\SalesInvoices\Pages\CreateSalesInvoice;
 use App\Models\CashBank\BankTransfer;
 use App\Models\CashBank\Giro;
 use App\Models\Company\Department;
+use App\Models\Company\OpeningBalance;
 use App\Models\FixedAssets\AssetChange;
 use App\Models\FixedAssets\AssetDepreciation;
 use App\Models\FixedAssets\AssetDisposal;
@@ -112,6 +113,7 @@ class PricedDocumentTagsTest extends TestCase
             Giro::class => 'clears or bounces a giro already booked',
             ItemTransfer::class => 'moves stock between warehouses',
             AccountOpeningBalance::class => 'opening balances',
+            OpeningBalance::class => 'opening balances, posted against equity on the data start date',
             FixedAsset::class => 'fixed assets are not tagged in this release',
             AssetChange::class => 'fixed assets are not tagged in this release',
             AssetDepreciation::class => 'fixed assets are not tagged in this release',

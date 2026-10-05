@@ -55,6 +55,13 @@ final class Accounts
         return (int) ($customer?->sales_return_account_id ?? $item->accountFor('sales_return')?->id ?? Account::query()->where('no', '4200')->value('id'));
     }
 
+    /** Where opening balances are carried from: 3300 Opening Balance Equity, else the first equity account. */
+    public static function openingBalanceEquity(): int
+    {
+        return (int) (Account::query()->where('no', '3300')->value('id')
+            ?? Account::query()->where('account_type', 'equity')->orderBy('no')->value('id'));
+    }
+
     public static function giroReceivable(): int
     {
         return (int) app(Preferensi::class)->get(PreferensiKey::GiroReceivableAccount);

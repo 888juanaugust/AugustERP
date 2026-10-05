@@ -10,11 +10,13 @@ use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Format;
+use App\Models\Company\OpeningBalance;
 use App\Models\Sales\Customer;
 use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesOrder;
 use App\Models\Sales\SalesReturn;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 
@@ -42,7 +44,7 @@ final class CreditCheck
         return max(0, (int) $this->prefs->get(PreferensiKey::CreditFreezeDays));
     }
 
-    /** Open receivables (invoices and down payments, less credits) of the customer or its parent group. */
+    /** Open receivables (invoices, down payments and opening balances, less credits) of the customer or its parent group. */
     public function exposure(Customer $customer): int
     {
         $ids = $this->groupIds($customer);
@@ -55,6 +57,9 @@ final class CreditCheck
         }
         foreach (SalesReturn::query()->whereIn('customer_id', $ids)->where('payment_status', '!=', 'paid')->get() as $return) {
             $open += $this->settlement->balance($return);
+        }
+        foreach ($this->openings($ids)->get() as $opening) {
+            $open += $this->settlement->balance($opening);
         }
 
         return $open;
@@ -77,9 +82,18 @@ final class CreditCheck
     {
         $basis = $this->prefs->get(PreferensiKey::AgingBasis);
         $column = $basis === 'due_date' ? 'due_date' : 'trans_date';
-        $oldest = SalesInvoice::query()->whereIn('customer_id', $this->groupIds($customer))->where('payment_status', '!=', 'paid')->min($column);
+        $oldest = collect([
+            SalesInvoice::query()->whereIn('customer_id', $this->groupIds($customer))->where('payment_status', '!=', 'paid')->min($column),
+            $this->openings($this->groupIds($customer))->min($basis === 'due_date' ? 'due_date' : 'document_date'),
+        ])->filter()->min();
 
         return $oldest ? max(0, (int) Carbon::parse($oldest)->diffInDays(today(), false)) : 0;
+    }
+
+    /** @param  list<int>  $ids */
+    private function openings(array $ids): Builder
+    {
+        return OpeningBalance::query()->where('party_type', (new Customer)->getMorphClass())->whereIn('party_id', $ids)->where('payment_status', '!=', 'paid');
     }
 
     /** @throws RuntimeException when the customer must not take on $newAmount more */

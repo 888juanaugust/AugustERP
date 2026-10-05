@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Company;
 
+use App\Console\Commands\PostOpeningBalancesCommand;
+use App\Console\Commands\RecurringCommand;
 use App\Domain\Access\MenuKey;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\Company\AuditLog;
@@ -14,11 +16,13 @@ use App\Models\Company\Currency;
 use App\Models\Company\Employee;
 use App\Models\Company\Fob;
 use App\Models\Company\MemorizedTransaction;
+use App\Models\Company\OpeningBalance;
 use App\Models\Company\PaymentTerm;
 use App\Models\Company\RecurringTransaction;
 use App\Models\Company\Shipment;
 use App\Models\Company\TaxCode;
 use App\Modules\BaseModule;
+use Illuminate\Console\Scheduling\Schedule;
 
 /** Company: the masters every module shares, the calendar, recurring and memorized transactions, the activity log. Core. */
 final class CompanyModule extends BaseModule
@@ -62,6 +66,17 @@ final class CompanyModule extends BaseModule
             'recurring_transaction' => RecurringTransaction::class,
             'memorized_transaction' => MemorizedTransaction::class,
             'calendar_event' => CalendarEvent::class,
+            'opening_balance' => OpeningBalance::class,
         ];
+    }
+
+    public static function commands(): array
+    {
+        return [RecurringCommand::class, PostOpeningBalancesCommand::class];
+    }
+
+    public static function schedule(Schedule $schedule): void
+    {
+        $schedule->command('erp:recurring')->dailyAt('06:00');
     }
 }

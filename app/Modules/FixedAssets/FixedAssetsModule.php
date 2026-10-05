@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\FixedAssets;
 
+use App\Console\Commands\DepreciateCommand;
 use App\Domain\Access\MenuKey;
 use App\Domain\FixedAssets\AssetFromBill;
 use App\Domain\Pengaturan\PreferensiKey;
@@ -21,6 +22,7 @@ use App\Models\FixedAssets\FixedAssetExpenditure;
 use App\Modules\BaseModule;
 use App\Modules\ModuleContext;
 use Database\Seeders\Defaults\FixedAssetSeeder;
+use Illuminate\Console\Scheduling\Schedule;
 
 /** Fixed assets and their monthly depreciation. Switched by the Fixed assets feature. */
 final class FixedAssetsModule extends BaseModule
@@ -66,5 +68,15 @@ final class FixedAssetsModule extends BaseModule
     public static function defaultSeeders(): array
     {
         return [FixedAssetSeeder::class];
+    }
+
+    public static function commands(): array
+    {
+        return [DepreciateCommand::class];
+    }
+
+    public static function schedule(Schedule $schedule): void
+    {
+        $schedule->command('erp:depreciate')->lastDayOfMonth('23:30');
     }
 }

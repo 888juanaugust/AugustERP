@@ -7,6 +7,7 @@ namespace App\Domain\Documents;
 use App\Domain\Fulfilment\StatusDeriver;
 use App\Models\Company\Fob;
 use App\Models\Company\Shipment;
+use Brick\Math\BigDecimal;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -32,7 +33,8 @@ trait PricedDocument
             (bool) $this->taxable,
             (bool) $this->inclusive_tax,
             (string) ($this->discount_percent ?? 0),
-            (int) ($this->discount_amount ?? 0),
+            // The percentage decides; a fixed amount counts only where no percentage is given.
+            BigDecimal::of((string) ($this->discount_percent ?? 0))->isPositive() ? 0 : (int) ($this->discount_amount ?? 0),
             $charges->map(fn ($c) => $c->getAttributes())->all(),
         );
 
@@ -40,6 +42,7 @@ trait PricedDocument
             $computed = $result['lines'][$i];
             $line->forceFill([
                 'discount_amount' => $computed['discount_amount'],
+                'header_discount' => $computed['header_discount'],
                 'amount' => $computed['amount'],
                 'dpp_amount' => $computed['dpp_amount'],
                 'tax_amount' => $computed['tax_amount'],

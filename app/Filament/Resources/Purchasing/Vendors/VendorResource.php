@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Purchasing\Vendors;
 
 use App\Domain\Access\MenuKey;
-use App\Domain\Company\DataStart;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Enums\TaxDocumentCode;
@@ -17,14 +16,13 @@ use App\Filament\Resources\Purchasing\Vendors\Pages\ListVendors;
 use App\Filament\Support\AddressFields;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\MasterResource;
-use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\OpeningBalanceFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\Purchasing\Vendor;
 use App\Models\Purchasing\VendorCategory;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
@@ -139,26 +137,7 @@ class VendorResource extends MasterResource
                         AddressFields::make('tax', 'Tax address')->visible(fn (Get $get) => ! $get('tax_same_as_bill')),
                     ]),
                     Tab::make(__('Opening balance'))->schema([
-                        Repeater::make('openingBalances')
-                            ->hiddenLabel()
-                            ->relationship()
-                            ->orderColumn('sort')
-                            ->table([
-                                TableColumn::make(__('Date')),
-                                TableColumn::make(__('Amount')),
-                                TableColumn::make(__('Payment term')),
-                                TableColumn::make(__('Number')),
-                                TableColumn::make(__('Description')),
-                            ])
-                            ->schema([
-                                DatePicker::make('trans_date')->required()->native(false)->default(fn () => DataStart::openingDate()),
-                                MoneyInput::make('amount')->required()->prefix(Format::symbol()),
-                                Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
-                                TextInput::make('number')->maxLength(60),
-                                TextInput::make('description')->maxLength(255),
-                            ])
-                            ->addActionLabel('Add open bill')
-                            ->defaultItems(0),
+                        OpeningBalanceFields::repeater(__('Add open bill')),
                     ]),
                     Tab::make(__('Other'))->schema([
                         Toggle::make('use_bill_number')->label(__('The vendor puts its own invoice number on bills'))->inline(false),

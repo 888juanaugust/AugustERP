@@ -9,6 +9,7 @@ Module group `purchasing`. 12 screens in the standard menu.
 - With "last purchase price is updated by purchase invoices" on (the default), an item's purchase price follows its latest purchase invoice dated from the cutoff date, net of discount and included tax, per base unit; deleting that invoice falls back to the one before.
 - Vendor prices are the default purchase price per vendor and item. Payment orders instruct the bank to pay several vendor invoices; vendor transfers pay many vendors in one document.
 - Vendors carry payment terms, tax status and identity, default tax, bank accounts, contacts and opening payables.
+- A vendor's opening balances are the bills still open at the data start date: each posts on the data start date (Dr Opening Balance Equity / Cr payable), ages from its own date, is settled by payments like a bill and is locked once paid. "Discount on the total" is spread over the lines, so stock value and expense are net of it.
 - With departments or projects on, orders, receipts, invoices, returns, vendor claims, down payments and payments carry a department and a project on the header and on every line and charge. A line's own wins; a line that names none, and the document's own legs (receivable or payable, tax, down payments), take the header's. A document made from another, or a line pulled from one, keeps its source's tags; the income statement filtered by a department shows its revenue and cost of sales.
 
 ## Screens
@@ -496,7 +497,7 @@ Menu key `vendor__vendor` · module `purchasing`
 
 #### Tab: Opening balance
 
-**Line grid "Opening balances":** Date · Amount · Payment term · Number · Description
+**Line grid "Opening balances":** Invoice date · Due date · Amount · Payment term · Number · Description · Open
 
 #### Tab: Other
 

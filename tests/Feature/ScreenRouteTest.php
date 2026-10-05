@@ -100,7 +100,7 @@ class ScreenRouteTest extends TestCase
         }
 
         $this->assertEqualsCanonicalizing([
-            MenuKey::ECommerceLinks->value, MenuKey::EmailTaxInvoice->value, MenuKey::IncomeTaxArt21Return->value, MenuKey::WithholdingSlips->value,
+            MenuKey::EmailTaxInvoice->value, MenuKey::IncomeTaxArt21Return->value, MenuKey::WithholdingSlips->value,
         ], $placeholders);
     }
 }

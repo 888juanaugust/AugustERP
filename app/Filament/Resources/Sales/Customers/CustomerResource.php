@@ -7,7 +7,6 @@ namespace App\Filament\Resources\Sales\Customers;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
-use App\Domain\Company\DataStart;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
@@ -24,6 +23,7 @@ use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\OpeningBalanceFields;
 use App\Models\Company\Employee;
 use App\Models\Company\PaymentTerm;
 use App\Models\GeneralLedger\Account;
@@ -32,7 +32,6 @@ use App\Models\Sales\CustomerCategory;
 use App\Models\Sales\PriceCategory;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
@@ -159,26 +158,7 @@ class CustomerResource extends MasterResource
                         AddressFields::make('tax', 'Tax address')->visible(fn (Get $get) => ! $get('tax_same_as_bill')),
                     ]),
                     Tab::make(__('Opening balance'))->schema([
-                        Repeater::make('openingBalances')
-                            ->hiddenLabel()
-                            ->relationship()
-                            ->orderColumn('sort')
-                            ->table([
-                                TableColumn::make(__('Date')),
-                                TableColumn::make(__('Amount')),
-                                TableColumn::make(__('Payment term')),
-                                TableColumn::make(__('Number')),
-                                TableColumn::make(__('Description')),
-                            ])
-                            ->schema([
-                                DatePicker::make('trans_date')->required()->native(false)->default(fn () => DataStart::openingDate()),
-                                MoneyInput::make('amount')->required()->prefix(Format::symbol()),
-                                Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
-                                TextInput::make('number')->maxLength(60),
-                                TextInput::make('description')->maxLength(255),
-                            ])
-                            ->addActionLabel('Add open invoice')
-                            ->defaultItems(0),
+                        OpeningBalanceFields::repeater(__('Add open invoice')),
                     ]),
                     Tab::make(__('Other'))->schema([
                         Fieldset::make(__('Credit limit'))->visible(fn () => HakAkses::canSpecial(HakKhusus::SeeCreditData))->schema([
