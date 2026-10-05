@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\CashBank;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Approval\ApprovalType;
+use App\Domain\Numbering\TransactionType;
 use App\Domain\Posting\Blockers\GiroBlocker;
 use App\Domain\Posting\Blockers\ReconciledBlocker;
 use App\Models\CashBank\BankReconciliation;
@@ -59,5 +61,10 @@ final class CashBankModule extends BaseModule
         // A reconciled bank line, or a giro the bank decided, locks its document.
         $context->guard->addBlocker($context->app->make(ReconciledBlocker::class));
         $context->guard->addBlocker($context->app->make(GiroBlocker::class));
+
+        // The documents that may wait for approval, under the transaction type approval rules name them by.
+        $context->approvals->register(new ApprovalType(CashPayment::class, TransactionType::CashBankVoucher));
+        $context->approvals->register(new ApprovalType(CashReceipt::class, TransactionType::CashBankVoucher));
+        $context->approvals->register(new ApprovalType(BankTransfer::class, TransactionType::BankTransfer));
     }
 }

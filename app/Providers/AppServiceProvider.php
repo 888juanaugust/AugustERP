@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\CashBank\GiroService;
 use App\Domain\CashBank\Reconciler;
 use App\Domain\Fulfilment\FulfilmentService;
@@ -31,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DocumentGuard::class);
         $this->app->singleton(Recoster::class);
         $this->app->singleton(FulfilmentService::class);
+        $this->app->singleton(ApprovalEngine::class);
         $this->app->singleton(GiroService::class);
         $this->app->singleton(Reconciler::class);
         $this->app->scoped(ModuleRegistry::class, fn ($app) => new ModuleRegistry(
@@ -50,13 +52,15 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap($registry->morphMap());
 
         // Then each module wires what it adds to the posting layer: ledger
-        // writers, blockers, fulfilment chains.
+        // writers, blockers, fulfilment chains, the document types that may
+        // wait for approval.
         $context = new ModuleContext(
             $this->app,
             $this->app->make(PostingService::class),
             $this->app->make(DocumentGuard::class),
             $this->app->make(FulfilmentService::class),
             $this->app->make(MenuRegistry::class),
+            $this->app->make(ApprovalEngine::class),
         );
         foreach ($registry->all() as $module) {
             $module::boot($context);

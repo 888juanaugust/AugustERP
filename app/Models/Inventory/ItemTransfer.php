@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventory;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Fulfilment\StatusDeriver;
 use App\Domain\Inventory\Costing\CostEngine;
 use App\Domain\Posting\Contracts\Postable;
@@ -21,6 +22,7 @@ use Illuminate\Support\Collection;
 class ItemTransfer extends Model implements Postable
 {
     use PostsToLedger;
+    use RequiresApproval;
 
     public const SEND = 'send';
 

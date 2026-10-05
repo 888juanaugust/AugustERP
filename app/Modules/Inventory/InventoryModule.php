@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Modules\Inventory;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Approval\ApprovalType;
+use App\Domain\Inventory\OpnameApprover;
 use App\Domain\Inventory\StockLedger;
+use App\Domain\Numbering\TransactionType;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemBrand;
@@ -56,5 +59,10 @@ final class InventoryModule extends BaseModule
         // The stock ledger writes the movements every posting declares.
         $context->postings->extend(fn ($posting, $builder) => $context->app->make(StockLedger::class)->write($posting, $builder));
         $context->postings->onUnpost(fn ($posting) => $context->app->make(StockLedger::class)->unwrite($posting));
+
+        // The documents that may wait for approval, under the transaction type approval rules name them by.
+        $context->approvals->register(new ApprovalType(InventoryAdjustment::class, TransactionType::InventoryAdjustment));
+        $context->approvals->register(new ApprovalType(ItemTransfer::class, TransactionType::ItemTransfer));
+        $context->approvals->register(OpnameApprover::type());
     }
 }

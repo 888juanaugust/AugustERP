@@ -77,11 +77,11 @@ Menu key `general-ledger__expense-accrual` · module `general-ledger`
 
 ### List
 
-**Columns:** Number · Date · Due date · Total · Paid · Status · Notes
+**Columns:** Number · Date · Due date · Total · Paid · Status · Notes · Approval
 
 **Filters:** Status · Trans date
 
-**Actions:** Edit · Pay
+**Actions:** Approve · Reject · Edit · Pay
 
 ### Form
 

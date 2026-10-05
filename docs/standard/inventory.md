@@ -31,11 +31,11 @@ Menu key `vendor__purchase-requisition` · module `purchasing`
 
 ### List
 
-**Columns:** Number · Date · Request type · Notes · Status · Estimated total
+**Columns:** Number · Date · Request type · Notes · Status · Estimated total · Approval
 
 **Filters:** Trans date · Request type
 
-**Actions:** Edit · Create order
+**Actions:** Approve · Reject · Edit · Create order
 
 ### Form
 
@@ -63,11 +63,11 @@ Menu key `inventory__item-transfer` · module `inventory`
 
 ### List
 
-**Columns:** Number · Date · Process · To / from · Warehouse · Notes · Delivery status
+**Columns:** Number · Date · Process · To / from · Warehouse · Notes · Delivery status · Approval
 
 **Filters:** Trans date · Process · Delivery status · Warehouse
 
-**Actions:** Edit · Receive · Print
+**Actions:** Approve · Reject · Edit · Receive · Print
 
 ### Form
 
@@ -98,11 +98,11 @@ Menu key `inventory__item-adjustment` · module `inventory`
 
 ### List
 
-**Columns:** Number · Date · Notes · Lines · Opening
+**Columns:** Number · Date · Notes · Lines · Opening · Approval
 
 **Filters:** Trans date
 
-**Actions:** Edit · Print
+**Actions:** Approve · Reject · Edit · Print
 
 ### Form
 

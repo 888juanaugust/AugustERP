@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\ExpenseAccruals\Pages\CreateExpenseAccrual;
 use App\Filament\Resources\GeneralLedger\ExpenseAccruals\Pages\EditExpenseAccrual;
 use App\Filament\Resources\GeneralLedger\ExpenseAccruals\Pages\ListExpenseAccruals;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
@@ -120,6 +121,7 @@ class ExpenseAccrualResource extends ErpResource
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
                 TextColumn::make('description')->label(__('fields.description'))->limit(50)->placeholder('—'),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -133,7 +135,7 @@ class ExpenseAccrualResource extends ErpResource
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))
                         ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '<=', $d))),
             ])
-            ->recordActions([EditAction::make(), PayAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make(), PayAction::make()]);
     }
 
     public static function getPages(): array

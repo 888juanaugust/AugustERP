@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Inventory;
 
-use App\Domain\Access\HakAkses;
-use App\Domain\Access\HakKhusus;
+use App\Domain\Approval\ApprovalEngine;
+use App\Domain\Approval\ApprovalType;
 use App\Domain\Audit\Auditor;
-use App\Domain\Pengaturan\BusinessRule;
+use App\Domain\Numbering\TransactionType;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Shared\Format;
 use App\Models\Inventory\InventoryAdjustment;
@@ -20,24 +20,41 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Approving a stock opname result posts the differences between the count
- * and the system as one inventory adjustment in the order's warehouse. With
- * segregation of duties on, the approver is never the person who counted.
+ * A stock opname result always waits for approval, on the shared approval
+ * engine: under an approval rule for stock counts when one covers it, else
+ * for anyone with the "approve transactions" right; never the person who
+ * counted while segregation of duties is on. The approval that completes it
+ * posts the differences between the count and the system as one inventory
+ * adjustment in the order's warehouse.
  */
 final class OpnameApprover
 {
-    public function __construct(private readonly DocumentRepository $documents, private readonly HakAkses $akses) {}
+    public function __construct(private readonly DocumentRepository $documents, private readonly ApprovalEngine $approvals) {}
 
+    /** How the engine treats stock counts; registered by the inventory module. */
+    public static function type(): ApprovalType
+    {
+        return new ApprovalType(
+            model: StockOpnameResult::class,
+            transactionType: TransactionType::StockOpnameResult,
+            requiredWithoutRule: true,
+            settledBefore: fn (StockOpnameResult $result): bool => $result->isApproved(),
+        );
+    }
+
+    public function canApprove(StockOpnameResult $result, ?User $user): bool
+    {
+        return ! $result->isApproved() && $this->approvals->canApprove($result, $user);
+    }
+
+    /** Records the approval; the adjustment when it completes the count's approval, else null. */
     public function approve(StockOpnameResult $result, User $approver): ?InventoryAdjustment
     {
         if ($result->isApproved()) {
-            throw new RuntimeException("{$result->number} is already approved.");
+            throw new RuntimeException(__(':number is already approved.', ['number' => $result->number]));
         }
-        if (! $this->akses->allowsSpecial($approver, HakKhusus::ApproveTransactions)) {
-            throw new RuntimeException('Approving a stock count takes the "approve transactions" right.');
-        }
-        if (BusinessRule::SegregationOfDuties->isOn() && $result->created_by !== null && $result->created_by === $approver->id) {
-            throw new RuntimeException('Segregation of duties: the person who entered the count cannot approve it.');
+        if (! $this->approvals->approve($result, $approver)) {
+            return null;
         }
 
         return DB::transaction(function () use ($result, $approver): ?InventoryAdjustment {

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Inventory\StockOpnameResults;
 
-use App\Domain\Access\HakAkses;
-use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Inventory\OpnameApprover;
 use App\Domain\Numbering\TransactionType;
@@ -133,11 +131,15 @@ class StockOpnameResultResource extends ErpResource
             ->color('success')
             ->requiresConfirmation()
             ->modalDescription(__('The differences between the count and the system become one inventory adjustment in the order\'s warehouse.'))
-            ->visible(fn (StockOpnameResult $record) => ! $record->isApproved() && app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ApproveTransactions))
+            ->visible(fn (StockOpnameResult $record) => app(OpnameApprover::class)->canApprove($record, auth()->user()))
             ->action(function (StockOpnameResult $record): void {
                 try {
                     $adjustment = app(OpnameApprover::class)->approve($record, auth()->user());
-                    Notification::make()->title($adjustment ? __('Approved; variance posted as :number', ['number' => $adjustment->number]) : __('Approved; no differences'))->success()->send();
+                    Notification::make()->title(match (true) {
+                        $adjustment !== null => __('Approved; variance posted as :number', ['number' => $adjustment->number]),
+                        $record->fresh()->isApproved() => __('Approved; no differences'),
+                        default => __('Approval recorded; the count waits for the other approvers'),
+                    })->success()->send();
                 } catch (\RuntimeException $e) {
                     Notification::make()->title(__('Cannot approve'))->body($e->getMessage())->danger()->persistent()->send();
                 }

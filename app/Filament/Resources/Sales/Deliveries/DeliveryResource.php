@@ -10,6 +10,7 @@ use App\Filament\Resources\Sales\Deliveries\Pages\CreateDelivery;
 use App\Filament\Resources\Sales\Deliveries\Pages\EditDelivery;
 use App\Filament\Resources\Sales\Deliveries\Pages\ListDeliveries;
 use App\Filament\Resources\Sales\SalesInvoices\SalesInvoiceResource;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -94,6 +95,7 @@ class DeliveryResource extends ErpResource
                     ->color(fn (string $state) => match ($state) {
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -102,6 +104,7 @@ class DeliveryResource extends ErpResource
                 SelectFilter::make('shipment_id')->label(__('fields.shipment'))->relationship('shipment', 'name'),
             ])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('invoice')->label(__('Invoice'))->icon('heroicon-m-document-text')->color('primary')
                     ->visible(fn (Delivery $record) => in_array($record->status, ['pending', 'partial'], true) && SalesInvoiceResource::canCreate())

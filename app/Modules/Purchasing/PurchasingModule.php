@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\Purchasing;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Approval\ApprovalType;
+use App\Domain\Numbering\TransactionType;
 use App\Models\Purchasing\GoodsReceipt;
 use App\Models\Purchasing\GoodsReceiptLine;
 use App\Models\Purchasing\PaymentOrder;
@@ -71,5 +73,14 @@ final class PurchasingModule extends BaseModule
         $context->fulfilment->register(PurchaseOrderLine::class, GoodsReceiptLine::class);
         $context->fulfilment->register(PurchaseOrderLine::class, PurchaseInvoiceLine::class);
         $context->fulfilment->register(GoodsReceiptLine::class, PurchaseInvoiceLine::class);
+
+        // The documents that may wait for approval, under the transaction type approval rules name them by.
+        $context->approvals->register(new ApprovalType(PurchaseRequisition::class, TransactionType::PurchaseRequisition));
+        $context->approvals->register(new ApprovalType(PurchaseOrder::class, TransactionType::PurchaseOrder));
+        $context->approvals->register(new ApprovalType(GoodsReceipt::class, TransactionType::GoodsReceipt));
+        $context->approvals->register(new ApprovalType(PurchaseInvoice::class, TransactionType::PurchaseInvoice));
+        $context->approvals->register(new ApprovalType(PurchaseReturn::class, TransactionType::PurchaseReturn));
+        $context->approvals->register(new ApprovalType(VendorClaim::class, TransactionType::VendorClaim));
+        $context->approvals->register(new ApprovalType(PurchasePayment::class, TransactionType::CashBankVoucher));
     }
 }

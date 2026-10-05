@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Printing\Printable;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Livewire;
 
-/** The "Print" button on a document list: opens the printable page in a new tab, when the screen's print right allows. */
+/** The "Print" button on a document list: opens the printable page in a new tab, when the screen's print right allows and the document is approved. */
 final class PrintAction
 {
     public static function make(): Action
@@ -19,7 +20,7 @@ final class PrintAction
             ->icon('heroicon-m-printer')
             ->color('gray')
             ->url(fn (Model $record): ?string => ($alias = Printable::aliasOf($record)) ? route('filament.admin.print', ['alias' => $alias, 'id' => $record->getKey()]) : null, shouldOpenInNewTab: true)
-            ->visible(fn (Model $record): bool => Printable::aliasOf($record) !== null && self::allowed());
+            ->visible(fn (Model $record): bool => Printable::aliasOf($record) !== null && self::allowed() && app(ApprovalEngine::class)->isApproved($record));
     }
 
     private static function allowed(): bool

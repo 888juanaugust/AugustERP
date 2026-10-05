@@ -2,6 +2,7 @@
 
 namespace App\Models\Purchasing;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Domain\Fulfilment\StatusDeriver;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PurchaseRequisition extends Model implements HasAuditReference
 {
     use RecordsActivity;
+    use RequiresApproval;
 
     protected $guarded = [];
 

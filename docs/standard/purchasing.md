@@ -30,11 +30,11 @@ Menu key `vendor__purchase-order` · module `purchasing`
 
 ### List
 
-**Columns:** Number · Date · Vendor · Notes · Status · Total
+**Columns:** Number · Date · Vendor · Notes · Status · Total · Approval
 
 **Filters:** Trans date · Vendor
 
-**Actions:** Edit · Receive · Invoice · Print
+**Actions:** Approve · Reject · Edit · Receive · Invoice · Print
 
 ### Form
 
@@ -82,11 +82,11 @@ Menu key `vendor__receive-item` · module `purchasing`
 
 ### List
 
-**Columns:** Number · Delivery note No. · Date · Vendor · Notes · Status
+**Columns:** Number · Delivery note No. · Date · Vendor · Notes · Status · Approval
 
 **Filters:** Trans date · Received from
 
-**Actions:** Edit · Invoice · Print
+**Actions:** Approve · Reject · Edit · Invoice · Print
 
 ### Form
 
@@ -166,11 +166,11 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 
 ### List
 
-**Columns:** Number · Invoice No. · Date · Vendor · Notes · Status · Age (days) · Total · Printed
+**Columns:** Number · Invoice No. · Date · Vendor · Notes · Status · Age (days) · Total · Printed · Approval
 
 **Filters:** Trans date · Vendor · Printed
 
-**Actions:** Edit · Pay · Print
+**Actions:** Approve · Reject · Edit · Pay · Print
 
 ### Form
 
@@ -225,11 +225,11 @@ Menu key `vendor__purchase-payment` · module `purchasing`
 
 ### List
 
-**Columns:** Number · Date · Cheque No. · Cheque date · Vendor · Bank · Method · Notes · Giro · Amount paid
+**Columns:** Number · Date · Cheque No. · Cheque date · Vendor · Bank · Method · Notes · Giro · Amount paid · Approval
 
 **Filters:** Trans date · Method · Bank · Paid to
 
-**Actions:** Edit · Giro cleared · Giro bounced · Print
+**Actions:** Approve · Reject · Edit · Giro cleared · Giro bounced · Print
 
 ### Form
 
@@ -265,11 +265,11 @@ Menu key `vendor__purchase-return` · module `purchasing`
 
 ### List
 
-**Columns:** Number · Date · Vendor · Return from · Notes · Credit used · Total
+**Columns:** Number · Date · Vendor · Return from · Notes · Credit used · Total · Approval
 
 **Filters:** Trans date · Vendor
 
-**Actions:** Edit · Print
+**Actions:** Approve · Reject · Edit · Print
 
 ### Form
 
@@ -314,11 +314,11 @@ Menu key `vendor__vendor-claim` · module `purchasing`
 
 ### List
 
-**Columns:** Number · Date · Claim type · Vendor · Notes · Delivery status
+**Columns:** Number · Date · Claim type · Vendor · Notes · Delivery status · Approval
 
 **Filters:** Trans date · Claim status · Claim type · Vendor
 
-**Actions:** Edit · Mark settled
+**Actions:** Approve · Reject · Edit · Mark settled
 
 ### Form
 

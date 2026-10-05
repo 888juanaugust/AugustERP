@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Format;
 use App\Models\Purchasing\PurchaseDownPayment;
@@ -22,7 +23,7 @@ final class PayableFields
         $settlement = app(SettlementService::class);
         $out = collect();
         foreach ([PurchaseInvoice::class, PurchaseDownPayment::class, PurchaseReturn::class] as $class) {
-            $docs = $class::query()->where('vendor_id', $vendorId)->where('payment_status', '!=', 'paid')->orderBy('trans_date')->get();
+            $docs = $class::query()->where('vendor_id', $vendorId)->where('payment_status', '!=', 'paid')->orderBy('trans_date')->get()->filter(fn ($doc) => app(ApprovalEngine::class)->isApproved($doc));
             foreach ($docs as $doc) {
                 $balance = $settlement->balance($doc);
                 if ($balance === 0) {

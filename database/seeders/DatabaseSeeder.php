@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         Defaults\UnitSeeder::class,
         Defaults\PrintLayoutSeeder::class,
         Defaults\AccessGroupSeeder::class,
+        Defaults\ApprovalRuleSeeder::class,
     ];
 
     public function run(): void

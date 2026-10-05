@@ -13,6 +13,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\CreatePurchasePayment;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\EditPurchasePayment;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\ListPurchasePayments;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
@@ -158,6 +159,7 @@ class PurchasePaymentResource extends ErpResource
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
                 TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount paid')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -166,7 +168,7 @@ class PurchasePaymentResource extends ErpResource
                 SelectFilter::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('vendor_id')->label(__('Paid to'))->relationship('vendor', 'name')->searchable(),
             ])
-            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), PrintAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make(), ...GiroActions::forRecord(), PrintAction::make()]);
     }
 
     public static function getPages(): array

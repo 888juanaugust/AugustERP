@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Sales\SalesOrders\Pages;
 
 use App\Filament\Resources\Sales\SalesOrders\SalesOrderResource;
+use App\Filament\Support\DocumentPages;
 use App\Filament\Support\EditDocument;
 
 class EditSalesOrder extends EditDocument
@@ -13,6 +14,6 @@ class EditSalesOrder extends EditDocument
 
     protected function getHeaderActions(): array
     {
-        return [SalesOrderResource::approveAction(), SalesOrderResource::rejectAction(), ...parent::getHeaderActions()];
+        return [SalesOrderResource::approveAction(), SalesOrderResource::rejectAction(), DocumentPages::deleteAction()];
     }
 }

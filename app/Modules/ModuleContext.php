@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules;
 
 use App\Domain\Access\MenuRegistry;
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Fulfilment\FulfilmentService;
 use App\Domain\Posting\DocumentGuard;
 use App\Domain\Posting\PostingService;
@@ -19,5 +20,6 @@ final class ModuleContext
         public readonly DocumentGuard $guard,
         public readonly FulfilmentService $fulfilment,
         public readonly MenuRegistry $menus,
+        public readonly ApprovalEngine $approvals,
     ) {}
 }

@@ -12,6 +12,7 @@ use App\Filament\Resources\CashBank\CashPayments\Pages\CreateCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\EditCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\ListCashPayments;
 use App\Filament\Support\AccrualFields;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
@@ -154,13 +155,14 @@ class CashPaymentResource extends ErpResource
                 TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
                 TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
                 SelectFilter::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
-            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);
     }
 
     /** @param  array{label: string, balance: int, account_id: int}  $open */

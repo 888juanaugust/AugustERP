@@ -10,6 +10,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\PurchaseReturns\Pages\CreatePurchaseReturn;
 use App\Filament\Resources\Purchasing\PurchaseReturns\Pages\EditPurchaseReturn;
 use App\Filament\Resources\Purchasing\PurchaseReturns\Pages\ListPurchaseReturns;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -134,10 +135,11 @@ class PurchaseReturnResource extends ErpResource
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable()])
-            ->recordActions([EditAction::make(), PrintAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make(), PrintAction::make()]);
     }
 
     public static function getPages(): array

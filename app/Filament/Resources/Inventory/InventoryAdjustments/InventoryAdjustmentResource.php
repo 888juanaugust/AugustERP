@@ -13,6 +13,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\CreateInventoryAdjustment;
 use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\EditInventoryAdjustment;
 use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\ListInventoryAdjustments;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -135,10 +136,11 @@ class InventoryAdjustmentResource extends ErpResource
                 TextColumn::make('description')->label(__('fields.description'))->limit(60)->placeholder('—'),
                 TextColumn::make('lines_count')->label(__('Lines'))->counts('lines')->alignEnd(),
                 IconColumn::make('is_opening')->label(__('Opening'))->boolean()->toggleable(isToggledHiddenByDefault: true),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange()])
-            ->recordActions([EditAction::make()->hidden(fn (InventoryAdjustment $r) => $r->is_opening), PrintAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make()->hidden(fn (InventoryAdjustment $r) => $r->is_opening), PrintAction::make()]);
     }
 
     public static function getPages(): array

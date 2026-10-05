@@ -11,6 +11,7 @@ use App\Filament\Resources\Purchasing\PurchaseOrders\PurchaseOrderResource;
 use App\Filament\Resources\Purchasing\PurchaseRequisitions\Pages\CreatePurchaseRequisition;
 use App\Filament\Resources\Purchasing\PurchaseRequisitions\Pages\EditPurchaseRequisition;
 use App\Filament\Resources\Purchasing\PurchaseRequisitions\Pages\ListPurchaseRequisitions;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -107,10 +108,12 @@ class PurchaseRequisitionResource extends ErpResource
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
                 Rupiah::make('estimated_total')->label(__('Estimated total')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('requisition_type')->label(__('Request type'))->options(['buy' => __('Buy items'), 'send' => __('Send items')])])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('order')->label(__('Create order'))->icon('heroicon-m-arrow-right-circle')->color('primary')
                     ->visible(fn (PurchaseRequisition $record) => in_array($record->status, ['pending', 'partial'], true) && PurchaseOrderResource::canCreate())

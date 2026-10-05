@@ -2,6 +2,7 @@
 
 namespace App\Models\CashBank;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class BankTransfer extends Model implements Postable
 {
     use PostsToLedger;
+    use RequiresApproval;
 
     protected $guarded = [];
 

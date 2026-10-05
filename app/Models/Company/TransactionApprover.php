@@ -10,19 +10,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/** Who must approve which documents, from what amount, under which rule (X-05). */
+/** Who must approve which documents, from what amount, under which rule. */
 class TransactionApprover extends Model
 {
     use RecordsActivity;
+
+    public const ANY_ONE = 'any_one';
+
+    public const AT_LEAST_TWO = 'at_least_two';
+
+    public const IN_ORDER = 'all_in_order';
+
+    public const ANY_ORDER = 'all_any_order';
 
     /** @return array<string, string> rule value → label */
     public static function rules(): array
     {
         return [
-            'any_one' => __('Any one of the approvers'),
-            'at_least_two' => __('At least two approvers'),
-            'all_in_order' => __('Every approver, in order'),
-            'all_any_order' => __('Every approver, in any order'),
+            self::ANY_ONE => __('Any one of the approvers'),
+            self::AT_LEAST_TWO => __('At least two approvers'),
+            self::IN_ORDER => __('Every approver, in order'),
+            self::ANY_ORDER => __('Every approver, in any order'),
         ];
     }
 
@@ -51,12 +59,12 @@ class TransactionApprover extends Model
 
     public function groups(): BelongsToMany
     {
-        return $this->belongsToMany(AccessGroup::class, 'transaction_approver_groups');
+        return $this->belongsToMany(AccessGroup::class, 'transaction_approver_groups')->withPivot('sort');
     }
 
     public function approvers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'transaction_approver_users');
+        return $this->belongsToMany(User::class, 'transaction_approver_users')->withPivot('sort');
     }
 
     /** Whether this user may approve under this rule: named, or in a named group. */

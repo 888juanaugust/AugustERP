@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\CashBank\CashReceipts\Pages\CreateCashReceipt;
 use App\Filament\Resources\CashBank\CashReceipts\Pages\EditCashReceipt;
 use App\Filament\Resources\CashBank\CashReceipts\Pages\ListCashReceipts;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
@@ -112,13 +113,14 @@ class CashReceiptResource extends ErpResource
                 TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
                 TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
                 SelectFilter::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
-            ->recordActions([EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);
     }
 
     /** Saves the voucher's accounts and amounts as a memorized transaction, used again from the create page. */

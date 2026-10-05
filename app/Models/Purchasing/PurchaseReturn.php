@@ -2,6 +2,7 @@
 
 namespace App\Models\Purchasing;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Inventory\Costing\CostEngine;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class PurchaseReturn extends Model implements Postable
 {
     use PostsToLedger, PricedDocument;
+    use RequiresApproval;
 
     protected $guarded = [];
 

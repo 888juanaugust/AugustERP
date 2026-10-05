@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\CashBank\BankTransfers\Pages\CreateBankTransfer;
 use App\Filament\Resources\CashBank\BankTransfers\Pages\EditBankTransfer;
 use App\Filament\Resources\CashBank\BankTransfers\Pages\ListBankTransfers;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -107,6 +108,7 @@ class BankTransferResource extends ErpResource
                 TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount')),
                 Rupiah::make('fees_total')->label(__('Fees')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -114,7 +116,7 @@ class BankTransferResource extends ErpResource
                 SelectFilter::make('from_bank_account_id')->label(__('From'))->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('to_bank_account_id')->label(__('To'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
-            ->recordActions([EditAction::make(), PrintAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make(), PrintAction::make()]);
     }
 
     public static function getPages(): array

@@ -10,6 +10,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\CreateVendorClaim;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\EditVendorClaim;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\ListVendorClaims;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
@@ -98,6 +99,7 @@ class VendorClaimResource extends ErpResource
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
                 TextColumn::make('status')->label(__('Delivery status'))->badge()->formatStateUsing(fn (string $state) => __('status.fulfilment.'.$state))
                     ->color(fn (string $state) => $state === 'processed' ? 'success' : 'info'),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -107,6 +109,7 @@ class VendorClaimResource extends ErpResource
                 SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable(),
             ])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('settle')->label(__('Mark settled'))->icon('heroicon-m-check')->color('success')->requiresConfirmation()
                     ->visible(fn (VendorClaim $record) => $record->status === 'pending' && static::canEdit($record))

@@ -14,6 +14,7 @@ use App\Filament\Resources\Sales\SalesInvoices\Pages\CreateSalesInvoice;
 use App\Filament\Resources\Sales\SalesInvoices\Pages\EditSalesInvoice;
 use App\Filament\Resources\Sales\SalesInvoices\Pages\ListSalesInvoices;
 use App\Filament\Resources\Sales\SalesReceipts\SalesReceiptResource;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -130,6 +131,7 @@ class SalesInvoiceResource extends ErpResource
                 Rupiah::make('total')->label(__('fields.total')),
                 TextColumn::make('nsfp')->label(__('NSFP'))->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_printed')->label(__('fields.is_printed'))->boolean()->toggleable(isToggledHiddenByDefault: true),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -138,6 +140,7 @@ class SalesInvoiceResource extends ErpResource
                 TernaryFilter::make('is_printed')->label(__('fields.is_printed')),
             ])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('receive')->label(__('Receive payment'))->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (SalesInvoice $record) => $record->payment_status !== 'paid' && SalesReceiptResource::canCreate())

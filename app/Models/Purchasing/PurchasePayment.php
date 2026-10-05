@@ -2,6 +2,7 @@
 
 namespace App\Models\Purchasing;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\CashBank\Contracts\GiroSource;
 use App\Domain\CashBank\GiroDetails;
 use App\Domain\Documents\Accounts;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 class PurchasePayment extends Model implements GiroSource, Postable
 {
     use PostsToLedger;
+    use RequiresApproval;
 
     protected $guarded = [];
 

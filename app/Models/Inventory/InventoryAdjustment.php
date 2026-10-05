@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventory;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Inventory\Costing\CostEngine;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class InventoryAdjustment extends Model implements Postable
 {
     use PostsToLedger;
+    use RequiresApproval;
 
     protected $guarded = [];
 
