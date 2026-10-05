@@ -5,6 +5,7 @@ namespace App\Models\CashBank;
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\CashBank\Contracts\GiroSource;
 use App\Domain\CashBank\GiroDetails;
+use App\Domain\CashBank\LineTax;
 use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
@@ -55,7 +56,7 @@ class CashReceipt extends Model implements GiroSource, Postable
 
     public function refreshTotal(): void
     {
-        $this->forceFill(['amount' => (int) $this->lines()->sum('amount')])->saveQuietly();
+        $this->forceFill(['amount' => LineTax::refresh($this)])->saveQuietly();
     }
 
     public function giroDetails(): ?GiroDetails
@@ -73,9 +74,15 @@ class CashReceipt extends Model implements GiroSource, Postable
             return;
         }
         $total = 0;
-        foreach ($this->lines as $line) {
-            $builder->signed($line->account_id, -(int) $line->amount, $line->memo, $line->branch_id);
-            $total += (int) $line->amount;
+        $inclusive = (bool) $this->inclusive_tax;
+        foreach ($this->lines()->with('taxCode')->get() as $line) {
+            // The income without its tax; the tax to the tax code's VAT-out account.
+            $net = LineTax::net($line, $inclusive);
+            $builder->signed($line->account_id, -$net, $line->memo, $line->branch_id);
+            if ((int) $line->tax_amount !== 0) {
+                $builder->signed(Accounts::vatOut($line->taxCode), -(int) $line->tax_amount, 'VAT out', $line->branch_id);
+            }
+            $total += $net + (int) $line->tax_amount;
         }
         $debit = $this->giro?->isOutstanding() ? Accounts::giroReceivable() : $this->bank_account_id;
         $builder->debit($debit, $total, $this->description ?: ($this->payer ? "Receipt from {$this->payer}" : null));

@@ -5,7 +5,7 @@ Module group `cash-bank`. 9 screens in the standard menu.
 ## Behaviours
 
 - Any number of cash and bank accounts (accounts of type cash and bank), each with its own book and reconciliation.
-- Payments and receipts are multi-line documents to or from any account, with tax and branch per line; a giro (cheque) recorded on a payment or receipt sits in the giro account until it clears or bounces, each a dated event.
+- Payments and receipts are multi-line documents to or from any account, with tax and branch per line: a line's amount is before tax unless the document says amounts include tax, its tax goes to the tax code's VAT account (VAT in on payments and accruals, VAT out on receipts), and the supplier's tax invoice number may be noted on the line; a giro (cheque) recorded on a payment or receipt sits in the giro account until it clears or bounces, each a dated event.
 - A payment line may settle an expense accrual or a payroll entry (the "Settles" column); a bounced giro reopens what it settled.
 - Bank transfers move money between cash and bank accounts, with a fee.
 - Bank statements are imported from CSV or Excel (the column headers are recognised in English and Indonesian); reconciliation matches statement lines to the book per account and period, and a reconciled line blocks changes to its document.
@@ -48,13 +48,14 @@ Menu key `cash-bank__other-payment` · module `cash-bank`
 
 #### Tab: Payment details
 
-**Line grid "Lines":** Settles · Account · Amount · Memo
+**Line grid "Lines":** Settles · Account · Amount · Tax · Tax invoice No. · Branch · Memo
 
 #### Tab: Other info
 
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Amounts include tax | `inclusive_tax` | toggle |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Giro due date | `cheque_date` | date |  |
 | Payee | `payee` | textarea |  |
@@ -87,13 +88,14 @@ Menu key `cash-bank__other-deposit` · module `cash-bank`
 
 #### Tab: Receipt details
 
-**Line grid "Lines":** Account · Amount · Memo
+**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Memo
 
 #### Tab: Other info
 
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Amounts include tax | `inclusive_tax` | toggle |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Giro due date | `cheque_date` | date |  |
 | Payer | `payer` | textarea |  |

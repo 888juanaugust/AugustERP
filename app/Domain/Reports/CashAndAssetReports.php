@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports;
 
+use App\Domain\FixedAssets\FiscalDepreciator;
 use App\Domain\Shared\Enums\AccountType;
+use App\Domain\Shared\Format;
 use App\Models\FixedAssets\FixedAsset;
 use App\Models\GeneralLedger\Account;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,8 +40,11 @@ final class CashAndAssetReports
     }
 
     /** Every asset with cost, the period's depreciation, accumulated and book value at the period's end. @return list<array<string, mixed>> */
-    public static function depreciationSchedule(Period $period, ?int $categoryId = null): array
+    public static function depreciationSchedule(Period $period, ?int $categoryId = null, string $book = 'commercial'): array
     {
+        if ($book === 'fiscal') {
+            return self::fiscalSchedule($period, $categoryId);
+        }
         $assets = FixedAsset::query()->with(['category', 'depreciations', 'disposals'])
             ->when($categoryId, fn (Builder $q) => $q->where('asset_category_id', $categoryId))
             ->where('trans_date', '<=', $period->untilDate())
@@ -59,6 +64,41 @@ final class CashAndAssetReports
             ];
             $sum['cost'] += $cost;
             $sum['period'] += (int) $inPeriod->sum('amount');
+            $sum['accumulated'] += $accumulated;
+            $sum['book_value'] += $cost - $accumulated;
+        }
+        $rows[] = ['id' => 'total', 'number' => 'Total', 'name' => '', 'category' => '', 'usage_date' => null, 'method' => '', 'life' => ''] + $sum + ['status' => '', 'is_total' => true];
+
+        return $rows;
+    }
+
+    /** The tax books: each fiscal asset's depreciation by its fiscal group (FiscalDepreciator), nothing posted. */
+    private static function fiscalSchedule(Period $period, ?int $categoryId): array
+    {
+        $assets = FixedAsset::query()->with(['category', 'fiscalCategory'])
+            ->where('fiscal', true)
+            ->when($categoryId, fn (Builder $q) => $q->where('asset_category_id', $categoryId))
+            ->where('trans_date', '<=', $period->untilDate())
+            ->orderBy('number')
+            ->get();
+        $from = $period->from->format('Y-m');
+        $until = $period->until->format('Y-m');
+        $rows = [];
+        $sum = ['cost' => 0, 'period' => 0, 'accumulated' => 0, 'book_value' => 0];
+        foreach ($assets as $asset) {
+            $months = FiscalDepreciator::months($asset);
+            $inPeriod = array_sum(array_filter($months, fn ($m) => $m >= $from && $m <= $until, ARRAY_FILTER_USE_KEY));
+            $accumulated = array_sum(array_filter($months, fn ($m) => $m <= $until, ARRAY_FILTER_USE_KEY));
+            $cost = (int) $asset->cost;
+            $group = $asset->fiscalCategory;
+            $rows[] = [
+                'id' => $asset->id, 'number' => $asset->number, 'name' => $asset->name, 'category' => $group?->name ?? $asset->category?->name, 'usage_date' => $asset->usage_date,
+                'method' => $group ? FiscalDepreciator::methodOf($group)->getLabel().' '.Format::percent($group->rate_percent) : '—',
+                'life' => $group ? (int) $group->useful_life_years * 12 : '', 'cost' => $cost, 'period' => $inPeriod,
+                'accumulated' => $accumulated, 'book_value' => $cost - $accumulated, 'status' => $asset->status,
+            ];
+            $sum['cost'] += $cost;
+            $sum['period'] += $inPeriod;
             $sum['accumulated'] += $accumulated;
             $sum['book_value'] += $cost - $accumulated;
         }

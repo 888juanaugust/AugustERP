@@ -34,6 +34,7 @@ final class SideTabIcons
         'Other' => Heroicon::OutlinedEllipsisHorizontalCircle,
         'Notes' => Heroicon::OutlinedPencilSquare,
         'Progress' => Heroicon::OutlinedChartBar,
+        'Fiscal' => Heroicon::OutlinedScale,
         'Opening balance' => Heroicon::OutlinedCalendarDays,
         'Tax info' => Heroicon::OutlinedReceiptPercent,
         'Tax' => Heroicon::OutlinedReceiptPercent,
