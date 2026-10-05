@@ -107,7 +107,8 @@ final class DocumentRepository
                 $this->guard->assertMutable($document);
             } else {
                 $this->guard->assertOwnOrAllowed($document, $this->number($document));
-                (new Blockers\ReferencedBlocker)->blocks($document) && throw new Exceptions\DocumentLockedException("{$this->number($document)} cannot be deleted: another document has been made from it.");
+                $this->guard->assertPeriodOpen($this->date($document), $this->number($document));
+                (new Blockers\ReferencedBlocker)->blocks($document) && throw new Exceptions\DocumentLockedException(__(':number cannot be deleted: another document has been made from it.', ['number' => $this->number($document)]));
             }
             $before = $this->snapshot($document);
             $sources = $this->fulfilment->sourcesOf($document);

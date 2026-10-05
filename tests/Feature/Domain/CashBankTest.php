@@ -14,6 +14,7 @@ use App\Models\CashBank\BankTransfer;
 use App\Models\CashBank\CashPayment;
 use App\Models\CashBank\CashReceipt;
 use App\Models\CashBank\Giro;
+use App\Models\Company\AuditLog;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\Posting;
 use App\Models\Inventory\InventoryAdjustment;
@@ -137,7 +138,12 @@ class CashBankTest extends TestCase
             $this->assertStringContainsString('differs', $e->getMessage());
         }
 
+        // Under segregation of duties the person who entered the lines does not clear them; someone else does.
+        $this->assertSame(0, $reconciler->autoMatch($rec), 'nothing the matcher would clear was entered by someone else');
+        $this->assertThrows(fn () => $reconciler->clear($rec, [$reconciler->bookLines($rec)->first()->id]), \RuntimeException::class, 'Segregation of duties');
+        $this->actingAsAdmin();
         $this->assertSame(3, $reconciler->autoMatch($rec), 'every book line is explained by a statement line a day later');
+        $this->assertSame(['bank_reconciliation_opened', 'bank_lines_matched'], AuditLog::query()->where('document_type', $rec->getMorphClass())->orderBy('id')->pluck('action')->all());
         $this->assertSame(0, $reconciler->summary($rec)['difference']);
         $this->assertSame(3, $statement->lines()->whereHas('reconciliationItem')->count());
         $reconciler->close($rec);
@@ -198,6 +204,8 @@ class CashBankTest extends TestCase
         $this->assertSame(0, $this->balance('1102'));
 
         $giros = app(GiroService::class);
+        $this->assertThrows(fn () => $giros->clear($giro, '2026-11-20'), \RuntimeException::class, 'Segregation of duties');
+        $this->actingAsAdmin(); // someone other than whoever entered the receipt records the bank's answer
         $giros->clear($giro, '2026-11-20');
         $this->assertSame(0, $this->balance('1105'));
         $this->assertSame(150_000, $this->balance('1102'));
@@ -223,6 +231,8 @@ class CashBankTest extends TestCase
         $this->assertFalse($giros->allows($r2->giro));
         $this->assertThrows(fn () => $giros->bounce($r2->giro, '2026-11-25'), \RuntimeException::class, 'update right');
         $this->actingAs($admin);
+        $this->assertFalse($giros->allows($r2->giro), 'nor may the person who entered it');
+        $this->actingAsAdmin();
 
         // November is closed before the giro bounces in December: the bounce is booked in December.
         $this->travelTo(Carbon::parse('2026-12-05 10:00:00'));
@@ -251,6 +261,7 @@ class CashBankTest extends TestCase
         $this->assertSame(5_000_000, $this->balance('2105'), 'giros payable, read on its credit side');
         $this->assertSame(20_000_000, $this->balance('1102'), 'the bank is untouched until the giro clears');
 
+        $this->actingAsAdmin();
         app(GiroService::class)->clear($payment->fresh()->giro, '2026-11-15');
         $this->assertSame(0, $this->balance('2105'));
         $this->assertSame(15_000_000, $this->balance('1102'));

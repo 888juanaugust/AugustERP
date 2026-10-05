@@ -2,11 +2,24 @@
 
 namespace Tests\Feature\Domain;
 
+use App\Domain\Access\HakKhusus;
+use App\Domain\Access\MenuKey;
 use App\Domain\Audit\Auditor;
+use App\Domain\Posting\DocumentRepository;
+use App\Domain\Posting\PeriodLock;
+use App\Filament\Resources\Settings\Users\Pages\EditUser;
 use App\Models\Company\AuditLog;
+use App\Models\Company\Branch;
 use App\Models\Company\Fob;
+use App\Models\Inventory\Unit;
+use App\Models\Purchasing\VendorBankAccount;
+use App\Models\Sales\SalesOrder;
+use App\Models\Settings\AccessGroup;
+use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class AuditLogTest extends TestCase
@@ -27,6 +40,66 @@ class AuditLogTest extends TestCase
         $this->assertSame($admin->id, $logs[0]->user_id);
     }
 
+    public function test_rows_a_master_holds_are_logged_on_the_master(): void
+    {
+        $this->seed();
+        $this->actingAsAdmin();
+        $item = $this->sampleItem();
+        $ctn = Unit::query()->where('name', 'CTN')->firstOrFail();
+        $unit = $item->units()->create(['unit_id' => $ctn->id, 'ratio' => 12, 'sell_price' => 0]);
+        $unit->update(['ratio' => 24]);
+        $unit->delete();
+        $vendor = $this->sampleVendor();
+        VendorBankAccount::query()->create(['vendor_id' => $vendor->id, 'bank_account' => '123-456']);
+
+        $logs = AuditLog::query()->where('document_type', $item->getMorphClass())->where('document_id', $item->id)->where('action', 'like', 'line_%')->orderBy('id')->get();
+        $this->assertSame(['line_added', 'line_changed', 'line_removed'], $logs->pluck('action')->all());
+        $this->assertSame('item_units', $logs[1]->meta['part']);
+        $this->assertSame(['ratio' => '12.000000'], $logs[1]->meta['before']);
+        $this->assertSame($item->auditReference(), $logs[0]->reference);
+        $this->assertSame('123-456', AuditLog::query()->where('document_type', $vendor->getMorphClass())->where('document_id', $vendor->id)->where('action', 'line_added')->sole()->meta['after']['bank_account']);
+    }
+
+    public function test_rights_and_memberships_are_logged_with_what_changed(): void
+    {
+        $this->seed();
+        $this->actingAsAdmin();
+        $group = AccessGroup::query()->create(['name' => 'Clerks']);
+        $group->syncRights([MenuKey::SalesInvoices->value => ['view']]);
+        $group->syncRights([MenuKey::SalesInvoices->value => ['view', 'create'], MenuKey::Customers->value => ['view']]);
+        $group->syncRights([MenuKey::SalesInvoices->value => ['view', 'create'], MenuKey::Customers->value => ['view']]);
+        $group->syncSpecialRights([HakKhusus::SeeCost->value]);
+
+        $rights = AuditLog::query()->where('document_type', $group->getMorphClass())->where('document_id', $group->id)->where('action', 'rights_changed')->orderBy('id')->get();
+        $this->assertCount(2, $rights, 'saving the same rights again changes nothing');
+        $this->assertEquals([MenuKey::SalesInvoices->value => ['view'], MenuKey::Customers->value => []], $rights[1]->meta['before']);
+        $this->assertSame(['added' => [HakKhusus::SeeCost->value], 'removed' => []], AuditLog::query()->where('document_id', $group->id)->where('action', 'special_rights_changed')->sole()->meta);
+
+        $user = User::factory()->create();
+        $branch = Branch::query()->firstOrFail();
+        Livewire::test(EditUser::class, ['record' => $user->getRouteKey()])
+            ->fillForm(['accessGroups' => [$group->id], 'branches' => [$branch->id]])
+            ->call('save')->assertHasNoFormErrors();
+        $log = AuditLog::query()->where('document_id', $user->id)->where('action', 'memberships_changed')->sole();
+        $this->assertSame(['groups' => [], 'branches' => []], $log->meta['before']);
+        $this->assertSame(['groups' => ['Clerks'], 'branches' => [$branch->name]], $log->meta['after']);
+    }
+
+    public function test_a_document_is_logged_once_and_a_closed_month_keeps_even_those_that_post_nothing(): void
+    {
+        $this->seed();
+        $this->actingAsAdmin();
+        $this->travelTo(Carbon::parse('2026-12-05 10:00:00'));
+        $docs = app(DocumentRepository::class);
+        $order = SalesOrder::query()->create(['number' => 'SO-1', 'trans_date' => '2026-11-10', 'customer_id' => $this->sampleCustomer()->id, 'created_by' => auth()->id()]);
+        $docs->created($order);
+        $this->assertSame(['created'], AuditLog::query()->where('document_type', $order->getMorphClass())->where('document_id', $order->id)->pluck('action')->all());
+
+        app(PeriodLock::class)->close(2026, 11);
+        $this->assertThrows(fn () => $docs->delete($order->fresh()), \RuntimeException::class, 'closed');
+        $this->assertNotNull($order->fresh());
+    }
+
     public function test_the_log_refuses_updates_and_deletes(): void
     {
         $log = Auditor::log('created', null, 'test');
@@ -44,6 +117,13 @@ class AuditLogTest extends TestCase
             $this->fail('DELETE should have been refused');
         } catch (QueryException $e) {
             $this->assertStringContainsString('append-only', $e->getMessage());
+        }
+
+        try {
+            DB::transaction(fn () => DB::statement('TRUNCATE audit_logs'));
+            $this->fail('TRUNCATE should have been refused');
+        } catch (QueryException $e) {
+            $this->assertStringContainsString('append-only: TRUNCATE refused', $e->getMessage());
         }
 
         $this->assertSame('created', $log->fresh()->action);

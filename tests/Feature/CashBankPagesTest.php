@@ -85,6 +85,12 @@ class CashBankPagesTest extends TestCase
         $page->callAction('close')->assertNotified('Cannot close');
         $this->assertSame(Reconciliation::OPEN, Reconciliation::query()->firstOrFail()->status);
 
+        $this->actingAsAdmin(); // the lines were entered by the first user: someone else clears them
+        $page = Livewire::test(BankReconciliation::class)
+            ->set('filters.bank_account_id', $this->bank)
+            ->set('filters.start', '2026-11-01')
+            ->set('filters.end', '2026-11-30')
+            ->set('filters.statement_balance', 9_993_500);
         $page->callAction('autoMatch')->assertHasNoActionErrors();
         $rec = Reconciliation::query()->firstOrFail();
         $this->assertSame(0, app(Reconciler::class)->summary($rec)['difference']);

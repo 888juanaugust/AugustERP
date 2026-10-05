@@ -4,7 +4,6 @@ namespace App\Models\Purchasing;
 
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use App\Domain\Fulfilment\StatusDeriver;
 use App\Models\Company\Branch;
 use Brick\Math\BigDecimal;
@@ -16,7 +15,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Purchase Requisition: an internal request to buy (or send) items, pulled into purchase orders. Not posted. */
 class PurchaseRequisition extends Model implements HasAuditReference
 {
-    use RecordsActivity;
     use RequiresApproval;
 
     protected $guarded = [];

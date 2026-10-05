@@ -137,6 +137,7 @@ class StockLedgerTest extends TestCase
             $this->adjust('2026-11-05', [[10, 90_000, null]]);
             Queue::assertPushed(RecostJob::class, 1);
             $job = Queue::pushed(RecostJob::class)->first();
+            $this->assertSame('recost', collect($job->middleware())->sole()->key, 'one batch at a time across the workers');
 
             // The job re-posts its list and everything those re-posts reach in one pass, queueing nothing more.
             $job->handle(app(Recoster::class));

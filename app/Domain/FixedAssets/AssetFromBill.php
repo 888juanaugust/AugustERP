@@ -7,6 +7,7 @@ namespace App\Domain\FixedAssets;
 use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Blocker;
 use App\Domain\Posting\Contracts\Postable;
+use App\Domain\Shared\Format;
 use App\Models\FixedAssets\FixedAsset;
 use App\Models\Purchasing\PurchaseInvoice;
 use App\Models\Purchasing\PurchaseInvoiceLine;
@@ -51,7 +52,7 @@ final class AssetFromBill implements Blocker
         $taken = FixedAsset::query()->whereNotNull('purchase_invoice_line_id')->pluck('purchase_invoice_line_id')->all();
 
         return $bill->lines()->with(['item', 'purchaseInvoice'])->whereNotIn('id', $taken)->get()
-            ->mapWithKeys(fn (PurchaseInvoiceLine $l) => [$l->id => ($l->memo ?: $l->item->name).' · '.number_format((float) $l->base_quantity, 0, ',', '.').' · '.number_format($l->netAmount(), 0, ',', '.')])
+            ->mapWithKeys(fn (PurchaseInvoiceLine $l) => [$l->id => ($l->memo ?: $l->item->name).' · '.Format::quantity($l->base_quantity).' · '.Format::number($l->netAmount())])
             ->all();
     }
 

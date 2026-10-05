@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Purchasing\VendorClaims;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Audit\Auditor;
 use App\Domain\Numbering\TransactionType;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\CreateVendorClaim;
 use App\Filament\Resources\Purchasing\VendorClaims\Pages\EditVendorClaim;
@@ -115,7 +116,10 @@ class VendorClaimResource extends ErpResource
                 EditAction::make(),
                 Action::make('settle')->label(__('Mark settled'))->icon('heroicon-m-check')->color('success')->requiresConfirmation()
                     ->visible(fn (VendorClaim $record) => $record->status === 'pending' && static::canEdit($record))
-                    ->action(fn (VendorClaim $record) => $record->update(['status' => 'processed'])),
+                    ->action(function (VendorClaim $record): void {
+                        $record->update(['status' => 'processed']);
+                        Auditor::log('updated', $record, $record->number, ['before' => ['status' => 'pending'], 'after' => ['status' => 'processed']]);
+                    }),
             ]);
     }
 

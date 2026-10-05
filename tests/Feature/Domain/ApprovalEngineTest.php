@@ -159,6 +159,9 @@ class ApprovalEngineTest extends TestCase
         } catch (RuntimeException $e) {
             $this->assertStringContainsString('Segregation of duties', $e->getMessage());
         }
+        // Nor rejects it: a rejection is a decision on it too.
+        $this->assertFalse($this->engine->canReject($own->fresh(), $this->people['Dee']));
+        $this->assertThrows(fn () => $this->engine->reject($own->fresh(), $this->people['Dee'], 'no'), RuntimeException::class, 'Segregation of duties');
     }
 
     public function test_every_slot_in_order_and_in_any_order_with_a_group_filled_by_one_member(): void

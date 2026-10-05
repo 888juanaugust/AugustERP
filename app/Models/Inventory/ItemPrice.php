@@ -2,12 +2,15 @@
 
 namespace App\Models\Inventory;
 
+use App\Domain\Audit\RecordsChildActivity;
 use App\Models\Sales\PriceCategory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ItemPrice extends Model
 {
+    use RecordsChildActivity;
+
     public $timestamps = false;
 
     protected $guarded = [];
@@ -25,5 +28,10 @@ class ItemPrice extends Model
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function auditParent(): ?Model
+    {
+        return Item::query()->find($this->getAttribute('item_id'));
     }
 }

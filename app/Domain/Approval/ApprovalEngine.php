@@ -171,7 +171,7 @@ final class ApprovalEngine
         }
         $request = $this->pending($document);
 
-        return $request !== null && $this->isEligible($request, $user);
+        return $request !== null && $this->isEligible($request, $user) && ! $this->segregated($request, $user);
     }
 
     /** Records an approval; true when it completes the request. */
@@ -217,6 +217,9 @@ final class ApprovalEngine
         $request = $this->pending($document);
         if ($type === null || $request === null || ! $this->isEligible($request, $approver)) {
             throw new RuntimeException(__('Rejecting this document takes an approval rule that names you, or the "approve transactions" right.'));
+        }
+        if ($this->segregated($request, $approver)) {
+            throw new RuntimeException(__('Segregation of duties: the person who entered or last changed the document cannot approve it.'));
         }
         DB::transaction(function () use ($document, $type, $request, $approver, $reason): void {
             ApprovalDecision::query()->create(['approval_request_id' => $request->id, 'user_id' => $approver->id, 'decision' => ApprovalRequest::REJECTED, 'reason' => $reason]);

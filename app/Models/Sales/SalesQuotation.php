@@ -4,7 +4,6 @@ namespace App\Models\Sales;
 
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use App\Domain\Documents\PricedDocument;
 use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
@@ -15,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Sales Quotation: an offer to a customer; one quotation can become several orders. Not posted. */
 class SalesQuotation extends Model implements HasAuditReference
 {
-    use PricedDocument, RecordsActivity;
+    use PricedDocument;
     use RequiresApproval;
 
     protected $guarded = [];

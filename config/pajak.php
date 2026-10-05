@@ -30,6 +30,10 @@ return [
     'legacy' => [
         'kd_jenis_transaksi' => '01',
         'fg_pengganti' => '0',
+        // FG_UANG_MUKA on an invoice that deducts taxed down payments: 2 marks the settlement (pelunasan), with the
+        // down payments' DPP and VAT in UANG_MUKA_DPP / UANG_MUKA_PPN and the rest in JUMLAH_DPP / JUMLAH_PPN.
+        // To be confirmed by the accountant.
+        'fg_uang_muka_pelunasan' => '2',
         'header' => ['FK', 'KD_JENIS_TRANSAKSI', 'FG_PENGGANTI', 'NOMOR_FAKTUR', 'MASA_PAJAK', 'TAHUN_PAJAK', 'TANGGAL_FAKTUR', 'NPWP', 'NAMA', 'ALAMAT_LENGKAP', 'JUMLAH_DPP', 'JUMLAH_PPN', 'JUMLAH_PPNBM', 'ID_KETERANGAN_TAMBAHAN', 'FG_UANG_MUKA', 'UANG_MUKA_DPP', 'UANG_MUKA_PPN', 'UANG_MUKA_PPNBM', 'REFERENSI'],
         'lt' => ['LT', 'NPWP', 'NAMA', 'JALAN', 'BLOK', 'NOMOR', 'RT', 'RW', 'KECAMATAN', 'KELURAHAN', 'KABUPATEN', 'PROPINSI', 'KODE_POS', 'NOMOR_TELEPON'],
         'of' => ['OF', 'KODE_OBJEK', 'NAMA', 'HARGA_SATUAN', 'JUMLAH_BARANG', 'HARGA_TOTAL', 'DISKON', 'DPP', 'PPN', 'TARIF_PPNBM', 'PPNBM'],

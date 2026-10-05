@@ -41,6 +41,10 @@ return [
         'period_closed' => 'Period closed', 'period_reopened' => 'Period reopened', 'preference_changed' => 'Preference changed', 'recurring_run' => 'Recurring run',
         'tax_filing_exported' => 'Tax file exported', 'tax_invoice_emailed' => 'Tax invoice emailed', 'tax_serial_cleared' => 'Tax serial cleared',
         'tax_serial_stored' => 'Tax serial stored', 'vat_return_saved' => 'VAT return saved',
+        'approval_given' => 'Approval given', 'line_added' => 'Row added', 'line_changed' => 'Row changed', 'line_removed' => 'Row removed',
+        'rights_changed' => 'Rights changed', 'special_rights_changed' => 'Special rights changed', 'memberships_changed' => 'Groups or branches changed',
+        'bank_reconciliation_opened' => 'Bank reconciliation opened', 'bank_statement_balance_changed' => 'Statement balance changed',
+        'bank_lines_cleared' => 'Bank lines cleared', 'bank_lines_matched' => 'Bank lines matched',
     ],
     'document' => [
         'draft' => 'Draft',

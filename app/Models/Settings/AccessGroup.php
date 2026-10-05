@@ -5,6 +5,7 @@ namespace App\Models\Settings;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\Screens;
+use App\Domain\Audit\Auditor;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\User;
@@ -42,6 +43,7 @@ class AccessGroup extends Model implements HasAuditReference
      */
     public function syncRights(array $matrix): void
     {
+        $before = $this->exists ? $this->load('rights')->rightsMatrix() : [];
         $this->rights()->delete();
 
         $rows = [];
@@ -59,16 +61,28 @@ class AccessGroup extends Model implements HasAuditReference
         if ($rows !== []) {
             $this->rights()->createMany($rows);
         }
+
+        // The grid is replaced whole, so the log carries the screens whose rights changed, before and after.
+        $after = $this->load('rights')->rightsMatrix();
+        $changed = collect(array_keys($before + $after))->filter(fn (string $key) => ($before[$key] ?? []) != ($after[$key] ?? []))->values();
+        if ($changed->isNotEmpty()) {
+            Auditor::log('rights_changed', $this, null, [
+                'before' => $changed->mapWithKeys(fn (string $key) => [$key => $before[$key] ?? []])->all(),
+                'after' => $changed->mapWithKeys(fn (string $key) => [$key => $after[$key] ?? []])->all(),
+            ]);
+        }
     }
 
     /** @param  list<string>  $rights  HakKhusus values */
     public function syncSpecialRights(array $rights): void
     {
+        $before = $this->specialRights()->pluck('right')->sort()->values()->all();
+        $after = collect($rights)->filter(fn ($r) => HakKhusus::tryFrom((string) $r) !== null)->unique()->sort()->values()->all();
         $this->specialRights()->delete();
-        $this->specialRights()->createMany(array_map(
-            fn (string $right) => ['right' => $right],
-            array_values(array_filter($rights, fn ($r) => HakKhusus::tryFrom($r) !== null)),
-        ));
+        $this->specialRights()->createMany(array_map(fn (string $right) => ['right' => $right], $after));
+        if ($before !== $after) {
+            Auditor::log('special_rights_changed', $this, null, ['added' => array_values(array_diff($after, $before)), 'removed' => array_values(array_diff($before, $after))]);
+        }
     }
 
     /** @return array<string, list<string>> menu key → granted Hak values, for the form */

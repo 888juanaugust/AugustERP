@@ -13,7 +13,7 @@ class SalesInvoiceDownPayment extends Model
 
     protected function casts(): array
     {
-        return ['amount' => 'integer'];
+        return ['amount' => 'integer', 'net_amount' => 'integer', 'dpp_amount' => 'integer', 'tax_amount' => 'integer'];
     }
 
     public function downPayment(): BelongsTo

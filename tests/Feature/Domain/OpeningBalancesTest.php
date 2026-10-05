@@ -188,8 +188,12 @@ class OpeningBalancesTest extends TestCase
 
     public function test_modules_register_their_own_schedule(): void
     {
-        $commands = collect(app(Schedule::class)->events())->map(fn ($e) => $e->command)->implode(' ');
+        $events = collect(app(Schedule::class)->events());
+        $commands = $events->map(fn ($e) => $e->command)->implode(' ');
         $this->assertStringContainsString('erp:depreciate', $commands);
         $this->assertStringContainsString('erp:recurring', $commands);
+        foreach ($events as $event) {
+            $this->assertTrue($event->withoutOverlapping && $event->onOneServer, "{$event->command} runs once at a time, on one server");
+        }
     }
 }

@@ -128,9 +128,9 @@ final class TaxFilingService
         $from = CarbonImmutable::parse($from);
         $until = CarbonImmutable::parse($until);
         $sum = function (string $kind) use ($from, $until): array {
-            $docs = FilingDocuments::query($kind, $from, $until)->get(['id', 'dpp_total', 'tax_total']);
+            $docs = FilingDocuments::vatDocuments($kind, $from, $until);
 
-            return ['base' => (int) $docs->sum('dpp_total'), 'tax' => (int) $docs->sum('tax_total'), 'count' => $docs->count()];
+            return ['base' => (int) $docs->sum('dpp'), 'tax' => (int) $docs->sum('tax'), 'count' => $docs->count()];
         };
         $out = $sum(TaxFiling::OUT);
         $in = $sum(TaxFiling::IN);

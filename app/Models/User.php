@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Domain\Access\UserDeactivation;
+use App\Domain\Audit\Auditor;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\Company\Branch;
@@ -102,6 +103,29 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function rightOverrides(): HasMany
     {
         return $this->hasMany(UserRightOverride::class);
+    }
+
+    /** @return array{groups: list<string>, branches: list<string>} the access groups and branches held, by name */
+    public function memberships(): array
+    {
+        return [
+            'groups' => $this->accessGroups()->orderBy('name')->pluck('name')->all(),
+            'branches' => $this->branches()->orderBy('name')->pluck('name')->all(),
+        ];
+    }
+
+    /**
+     * Logs a change of access groups or branches against what they were (the screen syncs the links, which fires no
+     * model event).
+     *
+     * @param  array{groups: list<string>, branches: list<string>}  $before
+     */
+    public function logMembershipChange(array $before): void
+    {
+        $after = $this->memberships();
+        if ($after !== $before) {
+            Auditor::log('memberships_changed', $this, null, ['before' => $before, 'after' => $after]);
+        }
     }
 
     public function hasTwoFactor(): bool

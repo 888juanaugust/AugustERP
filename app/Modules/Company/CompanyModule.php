@@ -82,6 +82,7 @@ final class CompanyModule extends BaseModule
 
     public static function schedule(Schedule $schedule): void
     {
-        $schedule->command('erp:recurring')->dailyAt('06:00');
+        // One run at a time, on one server; each schedule is also row-locked while it runs.
+        $schedule->command('erp:recurring')->dailyAt('06:00')->withoutOverlapping()->onOneServer();
     }
 }

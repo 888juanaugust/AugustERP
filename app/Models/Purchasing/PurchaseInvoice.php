@@ -5,6 +5,7 @@ namespace App\Models\Purchasing;
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\Currency\Currencies;
 use App\Domain\Documents\Accounts;
+use App\Domain\Documents\DownPaymentShare;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
@@ -83,6 +84,11 @@ class PurchaseInvoice extends Model implements Postable
                 $use->forceFill(['amount' => (int) $dpDoc->fc_total !== 0 ? Money::mulDiv((int) $use->fc_amount, (int) $dpDoc->total, (int) $dpDoc->fc_total) : 0])->saveQuietly();
             }
         }
+        foreach ($this->downPayments()->with('downPayment')->get() as $use) {
+            if ($use->downPayment !== null) {
+                $use->forceFill(DownPaymentShare::of((int) $use->amount, $use->downPayment))->saveQuietly();
+            }
+        }
         $dp = (int) $this->downPayments()->sum('amount');
         $this->forceFill([
             'fc_down_payment_total' => $foreign ? (int) $this->downPayments()->sum('fc_amount') : null,
@@ -159,10 +165,10 @@ class PurchaseInvoice extends Model implements Postable
         foreach ($this->downPayments()->with('downPayment.taxCode')->get() as $use) {
             $dp = $use->downPayment;
             $applied = (int) $use->amount;
-            $net = $dp->total > 0 ? BigDecimal::of($applied)->multipliedBy($dp->subtotal)->dividedBy($dp->total, 0, RoundingMode::HalfUp)->toInt() : $applied;
+            $net = (int) $use->net_amount; // the stored split (DownPaymentShare)
             $builder->credit(Accounts::vendorDownPayment($this->vendor), $net, "Down payment {$dp->number} deducted");
-            if ($applied - $net !== 0) {
-                $builder->credit(Accounts::vatIn($dp->taxCode), $applied - $net, "VAT on down payment {$dp->number}");
+            if ((int) $use->tax_amount !== 0) {
+                $builder->credit(Accounts::vatIn($dp->taxCode), (int) $use->tax_amount, "VAT on down payment {$dp->number}");
             }
             $dpTotal += $applied;
         }

@@ -4,7 +4,6 @@ namespace App\Models\Sales;
 
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use App\Domain\Documents\PricedDocument;
 use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
@@ -18,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Sales Order: what the customer ordered; approved before it ships; deliveries and invoices pull from it. Not posted. */
 class SalesOrder extends Model implements HasAuditReference
 {
-    use PricedDocument, RecordsActivity;
+    use PricedDocument;
     use RequiresApproval;
 
     public const AWAITING = 'awaiting';

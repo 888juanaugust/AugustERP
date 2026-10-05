@@ -40,7 +40,7 @@ final class PeriodLock
         }
         if ($this->isClosed($date)) {
             $label = Carbon::parse($date)->translatedFormat('F Y');
-            throw new PeriodClosedException("{$what} is dated in {$label}, which is closed. Reopen the month first.");
+            throw new PeriodClosedException(__(':what is dated in :month, which is closed. Reopen the month first.', ['what' => $what, 'month' => $label]));
         }
     }
 

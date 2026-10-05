@@ -4,7 +4,6 @@ namespace App\Models\Purchasing;
 
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use App\Domain\Documents\PricedDocument;
 use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
@@ -15,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Purchase Order: what was ordered from a vendor; receipts and invoices pull from it. Not posted. */
 class PurchaseOrder extends Model implements HasAuditReference
 {
-    use PricedDocument, RecordsActivity;
+    use PricedDocument;
     use RequiresApproval;
 
     protected $guarded = [];

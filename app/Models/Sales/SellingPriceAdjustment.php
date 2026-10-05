@@ -3,7 +3,6 @@
 namespace App\Models\Sales;
 
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,8 +10,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Price / Discount Adjustment: new prices or discounts for a price category from a date; the resolver reads them. */
 class SellingPriceAdjustment extends Model implements HasAuditReference
 {
-    use RecordsActivity;
-
     public const PRICE = 'price';
 
     public const DISCOUNT = 'discount';

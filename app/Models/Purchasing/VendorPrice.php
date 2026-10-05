@@ -3,7 +3,6 @@
 namespace App\Models\Purchasing;
 
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,8 +12,6 @@ use Illuminate\Support\Carbon;
 /** Vendor Price: a vendor's prices per item from a date, the default on purchase orders. */
 class VendorPrice extends Model implements HasAuditReference
 {
-    use RecordsActivity;
-
     protected $guarded = [];
 
     protected function casts(): array

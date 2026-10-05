@@ -44,12 +44,20 @@ final class DocumentGuard
         foreach ($this->blockers as $blocker) {
             $reason = $blocker->blocks($document);
             if ($reason !== null) {
-                throw new DocumentLockedException("{$document->postingNumber()} cannot be changed: {$reason}");
+                throw new DocumentLockedException(__(':number cannot be changed: :reason', ['number' => $document->postingNumber(), 'reason' => $reason]));
             }
         }
     }
 
     /** A document someone else entered is changed (or deleted) only with the "edit other users' transactions" right. */
+    /** A document that posts nothing still belongs to its month: a closed month keeps it as it is. */
+    public function assertPeriodOpen(?string $date, string $number): void
+    {
+        if ($date !== null) {
+            $this->periods->assertOpen($date, $number);
+        }
+    }
+
     public function assertOwnOrAllowed(Model $document, string $number): void
     {
         $creator = $document->getAttribute('created_by');

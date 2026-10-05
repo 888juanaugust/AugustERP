@@ -11,6 +11,7 @@ use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuRegistry;
 use App\Domain\Audit\Auditor;
 use App\Domain\CashBank\Contracts\GiroSource;
+use App\Domain\Pengaturan\BusinessRule;
 use App\Domain\Posting\DocumentGuard;
 use App\Domain\Posting\PostingService;
 use App\Models\CashBank\Giro;
@@ -32,7 +33,8 @@ final class GiroService
     /**
      * Whether the signed-in user may record the bank's answer on this giro: the update right on its receipt's or
      * payment's screen, a branch they are assigned to, and the "edit other users' transactions" right when someone
-     * else entered it. (A run without a user, from the console, is the system's.)
+     * else entered it; under segregation of duties, never the person who entered it. (A run without a user, from the
+     * console, is the system's.)
      */
     public function allows(Giro $giro): bool
     {
@@ -60,6 +62,9 @@ final class GiroService
             throw new RuntimeException(__('You are not assigned to that branch.'));
         }
         $creator = $source->getAttribute('created_by');
+        if ($creator !== null && (int) $creator === $user->id && BusinessRule::SegregationOfDuties->isOn()) {
+            throw new RuntimeException(__('Segregation of duties: :number was entered by you; someone else records what the bank did with it.', ['number' => $giro->number]));
+        }
         if ($creator !== null && (int) $creator !== $user->id && ! $this->akses->allowsSpecial($user, HakKhusus::EditOthersTransactions)) {
             throw new RuntimeException(__(':number was entered by another user; changing it takes the "edit other users\' transactions" right.', ['number' => $giro->number]));
         }
