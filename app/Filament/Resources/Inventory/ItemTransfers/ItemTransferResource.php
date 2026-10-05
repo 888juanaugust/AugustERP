@@ -100,7 +100,7 @@ class ItemTransferResource extends ErpResource
                         ])
                         ->minItems(1)
                         ->defaultItems(1)
-                        ->addActionLabel('Add line')
+                        ->addActionLabel(__('Add line'))
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data])[0])
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data])[0])
                         ->disabled(fn (?ItemTransfer $record) => $record !== null && ! $record->isSend()),

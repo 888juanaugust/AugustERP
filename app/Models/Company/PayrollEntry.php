@@ -57,7 +57,7 @@ class PayrollEntry extends Model implements PaidByPayment, Postable
 
     public function periodLabel(): string
     {
-        return CarbonImmutable::create($this->period_year, $this->period_month, 1)->format('F Y');
+        return CarbonImmutable::create($this->period_year, $this->period_month, 1)->translatedFormat('F Y');
     }
 
     public function refreshTotal(): void

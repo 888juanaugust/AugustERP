@@ -17,7 +17,7 @@
         : Format::rupiah((int) ($document->getAttribute($column) ?? 0) - ($less ? (int) ($document->getAttribute($less) ?? 0) : 0));
 @endphp
 <!doctype html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <title>{{ $title }} {{ $document->number }}</title>
@@ -81,15 +81,15 @@
             <p class="doc-title">{{ $title }}</p>
             <p><strong class="mono">{{ $document->number }}</strong></p>
             <p>{{ Format::date($document->trans_date) }}</p>
-            @if (isset($document->due_date) && $document->due_date)<p>Due {{ Format::date($document->due_date) }}</p>@endif
-            @if (isset($document->po_number) && $document->po_number)<p>PO {{ $document->po_number }}</p>@endif
+            @if (isset($document->due_date) && $document->due_date)<p>{{ __('Due :date', ['date' => Format::date($document->due_date)]) }}</p>@endif
+            @if (isset($document->po_number) && $document->po_number)<p>{{ __('PO :number', ['number' => $document->po_number]) }}</p>@endif
         </div>
     </header>
 
     @if ($party)
         <div class="parties">
             <div>
-                <div class="label">{{ $meta['party'] === 'customer' ? 'Bill to' : 'Vendor' }}</div>
+                <div class="label">{{ $meta['party'] === 'customer' ? __('Bill to') : __('Vendor') }}</div>
                 <strong>{{ $party->name }}</strong>
                 @if (method_exists($party, 'billAddress') && $party->billAddress())<div>{{ $party->billAddress() }}</div>@endif
                 @if (($s['show_tax_id'] ?? true) && ($party->wp_number ?? null))<div>NPWP {{ $party->wp_number }}</div>@endif
@@ -152,14 +152,14 @@
             </tbody>
         </table>
         <table class="totals">
-            <tr><td>{{ $meta['party'] === 'customer' ? 'Received into' : 'Paid from' }}</td><td class="num">{{ $document->bankAccount?->name }}</td></tr>
+            <tr><td>{{ $meta['party'] === 'customer' ? __('Received into') : __('Paid from') }}</td><td class="num">{{ $document->bankAccount?->name }}</td></tr>
             @if ($document->cheque_no ?? null)<tr><td>{{ __('Cheque / giro') }}</td><td class="num">{{ $document->cheque_no }} @if ($document->cheque_date) · {{ Format::date($document->cheque_date) }} @endif</td></tr>@endif
             @if ($foreign)<tr><td>{{ __('Rate') }}</td><td class="num">{{ Format::quantity((string) $document->exchange_rate, 8) }}</td></tr>@endif
             <tr class="grand"><td>{{ __('Amount') }}</td><td class="num">{{ $grand('amount') }}</td></tr>
         </table>
     @elseif ($shape === 'cash')
         <div class="parties">
-            <div><div class="label">{{ $document instanceof \App\Models\CashBank\CashPayment ? 'Paid to' : 'Received from' }}</div><strong>{{ $document->payee ?? $document->payer ?? '—' }}</strong></div>
+            <div><div class="label">{{ $document instanceof \App\Models\CashBank\CashPayment ? __('Paid to') : __('Received from') }}</div><strong>{{ $document->payee ?? $document->payer ?? '—' }}</strong></div>
             <div><div class="label">{{ __('Cash / Bank') }}</div>{{ $document->bankAccount?->name }}</div>
             @if ($document->cheque_no)<div><div class="label">{{ __('Cheque / giro') }}</div>{{ $document->cheque_no }}</div>@endif
         </div>
@@ -220,7 +220,7 @@
         <div class="signatures">
             <div><div class="line">{{ __('Prepared by') }}</div></div>
             <div><div class="line">{{ __('Approved by') }}</div></div>
-            <div><div class="line">{{ $meta['party'] === 'customer' ? 'Received by' : 'Acknowledged by' }}</div></div>
+            <div><div class="line">{{ $meta['party'] === 'customer' ? __('Received by') : __('Acknowledged by') }}</div></div>
         </div>
     @endif
 

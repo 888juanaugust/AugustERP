@@ -37,21 +37,21 @@ class OpenPurchaseOrders extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('number', 'Order')->fontFamily('mono'),
-            static::date('trans_date', 'Date'),
-            static::text('party', 'Vendor'),
-            static::text('item', 'Item'),
-            static::quantity('ordered', 'Ordered'),
-            static::quantity('processed', 'Processed'),
-            static::quantity('remaining', 'Remaining'),
-            static::money('value', 'Open value'),
-            static::text('status', 'Status'),
+            static::text('number', __('Order'))->fontFamily('mono'),
+            static::date('trans_date', __('Date')),
+            static::text('party', __('Vendor')),
+            static::text('item', __('Item')),
+            static::quantity('ordered', __('Ordered')),
+            static::quantity('processed', __('Processed')),
+            static::quantity('remaining', __('Remaining')),
+            static::money('value', __('Open value')),
+            static::text('status', __('Status')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Order', 'Date', 'Vendor', 'Item', 'Ordered', 'Processed', 'Remaining', 'Open value', 'Status'];
+        return [__('Order'), __('Date'), __('Vendor'), __('Item'), __('Ordered'), __('Processed'), __('Remaining'), __('Open value'), __('Status')];
     }
 
     protected function exportRow(array $row): array

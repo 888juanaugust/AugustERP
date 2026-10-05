@@ -75,7 +75,7 @@ class VendorTransfers extends ErpPage implements HasTable
                                     $first = $group->first();
                                     $order = $first->paymentOrder;
                                     if ($order->bank_account_id === null) {
-                                        throw new \RuntimeException("Payment order {$order->number} has no bank to pay from.");
+                                        throw new \RuntimeException(__('Payment order :number has no bank to pay from.', ['number' => $order->number]));
                                     }
                                     $series = app(NumberGenerator::class)->defaultSeries(TransactionType::CashBankVoucher, auth()->user());
                                     $payment = PurchasePayment::query()->create([

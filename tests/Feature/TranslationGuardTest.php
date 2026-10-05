@@ -12,11 +12,14 @@ use Symfony\Component\Finder\Finder;
  */
 class TranslationGuardTest extends TestCase
 {
-    private const METHODS = ['label', 'placeholder', 'helperText', 'hint', 'title', 'heading', 'description', 'modalHeading', 'modalDescription', 'modalSubmitActionLabel', 'modalCancelActionLabel', 'emptyStateHeading', 'emptyStateDescription', 'body', 'tooltip', 'successNotificationTitle', 'navigationLabel'];
+    private const METHODS = ['label', 'placeholder', 'helperText', 'hint', 'title', 'heading', 'description', 'modalHeading', 'modalDescription', 'modalSubmitActionLabel', 'modalCancelActionLabel', 'emptyStateHeading', 'emptyStateDescription', 'body', 'tooltip', 'successNotificationTitle', 'navigationLabel', 'addActionLabel'];
 
     private const MAKES = ['Tab', 'Section', 'Fieldset', 'Stat', 'TableColumn', 'Step'];
 
-    private const LABEL_METHODS = ['label', 'getLabel', 'help', 'options', 'description', 'title', 'heading'];
+    private const LABEL_METHODS = ['label', 'getLabel', 'help', 'options', 'description', 'title', 'heading', 'statuses'];
+
+    /** Column helpers whose second argument is the label: static::money('total', 'Total'). */
+    private const LABEL_HELPERS = '(?:static|self|PricedDocumentForm|SettlementLineFields)::(?:money|text|date|quantity|amount)';
 
     private const SQ = "'(?:[^'\\\\]|\\\\.)*'";
 
@@ -41,6 +44,32 @@ class TranslationGuardTest extends TestCase
             foreach ($this->findAll($src, "/(?:{$makes})::make\\(\\s*(".self::SQ.')/') as [$lit, $line]) {
                 if (self::isLabelish(self::inner($lit))) {
                     $offences[] = "{$rel}:{$line} {$lit}";
+                }
+            }
+            // Messages the user reads: exceptions shown in notifications, validation failures.
+            foreach (['new\\s+\\\\?RuntimeException\\(\\s*', '\\$fail\\(\\s*'] as $opener) {
+                foreach ($this->findAll($src, "/{$opener}(".self::SQ.'|"(?:[^"\\\\]|\\\\.)*")/') as [$lit, $line]) {
+                    if (self::isText(self::inner($lit))) {
+                        $offences[] = "{$rel}:{$line} {$lit}";
+                    }
+                }
+            }
+            foreach ($this->findAll($src, '/'.self::LABEL_HELPERS.'\\(\\s*'.self::SQ.'\\s*,\\s*('.self::SQ.')/') as [$lit, $line]) {
+                if (self::isText(self::inner($lit))) {
+                    $offences[] = "{$rel}:{$line} {$lit}";
+                }
+            }
+            foreach ($this->blocks($src, '/\\bfunction\\s+exportHeaders\\s*\\(/', '(', ')', true) as [$block, $offset]) {
+                foreach ($this->findAll($block, '/[\\[,]\\s*('.self::SQ.')(?=\\s*[,\\]])/') as [$lit, $line, $pos]) {
+                    if (self::isText(self::inner($lit))) {
+                        $offences[] = "{$rel}:".(substr_count(substr($src, 0, $offset + $pos), "\n") + 1)." {$lit}";
+                    }
+                }
+            }
+            // A stored code is shown through Format::code() (lang/<locale>/status.php), never made readable by hand.
+            if ($rel !== 'Domain/Shared/Format.php') {
+                foreach ($this->findAll($src, '/\\b(ucfirst)\\(/') as [$lit, $line]) {
+                    $offences[] = "{$rel}:{$line} ucfirst(): use Format::code()";
                 }
             }
             $blocks = [];

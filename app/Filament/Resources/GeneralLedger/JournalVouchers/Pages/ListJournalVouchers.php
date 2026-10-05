@@ -133,6 +133,6 @@ class ListJournalVouchers extends ListRecords
 
     public static function typeLabel(string $type): string
     {
-        return ucfirst(str_replace('_', ' ', $type));
+        return Format::documentType($type);
     }
 }

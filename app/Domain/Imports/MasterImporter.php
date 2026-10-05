@@ -41,7 +41,7 @@ final class MasterImporter
             'customers' => ['number', 'name', 'phone', 'email', 'bill_street', 'bill_city', 'bill_province', 'bill_zip_code', 'wp_number', 'wp_name', 'price_category', 'payment_term', 'credit_limit', 'notes'],
             'vendors' => ['number', 'name', 'phone', 'email', 'bill_street', 'bill_city', 'bill_province', 'bill_zip_code', 'wp_number', 'wp_name', 'payment_term', 'notes'],
             'items' => ['number', 'name', 'item_type', 'category', 'brand', 'unit', 'sell_price', 'purchase_price', 'min_stock', 'upc_no', 'item_tax_code', 'notes'],
-            default => throw new RuntimeException("Nothing called {$kind} imports."),
+            default => throw new RuntimeException(__('Nothing called :kind imports.', ['kind' => $kind])),
         };
     }
 
@@ -70,12 +70,12 @@ final class MasterImporter
         $columns = self::columns($kind);
         $rows = $this->rows($path);
         if ($rows === []) {
-            throw new RuntimeException('The file holds no rows under a header.');
+            throw new RuntimeException(__('The file holds no rows under a header.'));
         }
         $header = array_map(fn ($c) => strtolower(trim((string) $c)), array_shift($rows));
         $missing = array_diff(['name'], $header);
         if ($missing !== []) {
-            throw new RuntimeException('The header needs a "name" column; see the template.');
+            throw new RuntimeException(__('The header needs a "name" column; see the template.'));
         }
 
         $result = ['created' => 0, 'updated' => 0, 'errors' => []];
@@ -158,7 +158,7 @@ final class MasterImporter
         $existing = $row['number'] !== '' ? Item::query()->where('number', $row['number'])->first() : null;
         $unit = $row['unit'] !== '' ? Unit::query()->where('name', $row['unit'])->first() : Unit::query()->orderBy('id')->first();
         if ($unit === null) {
-            throw new RuntimeException("Unit \"{$row['unit']}\" is not on the Units screen.");
+            throw new RuntimeException(__('Unit ":unit" is not on the Units screen.', ['unit' => $row['unit']]));
         }
         $data = [
             'name' => $row['name'], 'item_type' => in_array($row['item_type'], ['inventory', 'service', 'non_inventory'], true) ? $row['item_type'] : 'inventory',
@@ -192,7 +192,7 @@ final class MasterImporter
         }
         $id = $model::query()->where('name', $name)->value('id');
         if ($id === null) {
-            throw new RuntimeException("The {$what} \"{$name}\" does not exist; add it first or leave the column blank.");
+            throw new RuntimeException(__('The :what ":name" does not exist; add it first or leave the column blank.', ['what' => $what, 'name' => $name]));
         }
 
         return (int) $id;
@@ -207,7 +207,7 @@ final class MasterImporter
     {
         foreach ($fields as $field) {
             if (($row[$field] ?? '') === '') {
-                throw new RuntimeException("\"{$field}\" is required.");
+                throw new RuntimeException(__('":field" is required.', ['field' => $field]));
             }
         }
     }
@@ -215,7 +215,7 @@ final class MasterImporter
     private function number(TransactionType $type, ?int $userId): string
     {
         $user = $userId ? User::query()->find($userId) : auth()->user();
-        $series = $this->numbers->defaultSeries($type, $user) ?? throw new RuntimeException("No number series for {$type->getLabel()}.");
+        $series = $this->numbers->defaultSeries($type, $user) ?? throw new RuntimeException(__('No number series for :type.', ['type' => $type->getLabel()]));
 
         return $this->numbers->next($series, CarbonImmutable::today());
     }

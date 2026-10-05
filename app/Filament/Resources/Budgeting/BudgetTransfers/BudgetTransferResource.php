@@ -65,7 +65,7 @@ class BudgetTransferResource extends ErpResource
             Section::make(__('From budget'))->columns(2)->schema([
                 Select::make('from_month')->label(__('Month'))->options(Months::options())->required()->native(false),
                 Select::make('from_account_id')->label(__('Budget account'))->options(fn () => self::accountOptions())->searchable()->required()->native(false),
-                PricedDocumentForm::money('amount', 'Amount transferred')->required()->minValue(1),
+                PricedDocumentForm::money('amount', __('Amount transferred'))->required()->minValue(1),
             ]),
             Section::make(__('To budget'))->columns(2)->schema([
                 Select::make('to_month')->label(__('Month'))->options(Months::options())->required()->native(false),

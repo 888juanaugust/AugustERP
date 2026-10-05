@@ -150,7 +150,7 @@ final class PricedDocumentForm
                 ->minItems(1)
                 ->defaultItems(1)
                 ->live()
-                ->addActionLabel('Add line')
+                ->addActionLabel(__('Add line'))
                 ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => self::fillLine($data))
                 ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => self::normaliseLine($data, $get('currency_id'), $get('exchange_rate')))
                 ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => self::normaliseLine($data, $get('currency_id'), $get('exchange_rate'))),
@@ -351,7 +351,7 @@ final class PricedDocumentForm
                 ->schema($fields)
                 ->defaultItems(0)
                 ->live()
-                ->addActionLabel('Add charge')
+                ->addActionLabel(__('Add charge'))
                 ->mutateRelationshipDataBeforeFillUsing(fn (array $data, Get $get) => CurrencyFields::fromForeign($data, $get('currency_id'), ['amount' => 'fc_amount']))
                 ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => CurrencyFields::toForeign($data, $get('currency_id'), ['amount' => 'fc_amount']))
                 ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => CurrencyFields::toForeign($data, $get('currency_id'), ['amount' => 'fc_amount'])),

@@ -68,7 +68,7 @@ class AssetChangeResource extends ErpResource
                 NumberFields::make(TransactionType::FixedAssetChange, 'Change No.'),
                 DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
                 Select::make('new_depreciation_method')->label(__('New depreciation method'))->options(DepreciationMethod::class)->native(false)->placeholder(__('Unchanged')),
-                PricedDocumentForm::money('new_salvage_value', 'New salvage value')->default(null)->nullable(),
+                PricedDocumentForm::money('new_salvage_value', __('New salvage value'))->default(null)->nullable(),
                 TextInput::make('new_useful_life_months')->label(__('New useful life (months)'))->numeric()->integer()->nullable(),
                 Textarea::make('description')->label(__('What changed'))->rows(2)->columnSpanFull(),
             ]),
@@ -86,10 +86,10 @@ class AssetChangeResource extends ErpResource
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
                             TextInput::make('description')->maxLength(255),
-                            PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
+                            PricedDocumentForm::money('amount', __('Amount'))->required()->live(onBlur: true),
                         ])
                         ->defaultItems(0)->live()
-                        ->addActionLabel('Add expenditure'),
+                        ->addActionLabel(__('Add expenditure')),
                     Placeholder::make('amount_preview')->label(__('Added to the asset'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('expenditures'), 'amount'))),
                 ]),
                 Tab::make(__('Other info'))->schema([
@@ -112,7 +112,7 @@ class AssetChangeResource extends ErpResource
                 TextColumn::make('description')->label(__('Description'))->limit(50)->placeholder('—'),
                 TextColumn::make('fixedAsset.number')->label(__('Asset'))->fontFamily('mono'),
                 TextColumn::make('fixedAsset.name')->label(__('Asset name')),
-                TextColumn::make('change_type')->label(__('Kind'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst($state)),
+                TextColumn::make('change_type')->label(__('Kind'))->badge()->color('gray')->formatStateUsing(fn (string $state) => Format::code($state, 'asset_change')),
                 Rupiah::make('amount')->label(__('Added')),
             ])
             ->defaultSort('trans_date', 'desc')

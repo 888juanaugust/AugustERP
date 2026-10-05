@@ -99,18 +99,18 @@ class GeneralLedgerReport extends ReportPage
     protected function columns(): array
     {
         return [
-            static::date('trans_date', 'Date'),
-            static::text('source', 'Source No.')->fontFamily('mono'),
-            static::text('description', 'Description')->state(fn ($record) => ($record['is_heading'] ?? false) ? $record['name'] : $record['description'])->limit(60),
-            static::money('debit', 'Debit'),
-            static::money('credit', 'Credit'),
-            static::money('balance', 'Balance'),
+            static::date('trans_date', __('Date')),
+            static::text('source', __('Source No.'))->fontFamily('mono'),
+            static::text('description', __('Description'))->state(fn ($record) => ($record['is_heading'] ?? false) ? $record['name'] : $record['description'])->limit(60),
+            static::money('debit', __('Debit')),
+            static::money('credit', __('Credit')),
+            static::money('balance', __('Balance')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Date', 'Source No.', 'Description', 'Debit', 'Credit', 'Balance'];
+        return [__('Date'), __('Source No.'), __('Description'), __('Debit'), __('Credit'), __('Balance')];
     }
 
     protected function exportRow(array $row): array

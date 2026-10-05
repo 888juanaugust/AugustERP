@@ -30,7 +30,7 @@ final class CustomerFields
                 $customer = $state ? Customer::query()->find($state) : null;
                 $check = app(CreditCheck::class);
 
-                return $customer && HakAkses::canSpecial(HakKhusus::SeeCreditData) && $check->needsNotice($customer) ? "Overdue: an invoice is older than {$check->noticeDays()} days" : null;
+                return $customer && HakAkses::canSpecial(HakKhusus::SeeCreditData) && $check->needsNotice($customer) ? __('Overdue: an invoice is older than :days days', ['days' => $check->noticeDays()]) : null;
             })
             ->hintColor('danger')
             ->afterStateUpdated(function (Set $set, Get $get, $state) use ($fillsTerms): void {
@@ -64,6 +64,6 @@ final class CustomerFields
     {
         $check = app(CreditCheck::class);
 
-        return 'Open: '.Format::rupiah($check->exposure($customer)).' · Orders: '.Format::rupiah($check->openOrders($customer));
+        return __('Open: :open · Orders: :orders', ['open' => Format::rupiah($check->exposure($customer)), 'orders' => Format::rupiah($check->openOrders($customer))]);
     }
 }

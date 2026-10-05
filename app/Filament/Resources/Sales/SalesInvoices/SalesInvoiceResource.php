@@ -97,7 +97,7 @@ class SalesInvoiceResource extends ErpResource
                         ->content(fn (?SalesInvoice $record) => new HtmlString($record?->taxInvoiceMails()->where('status', '!=', 'queued')->get()
                             ->map(fn ($mail) => e(Format::dateTime($mail->created_at).' · '.__('status.mail.'.$mail->status).' · '.$mail->recipient.' · '.$mail->serial.($mail->error ? ' · '.$mail->error : '')))
                             ->join('<br>') ?: e(__('Queued')))),
-                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesInvoice $record) => $record ? CurrencyFields::documentAmount($record, 'paid_amount').' of '.CurrencyFields::format(SettlementLineFields::total($record), $record->currency_id).' · open '.CurrencyFields::format(SettlementLineFields::open($record), $record->currency_id) : '—'),
+                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesInvoice $record) => $record ? __(':paid of :total · open :open', ['paid' => CurrencyFields::documentAmount($record, 'paid_amount'), 'total' => CurrencyFields::format(SettlementLineFields::total($record), $record->currency_id), 'open' => CurrencyFields::format(SettlementLineFields::open($record), $record->currency_id)]) : '—'),
                 ]),
             ]),
         ])->columns(1);

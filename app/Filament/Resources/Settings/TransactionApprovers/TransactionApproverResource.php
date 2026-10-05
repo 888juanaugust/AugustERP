@@ -76,7 +76,7 @@ class TransactionApproverResource extends MasterResource
     {
         return $schema->components([
             Select::make('transaction_type')->label(__('Document'))->options(self::documentOptions())->required()->searchable()->native(false),
-            PricedDocumentForm::money('min_amount', 'From amount')->helperText(__('Documents below this amount need no approval.')),
+            PricedDocumentForm::money('min_amount', __('From amount'))->helperText(__('Documents below this amount need no approval.')),
             Select::make('rule')->label(__('Condition'))->options(TransactionApprover::rules())->default(TransactionApprover::ANY_ONE)->required()->native(false)->live(),
             Select::make('branch_id')->label(__('Branch'))->relationship('branch', 'name')->preload()->placeholder(__('Every branch'))->nullable()->native(false),
             Fieldset::make(__('Who needs approval'))->columns(1)->schema([

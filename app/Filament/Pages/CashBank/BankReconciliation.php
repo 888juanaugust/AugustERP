@@ -223,7 +223,7 @@ class BankReconciliation extends ErpPage implements HasTable
                 'id' => $line->id,
                 'trans_date' => Format::date($line->trans_date),
                 'source_number' => $line->entry?->source_number,
-                'source_type' => ucfirst(str_replace('_', ' ', (string) $line->entry?->source_type)),
+                'source_type' => Format::documentType($line->entry?->source_type),
                 'description' => $line->memo ?: $line->entry?->description,
                 'debit' => $line->debit ? Format::number($line->debit) : '',
                 'credit' => $line->credit ? Format::number($line->credit) : '',

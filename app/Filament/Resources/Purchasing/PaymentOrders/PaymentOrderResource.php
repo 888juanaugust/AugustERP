@@ -86,7 +86,7 @@ class PaymentOrderResource extends ErpResource
                         ->schema([
                             Select::make('payable_key')
                                 ->options(fn () => PurchaseInvoice::query()->where('payment_status', '!=', 'paid')->with('vendor')->orderBy('due_date')->limit(200)->get()
-                                    ->mapWithKeys(fn ($i) => ['purchase_invoice:'.$i->id => "{$i->number} · {$i->vendor->name} · due ".Format::date($i->due_date).' · open '.Format::rupiah(app(SettlementService::class)->balance($i))]))
+                                    ->mapWithKeys(fn ($i) => ['purchase_invoice:'.$i->id => $i->number.' · '.$i->vendor->name.' · '.__('due :date', ['date' => Format::date($i->due_date)]).' · '.__('open').' '.Format::rupiah(app(SettlementService::class)->balance($i))]))
                                 ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
                                 ->searchable()->required()->native(false)->live()
                                 ->afterStateUpdated(function (Set $set, $state): void {
@@ -98,14 +98,14 @@ class PaymentOrderResource extends ErpResource
                             Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
                             Placeholder::make('invoice_total')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number((int) $doc->total) : ''),
                             Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
-                            PricedDocumentForm::money('amount', 'Pay')->required()->minValue(1),
-                            PricedDocumentForm::money('discount', 'Discount'),
+                            PricedDocumentForm::money('amount', __('Pay'))->required()->minValue(1),
+                            PricedDocumentForm::money('discount', __('Discount')),
                             Hidden::make('vendor_id'),
                             Hidden::make('payable_type'),
                             Hidden::make('payable_id'),
                         ])
                         ->minItems(1)->defaultItems(1)
-                        ->addActionLabel('Add invoice')
+                        ->addActionLabel(__('Add invoice'))
                         ->disabled(fn (?PaymentOrder $record) => $record?->status === 'processed')
                         ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => $data + ['payable_key' => ($data['payable_type'] ?? '').':'.($data['payable_id'] ?? '')])
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::splitKey($data))

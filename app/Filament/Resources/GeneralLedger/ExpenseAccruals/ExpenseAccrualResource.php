@@ -95,7 +95,7 @@ class ExpenseAccrualResource extends ErpResource
                         ->live()
                         ->minItems(1)
                         ->defaultItems(1)
-                        ->addActionLabel('Add line'),
+                        ->addActionLabel(__('Add line')),
                     Placeholder::make('total')
                         ->hiddenLabel()
                         ->content(fn (Get $get): string => 'Total '.Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),

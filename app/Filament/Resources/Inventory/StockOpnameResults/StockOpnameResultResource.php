@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Inventory\StockOpnameResults;
 use App\Domain\Access\MenuKey;
 use App\Domain\Inventory\OpnameApprover;
 use App\Domain\Numbering\TransactionType;
+use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\StockOpnameResults\Pages\CreateStockOpnameResult;
 use App\Filament\Resources\Inventory\StockOpnameResults\Pages\EditStockOpnameResult;
 use App\Filament\Resources\Inventory\StockOpnameResults\Pages\ListStockOpnameResults;
@@ -110,7 +111,7 @@ class StockOpnameResultResource extends ErpResource
                         ])
                         ->minItems(1)
                         ->defaultItems(0)
-                        ->addActionLabel('Add item')
+                        ->addActionLabel(__('Add item'))
                         ->disabled(fn (?StockOpnameResult $record) => $record?->isApproved() ?? false)
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data], 'counted_qty')[0])
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data], 'counted_qty')[0]),
@@ -150,7 +151,7 @@ class StockOpnameResultResource extends ErpResource
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with('order'))
             ->columns([
-                TextColumn::make('status')->label('#')->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => $state === 'approved' ? 'success' : 'warning'),
+                TextColumn::make('status')->label('#')->badge()->formatStateUsing(fn (string $state) => Format::code($state, 'opname'))->color(fn (string $state) => $state === 'approved' ? 'success' : 'warning'),
                 Tanggal::make('trans_date')->label(__('Count date')),
                 TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 TextColumn::make('order.number')->label(__('Count order'))->fontFamily('mono'),

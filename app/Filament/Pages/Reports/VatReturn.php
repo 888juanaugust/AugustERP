@@ -100,8 +100,8 @@ class VatReturn extends ErpPage implements HasTable
                 TextColumn::make('trans_date')->label(__('Date'))->formatStateUsing(fn ($state): string => $state ? Format::date($state) : ''),
                 TextColumn::make('document')->label(__('Document kind')),
                 TextColumn::make('description')->label(__('Description'))->limit(40),
-                self::money('dpp', 'Tax base (DPP)'),
-                self::money('tax', 'VAT'),
+                self::money('dpp', __('Tax base (DPP)')),
+                self::money('tax', __('VAT')),
                 TextColumn::make('party')->label(__('Customer / Vendor')),
             ])
             ->paginated(false)

@@ -127,12 +127,12 @@ class AuditLogResource extends ErpResource
 
     public static function actionLabel(string $action): string
     {
-        return ucfirst(str_replace('_', ' ', $action));
+        return Format::code($action, 'audit');
     }
 
     public static function typeLabel(?string $type): string
     {
-        return $type === null ? '' : ucfirst(str_replace('_', ' ', $type));
+        return Format::documentType($type);
     }
 
     public static function getPages(): array

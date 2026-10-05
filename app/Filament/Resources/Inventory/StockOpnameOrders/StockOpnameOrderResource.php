@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Inventory\StockOpnameOrders;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
+use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\StockOpnameOrders\Pages\CreateStockOpnameOrder;
 use App\Filament\Resources\Inventory\StockOpnameOrders\Pages\EditStockOpnameOrder;
 use App\Filament\Resources\Inventory\StockOpnameOrders\Pages\ListStockOpnameOrders;
@@ -78,7 +79,7 @@ class StockOpnameOrderResource extends ErpResource
                 TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('start_date')->label(__('Count starts')),
                 TextColumn::make('warehouse.name')->label(__('Warehouse')),
-                TextColumn::make('status')->label(__('fields.status'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))
+                TextColumn::make('status')->label(__('fields.status'))->badge()->formatStateUsing(fn (string $state) => Format::code($state, 'opname'))
                     ->color(fn (string $state) => match ($state) {
                         'counted' => 'success', 'closed' => 'gray', default => 'info'
                     }),

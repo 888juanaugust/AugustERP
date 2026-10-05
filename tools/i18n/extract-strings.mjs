@@ -21,6 +21,8 @@ if (!locale || !/^[a-z]{2}(?:[-_][A-Za-z]{2,4})?$/.test(locale)) {
 const keys = new Set();
 const SQ = /__\(\s*'((?:[^'\\]|\\.)*)'/g;
 const DQ = /__\(\s*"((?:[^"\\]|\\.)*)"/g;
+// A resource's model label is translated where it is read (ErpResource::getModelLabel).
+const MODEL_LABEL = /\$(?:plural)?[mM]odelLabel\s*=\s*'((?:[^'\\]|\\.)*)'/g;
 for (const dir of ['app', 'resources/views']) walk(path.join(root, dir));
 function walk(p) {
     for (const e of fs.readdirSync(p, { withFileTypes: true })) {
@@ -32,6 +34,7 @@ function walk(p) {
 function scan(src) {
     for (const m of src.matchAll(SQ)) keys.add(m[1].replace(/\\(['\\])/g, '$1'));
     for (const m of src.matchAll(DQ)) keys.add(m[1].replace(/\\(["\\])/g, '$1'));
+    for (const m of src.matchAll(MODEL_LABEL)) keys.add(m[1].replace(/\\(['\\])/g, '$1'));
 }
 // Keys of the form "menu.x", "fields.x", "status.x" live in the .php files, not here.
 for (const k of [...keys]) if (/^(menu|fields|status)\.[\w.-]+$/.test(k)) keys.delete(k);

@@ -37,18 +37,18 @@ class BankMutations extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('no', 'No.')->fontFamily('mono'),
-            static::text('name', 'Account'),
-            static::money('opening', 'Opening'),
-            static::money('in', 'In'),
-            static::money('out', 'Out'),
-            static::money('closing', 'Closing'),
+            static::text('no', __('No.'))->fontFamily('mono'),
+            static::text('name', __('Account')),
+            static::money('opening', __('Opening')),
+            static::money('in', __('In')),
+            static::money('out', __('Out')),
+            static::money('closing', __('Closing')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['No.', 'Account', 'Opening', 'In', 'Out', 'Closing'];
+        return [__('No.'), __('Account'), __('Opening'), __('In'), __('Out'), __('Closing')];
     }
 
     protected function exportRow(array $row): array

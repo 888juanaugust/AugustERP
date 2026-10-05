@@ -95,7 +95,7 @@ class AssetTransferResource extends ErpResource
                         ->minItems(1)
                         ->defaultItems(1)
                         ->live()
-                        ->addActionLabel('Add asset'),
+                        ->addActionLabel(__('Add asset')),
                 ]),
                 Tab::make(__('Other info'))->schema([
                     Textarea::make('description')->label(__('Notes'))->rows(3),

@@ -89,7 +89,7 @@ class SalesDownPaymentResource extends ErpResource
                     Textarea::make('description')->label(__('fields.description'))->rows(2),
                 ]),
                 Tab::make(__('Payment info'))->schema([
-                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesDownPayment $record) => $record ? CurrencyFields::documentAmount($record, 'paid_amount').' of '.CurrencyFields::documentAmount($record, 'total') : '—'),
+                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesDownPayment $record) => $record ? __(':part of :whole', ['part' => CurrencyFields::documentAmount($record, 'paid_amount'), 'whole' => CurrencyFields::documentAmount($record, 'total')]) : '—'),
                     Placeholder::make('used')->label(__('Deducted on invoices'))->content(fn (?SalesDownPayment $record) => $record ? CurrencyFields::documentAmount($record, 'used_amount') : '—'),
                 ]),
             ]),

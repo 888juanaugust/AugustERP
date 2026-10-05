@@ -60,11 +60,11 @@ final class GiroService
     public function clear(Giro $giro, CarbonImmutable|string $on, ?int $userId = null): void
     {
         if (! $giro->isOutstanding()) {
-            throw new RuntimeException("Giro {$giro->number} is {$giro->status}; only an outstanding giro clears.");
+            throw new RuntimeException(__('Giro :number is :status; only an outstanding giro clears.', ['number' => $giro->number, 'status' => $giro->status]));
         }
         $on = CarbonImmutable::parse($on);
         if ($on->lt($giro->trans_date)) {
-            throw new RuntimeException("Giro {$giro->number} cannot clear before it was received.");
+            throw new RuntimeException(__('Giro :number cannot clear before it was received.', ['number' => $giro->number]));
         }
 
         DB::transaction(function () use ($giro, $on, $userId): void {
@@ -78,7 +78,7 @@ final class GiroService
     public function bounce(Giro $giro, CarbonImmutable|string $on, ?string $reason = null, ?int $userId = null): void
     {
         if (! $giro->isOutstanding()) {
-            throw new RuntimeException("Giro {$giro->number} is {$giro->status}; only an outstanding giro bounces.");
+            throw new RuntimeException(__('Giro :number is :status; only an outstanding giro bounces.', ['number' => $giro->number, 'status' => $giro->status]));
         }
         $on = CarbonImmutable::parse($on);
 

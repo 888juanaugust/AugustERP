@@ -39,7 +39,7 @@ final class StatementImporter
     {
         $rows = $this->rows($path);
         if ($rows === []) {
-            throw new RuntimeException('The file holds no statement lines.');
+            throw new RuntimeException(__('The file holds no statement lines.'));
         }
 
         return DB::transaction(function () use ($bankAccountId, $path, $originalName, $userId, $rows): BankStatement {
@@ -78,7 +78,7 @@ final class StatementImporter
                     continue; // a title row above the header
                 }
                 if (! isset($columns['date']) || (! isset($columns['amount']) && ! isset($columns['debit']) && ! isset($columns['credit']))) {
-                    throw new RuntimeException('The header needs a date column and an amount, or debit and credit, column.');
+                    throw new RuntimeException(__('The header needs a date column and an amount, or debit and credit, column.'));
                 }
 
                 continue;

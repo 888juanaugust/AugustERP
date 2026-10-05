@@ -80,9 +80,9 @@ class BudgetMonitor extends ErpPage implements HasTable
             ->columns([
                 TextColumn::make('no')->label(__('No.'))->fontFamily('mono'),
                 TextColumn::make('name')->label(__('Account')),
-                self::money('budget', 'Budget'),
-                self::money('actual', 'Used'),
-                self::money('remaining', 'Remaining'),
+                self::money('budget', __('Budget')),
+                self::money('actual', __('Used')),
+                self::money('remaining', __('Remaining')),
                 TextColumn::make('used_percent')->label(__('Used %'))->alignEnd()
                     ->formatStateUsing(fn ($state): string => $state === null ? '—' : Format::quantity($state, 1).' %')
                     ->color(fn ($state): ?string => match (true) {

@@ -107,7 +107,7 @@ class InventoryAdjustmentResource extends ErpResource
                         ])
                         ->minItems(1)
                         ->defaultItems(1)
-                        ->addActionLabel('Add line')
+                        ->addActionLabel(__('Add line'))
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::normaliseLine($data))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::normaliseLine($data)),
                 ]),

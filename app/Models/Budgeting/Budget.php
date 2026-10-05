@@ -38,6 +38,6 @@ class Budget extends Model
 
     public function periodLabel(): string
     {
-        return CarbonImmutable::create($this->year, $this->month, 1)->format('F Y');
+        return CarbonImmutable::create($this->year, $this->month, 1)->translatedFormat('F Y');
     }
 }

@@ -8,6 +8,7 @@ use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
+use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\Deliveries\DeliveryResource;
 use App\Filament\Resources\Sales\SalesInvoices\SalesInvoiceResource;
 use App\Filament\Resources\Sales\SalesOrders\Pages\CreateSalesOrder;
@@ -93,7 +94,7 @@ class SalesOrderResource extends ErpResource
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('customer.name')->label(__('fields.customer'))->searchable(),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('approval_status')->label(__('Approval'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))
+                TextColumn::make('approval_status')->label(__('Approval'))->badge()->formatStateUsing(fn (string $state) => Format::code($state, 'approval'))
                     ->color(fn (string $state) => match ($state) {
                         'approved' => 'success', 'rejected' => 'danger', default => 'warning'
                     }),

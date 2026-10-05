@@ -74,7 +74,7 @@ class VendorPriceResource extends ErpResource
                             LineItemFields::unit(),
                             TextInput::make('price')->numeric()->required()->prefix(Format::symbol()),
                         ])
-                        ->minItems(1)->defaultItems(1)->addActionLabel('Add item'),
+                        ->minItems(1)->defaultItems(1)->addActionLabel(__('Add item')),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     Textarea::make('description')->label(__('fields.description'))->rows(3),

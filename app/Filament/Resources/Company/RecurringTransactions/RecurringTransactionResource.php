@@ -89,15 +89,15 @@ class RecurringTransactionResource extends ErpResource
                         ->columnSpan(3)
                         ->schema([
                             Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->required()->native(false)->columnSpan(2),
-                            PricedDocumentForm::money('debit', 'Debit')->visible(fn (Get $get): bool => self::isJournal($get, '../../../transaction_type')),
-                            PricedDocumentForm::money('credit', 'Credit')->visible(fn (Get $get): bool => self::isJournal($get, '../../../transaction_type')),
-                            PricedDocumentForm::money('amount', 'Amount')->visible(fn (Get $get): bool => ! self::isJournal($get, '../../../transaction_type')),
+                            PricedDocumentForm::money('debit', __('Debit'))->visible(fn (Get $get): bool => self::isJournal($get, '../../../transaction_type')),
+                            PricedDocumentForm::money('credit', __('Credit'))->visible(fn (Get $get): bool => self::isJournal($get, '../../../transaction_type')),
+                            PricedDocumentForm::money('amount', __('Amount'))->visible(fn (Get $get): bool => ! self::isJournal($get, '../../../transaction_type')),
                             TextInput::make('memo')->label(__('Memo'))->maxLength(255)
                                 ->columnSpan(fn (Get $get): int => self::isJournal($get, '../../../transaction_type') ? 2 : 3),
                         ])
                         ->defaultItems(1)
                         ->minItems(1)
-                        ->addActionLabel('Add line'),
+                        ->addActionLabel(__('Add line')),
                 ]),
         ])->columns(1);
     }

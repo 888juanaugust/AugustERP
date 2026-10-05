@@ -93,7 +93,7 @@ class ItemResource extends MasterResource
                     Tab::make(__('Sales / Purchasing'))->schema([
                         Grid::make(3)->schema([
                             TextInput::make('default_discount')->label(__('Default discount (%)'))->numeric()->minValue(0)->maxValue(100)->default(0),
-                            self::money('sell_price', 'Selling price per base unit'),
+                            self::money('sell_price', __('Selling price per base unit')),
                             TextInput::make('min_sell_qty')->label(__('Minimum sale quantity'))->numeric()->minValue(0)->default(0),
                             Toggle::make('use_wholesale_price')->label(__('Apply wholesale price / discount'))->inline(false),
                             Select::make('substitute_item_id')->label(__('Substitute item'))
@@ -101,7 +101,7 @@ class ItemResource extends MasterResource
                                 ->searchable()->native(false)->columnSpan(2),
                             Select::make('preferred_vendor_id')->label(__('Preferred vendor'))->relationship('preferredVendor', 'name', fn ($query) => $query->where('is_active', true))->searchable()->preload()->native(false),
                             Select::make('vendor_unit_id')->label(__('Purchase unit'))->relationship('vendorUnit', 'name')->preload()->native(false),
-                            self::money('purchase_price', 'Purchase price'),
+                            self::money('purchase_price', __('Purchase price')),
                             TextInput::make('min_purchase_qty')->label(__('Minimum purchase quantity'))->numeric()->minValue(0)->default(0),
                             TextInput::make('min_stock')->label(__('Minimum stock'))->numeric()->minValue(0)->default(0)
                                 ->helperText(__('Across all warehouses; a warehouse below may have its own.')),
@@ -113,7 +113,7 @@ class ItemResource extends MasterResource
                                     Select::make('warehouse_id')->options(fn () => Warehouse::query()->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->distinct()->native(false),
                                     TextInput::make('quantity')->numeric()->minValue(0)->required()->default(0),
                                 ])
-                                ->defaultItems(0)->addActionLabel('Add warehouse')->columnSpanFull()
+                                ->defaultItems(0)->addActionLabel(__('Add warehouse'))->columnSpanFull()
                                 ->visible(fn (Get $get) => ($get('item_type') instanceof ItemType ? $get('item_type') : ItemType::tryFrom((string) $get('item_type'))) === ItemType::Inventory),
                         ]),
                         Fieldset::make(__('Tax'))->columns(3)->schema([
@@ -137,9 +137,9 @@ class ItemResource extends MasterResource
                             ->schema([
                                 Select::make('unit_id')->relationship('unit', 'name')->required()->native(false)->distinct(),
                                 TextInput::make('ratio')->numeric()->minValue(0.000001)->required()->default(1),
-                                self::money('sell_price', 'Selling price'),
+                                self::money('sell_price', __('Selling price')),
                             ])
-                            ->addActionLabel('Add unit')
+                            ->addActionLabel(__('Add unit'))
                             ->defaultItems(0),
                     ]),
                     Tab::make(__('Prices'))->schema([
@@ -155,9 +155,9 @@ class ItemResource extends MasterResource
                             ->schema([
                                 Select::make('price_category_id')->relationship('priceCategory', 'name')->required()->native(false),
                                 Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
-                                self::money('price', 'Price'),
+                                self::money('price', __('Price')),
                             ])
-                            ->addActionLabel('Add price')
+                            ->addActionLabel(__('Add price'))
                             ->defaultItems(0),
                     ]),
                     Tab::make(__('Stock'))
@@ -183,7 +183,7 @@ class ItemResource extends MasterResource
                                         ->disabled(fn () => ! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost))->dehydrated(),
                                     Select::make('warehouse_id')->relationship('warehouse', 'name', fn ($query) => $query->where('is_active', true))->required()->native(false),
                                 ])
-                                ->addActionLabel('Add opening stock')
+                                ->addActionLabel(__('Add opening stock'))
                                 ->defaultItems(0),
                         ]),
                     Tab::make(__('Components'))
@@ -203,7 +203,7 @@ class ItemResource extends MasterResource
                                     TextInput::make('quantity')->numeric()->required()->default(1),
                                     Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
                                 ])
-                                ->addActionLabel('Add component')
+                                ->addActionLabel(__('Add component'))
                                 ->defaultItems(0),
                         ]),
                     Tab::make(__('Accounts'))->schema([

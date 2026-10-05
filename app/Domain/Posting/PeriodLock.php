@@ -39,7 +39,7 @@ final class PeriodLock
             throw new PeriodClosedException(__(':what is dated before the data start date, :date; the books begin there.', ['what' => $what, 'date' => Format::date($start)]));
         }
         if ($this->isClosed($date)) {
-            $label = Carbon::parse($date)->format('F Y');
+            $label = Carbon::parse($date)->translatedFormat('F Y');
             throw new PeriodClosedException("{$what} is dated in {$label}, which is closed. Reopen the month first.");
         }
     }
@@ -70,11 +70,11 @@ final class PeriodLock
         if ($last !== null) {
             $expected = Carbon::create($last->year, $last->month, 1)->addMonth();
             if ($expected->year !== $year || $expected->month !== $month) {
-                throw new RuntimeException("Months close in order: the next month to close is {$expected->format('F Y')}.");
+                throw new RuntimeException(__('Months close in order: the next month to close is :month.', ['month' => $expected->translatedFormat('F Y')]));
             }
         }
         if (Carbon::create($year, $month, 1)->endOfMonth()->isFuture()) {
-            throw new RuntimeException('A month cannot be closed before it has ended.');
+            throw new RuntimeException(__('A month cannot be closed before it has ended.'));
         }
 
         return AccountingPeriod::query()->updateOrCreate(
@@ -87,7 +87,7 @@ final class PeriodLock
     {
         $last = $this->lastClosed();
         if ($last === null || $last->year !== $year || $last->month !== $month) {
-            throw new RuntimeException('Only the last closed month can be reopened.');
+            throw new RuntimeException(__('Only the last closed month can be reopened.'));
         }
         $last->update(['status' => AccountingPeriod::OPEN, 'closed_at' => null, 'closed_by' => null]);
 

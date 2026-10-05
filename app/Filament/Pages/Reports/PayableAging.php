@@ -57,17 +57,17 @@ class PayableAging extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('name', 'Vendor'),
-            static::text('invoices', 'Open')->alignEnd(),
+            static::text('name', __('Vendor')),
+            static::text('invoices', __('Open'))->alignEnd(),
             ...array_map(fn (array $bucket) => static::money($bucket['key'], $bucket['label']), AgingBuckets::all()),
-            static::money('total', 'Total'),
-            static::text('oldest_days', 'Oldest (days)')->alignEnd(),
+            static::money('total', __('Total')),
+            static::text('oldest_days', __('Oldest (days)'))->alignEnd(),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Vendor', 'Open', ...array_column(AgingBuckets::all(), 'label'), 'Total', 'Oldest (days)'];
+        return [__('Vendor'), __('Open'), ...array_column(AgingBuckets::all(), 'label'), __('Total'), __('Oldest (days)')];
     }
 
     protected function exportRow(array $row): array

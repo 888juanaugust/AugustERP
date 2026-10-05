@@ -37,18 +37,18 @@ class TrialBalance extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('no', 'No.'),
-            static::text('name', 'Account'),
-            static::money('opening', 'Opening'),
-            static::money('debit', 'Debit'),
-            static::money('credit', 'Credit'),
-            static::money('closing', 'Closing'),
+            static::text('no', __('No.')),
+            static::text('name', __('Account')),
+            static::money('opening', __('Opening')),
+            static::money('debit', __('Debit')),
+            static::money('credit', __('Credit')),
+            static::money('closing', __('Closing')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['No.', 'Account', 'Opening', 'Debit', 'Credit', 'Closing'];
+        return [__('No.'), __('Account'), __('Opening'), __('Debit'), __('Credit'), __('Closing')];
     }
 
     protected function exportRow(array $row): array

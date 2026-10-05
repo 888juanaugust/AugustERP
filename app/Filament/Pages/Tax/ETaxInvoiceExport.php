@@ -74,7 +74,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
     public function form(Schema $schema): Schema
     {
         $year = (int) today()->format('Y');
-        $months = collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => CarbonImmutable::create($year, $m, 1)->format('F')])->all();
+        $months = collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => CarbonImmutable::create($year, $m, 1)->translatedFormat('F')])->all();
         $days = collect(range(1, 31))->mapWithKeys(fn (int $d) => [$d => (string) $d])->all();
 
         return $schema
@@ -125,7 +125,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                 TextColumn::make('document')->label(__('Document'))->state(fn ($record) => blank(($record->customer ?? $record->vendor)?->wp_number) ? __('Aggregated') : __('Tax invoice')),
                 TextColumn::make('status')->label(__('Status'))->badge()
                     ->state(fn ($record) => FilingDocuments::status($record))
-                    ->formatStateUsing(fn (string $state) => ucfirst($state))
+                    ->formatStateUsing(fn (string $state) => Format::code($state, 'filing'))
                     ->color(fn (string $state) => match ($state) {
                         'numbered' => 'success',
                         'exported' => 'warning',
@@ -219,7 +219,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
 
         return collect($codes)
             ->filter(fn ($value) => is_scalar($value))
-            ->mapWithKeys(fn ($value, string $key) => [ucfirst(str_replace('_', ' ', $key)) => (string) $value])
+            ->mapWithKeys(fn ($value, string $key) => [$key => (string) $value])
             ->all();
     }
 

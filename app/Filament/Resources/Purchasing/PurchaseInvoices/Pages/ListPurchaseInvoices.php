@@ -15,6 +15,6 @@ class ListPurchaseInvoices extends ListDocuments
 
     protected function statuses(): array
     {
-        return ['unpaid' => 'Unpaid', 'partial' => 'Partially paid', 'paid' => 'Paid'];
+        return ['unpaid' => __('Unpaid'), 'partial' => __('Partially paid'), 'paid' => __('Paid')];
     }
 }

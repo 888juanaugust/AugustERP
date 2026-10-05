@@ -132,7 +132,7 @@ class BankBook extends ErpPage implements HasTable
                 'trans_date' => Format::date($line->trans_date),
                 'source_number' => $line->entry?->source_number,
                 'cheque_no' => $this->chequeNo($line),
-                'source_type' => ucfirst(str_replace('_', ' ', (string) $line->entry?->source_type)),
+                'source_type' => Format::documentType($line->entry?->source_type),
                 'description' => $line->memo ?: $line->entry?->description,
                 'amount' => Format::number($line->debit ?: $line->credit),
                 'side' => $line->debit ? 'Debit' : 'Credit',

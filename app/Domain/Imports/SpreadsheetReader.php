@@ -62,7 +62,7 @@ final class SpreadsheetReader
     {
         $handle = fopen($path, 'r');
         if ($handle === false) {
-            throw new RuntimeException('The file could not be read.');
+            throw new RuntimeException(__('The file could not be read.'));
         }
         try {
             $delimiter = self::delimiter($handle);

@@ -81,23 +81,23 @@ class JournalVoucherResource extends ErpResource
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
-                            self::money('debit', 'Debit'),
-                            self::money('credit', 'Credit'),
+                            self::money('debit', __('Debit')),
+                            self::money('credit', __('Credit')),
                             ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->live()
                         ->minItems(2)
                         ->defaultItems(2)
-                        ->addActionLabel('Add line')
+                        ->addActionLabel(__('Add line'))
                         ->rule(fn () => function (string $attribute, $value, $fail) {
                             $debit = LineTotals::sum($value, 'debit');
                             $credit = LineTotals::sum($value, 'credit');
                             if ($debit !== $credit) {
-                                $fail('The journal must balance: debit '.Format::number($debit).', credit '.Format::number($credit).'.');
+                                $fail(__('The journal must balance: debit :debit, credit :credit.', ['debit' => Format::number($debit), 'credit' => Format::number($credit)]));
                             }
                             if ($debit === 0) {
-                                $fail('The journal has no amounts.');
+                                $fail(__('The journal has no amounts.'));
                             }
                         }),
                     Placeholder::make('totals')

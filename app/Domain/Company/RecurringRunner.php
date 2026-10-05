@@ -48,7 +48,7 @@ final class RecurringRunner
     public function run(RecurringTransaction $recurring, \DateTimeInterface|string|null $on = null, ?int $userId = null): Model
     {
         if ($recurring->status !== 'active') {
-            throw new RuntimeException("{$recurring->name} is {$recurring->status}.");
+            throw new RuntimeException(__(':name is :status.', ['name' => $recurring->name, 'status' => $recurring->status]));
         }
         $on = CarbonImmutable::parse($on ?? $recurring->next_run_on);
         $userId ??= auth()->id();
@@ -92,7 +92,7 @@ final class RecurringRunner
                 }
                 break;
             default:
-                throw new RuntimeException("Recurring {$recurring->transaction_type} is not supported.");
+                throw new RuntimeException(__('Recurring :transaction_type is not supported.', ['transaction_type' => $recurring->transaction_type]));
         }
         $doc->refreshTotal();
 
@@ -102,7 +102,7 @@ final class RecurringRunner
     private function number(TransactionType $type, CarbonImmutable $on, ?int $userId): string
     {
         $user = $userId ? User::query()->find($userId) : null;
-        $series = $this->numbers->defaultSeries($type, $user) ?? throw new RuntimeException("No number series for {$type->getLabel()}.");
+        $series = $this->numbers->defaultSeries($type, $user) ?? throw new RuntimeException(__('No number series for :type.', ['type' => $type->getLabel()]));
 
         return $this->numbers->next($series, $on);
     }

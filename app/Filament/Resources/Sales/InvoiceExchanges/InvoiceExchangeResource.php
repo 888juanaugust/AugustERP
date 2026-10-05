@@ -76,7 +76,7 @@ class InvoiceExchangeResource extends ErpResource
                             Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($i = SalesInvoice::query()->find($get('sales_invoice_id'))) ? Format::date($i->trans_date) : ''),
                             Placeholder::make('due')->hiddenLabel()->content(fn (Get $get) => ($i = SalesInvoice::query()->find($get('sales_invoice_id'))) ? Format::date($i->due_date) : ''),
                         ])
-                        ->minItems(1)->defaultItems(1)->addActionLabel('Add invoice'),
+                        ->minItems(1)->defaultItems(1)->addActionLabel(__('Add invoice')),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     Textarea::make('description')->label(__('fields.description'))->rows(3),

@@ -27,6 +27,6 @@ class AccountingPeriod extends Model
 
     public function label(): string
     {
-        return Carbon::create($this->year, $this->month, 1)->format('F Y');
+        return Carbon::create($this->year, $this->month, 1)->translatedFormat('F Y');
     }
 }

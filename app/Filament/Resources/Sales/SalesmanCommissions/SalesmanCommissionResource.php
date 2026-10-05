@@ -91,7 +91,7 @@ class SalesmanCommissionResource extends MasterResource
                 TextColumn::make('notes')->label(__('fields.memo'))->limit(40)->placeholder('—'),
                 TextColumn::make('name')->label(__('Rule name'))->searchable()->sortable()->weight('medium'),
                 TextColumn::make('period')->label(__('In force'))->state(fn (SalesmanCommission $r) => $r->periodLabel()),
-                TextColumn::make('gain')->label(__('Gain'))->state(fn (SalesmanCommission $r) => $r->gain_type === 'fixed' ? Format::rupiah((int) round((float) $r->gain_value)) : Format::percent($r->gain_value).' of '.str_replace('_', ' ', $r->gain_basis)),
+                TextColumn::make('gain')->label(__('Gain'))->state(fn (SalesmanCommission $r) => $r->gain_type === 'fixed' ? Format::rupiah((int) round((float) $r->gain_value)) : __(':part of :whole', ['part' => Format::percent($r->gain_value), 'whole' => Format::code($r->gain_basis, 'commission_basis')])),
                 self::activeColumn(),
             ])
             ->defaultSort('name')
