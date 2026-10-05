@@ -19,6 +19,7 @@ use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Customer;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Closure;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -66,7 +67,7 @@ final class PricedDocumentForm
      * @param  list<Component>  $before  components shown above the grid (a Pull action, say)
      * @param  bool  $groupItems  offer group items (selling documents only; a group is never bought)
      */
-    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?\Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null, bool $groupItems = false): Tab
+    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null, bool $groupItems = false): Tab
     {
         $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
         $columns = [TableColumn::make(__('Item'))];
@@ -99,8 +100,9 @@ final class PricedDocumentForm
                 }
                 LineItemFields::syncBase($set, $get);
             }),
-            LineItemFields::quantity()->minValue(0.0001),
-            LineItemFields::unit(),
+            LineItemFields::quantity()->minValue(0.0001)->afterStateUpdated(fn (Set $set, Get $get) => self::reprice($set, $get, $priceResolver))
+                ->rules($salesman ? [fn (Get $get): Closure => self::minimumSaleRule($get)] : []),
+            LineItemFields::unit()->afterStateUpdated(fn (Set $set, Get $get) => self::reprice($set, $get, $priceResolver)),
         ];
         $pricesEditable ??= ! $salesman || app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ChangeSellingPrice);
         if ($prices) {
@@ -151,6 +153,33 @@ final class PricedDocumentForm
     }
 
     /** Every money column present and numeric, the base quantity in step, before a line is saved. */
+    /** An item sold at wholesale prices is priced again when its quantity or unit changes (a pulled line keeps its price). */
+    private static function reprice(Set $set, Get $get, ?Closure $priceResolver): void
+    {
+        if ($priceResolver === null || $get('source_line_id') || ! $get('item_id')) {
+            return;
+        }
+        $item = Item::query()->find($get('item_id'));
+        if ($item?->use_wholesale_price) {
+            $set('unit_price', $priceResolver($item, $get));
+        }
+    }
+
+    /** An item with a minimum sale quantity is not sold below it (compared in base units). */
+    private static function minimumSaleRule(Get $get): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail) use ($get): void {
+            $item = $get('item_id') ? Item::query()->with('units')->find($get('item_id')) : null;
+            if ($item === null || BigDecimal::of((string) $item->min_sell_qty)->isZero() || ! is_numeric($value)) {
+                return;
+            }
+            $base = UnitConverter::toBase($item, (string) $value, (int) ($get('unit_id') ?: $item->unit1_id));
+            if (BigDecimal::of($base)->isLessThan((string) $item->min_sell_qty)) {
+                $fail(__(':item is sold from :quantity (base unit).', ['item' => $item->name, 'quantity' => Format::quantity((string) $item->min_sell_qty)]));
+            }
+        };
+    }
+
     public static function normaliseLine(array $data): array
     {
         $data = LineItemFields::fillBaseQuantities([$data])[0];

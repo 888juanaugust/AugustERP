@@ -124,7 +124,8 @@ class CustomerResource extends MasterResource
                         Grid::make(2)->schema([
                             Select::make('price_category_id')->label(__('Price category'))->relationship('priceCategory', 'name')->preload()->native(false)
                                 ->default(fn () => PriceCategory::query()->where('is_default', true)->value('id')),
-                            Select::make('discount_category_id')->label(__('Discount category'))->relationship('discountCategory', 'name')->preload()->native(false),
+                            Select::make('discount_price_category_id')->label(__('Discount category'))->relationship('discountPriceCategory', 'name')->preload()->native(false)
+                                ->helperText(__('The price category whose discount adjustments apply; blank means the price category above.')),
                             Select::make('salesman_id')->label(__('Default salesperson'))->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->searchable()->native(false),
                             Select::make('payment_term_id')->label(__('fields.payment_term'))->relationship('paymentTerm', 'name', fn ($query) => $query->where('is_active', true))->preload()->native(false)
                                 ->default(fn () => PaymentTerm::default()?->id),
