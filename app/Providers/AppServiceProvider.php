@@ -46,6 +46,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventLazyLoading(! $this->app->isProduction());
 
+        // A client's own migrations and translations live under app/Client
+        // (see docs/CLIENTS.md); its strings override the template's.
+        if (is_dir(app_path('Client/database/migrations'))) {
+            $this->loadMigrationsFrom(app_path('Client/database/migrations'));
+        }
+        if (is_dir(app_path('Client/lang'))) {
+            $this->loadJsonTranslationsFrom(app_path('Client/lang'));
+        }
+
         // Every module declares its models' names for the polymorphic columns
         // (audit_logs.document_type, the posting tables); the map is the union
         // of every module, on or off, so rows already written always resolve.

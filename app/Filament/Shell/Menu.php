@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Shell;
 
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\Screens;
 use App\Filament\Modul;
 use App\Filament\Pages\Reports\ReportPage;
 use App\Filament\Support\ErpPage;
@@ -47,8 +47,7 @@ final class Menu
         $screens = self::screens();
         $groups = [];
         foreach (Modul::cases() as $modul) {
-            $keys = array_filter(MenuKey::cases(), fn (MenuKey $key) => $key->modul() === $modul);
-            usort($keys, fn (MenuKey $a, MenuKey $b) => $a->sort() <=> $b->sort());
+            $keys = Screens::of($modul);
             $tiles = [];
             foreach ($keys as $key) {
                 $class = $screens[$key->value] ?? null;

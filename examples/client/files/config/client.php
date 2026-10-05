@@ -1,5 +1,8 @@
 <?php
 
+use App\Client\Modules\DeliveryRoutesModule;
+use App\Client\Screens\ClientScreen;
+
 /*
 |--------------------------------------------------------------------------
 | The client's own layer
@@ -16,14 +19,14 @@ return [
     // Extra modules of this client, each a class implementing App\Modules\Module.
     // They register after the standard modules of config/modules.php.
     'modules' => [
-        // App\Client\Modules\WorkshopModule::class,
+        DeliveryRoutesModule::class,
     ],
 
     // The client's own screen keys: string-backed enums implementing
     // App\Domain\Access\ScreenKey, values starting "client__". Rights, menus and
     // the standard's pages pick them up with the template's MenuKey.
     'screens' => [
-        // App\Client\Screens\ClientScreen::class,
+        ClientScreen::class,
     ],
 
     // Optional modules this client starts with, by module key, when erp:install

@@ -12,7 +12,7 @@ use App\Filament\Modul;
  * in the access matrix and of its names in lang/<locale>/menu.php. Never
  * rename a value; stored rights refer to it.
  */
-enum MenuKey: string
+enum MenuKey: string implements ScreenKey
 {
     case Preferences = 'company__preferences';
     case AccessGroups = 'company__access-privilege';

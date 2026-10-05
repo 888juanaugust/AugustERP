@@ -8,6 +8,7 @@ use App\Domain\Access\BranchLimit;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
 use App\Modules\ModuleRegistry;
 use Filament\Panel;
 use Filament\Resources\Resource;
@@ -27,7 +28,7 @@ abstract class ErpResource extends Resource
 {
     protected static bool $shouldCheckPolicyExistence = false;
 
-    abstract public static function menuKey(): MenuKey;
+    abstract public static function menuKey(): ScreenKey;
 
     public static function getAuthorizationResponse(string|UnitEnum $action, ?Model $record = null): Response
     {

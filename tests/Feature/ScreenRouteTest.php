@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\Screens;
 use App\Filament\Support\ErpPage;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PlaceholderPage;
@@ -47,7 +47,7 @@ class ScreenRouteTest extends TestCase
 
         foreach ($screens as $key => $url) {
             $this->get($url)->assertOk();
-            $this->assertNotNull(MenuKey::tryFrom($key));
+            $this->assertNotNull(Screens::find($key));
         }
     }
 
@@ -91,7 +91,7 @@ class ScreenRouteTest extends TestCase
             ->all();
 
         $registry = app(ModuleRegistry::class);
-        foreach (MenuKey::cases() as $key) {
+        foreach (Screens::all() as $key) {
             if (! $key->isReplicated()) {
                 continue;
             }

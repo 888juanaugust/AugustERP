@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Docs;
 
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
+use App\Domain\Access\Screens;
 use App\Filament\Modul;
 use App\Filament\Pages\Reports\ReportPage;
 use App\Filament\Pages\Reports\ReportRegistry;
@@ -82,7 +83,7 @@ final class StandardWriter
                 $feature = $owner::featureForKey($key);
                 $owners[$owner::key()] = $feature === null ? "`{$owner::key()}` (always on)" : "`{$owner::key()}` (Preferences → Features → {$feature->label()})";
             }
-            $built = count(array_filter($keys, fn (MenuKey $k) => isset($screens[$k->value])));
+            $built = count(array_filter($keys, fn (ScreenKey $k) => isset($screens[$k->value])));
             $md .= sprintf("| %s | %s | %d | [%s.md](%s.md) |\n", $modul->getLabel(), implode('<br>', $owners) ?: '—', $built, $modul->value, $modul->value);
         }
         $md .= "\n## How to read a page\n\n";
@@ -114,17 +115,14 @@ final class StandardWriter
         return $md;
     }
 
-    /** @return list<MenuKey> */
+    /** @return list<ScreenKey> */
     private function keysOf(Modul $modul): array
     {
-        $keys = array_values(array_filter(MenuKey::cases(), fn (MenuKey $k) => $k->modul() === $modul));
-        usort($keys, fn (MenuKey $a, MenuKey $b) => $a->sort() <=> $b->sort());
-
-        return $keys;
+        return Screens::of($modul);
     }
 
     /** @param  array{resource?: class-string, page?: class-string}|null  $screen */
-    private function screen(MenuKey $key, ?array $screen): string
+    private function screen(ScreenKey $key, ?array $screen): string
     {
         $md = "## {$key->label()}\n\n";
         $owner = $this->modules->ownerOf($key);

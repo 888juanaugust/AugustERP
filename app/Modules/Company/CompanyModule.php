@@ -7,6 +7,7 @@ namespace App\Modules\Company;
 use App\Console\Commands\PostOpeningBalancesCommand;
 use App\Console\Commands\RecurringCommand;
 use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
@@ -44,7 +45,7 @@ final class CompanyModule extends BaseModule
     }
 
     /** Branches and currencies show only when the company runs several. */
-    public static function featureForKey(MenuKey $key): ?PreferensiKey
+    public static function featureForKey(ScreenKey $key): ?PreferensiKey
     {
         return match ($key) {
             MenuKey::Branches => PreferensiKey::MultiBranch,

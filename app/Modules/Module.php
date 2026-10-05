@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules;
 
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
 use App\Domain\Pengaturan\PreferensiKey;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
@@ -25,11 +25,11 @@ interface Module
     /** The Features preference that enables the module, or null when it is always on. */
     public static function feature(): ?PreferensiKey;
 
-    /** @return list<MenuKey> the screens this module owns */
+    /** @return list<ScreenKey> the screens this module owns */
     public static function menuKeys(): array;
 
     /** The preference that enables one screen, when it differs from the module's own. */
-    public static function featureForKey(MenuKey $key): ?PreferensiKey;
+    public static function featureForKey(ScreenKey $key): ?PreferensiKey;
 
     /** @return array<string, class-string<Model>> morph alias → model */
     public static function morphMap(): array;

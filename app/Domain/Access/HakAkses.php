@@ -22,7 +22,7 @@ final class HakAkses
     /** @var array<int, list<string>> user id → special rights */
     private array $special = [];
 
-    public function allows(?User $user, MenuKey $key, Hak $hak): bool
+    public function allows(?User $user, ScreenKey $key, Hak $hak): bool
     {
         if ($user === null || ! $user->is_active) {
             return false;
@@ -94,7 +94,7 @@ final class HakAkses
     }
 
     /** Convenience for the current user. */
-    public static function can(MenuKey $key, Hak $hak = Hak::View): bool
+    public static function can(ScreenKey $key, Hak $hak = Hak::View): bool
     {
         return app(self::class)->allows(auth()->user(), $key, $hak);
     }
