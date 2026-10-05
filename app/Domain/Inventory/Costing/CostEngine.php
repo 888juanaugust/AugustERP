@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Inventory\Costing;
 
 use App\Domain\Shared\Money;
+use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemCost;
 use App\Models\Inventory\StockMovement;
 use Brick\Math\BigDecimal;
@@ -66,14 +67,20 @@ final class CostEngine
         $state = $this->replay($itemId, $warehouseId, $date);
         $qty = BigDecimal::of($quantity);
         $onHand = BigDecimal::of($state['qty']);
+        // With nothing on hand there is no average: what goes out (negative stock allowed) is costed at the item's
+        // purchase price, never at zero.
+        $avg = BigDecimal::of($state['avg'])->isPositive() ? $state['avg'] : (string) (Item::query()->whereKey($itemId)->value('purchase_price') ?? '0');
 
-        if ($qty->isGreaterThanOrEqualTo($onHand) && $onHand->isPositive()) {
-            return ['unit_cost' => $state['avg'], 'total_cost' => $state['value']];
+        if ($onHand->isPositive() && $qty->isGreaterThanOrEqualTo($onHand)) {
+            // All that is on hand leaves at its whole value (no rounding residue); anything beyond, at the average.
+            $beyond = BigDecimal::of($avg)->multipliedBy($qty->minus($onHand))->toScale(0, RoundingMode::HalfUp)->toInt();
+
+            return ['unit_cost' => $state['avg'], 'total_cost' => $state['value'] + $beyond];
         }
 
-        $total = BigDecimal::of($state['avg'])->multipliedBy($qty)->toScale(0, RoundingMode::HalfUp)->toInt();
+        $total = BigDecimal::of($avg)->multipliedBy($qty)->toScale(0, RoundingMode::HalfUp)->toInt();
 
-        return ['unit_cost' => $state['avg'], 'total_cost' => $total];
+        return ['unit_cost' => (string) BigDecimal::of($avg)->toScale(4, RoundingMode::HalfUp), 'total_cost' => $total];
     }
 
     public function refreshCache(int $itemId, int $warehouseId): ItemCost

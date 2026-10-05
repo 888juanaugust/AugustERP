@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Audit\Auditor;
 use App\Domain\Numbering\NumberGenerator;
 use App\Domain\Numbering\TransactionType;
@@ -88,9 +89,10 @@ final class TaxFilingService
                 continue;
             }
             [$number, $serial] = array_map('trim', $parts);
+            // Only invoices in the user's branches take a serial from here.
             $document = $kind === TaxFiling::IN
-                ? PurchaseInvoice::query()->where('number', $number)->orWhere('bill_number', $number)->first()
-                : SalesInvoice::query()->where('number', $number)->first();
+                ? BranchLimit::apply(PurchaseInvoice::query(), auth()->user())->where(fn ($q) => $q->where('number', $number)->orWhere('bill_number', $number))->first()
+                : BranchLimit::apply(SalesInvoice::query(), auth()->user())->where('number', $number)->first();
             if ($document === null) {
                 $unknown[] = $line;
 

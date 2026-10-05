@@ -16,6 +16,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
+use Livewire\Attributes\Locked;
 
 /**
  * Calendar: invoices falling due, giros maturing, recurring transactions
@@ -28,14 +29,18 @@ class Calendar extends ErpPage
 
     protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
+    #[Locked] // moved only by the page's own buttons
     public int $year;
 
+    #[Locked] // moved only by the page's own buttons
     public int $month;
 
     /** month | week | agenda */
+    #[Locked] // moved only by the page's own buttons
     public string $calendarView = 'month';
 
     /** The Monday of the week the week view shows. */
+    #[Locked] // moved only by the page's own buttons
     public string $weekStart = '';
 
     public static function menuKey(): MenuKey

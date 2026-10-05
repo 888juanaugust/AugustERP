@@ -28,7 +28,7 @@ class InstallCommandTest extends TestCase
             '--fiscal-year-start' => 7,
             '--admin-name' => 'Owner',
             '--admin-email' => 'owner@example.test',
-            '--admin-password' => 'secret',
+            '--admin-password' => 'secret-pass-12',
             '--disable' => ['payroll', 'fixed-assets'],
             '--enable' => ['sales-extras'],
             '--demo' => true,
@@ -42,7 +42,8 @@ class InstallCommandTest extends TestCase
         $admin = User::query()->where('email', 'owner@example.test')->firstOrFail();
         $this->assertSame('Owner', $admin->name);
         $this->assertTrue($admin->isAdministrator());
-        $this->assertTrue(Hash::check('secret', $admin->password));
+        $this->assertTrue(Hash::check('secret-pass-12', $admin->password));
+        $this->assertTrue($admin->password_change_required, 'a password someone else chose is changed at first sign-in');
         $this->assertSame(1, User::query()->count(), 'no second administrator from the environment');
 
         $this->assertSame('USD', Currency::query()->where('is_base', true)->value('code'));
@@ -61,16 +62,20 @@ class InstallCommandTest extends TestCase
 
     public function test_a_second_run_is_refused_without_force_and_force_changes_only_what_is_named(): void
     {
-        $this->artisan('erp:install', ['--no-interaction' => true, '--company' => 'Example Co', '--admin-email' => 'owner@example.test', '--admin-password' => 'secret', '--disable' => ['payroll'], '--no-demo' => true])->assertSuccessful();
+        $this->artisan('erp:install', ['--no-interaction' => true, '--company' => 'Example Co', '--admin-email' => 'owner@example.test', '--admin-password' => 'secret-pass-12', '--disable' => ['payroll'], '--no-demo' => true])->assertSuccessful();
         $this->assertSame(0, Customer::query()->count());
 
         $this->artisan('erp:install', ['--no-interaction' => true, '--company' => 'Other Co', '--no-demo' => true])
             ->assertFailed()->expectsOutputToContain('already installed');
         $this->assertSame('Example Co', app(Preferensi::class)->get(PreferensiKey::CompanyName));
 
-        $this->artisan('erp:install', ['--no-interaction' => true, '--force' => true, '--company' => 'Example Co', '--admin-email' => 'owner@example.test', '--admin-password' => 'secret', '--enable' => ['payroll'], '--no-demo' => true])->assertSuccessful();
+        $owner = User::query()->where('email', 'owner@example.test')->sole();
+        $owner->forceFill(['password' => Hash::make('the-owners-own-one'), 'password_change_required' => false])->save();
+        $this->artisan('erp:install', ['--no-interaction' => true, '--force' => true, '--company' => 'Example Co', '--admin-email' => 'owner@example.test', '--admin-password' => 'another-pass-12', '--enable' => ['payroll'], '--no-demo' => true])
+            ->assertSuccessful()->expectsOutputToContain('left as it is');
         $this->assertTrue(app(ModuleRegistry::class)->isEnabled('payroll'));
         $this->assertSame(1, User::query()->count());
+        $this->assertTrue(Hash::check('the-owners-own-one', $owner->fresh()->password), 'a forced run never resets a password');
         $this->assertSame(0, Customer::query()->count());
     }
 
@@ -90,5 +95,17 @@ class InstallCommandTest extends TestCase
         app(Preferensi::class)->set(PreferensiKey::FixedAssets, false);
 
         $this->artisan('erp:depreciate')->assertSuccessful()->expectsOutputToContain('switched off');
+    }
+
+    public function test_without_a_password_one_is_made_and_a_short_one_is_refused(): void
+    {
+        $this->artisan('erp:install', ['--no-interaction' => true, '--company' => 'Example Co', '--admin-password' => 'short', '--no-demo' => true])
+            ->assertExitCode(2)->expectsOutputToContain('at least 12 characters');
+
+        $this->artisan('erp:install', ['--no-interaction' => true, '--company' => 'Example Co', '--admin-email' => 'owner@example.test', '--no-demo' => true])
+            ->assertSuccessful()->expectsOutputToContain('shown once');
+        $owner = User::query()->where('email', 'owner@example.test')->sole();
+        $this->assertFalse(Hash::check('password', $owner->password), 'never a known default');
+        $this->assertTrue($owner->password_change_required);
     }
 }

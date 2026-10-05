@@ -69,6 +69,8 @@ final class DocumentRepository
         $this->guard->assertDateAllowed($this->dateOf($document), $newDate);
         if ($document instanceof Postable) {
             $this->guard->assertMutable($document, $newDate);
+        } else {
+            $this->guard->assertOwnOrAllowed($document, $this->number($document)); // an order or quotation too
         }
 
         return $this->snapshot($document) + ['sources' => $this->fulfilment->sourcesOf($document)];
@@ -104,6 +106,7 @@ final class DocumentRepository
                 $this->guard->assertDeletable($document, $this->postings->activePosting($document) !== null);
                 $this->guard->assertMutable($document);
             } else {
+                $this->guard->assertOwnOrAllowed($document, $this->number($document));
                 (new Blockers\ReferencedBlocker)->blocks($document) && throw new Exceptions\DocumentLockedException("{$this->number($document)} cannot be deleted: another document has been made from it.");
             }
             $before = $this->snapshot($document);

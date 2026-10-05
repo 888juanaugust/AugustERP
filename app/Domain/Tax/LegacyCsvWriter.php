@@ -42,7 +42,7 @@ final class LegacyCsvWriter
 
         $out = fopen('php://memory', 'r+');
         foreach ($rows as $row) {
-            fputcsv($out, $row, ',', '"', '\\');
+            fputcsv($out, array_map(self::cell(...), $row), ',', '"', '\\');
         }
         rewind($out);
         $csv = stream_get_contents($out) ?: '';
@@ -56,5 +56,11 @@ final class LegacyCsvWriter
         $text = rtrim(rtrim(number_format((float) $value, 4, '.', ''), '0'), '.');
 
         return $text === '' ? '0' : $text;
+    }
+
+    /** A spreadsheet opening the file reads a cell starting with = + - @ (or a tab or return) as a formula: such text is quoted. */
+    private static function cell(string $value): string
+    {
+        return $value !== '' && in_array($value[0], ['=', '+', '-', '@', "\t", "\r"], true) && ! is_numeric($value) ? "'".$value : $value;
     }
 }

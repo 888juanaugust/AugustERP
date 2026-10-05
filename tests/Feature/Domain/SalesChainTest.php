@@ -127,6 +127,14 @@ class SalesChainTest extends TestCase
         $this->assertSame(0, $this->balance('1200'));
         $this->assertSame(990_000, $this->balance('1102'));
         $this->assertSame(-9_000, $this->balance('4300'), 'the settlement discount, against revenue');
+
+        // Goods found to have come in before the delivery, dearer: the delivery is re-costed, and the invoice made
+        // from it follows, so nothing is left in goods delivered not invoiced.
+        $late = InventoryAdjustment::query()->create(['number' => 'ADJ-LATE', 'trans_date' => '2026-11-02', 'created_by' => auth()->id()]);
+        $late->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'adjustment_type' => 'quantity', 'quantity' => 10, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 10, 'unit_cost' => 160_000, 'total_cost' => 0, 'warehouse_id' => $this->warehouse->id]);
+        $this->docs->created($late);
+        $this->assertSame(720_000, $this->balance('5100'), 'six at the new average of 120,000');
+        $this->assertSame(0, $this->balance('1310'), 'still cleared');
     }
 
     public function test_a_return_brings_goods_back_at_their_cost_and_is_used_as_credit(): void

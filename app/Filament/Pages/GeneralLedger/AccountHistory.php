@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\GeneralLedger;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Access\MenuKey;
 use App\Domain\Reports\Period;
 use App\Domain\Shared\Format;
@@ -104,7 +105,8 @@ class AccountHistory extends ErpPage implements HasTable
             TagFields::picked($this->filters['department_id'] ?? null, 'departments'),
             TagFields::picked($this->filters['project_id'] ?? null, 'projects'));
 
-        $opening = (int) $tags->applyTo(JournalLine::query()->active())
+        // Only the lines of the user's branches (and lines of no branch).
+        $opening = (int) $tags->applyTo(BranchLimit::apply(JournalLine::query()->active(), auth()->user()))
             ->where('account_id', $accountId)
             ->when($from, fn ($q) => $q->where('trans_date', '<', $from))
             ->selectRaw('COALESCE(SUM(debit - credit), 0) AS net')
@@ -122,7 +124,7 @@ class AccountHistory extends ErpPage implements HasTable
             'balance' => Format::number($balance),
         ]];
 
-        $lines = $tags->applyTo(JournalLine::query()->active())
+        $lines = $tags->applyTo(BranchLimit::apply(JournalLine::query()->active(), auth()->user()))
             ->with('entry')
             ->where('account_id', $accountId)
             ->when($from, fn ($q) => $q->where('trans_date', '>=', $from))

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\FixedAssets\FixedAssets\Pages;
 
+use App\Domain\Access\Hak;
+use App\Domain\Access\HakAkses;
 use App\Domain\FixedAssets\DepreciationRun;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\FixedAssets\FixedAssets\FixedAssetResource;
@@ -37,6 +39,8 @@ class ListFixedAssets extends ListDocuments
                 ->label(__('Run depreciation'))
                 ->icon('heroicon-m-calculator')
                 ->color('gray')
+                // Posting depreciation changes the books: the update right on fixed assets, not just a look at them.
+                ->visible(fn (): bool => app(HakAkses::class)->allows(auth()->user(), FixedAssetResource::menuKey(), Hak::Update))
                 ->schema([
                     DatePicker::make('until')->label(__('Up to the month of'))->required()->native(false)->default(today()),
                 ])
@@ -53,7 +57,7 @@ class ListFixedAssets extends ListDocuments
 
                     if ($result['skipped'] !== []) {
                         Notification::make()
-                            ->title(count($result['skipped']).' asset(s) skipped')
+                            ->title(__(':count asset(s) skipped', ['count' => count($result['skipped'])]))
                             ->body(implode("\n", $result['skipped']))
                             ->warning()
                             ->persistent()

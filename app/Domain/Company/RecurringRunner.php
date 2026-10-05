@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Company;
 
+use App\Domain\Access\Hak;
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\MenuKey;
 use App\Domain\Audit\Auditor;
 use App\Domain\Numbering\NumberGenerator;
 use App\Domain\Numbering\TransactionType;
@@ -65,6 +68,8 @@ final class RecurringRunner
         $on = CarbonImmutable::parse($on ?? $recurring->next_run_on);
         $userId ??= auth()->id() ?? $recurring->created_by; // the scheduled run makes it as the schedule's author
 
+        $this->assertMayMake($recurring, $userId);
+
         return DB::transaction(function () use ($recurring, $on, $userId): Model {
             // Two runs at once (the morning schedule and "Run everything due") make one document per date.
             $locked = RecurringTransaction::query()->whereKey($recurring->getKey())->lockForUpdate()->firstOrFail();
@@ -82,6 +87,21 @@ final class RecurringRunner
 
             return $document;
         });
+    }
+
+    /** The document is made as a user (the one running it, or the schedule's author) who may make that kind of document. */
+    private function assertMayMake(RecurringTransaction $recurring, ?int $userId): void
+    {
+        $user = $userId !== null ? User::query()->find($userId) : null;
+        $screen = match ($recurring->transaction_type) {
+            'journal_voucher' => MenuKey::JournalVouchers,
+            'cash_payment' => MenuKey::Payments,
+            'cash_receipt' => MenuKey::Receipts,
+            default => null,
+        };
+        if ($user !== null && $screen !== null && ! app(HakAkses::class)->allows($user, $screen, Hak::Create)) {
+            throw new RuntimeException(__(':user may not make :documents; :name is not run.', ['user' => $user->name, 'documents' => $screen->label(), 'name' => $recurring->name]));
+        }
     }
 
     private function make(RecurringTransaction $recurring, CarbonImmutable $on, ?int $userId): Model

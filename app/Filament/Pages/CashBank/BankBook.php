@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\CashBank;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Access\MenuKey;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
@@ -91,6 +92,10 @@ class BankBook extends ErpPage implements HasTable
     private function rows(): Collection
     {
         $accountId = $this->filters['bank_account_id'] ?? null;
+        // A cash or bank account only, whatever id the filter was given.
+        if ($accountId && ! Account::query()->whereKey($accountId)->ofType(AccountType::CashBank)->exists()) {
+            $accountId = null;
+        }
         if (! $accountId) {
             return collect();
         }
@@ -98,7 +103,8 @@ class BankBook extends ErpPage implements HasTable
         $until = $this->filters['until'] ?? null;
 
         // Cash and bank accounts are debit-normal: money in adds to the balance.
-        $balance = (int) JournalLine::query()->active()
+        // Only the lines of the user's branches (and lines of no branch).
+        $balance = (int) BranchLimit::apply(JournalLine::query()->active(), auth()->user())
             ->where('account_id', $accountId)
             ->when($from, fn ($query) => $query->where('trans_date', '<', $from))
             ->selectRaw('COALESCE(SUM(debit - credit), 0) AS net')
@@ -110,14 +116,14 @@ class BankBook extends ErpPage implements HasTable
             'source_number' => '',
             'cheque_no' => '',
             'source_type' => '',
-            'description' => 'Opening balance',
+            'description' => __('Opening balance'),
             'amount' => '',
             'side' => '',
             'balance' => Format::number($balance),
             'reconciled' => '',
         ]];
 
-        $lines = JournalLine::query()->active()
+        $lines = BranchLimit::apply(JournalLine::query()->active(), auth()->user())
             ->with(['entry', 'posting.document', 'reconciliationItem'])
             ->where('account_id', $accountId)
             ->when($from, fn ($query) => $query->where('trans_date', '>=', $from))

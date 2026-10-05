@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Domain\Inventory\Costing;
 
-use App\Domain\Posting\PostingService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Re-posts a long list of documents in date order, receipts first. Idempotent:
- * posting a document that already reflects the current average changes nothing
- * but its revision number.
+ * Re-posts a long list of documents in date order, receipts first, as one batch of the recoster: the documents
+ * those re-posts reach join the same pass instead of starting jobs of their own. One transaction: it all lands, or
+ * the job fails whole (and is retried). Idempotent: posting a document that already reflects the current average
+ * changes nothing but its revision number.
  */
 final class RecostJob implements ShouldQueue
 {
@@ -23,16 +24,8 @@ final class RecostJob implements ShouldQueue
     /** @param  list<array{type: string, id: int, date: string, in: bool}>  $documents */
     public function __construct(public readonly array $documents) {}
 
-    public function handle(PostingService $postings): void
+    public function handle(Recoster $recoster): void
     {
-        $documents = $this->documents;
-        usort($documents, fn ($a, $b) => [$a['date'], $a['in'] ? 0 : 1] <=> [$b['date'], $b['in'] ? 0 : 1]);
-
-        foreach ($documents as $entry) {
-            $document = Recoster::resolve($entry['type'], $entry['id']);
-            if ($document !== null) {
-                $postings->post($document, null);
-            }
-        }
+        DB::transaction(fn () => $recoster->runBatch($this->documents));
     }
 }

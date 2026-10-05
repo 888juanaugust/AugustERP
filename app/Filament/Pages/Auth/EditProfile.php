@@ -21,7 +21,9 @@ class EditProfile extends BaseEditProfile
                 ->options(fn () => Locales::names())
                 ->placeholder(fn () => __('As the company: :language', ['language' => Locales::names()[Locales::companyDefault()] ?? Locales::companyDefault()]))
                 ->native(false),
-            $this->getPasswordFormComponent(),
+            $this->getPasswordFormComponent()
+                ->required(fn (): bool => (bool) $this->getUser()->getAttribute('password_change_required'))
+                ->helperText(fn (): ?string => $this->getUser()->getAttribute('password_change_required') ? __('Choose your own password before anything else.') : null),
             $this->getPasswordConfirmationFormComponent(),
             $this->getCurrentPasswordFormComponent(),
         ]);
@@ -29,6 +31,10 @@ class EditProfile extends BaseEditProfile
 
     protected function afterSave(): void
     {
+        $user = $this->getUser();
+        if ($user->wasChanged('password') && $user->getAttribute('password_change_required')) {
+            $user->forceFill(['password_change_required' => false])->save();
+        }
         // The new language shows from the next request on.
         $this->redirect(static::getUrl(), navigate: false);
     }

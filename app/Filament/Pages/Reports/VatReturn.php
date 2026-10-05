@@ -13,6 +13,7 @@ use App\Domain\Shared\Enums\TaxDocumentCode;
 use App\Domain\Shared\Format;
 use App\Domain\Tax\FilingDocuments;
 use App\Domain\Tax\TaxFilingService;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpPage;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
@@ -163,7 +164,7 @@ class VatReturn extends ErpPage implements HasTable
         $totals = [];
         foreach ($kinds as $k) {
             $totals[$k] = ['dpp' => 0, 'tax' => 0];
-            foreach (FilingDocuments::query($k, $this->from(), $this->until(), null, $search ?: null)->get() as $document) {
+            foreach (FilingDocuments::query($k, $this->from(), $this->until(), BranchFields::reportBranch(null), $search ?: null)->get() as $document) {
                 $party = $document instanceof SalesInvoice ? $document->customer : $document->vendor;
                 $code = $party?->document_code;
                 $code = $code instanceof TaxDocumentCode ? $code : TaxDocumentCode::tryFrom((string) $code);

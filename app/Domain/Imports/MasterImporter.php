@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Imports;
 
+use App\Domain\Access\BranchLimit;
+use App\Domain\Access\Hak;
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
+use App\Domain\Access\MenuKey;
 use App\Domain\Audit\Auditor;
 use App\Domain\Numbering\NumberGenerator;
 use App\Domain\Numbering\TransactionType;
@@ -19,6 +24,7 @@ use App\Models\Sales\Customer;
 use App\Models\Sales\PriceCategory;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -119,15 +125,17 @@ final class MasterImporter
             'payment_term_id' => $this->lookup(PaymentTerm::class, $row['payment_term'] ?? '', 'payment term') ?? PaymentTerm::default()?->id,
         ];
         if (($row['credit_limit'] ?? '') !== '') {
+            $this->assertSpecial(HakKhusus::SeeCreditData, __('A credit limit takes the "see credit data" right.'));
             $data['credit_limit_amount_enabled'] = true;
             $data['credit_limit_amount'] = $this->money($row['credit_limit']);
         }
         if ($existing) {
+            $this->assertMayUpdate($existing, MenuKey::Customers);
             $existing->update($data);
 
             return 'updated';
         }
-        Customer::query()->create($data + ['number' => $this->number(TransactionType::Customer, $userId), 'branch_id' => Branch::default()?->id, 'is_active' => true]);
+        Customer::query()->create($data + ['number' => $this->number(TransactionType::Customer, $userId), 'branch_id' => $this->branch(), 'is_active' => true]);
 
         return 'created';
     }
@@ -143,11 +151,12 @@ final class MasterImporter
             'payment_term_id' => $this->lookup(PaymentTerm::class, $row['payment_term'] ?? '', 'payment term') ?? PaymentTerm::default()?->id,
         ];
         if ($existing) {
+            $this->assertMayUpdate($existing, MenuKey::Vendors);
             $existing->update($data);
 
             return 'updated';
         }
-        Vendor::query()->create($data + ['number' => $this->number(TransactionType::Vendor, $userId), 'branch_id' => Branch::default()?->id, 'is_active' => true]);
+        Vendor::query()->create($data + ['number' => $this->number(TransactionType::Vendor, $userId), 'branch_id' => $this->branch(), 'is_active' => true]);
 
         return 'created';
     }
@@ -165,11 +174,20 @@ final class MasterImporter
             'category_id' => $this->lookup(ItemCategory::class, $row['category'] ?? '', 'item category'),
             'brand_id' => $this->lookup(ItemBrand::class, $row['brand'] ?? '', 'brand'),
             'unit1_id' => $unit->id,
-            'sell_price' => $this->money($row['sell_price'] ?? ''), 'purchase_price' => $this->money($row['purchase_price'] ?? ''),
+
             'min_stock' => $row['min_stock'] !== '' ? (float) str_replace(',', '.', $row['min_stock']) : 0,
             'upc_no' => $row['upc_no'] ?: null, 'item_tax_code' => $row['item_tax_code'] ?: null, 'notes' => $row['notes'] ?: null,
         ];
+        // A price column left empty keeps the price there is; a purchase price is a cost.
+        if (($row['sell_price'] ?? '') !== '') {
+            $data['sell_price'] = $this->money($row['sell_price']);
+        }
+        if (($row['purchase_price'] ?? '') !== '') {
+            $this->assertSpecial(HakKhusus::SeeCost, __('A purchase price takes the "see cost" right.'));
+            $data['purchase_price'] = $this->money($row['purchase_price']);
+        }
         if ($existing) {
+            $this->assertMayUpdate($existing, MenuKey::ItemsAndServices);
             $existing->update($data);
 
             return 'updated';
@@ -177,6 +195,35 @@ final class MasterImporter
         Item::query()->create($data + ['number' => $this->number(TransactionType::Item, $userId), 'is_active' => true]);
 
         return 'created';
+    }
+
+    /** Changing a record that exists takes the update right on its screen, and a branch the user may use. */
+    private function assertMayUpdate(Model $existing, MenuKey $screen): void
+    {
+        $user = auth()->user();
+        if ($user === null) {
+            return; // the console
+        }
+        if (! app(HakAkses::class)->allows($user, $screen, Hak::Update)) {
+            throw new RuntimeException(__(':number exists; changing it takes the update right.', ['number' => $existing->getAttribute('number')]));
+        }
+        $branch = $existing->getAttribute('branch_id');
+        if (! BranchLimit::allows($user, $branch !== null ? (int) $branch : null)) {
+            throw new RuntimeException(__('You are not assigned to that branch.'));
+        }
+    }
+
+    private function assertSpecial(HakKhusus $right, string $message): void
+    {
+        if (auth()->user() !== null && ! app(HakAkses::class)->allowsSpecial(auth()->user(), $right)) {
+            throw new RuntimeException($message);
+        }
+    }
+
+    /** A new record goes in the user's default branch (the company's default from the console). */
+    private function branch(): ?int
+    {
+        return (auth()->user() !== null ? Branch::defaultFor(auth()->user()) : Branch::default())?->id;
     }
 
     /** @return list<array<int, mixed>> */

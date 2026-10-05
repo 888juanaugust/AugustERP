@@ -26,6 +26,17 @@ class ItemTransferLine extends Model
         return $this->belongsTo(Unit::class);
     }
 
+    public function itemTransfer(): BelongsTo
+    {
+        return $this->belongsTo(ItemTransfer::class);
+    }
+
+    /** The transfer the line belongs to. */
+    public function document(): Model
+    {
+        return $this->loadMissing('itemTransfer')->itemTransfer;
+    }
+
     public function sourceLine(): BelongsTo
     {
         return $this->belongsTo(self::class, 'source_line_id');

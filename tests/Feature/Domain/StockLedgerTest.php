@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Domain;
 
+use App\Domain\Inventory\Costing\Recoster;
+use App\Domain\Inventory\Costing\RecostJob;
 use App\Domain\Inventory\Exceptions\NegativeStockException;
 use App\Domain\Inventory\OpeningStockPoster;
 use App\Domain\Inventory\OpnameApprover;
@@ -11,6 +13,7 @@ use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\AccountBalances;
 use App\Domain\Posting\DocumentRepository;
+use App\Domain\Posting\PeriodLock;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Item;
@@ -26,6 +29,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class StockLedgerTest extends TestCase
@@ -119,6 +123,32 @@ class StockLedgerTest extends TestCase
         $this->assertSame(306_667, StockMovement::query()->active()->where('posting_id', $issue->posting->id)->value('total_cost'), '24 units for 1.840.000, 4 taken at 76.666,67');
     }
 
+    public function test_a_recost_job_reposts_in_one_pass_and_starts_no_other_job(): void
+    {
+        $this->adjust('2026-11-01', [[10, 50_000, null]]);
+        $first = $this->adjust('2026-11-10', [[-2, 0, null]]);
+        $second = $this->adjust('2026-11-11', [[-2, 0, null]]);
+        $third = $this->adjust('2026-11-12', [[-2, 0, null]]);
+
+        // More later documents than the request takes: a job, queued once the receipt is saved.
+        Recoster::$syncLimit = 1;
+        Queue::fake();
+        try {
+            $this->adjust('2026-11-05', [[10, 90_000, null]]);
+            Queue::assertPushed(RecostJob::class, 1);
+            $job = Queue::pushed(RecostJob::class)->first();
+
+            // The job re-posts its list and everything those re-posts reach in one pass, queueing nothing more.
+            $job->handle(app(Recoster::class));
+            Queue::assertPushed(RecostJob::class, 1);
+        } finally {
+            Recoster::$syncLimit = 50;
+        }
+        foreach ([$first, $second, $third] as $issue) {
+            $this->assertSame(140_000, StockMovement::query()->active()->where('posting_id', $issue->fresh()->posting->id)->value('total_cost'), 'at the new average of 70,000');
+        }
+    }
+
     public function test_deleting_a_receipt_recosts_later_issues_and_refuses_negative_stock(): void
     {
         $first = $this->adjust('2026-11-01', [[10, 50_000, null]]);
@@ -152,8 +182,13 @@ class StockLedgerTest extends TestCase
         $this->assertSame(1, InventoryAdjustment::query()->count(), 'the refused document was not kept');
 
         app(Preferensi::class)->set(PreferensiKey::AllowNegativeStock, true);
-        $this->adjust('2026-11-02', [[-5, 0, null]]);
+        $short = $this->adjust('2026-11-02', [[-5, 0, null]]);
         $this->assertSame('-2.0000', $this->cache()->qty_on_hand);
+        $this->assertSame(250_000, StockMovement::query()->active()->where('posting_id', $short->posting->id)->value('total_cost'),
+            'the three on hand at their value, the two beyond at the same average, not at nothing');
+
+        $more = $this->adjust('2026-11-03', [[-1, 0, null]]);
+        $this->assertSame(50_000, StockMovement::query()->active()->where('posting_id', $more->posting->id)->value('total_cost'), 'with nothing on hand, at the purchase price');
     }
 
     public function test_a_transfer_moves_goods_through_in_transit_at_their_cost(): void
@@ -176,6 +211,14 @@ class StockLedgerTest extends TestCase
         $this->assertSame(240_000, $this->cache($this->branch)->total_value);
         $this->assertSame('partial', $send->fresh()->status);
         $this->assertSame('TRF-2611-0001', $receive->number);
+
+        // A receipt deleted gives its quantity back: the goods are in transit again and can be received.
+        $second = app(TransferReceiver::class)->receive($send->fresh(), [$send->lines()->first()->id => 2], CarbonImmutable::parse('2026-11-08'));
+        $this->assertSame('processed', $send->fresh()->status);
+        app(DocumentRepository::class)->delete($second->fresh());
+        $this->assertSame('4.0000', $send->lines()->first()->fresh()->processed_quantity);
+        $this->assertSame('partial', $send->fresh()->status);
+        $this->assertSame('2.0000', $this->cache($transit)->qty_on_hand);
 
         app(TransferReceiver::class)->receive($send->fresh(), [$send->lines()->first()->id => 2], CarbonImmutable::parse('2026-11-08'));
         $this->assertSame('processed', $send->fresh()->status);
@@ -224,6 +267,14 @@ class StockLedgerTest extends TestCase
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('Segregation', $e->getMessage());
         }
+
+        // November closed: the variance cannot post, so the approval is not kept either.
+        $this->travelTo(Carbon::parse('2026-12-02 10:00:00'));
+        app(PeriodLock::class)->close(2026, 11);
+        $this->assertThrows(fn () => app(OpnameApprover::class)->approve($result->fresh(), $approver), \RuntimeException::class);
+        $this->assertNotSame('approved', $result->fresh()->status);
+        $this->assertTrue(app(OpnameApprover::class)->canApprove($result->fresh(), $approver), 'it can be approved once the month is open');
+        app(PeriodLock::class)->reopen(2026, 11);
 
         $adjustment = app(OpnameApprover::class)->approve($result->fresh(), $approver);
         $this->assertNotNull($adjustment);

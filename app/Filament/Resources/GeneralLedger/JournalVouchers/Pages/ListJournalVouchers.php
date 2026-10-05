@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\GeneralLedger\JournalVouchers\Pages;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Printing\Printable;
 use App\Domain\Printing\PrintJob;
 use App\Domain\Shared\Format;
+use App\Filament\Resources\Company\MemorizedTransactions\MemorizedTransactionResource;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\JournalVoucherResource;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
@@ -44,7 +46,7 @@ class ListJournalVouchers extends ListRecords
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn () => JournalEntry::query()->active()->withSum('lines', 'debit'))
+            ->query(fn () => BranchLimit::apply(JournalEntry::query()->active(), auth()->user())->withSum('lines', 'debit'))
             ->columns([
                 TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 TextColumn::make('source_number')->label(__('Trans. No.'))->fontFamily('mono')->placeholder('—'),
@@ -104,7 +106,8 @@ class ListJournalVouchers extends ListRecords
                     ->label(__('Memorize'))
                     ->icon('heroicon-m-bookmark')
                     ->color('gray')
-                    ->visible(fn (JournalEntry $record) => $record->source_type === 'journal_voucher' && $record->posting?->document !== null)
+                    ->visible(fn (JournalEntry $record) => $record->source_type === 'journal_voucher' && $record->posting?->document !== null
+                        && JournalVoucherResource::canCreate() && MemorizedTransactionResource::canCreate())
                     ->schema([
                         TextInput::make('name')->label(__('Template name'))->required()->maxLength(100)->default(fn (JournalEntry $record) => $record->description ?: $record->source_number),
                     ])

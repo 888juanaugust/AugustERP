@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Fulfilment\SourceLineGuard;
 use App\Domain\Sales\SellingPriceGuard;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -32,6 +33,7 @@ abstract class CreateDocument extends CreateRecord
     {
         $this->refreshTotals();
         app(SellingPriceGuard::class)->check($this->record);
+        app(SourceLineGuard::class)->check($this->record);
         DocumentPages::afterCreated($this->record);
     }
 

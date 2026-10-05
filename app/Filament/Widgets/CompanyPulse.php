@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Widgets;
 
+use App\Domain\Access\Hak;
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\MenuKey;
 use App\Domain\Posting\AccountBalances;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Money;
+use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\Purchasing\PurchaseInvoice;
 use App\Models\Sales\SalesInvoice;
@@ -27,6 +31,14 @@ class CompanyPulse extends StatsOverviewWidget
     protected static bool $isLazy = false;
 
     protected ?string $pollingInterval = null;
+
+    /** Company-wide figures: for someone who may read the reports and is not limited to some branches. */
+    public static function canView(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && Branch::limitsOf($user) === null && app(HakAkses::class)->allows($user, MenuKey::ReportCatalogue, Hak::View);
+    }
 
     protected function getStats(): array
     {

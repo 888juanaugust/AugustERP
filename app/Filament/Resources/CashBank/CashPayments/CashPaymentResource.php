@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\CashBank\CashPayments\Pages\CreateCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\EditCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\ListCashPayments;
+use App\Filament\Resources\Company\MemorizedTransactions\MemorizedTransactionResource;
 use App\Filament\Support\AccrualFields;
 use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
@@ -189,6 +190,8 @@ class CashPaymentResource extends ErpResource
             ->label(__('Memorize'))
             ->icon('heroicon-m-bookmark')
             ->color('gray')
+            // A template makes documents of this kind: making one takes the create right here and on Memorized Transactions.
+            ->visible(fn (): bool => static::canCreate() && MemorizedTransactionResource::canCreate())
             ->schema([
                 TextInput::make('name')->label(__('Template name'))->required()->maxLength(100)->default(fn ($record) => $record->description ?: $record->number),
             ])

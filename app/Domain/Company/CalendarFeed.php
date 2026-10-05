@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Company;
 
+use App\Domain\Access\BranchLimit;
+use App\Domain\Access\Hak;
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\MenuKey;
 use App\Models\CashBank\Giro;
 use App\Models\Company\CalendarEvent;
 use App\Models\Company\RecurringTransaction;
@@ -35,22 +39,40 @@ final class CalendarFeed
             $events[$date][] = ['kind' => $kind, 'title' => $title, 'url' => $url];
         };
 
-        foreach (SalesInvoice::query()->with('customer')->where('payment_status', '!=', 'paid')->whereBetween('due_date', [$from->toDateString(), $until->toDateString()])->get() as $invoice) {
-            $add($invoice->due_date->toDateString(), 'receivable', "Due: {$invoice->number} · ".($invoice->customer?->name ?? ''));
+        // Each kind only for someone who may see it on its own screen, and only in their branches.
+        $user = auth()->user();
+        $akses = app(HakAkses::class);
+        $sees = fn (MenuKey ...$screens): bool => $user === null || collect($screens)->contains(fn (MenuKey $screen) => $akses->allows($user, $screen, Hak::View));
+        $range = [$from->toDateString(), $until->toDateString()];
+
+        if ($sees(MenuKey::SalesInvoices)) {
+            foreach (BranchLimit::apply(SalesInvoice::query(), $user)->with('customer')->where('payment_status', '!=', 'paid')->whereBetween('due_date', $range)->get() as $invoice) {
+                $add($invoice->due_date->toDateString(), 'receivable', __('Due: :number · :party', ['number' => $invoice->number, 'party' => $invoice->customer?->name ?? '']));
+            }
         }
-        foreach (PurchaseInvoice::query()->with('vendor')->where('payment_status', '!=', 'paid')->whereBetween('due_date', [$from->toDateString(), $until->toDateString()])->get() as $invoice) {
-            $add($invoice->due_date->toDateString(), 'payable', "Pay: {$invoice->number} · ".($invoice->vendor?->name ?? ''));
+        if ($sees(MenuKey::PurchaseInvoices)) {
+            foreach (BranchLimit::apply(PurchaseInvoice::query(), $user)->with('vendor')->where('payment_status', '!=', 'paid')->whereBetween('due_date', $range)->get() as $invoice) {
+                $add($invoice->due_date->toDateString(), 'payable', __('Pay: :number · :party', ['number' => $invoice->number, 'party' => $invoice->vendor?->name ?? '']));
+            }
         }
-        foreach (Giro::query()->outstanding()->whereBetween('due_date', [$from->toDateString(), $until->toDateString()])->get() as $giro) {
-            $add($giro->due_date->toDateString(), 'giro', 'Giro '.($giro->isIncoming() ? 'in' : 'out').": {$giro->number} · ".($giro->party_name ?? ''));
+        foreach (Giro::query()->outstanding()->with('source')->whereBetween('due_date', $range)->get() as $giro) {
+            $branch = $giro->source?->getAttribute('branch_id');
+            $visible = $giro->isIncoming() ? $sees(MenuKey::SalesReceipts, MenuKey::Receipts) : $sees(MenuKey::PurchasePayments, MenuKey::Payments);
+            if ($visible && BranchLimit::allows($user, $branch !== null ? (int) $branch : null)) {
+                $add($giro->due_date->toDateString(), 'giro', $giro->isIncoming()
+                    ? __('Giro in: :number · :party', ['number' => $giro->number, 'party' => $giro->party_name ?? ''])
+                    : __('Giro out: :number · :party', ['number' => $giro->number, 'party' => $giro->party_name ?? '']));
+            }
         }
-        foreach (RecurringTransaction::query()->where('status', 'active')->whereBetween('next_run_on', [$from->toDateString(), $until->toDateString()])->get() as $recurring) {
-            $add($recurring->next_run_on->toDateString(), 'recurring', "Recurring: {$recurring->name}");
+        if ($sees(MenuKey::RecurringTransactions)) {
+            foreach (RecurringTransaction::query()->where('status', 'active')->whereBetween('next_run_on', $range)->get() as $recurring) {
+                $add($recurring->next_run_on->toDateString(), 'recurring', __('Recurring: :name', ['name' => $recurring->name]));
+            }
         }
-        foreach (CalendarEvent::query()->whereBetween('starts_on', [$from->toDateString(), $until->toDateString()])->orderBy('starts_on')->get() as $event) {
+        foreach (CalendarEvent::query()->whereBetween('starts_on', $range)->orderBy('starts_on')->get() as $event) {
             $add($event->starts_on->toDateString(), 'note', $event->title);
         }
-        $monthEnd = app(ModuleRegistry::class)->isEnabled('fixed-assets') ? 'Month end: close the period and run depreciation' : 'Month end: close the period';
+        $monthEnd = app(ModuleRegistry::class)->isEnabled('fixed-assets') ? __('Month end: close the period and run depreciation') : __('Month end: close the period');
         for ($end = $from->endOfMonth()->startOfDay(); $end->lte($until); $end = $end->addDay()->endOfMonth()->startOfDay()) {
             $add($end->toDateString(), 'period', $monthEnd);
         }

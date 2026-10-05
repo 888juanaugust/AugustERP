@@ -179,6 +179,22 @@ class PurchaseChainTest extends TestCase
         $this->assertSame('processed', $dp->fresh()->status);
     }
 
+    public function test_a_return_against_a_receipt_takes_back_its_net_value_and_no_vat(): void
+    {
+        $gr = $this->receive($this->order(10, 100_000), 10);
+        $this->assertSame(1_000_000, $this->balance('2110'));
+
+        $return = PurchaseReturn::query()->create(['number' => 'PRT-2', 'trans_date' => '2026-11-06', 'vendor_id' => $this->vendor->id, 'return_type' => 'receipt', 'source_type' => 'goods_receipt', 'source_id' => $gr->id, 'taxable' => true, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $return->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'quantity' => 3, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 3, 'unit_price' => 100_000, 'tax_code_id' => $this->vat->id, 'warehouse_id' => $this->warehouse->id]);
+        $return->refreshTotal();
+        $this->docs->created($return);
+
+        $this->assertFalse($return->fresh()->taxable, 'a receipt carries no VAT, so neither does its return');
+        $this->assertSame(300_000, $return->fresh()->total);
+        $this->assertSame(700_000, $this->balance('2110'), 'goods received not invoiced, less the net value returned');
+        $this->assertSame(0, $this->balance('1400'), 'no VAT in to reverse');
+    }
+
     public function test_a_return_takes_stock_out_at_cost_and_credits_the_vendor(): void
     {
         $po = $this->order(10, 100_000);

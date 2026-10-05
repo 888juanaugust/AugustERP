@@ -132,7 +132,7 @@ final class ApprovalEngine
 
         return DB::transaction(function () use ($document, $type, $current, $fingerprint): ApprovalRequest {
             $current?->forceFill(['superseded_at' => now()])->save();
-            $request = $this->open($document, $type, $fingerprint);
+            $request = $this->open($document, $type, $fingerprint, changed: $current !== null);
             $this->notify($type, $document, $request, null);
 
             return $request;
@@ -152,7 +152,15 @@ final class ApprovalEngine
         }
         $request = $this->pending($document);
 
-        return $request !== null && ! $this->hasDecided($request, $user) && $this->slotFor($request, $user) !== null;
+        return $request !== null && ! $this->hasDecided($request, $user) && $this->slotFor($request, $user) !== null
+            && ! $this->segregated($request, $user);
+    }
+
+    /** Under segregation of duties, whoever entered or last changed the document does not approve it. */
+    private function segregated(ApprovalRequest $request, User $user): bool
+    {
+        return BusinessRule::SegregationOfDuties->isOn()
+            && in_array((int) $user->id, array_map('intval', array_filter([$request->requested_by, $request->edited_by])), true);
     }
 
     /** Whether the user is one of the request's approvers, at any position: they may reject. */
@@ -183,8 +191,8 @@ final class ApprovalEngine
                 ? __('This document is approved in order; it waits for :name first.', ['name' => $this->nextSlot($request)['name'] ?? '—'])
                 : __('Approving this document takes an approval rule that names you, or the "approve transactions" right.'));
         }
-        if (BusinessRule::SegregationOfDuties->isOn() && $request->requested_by !== null && $request->requested_by === $approver->id) {
-            throw new RuntimeException(__('Segregation of duties: the person who entered the document cannot approve it.'));
+        if ($this->segregated($request, $approver)) {
+            throw new RuntimeException(__('Segregation of duties: the person who entered or last changed the document cannot approve it.'));
         }
         if ($type->beforeApprove !== null) {
             ($type->beforeApprove)($document, $approver);
@@ -261,7 +269,7 @@ final class ApprovalEngine
 
     // --- internals --------------------------------------------------------
 
-    private function open(Model $document, ApprovalType $type, string $fingerprint): ApprovalRequest
+    private function open(Model $document, ApprovalType $type, string $fingerprint, bool $changed = false): ApprovalRequest
     {
         return ApprovalRequest::query()->create([
             'approvable_type' => $document->getMorphClass(),
@@ -270,6 +278,8 @@ final class ApprovalEngine
             'amount' => self::amountOf($document),
             'fingerprint' => $fingerprint,
             'requested_by' => $document->getAttribute('created_by') ?? auth()->id(),
+            // A change asks again for approval, and whoever made it may not give it either.
+            'edited_by' => $changed ? (auth()->id() ?? $document->getAttribute('updated_by')) : null,
         ] + $this->governance($document, $type));
     }
 
@@ -414,6 +424,9 @@ final class ApprovalEngine
         $slots = (array) $request->slots;
         $filled = $this->approvalsOf($request)->pluck('slot')->filter(fn ($s) => $s !== null)->map(fn ($s) => (int) $s)->all();
         $excluded = $request->decisions()->pluck('user_id')->map(fn ($id) => (int) $id)->push($user->id);
+        if (BusinessRule::SegregationOfDuties->isOn() && $request->edited_by !== null) {
+            $excluded->push((int) $request->edited_by);
+        }
         if (BusinessRule::SegregationOfDuties->isOn() && $request->requested_by !== null) {
             $excluded->push((int) $request->requested_by);
         }
@@ -478,6 +491,13 @@ final class ApprovalEngine
             }
         }
 
-        return hash('sha256', json_encode([self::amountOf($document), $document->getAttribute('branch_id'), $lines]));
+        // What was approved: the amount, the branch, who it is with, the bank or cash account, the date, the lines.
+        $header = array_map(fn (string $column) => $document->getAttribute($column) === null ? null : (string) $document->getAttribute($column),
+            ['branch_id' => 'branch_id', 'customer_id' => 'customer_id', 'vendor_id' => 'vendor_id', 'bank_account_id' => 'bank_account_id', 'trans_date' => 'trans_date']);
+        if ($document->getAttribute('trans_date') instanceof \DateTimeInterface) {
+            $header['trans_date'] = $document->getAttribute('trans_date')->format('Y-m-d');
+        }
+
+        return hash('sha256', json_encode([self::amountOf($document), $header, $lines]));
     }
 }

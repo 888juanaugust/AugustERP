@@ -7,6 +7,7 @@ use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Shared\Format;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Workspace;
+use App\Filament\Support\InitialsAvatar;
 use App\Filament\Support\SafeDelete;
 use App\Filament\Support\SideTabIcons;
 use App\Filament\Widgets\CompanyPulse;
@@ -14,6 +15,7 @@ use App\Http\Controllers\A1SlipController;
 use App\Http\Controllers\PrintController;
 use App\Http\Middleware\EndInactiveSessions;
 use App\Http\Middleware\EnforceAccessWindow;
+use App\Http\Middleware\RequirePasswordChange;
 use App\Http\Middleware\SetLocale;
 use Filament\Actions\DeleteAction;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -77,8 +79,8 @@ class AdminPanelProvider extends PanelProvider
         DatePicker::configureUsing(fn (DatePicker $picker) => $picker->displayFormat(fn (): string => Format::dateInputFormat()));
 
         // An upload field takes only a file uploaded through it: a path typed into its state (another file on the
-        // private disk) is refused, never read, moved, signed for download or deleted.
-        FileUpload::configureUsing(fn (FileUpload $upload) => $upload->preventFilePathTampering());
+        // private disk) is refused, never read, moved, signed for download or deleted. 20 MB at most.
+        FileUpload::configureUsing(fn (FileUpload $upload) => $upload->preventFilePathTampering()->maxSize(20 * 1024));
     }
 
     public function panel(Panel $panel): Panel
@@ -89,6 +91,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->profile(EditProfile::class, isSimple: false)
+            ->defaultAvatarProvider(InitialsAvatar::class)
             ->multiFactorAuthentication([
                 AppAuthentication::make()->recoverable(),
             ])
@@ -147,6 +150,7 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 EnforceAccessWindow::class,
+                RequirePasswordChange::class,
             ], isPersistent: true);
     }
 }

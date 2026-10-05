@@ -39,17 +39,23 @@ final class DocumentGuard
             $this->periods->assertOpen($newDate, $document->postingNumber());
         }
 
-        $creator = $document->getAttribute('created_by');
-        $user = auth()->user();
-        if ($user !== null && $creator !== null && $creator !== $user->id && ! $this->akses->allowsSpecial($user, HakKhusus::EditOthersTransactions)) {
-            throw new DocumentLockedException("{$document->postingNumber()} was entered by another user; changing it takes the \"edit other users' transactions\" right.");
-        }
+        $this->assertOwnOrAllowed($document, $document->postingNumber());
 
         foreach ($this->blockers as $blocker) {
             $reason = $blocker->blocks($document);
             if ($reason !== null) {
                 throw new DocumentLockedException("{$document->postingNumber()} cannot be changed: {$reason}");
             }
+        }
+    }
+
+    /** A document someone else entered is changed (or deleted) only with the "edit other users' transactions" right. */
+    public function assertOwnOrAllowed(Model $document, string $number): void
+    {
+        $creator = $document->getAttribute('created_by');
+        $user = auth()->user();
+        if ($user !== null && $creator !== null && (int) $creator !== (int) $user->id && ! $this->akses->allowsSpecial($user, HakKhusus::EditOthersTransactions)) {
+            throw new DocumentLockedException(__(':number was entered by another user; changing it takes the "edit other users\' transactions" right.', ['number' => $number]));
         }
     }
 

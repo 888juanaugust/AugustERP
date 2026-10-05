@@ -51,6 +51,8 @@ class ListItems extends ListRecords
                         Notification::make()->title(__('Cannot import'))->body($e->getMessage())->danger()->persistent()->send();
 
                         return;
+                    } finally {
+                        Storage::disk('local')->delete($data['file']); // read once; the file's people and prices are not kept
                     }
 
                     Notification::make()->title(__(':created created, :updated updated', ['created' => $result['created'], 'updated' => $result['updated']]))->success()->send();

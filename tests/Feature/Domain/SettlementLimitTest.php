@@ -3,6 +3,8 @@
 namespace Tests\Feature\Domain;
 
 use App\Domain\Posting\DocumentRepository;
+use App\Domain\Reports\Period;
+use App\Domain\Reports\TradeReports;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Customer;
@@ -80,5 +82,20 @@ class SettlementLimitTest extends TestCase
         $theirs = $this->invoice($other, 'INV-2');
         $this->refused(fn () => $this->receive('CB-2', 1_000_000, invoice: $theirs), 'belongs to another customer');
         $this->assertSame('unpaid', $theirs->fresh()->payment_status);
+    }
+
+    public function test_aging_as_at_a_past_date_counts_what_was_open_then(): void
+    {
+        $this->receive('CB-1', 4_000_000); // on 20 November
+
+        $then = collect(TradeReports::receivableAging(new Period('2026-11-01', '2026-11-15')))->firstWhere('id', $this->customer->id);
+        $this->assertSame(10_000_000, $then['total'], 'on the 15th nothing had been paid');
+        $now = collect(TradeReports::receivableAging(new Period('2026-11-01', '2026-11-20')))->firstWhere('id', $this->customer->id);
+        $this->assertSame(6_000_000, $now['total']);
+
+        $this->receive('CB-2', 6_000_000);
+        $this->assertSame('paid', $this->invoice->fresh()->payment_status);
+        $then = collect(TradeReports::receivableAging(new Period('2026-11-01', '2026-11-15')))->firstWhere('id', $this->customer->id);
+        $this->assertSame(10_000_000, $then['total'], 'paid today, still owed as at the 15th');
     }
 }

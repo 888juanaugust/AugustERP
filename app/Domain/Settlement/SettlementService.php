@@ -80,6 +80,24 @@ final class SettlementService
         return (int) ($document->getAttribute('total') ?? 0) - (int) ($document->getAttribute('down_payment_total') ?? 0) - $paid;
     }
 
+    /**
+     * What was open on a date: settlements dated after it are not yet counted (an aging as at the end of a past
+     * month shows what was owed then, not what is owed now). Base currency, or the document's own when $foreign.
+     */
+    public function balanceAsOf(Model $document, string $date, bool $foreign = false): int
+    {
+        $paid = (int) $this->allocations($document, null)->where('trans_date', '<=', $date)
+            ->selectRaw($foreign ? 'COALESCE(SUM(COALESCE(fc_amount, 0) + COALESCE(fc_discount, 0)), 0) AS paid' : 'COALESCE(SUM(amount + discount), 0) AS paid')
+            ->value('paid');
+        $total = $foreign ? $this->foreignTotal($document)
+            : (int) ($document->getAttribute('total') ?? $document->getAttribute('amount') ?? 0) - (int) ($document->getAttribute('down_payment_total') ?? 0);
+        if (method_exists($document, 'isCredit') && $document->isCredit()) {
+            return -($total + $paid);
+        }
+
+        return $total - $paid;
+    }
+
     public function isForeign(Model $document): bool
     {
         return Currencies::isForeign($document->getAttribute('currency_id')) && $document->getAttribute($this->foreignTotalColumn($document)) !== null;

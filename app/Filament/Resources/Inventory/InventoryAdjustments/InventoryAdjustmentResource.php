@@ -25,6 +25,7 @@ use App\Filament\Support\PrintAction;
 use App\Filament\Support\TagFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
+use App\Models\Inventory\ItemCost;
 use App\Models\Inventory\Warehouse;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -43,6 +44,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Validation\ValidationException;
 
 /** Inventory Adjustments: quantity in or out, or a value correction, per item and warehouse. */
 class InventoryAdjustmentResource extends ErpResource
@@ -121,6 +123,14 @@ class InventoryAdjustmentResource extends ErpResource
     private static function normaliseLine(array $data): array
     {
         $data = LineItemFields::fillBaseQuantities([$data])[0];
+        // Without the "see cost" right nobody sets a cost: goods come in at their current cost, and a value
+        // adjustment (which is nothing but a cost) is refused.
+        if (! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost)) {
+            if (($data['adjustment_type'] ?? 'quantity') === 'value') {
+                throw ValidationException::withMessages(['data.lines' => __('A value adjustment takes the "see cost" right.')]);
+            }
+            $data['unit_cost'] = ItemCost::current((int) $data['item_id'], isset($data['warehouse_id']) ? (int) $data['warehouse_id'] : null);
+        }
         if (($data['adjustment_type'] ?? 'quantity') === 'value') {
             $data['quantity'] = 0;
             $data['base_quantity'] = 0;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\Tax;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Shared\Format;
 use App\Domain\Tax\FilingDocuments;
@@ -157,7 +159,8 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                     ->label(__('Export selected'))
                     ->icon('heroicon-m-arrow-down-tray')
                     ->color('primary')
-                    ->visible(fn () => $this->kind() === TaxFiling::OUT && static::canUpdate())
+                    // A file of every buyer's tax details leaving the system: the export right too.
+                    ->visible(fn () => $this->kind() === TaxFiling::OUT && static::canUpdate() && HakAkses::canSpecial(HakKhusus::ExportData))
                     ->deselectRecordsAfterCompletion()
                     ->action(function (Collection $records) {
                         try {

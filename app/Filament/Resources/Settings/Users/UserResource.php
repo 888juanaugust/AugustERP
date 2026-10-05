@@ -28,6 +28,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rules\Password;
 
 /** The Users screen: staff accounts, their access type, groups and branches. */
 class UserResource extends ErpResource
@@ -59,7 +60,7 @@ class UserResource extends ErpResource
                         ->required(fn (string $operation) => $operation === 'create')
                         ->disabled(fn (?User $record): bool => ($record?->isAdministrator() ?? false) && ! self::actorIsAdministrator())
                         ->dehydrated(fn ($state) => filled($state))
-                        ->minLength(8)
+                        ->rule(Password::defaults())
                         ->helperText(fn (string $operation) => $operation === 'edit' ? __('Leave blank to keep the current password.') : null),
                     Radio::make('access_type')
                         ->label(__('Access type'))

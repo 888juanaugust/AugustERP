@@ -73,11 +73,10 @@ class SalesScreensTest extends TestCase
         $this->assertSame(1_665_000, $order->total);
         $this->assertSame('awaiting', $order->approval_status);
 
-        // Awaiting orders cannot ship; the admin who entered it is named by the rule but cannot approve it (segregation of duties).
+        // Awaiting orders cannot ship; the admin who entered it is named by the rule but is not offered Approve (segregation of duties).
         Livewire::test(ListSalesOrders::class)
             ->assertTableActionHidden('deliver', $order)
-            ->callTableAction('approve', $order)
-            ->assertNotified('Cannot approve');
+            ->assertTableActionHidden('approve', $order);
         $this->assertSame('awaiting', $order->fresh()->approval_status);
 
         // Someone the rule does not name sees no approve button at all.
