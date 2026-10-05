@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Pages\Inventory;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Inventory\Replenishment;
 use App\Domain\Inventory\StockQuery;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\Deliveries\DeliveryResource;
@@ -44,6 +45,8 @@ class OrderFulfilment extends ErpPage implements HasTable
                 TextColumn::make('ship_date')->label(__('fields.ship_date')),
                 TextColumn::make('delivered')->label(__('Delivered'))->alignEnd(),
                 TextColumn::make('deliverable')->label(__('Can ship now'))->alignEnd()->color(fn ($state) => str_starts_with((string) $state, '0') ? 'danger' : 'success'),
+                TextColumn::make('need_to_order')->label(__('Need to order'))->alignEnd()->color(fn ($state) => $state === Format::quantity('0') ? null : 'danger')
+                    ->tooltip(__('What stock on hand and open purchase orders cannot cover, the earliest orders served first.')),
             ])
             ->recordActions([
                 Action::make('deliver')->label(__('Deliver'))->icon('heroicon-m-truck')
@@ -59,17 +62,29 @@ class OrderFulfilment extends ErpPage implements HasTable
     private function rows(): Collection
     {
         $onHand = StockQuery::onHandMap();
+        // What can still cover the orders: stock on hand plus what open purchase orders bring, used up earliest order first.
+        $onOrder = Replenishment::onOrder();
+        $cover = [];
+        foreach (array_keys($onHand + $onOrder) as $itemId) {
+            $cover[$itemId] = BigDecimal::max(BigDecimal::zero(), BigDecimal::of($onHand[$itemId] ?? '0'))->plus($onOrder[$itemId] ?? '0');
+        }
 
         return SalesOrder::query()->with(['customer', 'lines'])
             ->where('approval_status', SalesOrder::APPROVED)
             ->whereIn('status', ['pending', 'partial'])
             ->orderBy('ship_date')->orderBy('trans_date')
             ->get()
-            ->map(function (SalesOrder $order) use ($onHand) {
+            ->map(function (SalesOrder $order) use ($onHand, &$cover) {
                 $ordered = BigDecimal::zero();
                 $processed = BigDecimal::zero();
                 $deliverable = BigDecimal::zero();
+                $short = BigDecimal::zero();
                 foreach ($order->lines as $line) {
+                    $left = BigDecimal::of($line->remainingQuantity());
+                    $available = $cover[$line->item_id] ?? BigDecimal::zero();
+                    $taken = $left->isLessThan($available) ? $left : $available;
+                    $cover[$line->item_id] = $available->minus($taken);
+                    $short = $short->plus($left->minus($taken));
                     $ordered = $ordered->plus((string) $line->base_quantity);
                     $processed = $processed->plus((string) $line->processed_quantity);
                     $remaining = BigDecimal::of($line->remainingQuantity());
@@ -85,6 +100,7 @@ class OrderFulfilment extends ErpPage implements HasTable
                     'ship_date' => Format::date($order->ship_date),
                     'delivered' => Format::quantity((string) $processed).' / '.Format::quantity((string) $ordered),
                     'deliverable' => Format::quantity((string) $deliverable).' of '.Format::quantity((string) $ordered->minus($processed)),
+                    'need_to_order' => Format::quantity((string) $short),
                 ];
             })->values();
     }

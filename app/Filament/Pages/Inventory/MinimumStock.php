@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Filament\Pages\Inventory;
 
 use App\Domain\Access\MenuKey;
-use App\Domain\Inventory\StockQuery;
+use App\Domain\Inventory\Replenishment;
 use App\Domain\Shared\Format;
+use App\Filament\Resources\Purchasing\PurchaseOrders\PurchaseOrderResource;
+use App\Filament\Resources\Purchasing\PurchaseRequisitions\PurchaseRequisitionResource;
 use App\Filament\Support\ErpPage;
-use App\Models\Inventory\Item;
-use App\Models\Inventory\ItemCost;
 use App\Models\Inventory\Warehouse;
 use App\Models\Purchasing\Vendor;
-use Brick\Math\BigDecimal;
+use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -24,7 +24,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Support\Collection;
 
-/** Minimum Stock: the items at or below their minimum, by vendor and warehouse; the reorder worklist. */
+/** Minimum Stock: the items at or below their minimum, by vendor and warehouse, with what is on order and requested; select and Order or Request. */
 class MinimumStock extends ErpPage implements HasTable
 {
     use InteractsWithTable;
@@ -64,7 +64,7 @@ class MinimumStock extends ErpPage implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->records(fn () => $this->rows())
+            ->records(fn () => $this->rows()->keyBy('id'))
             ->columns([
                 TextColumn::make('vendor')->label(__('Vendor')),
                 TextColumn::make('name')->label(__('Item name'))->weight('medium'),
@@ -74,40 +74,50 @@ class MinimumStock extends ErpPage implements HasTable
                 TextColumn::make('on_order')->label(__('On order'))->alignEnd(),
                 TextColumn::make('requested')->label(__('Requested'))->alignEnd(),
                 TextColumn::make('min_stock')->label(__('Minimum'))->alignEnd(),
+                TextColumn::make('to_order')->label(__('To order'))->alignEnd()->weight('medium'),
+            ])
+            ->selectable()
+            ->toolbarActions([
+                BulkAction::make('order')->label(__('Order'))->icon('heroicon-m-shopping-cart')
+                    ->visible(fn () => PurchaseOrderResource::canCreate())
+                    ->action(fn (Collection $records) => $this->redirect(PurchaseOrderResource::getUrl('create', $this->reorderQuery($records)))),
+                BulkAction::make('request')->label(__('Request'))->icon('heroicon-m-clipboard-document-list')->color('gray')
+                    ->visible(fn () => PurchaseRequisitionResource::canCreate())
+                    ->action(fn (Collection $records) => $this->redirect(PurchaseRequisitionResource::getUrl('create', $this->reorderQuery($records)))),
             ])
             ->paginated(false)
             ->emptyStateHeading(__('Nothing below its minimum'))
-            ->emptyStateDescription(__('Items whose stock is at or under the minimum set on the item appear here.'));
+            ->emptyStateDescription(__('Items whose stock is at or under the minimum set on the item (or for the warehouse) appear here.'));
+    }
+
+    /** ?reorder=item:quantity,… (and the warehouse) for the purchase order or requisition the selection opens. */
+    private function reorderQuery(Collection $records): array
+    {
+        return array_filter([
+            'reorder' => $records->map(fn (array $r) => $r['id'].':'.$r['to_order_raw'])->join(','),
+            'warehouse' => $this->filters['warehouse_id'] ?? null,
+        ]);
     }
 
     /** @return Collection<int, array<string, mixed>> */
     private function rows(): Collection
     {
-        $warehouseId = $this->filters['warehouse_id'] ?? null;
-        $search = trim((string) ($this->filters['search'] ?? ''));
-        $onHand = $warehouseId
-            ? ItemCost::query()->where('warehouse_id', $warehouseId)->pluck('qty_on_hand', 'item_id')->map(fn ($v) => (string) $v)->all()
-            : StockQuery::onHandMap();
-
-        return Item::query()->active()
-            ->with(['unit1', 'preferredVendor'])
-            ->where('item_type', 'inventory')
-            ->where('min_stock', '>', 0)
-            ->when($this->filters['vendor_id'] ?? null, fn ($q, $v) => $q->where('preferred_vendor_id', $v))
-            ->when($search !== '', fn ($q) => $q->where(fn ($q) => $q->where('name', 'ilike', "%{$search}%")->orWhere('number', 'ilike', "%{$search}%")))
-            ->orderBy('number')
-            ->get()
-            ->filter(fn (Item $item) => BigDecimal::of($onHand[$item->id] ?? '0')->isLessThanOrEqualTo((string) $item->min_stock))
-            ->map(fn (Item $item) => [
-                'id' => $item->id,
-                'vendor' => $item->preferredVendor?->name ?? '—',
-                'name' => $item->name,
-                'number' => $item->number,
-                'unit' => $item->unit1->name,
-                'on_hand' => Format::quantity($onHand[$item->id] ?? '0'),
-                'on_order' => Format::quantity(0),
-                'requested' => Format::quantity(0),
-                'min_stock' => Format::quantity((string) $item->min_stock),
-            ])->values();
+        return Replenishment::belowMinimum(
+            ($this->filters['warehouse_id'] ?? null) ? (int) $this->filters['warehouse_id'] : null,
+            ($this->filters['vendor_id'] ?? null) ? (int) $this->filters['vendor_id'] : null,
+            trim((string) ($this->filters['search'] ?? '')),
+        )->map(fn (array $r) => [
+            'id' => $r['item']->id,
+            'vendor' => $r['item']->preferredVendor?->name ?? '—',
+            'name' => $r['item']->name,
+            'number' => $r['item']->number,
+            'unit' => $r['item']->unit1->name,
+            'on_hand' => Format::quantity($r['on_hand']),
+            'on_order' => Format::quantity($r['on_order']),
+            'requested' => Format::quantity($r['requested']),
+            'min_stock' => Format::quantity($r['minimum']),
+            'to_order' => Format::quantity($r['to_order']),
+            'to_order_raw' => $r['to_order'],
+        ]);
     }
 }

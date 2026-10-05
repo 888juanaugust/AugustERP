@@ -26,6 +26,7 @@ use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemCategory;
 use App\Models\Inventory\Unit;
+use App\Models\Inventory\Warehouse;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -42,6 +43,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
 use Filament\Tables\Columns\TextColumn;
@@ -100,7 +102,18 @@ class ItemResource extends MasterResource
                             Select::make('vendor_unit_id')->label(__('Purchase unit'))->relationship('vendorUnit', 'name')->preload()->native(false),
                             self::money('purchase_price', 'Purchase price'),
                             TextInput::make('min_purchase_qty')->label(__('Minimum purchase quantity'))->numeric()->minValue(0)->default(0),
-                            TextInput::make('min_stock')->label(__('Minimum stock'))->numeric()->minValue(0)->default(0),
+                            TextInput::make('min_stock')->label(__('Minimum stock'))->numeric()->minValue(0)->default(0)
+                                ->helperText(__('Across all warehouses; a warehouse below may have its own.')),
+                            Repeater::make('minimumStocks')
+                                ->label(__('Minimum stock per warehouse'))
+                                ->relationship()
+                                ->table([TableColumn::make(__('Warehouse')), TableColumn::make(__('Minimum'))->alignment(Alignment::End)])
+                                ->schema([
+                                    Select::make('warehouse_id')->options(fn () => Warehouse::query()->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->required()->distinct()->native(false),
+                                    TextInput::make('quantity')->numeric()->minValue(0)->required()->default(0),
+                                ])
+                                ->defaultItems(0)->addActionLabel('Add warehouse')->columnSpanFull()
+                                ->visible(fn (Get $get) => ($get('item_type') instanceof ItemType ? $get('item_type') : ItemType::tryFrom((string) $get('item_type'))) === ItemType::Inventory),
                         ]),
                         Fieldset::make(__('Tax'))->columns(3)->schema([
                             TextInput::make('item_tax_code')->label(__('e-Tax goods code'))->maxLength(20)->placeholder(__('e.g. 110000')),

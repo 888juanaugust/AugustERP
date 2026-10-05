@@ -100,6 +100,11 @@ class Item extends Model implements HasAuditReference
         return $this->hasMany(ItemComponent::class, 'group_item_id')->orderBy('sort');
     }
 
+    public function minimumStocks(): HasMany
+    {
+        return $this->hasMany(ItemMinimumStock::class);
+    }
+
     public function openingStocks(): HasMany
     {
         return $this->hasMany(ItemOpeningStock::class)->orderBy('sort');
