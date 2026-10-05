@@ -44,7 +44,7 @@ class AccessGroupSeeder extends Seeder
                     + $this->grant([MenuKey::Currencies, MenuKey::TaxCodes, MenuKey::PaymentTerms, MenuKey::Employees, MenuKey::SalaryComponents, MenuKey::MonthEndProcess, MenuKey::RecurringTransactions, MenuKey::MemorizedTransactions, MenuKey::Contacts, MenuKey::Calendar, MenuKey::ActivityLog], self::ALL)
                     + $this->grant($byModule(Modul::Sales, Modul::Purchasing), self::READ)
                     + $this->grant([MenuKey::ItemsAndServices, MenuKey::StockByWarehouse, MenuKey::InventoryAdjustments], self::READ),
-                'special' => [HakKhusus::OpenClosedPeriod, HakKhusus::BackdateTransactions, HakKhusus::ExportData, HakKhusus::SeeCost],
+                'special' => [HakKhusus::OpenClosedPeriod, HakKhusus::BackdateTransactions, HakKhusus::DeletePostedTransactions, HakKhusus::ExportData, HakKhusus::SeeCost],
             ],
             'Finance' => [
                 'rights' => $this->grant($byModule(Modul::CashBank), self::ALL)

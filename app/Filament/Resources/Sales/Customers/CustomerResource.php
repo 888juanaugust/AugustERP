@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Sales\Customers;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Pengaturan\Preferensi;
@@ -16,6 +18,7 @@ use App\Filament\Resources\Sales\Customers\Pages\CreateCustomer;
 use App\Filament\Resources\Sales\Customers\Pages\EditCustomer;
 use App\Filament\Resources\Sales\Customers\Pages\ListCustomers;
 use App\Filament\Support\AddressFields;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\NumberFields;
@@ -78,7 +81,7 @@ class CustomerResource extends MasterResource
                     TextInput::make('email')->label(__('Email'))->email()->maxLength(150),
                     TextInput::make('fax')->label(__('Fax'))->maxLength(30),
                     TextInput::make('website')->label(__('Website'))->maxLength(150),
-                    Select::make('branch_id')->label(__('Used in branch'))->relationship('branch', 'name')->preload()->native(false),
+                    BranchFields::select(__('Used in branch'), defaulted: false),
                     self::activeToggle()->inline(false),
                 ]),
             Tabs::make('customer')
@@ -176,7 +179,7 @@ class CustomerResource extends MasterResource
                             ->defaultItems(0),
                     ]),
                     Tab::make(__('Other'))->schema([
-                        Fieldset::make(__('Credit limit'))->schema([
+                        Fieldset::make(__('Credit limit'))->visible(fn () => HakAkses::canSpecial(HakKhusus::SeeCreditData))->schema([
                             Radio::make('credit_limit_mode')
                                 ->hiddenLabel()
                                 ->options(['per_customer' => __('Per customer'), 'parent' => __('Shared with a parent customer')])
@@ -215,7 +218,7 @@ class CustomerResource extends MasterResource
                 TextColumn::make('branch.name')->label(__('fields.branch'))->placeholder('—'),
                 TextColumn::make('bill_address')->label(__('Address'))->state(fn (Customer $r) => $r->billAddress())->limit(40)->placeholder('—'),
                 TextColumn::make('paymentTerm.name')->label(__('fields.payment_term'))->placeholder('—'),
-                Rupiah::make('credit_limit_amount')->label(__('Credit limit'))->toggleable(isToggledHiddenByDefault: true),
+                Rupiah::make('credit_limit_amount')->label(__('Credit limit'))->toggleable(isToggledHiddenByDefault: true)->visible(fn () => HakAkses::canSpecial(HakKhusus::SeeCreditData)),
             ])
             ->defaultSort('name')
             ->filters([

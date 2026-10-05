@@ -11,6 +11,7 @@ use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\CreatePurchaseD
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\EditPurchaseDownPayment;
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\ListPurchaseDownPayments;
 use App\Filament\Resources\Purchasing\PurchasePayments\PurchasePaymentResource;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -68,6 +69,7 @@ class PurchaseDownPaymentResource extends ErpResource
                     VendorFields::paymentTerm(),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
+                    BranchFields::select(),
                     VendorFields::bankAccount(),
                     Textarea::make('to_address')->label(__('Address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),

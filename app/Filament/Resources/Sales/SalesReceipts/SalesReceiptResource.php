@@ -13,6 +13,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\SalesReceipts\Pages\CreateSalesReceipt;
 use App\Filament\Resources\Sales\SalesReceipts\Pages\EditSalesReceipt;
 use App\Filament\Resources\Sales\SalesReceipts\Pages\ListSalesReceipts;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -129,6 +130,7 @@ class SalesReceiptResource extends ErpResource
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::splitKey($data)),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
+                    BranchFields::select(),
                     Textarea::make('description')->label(__('fields.description'))->rows(3),
                 ]),
             ]),

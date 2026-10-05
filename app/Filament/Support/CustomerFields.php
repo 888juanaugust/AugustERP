@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Sales\CreditCheck;
 use App\Domain\Shared\Format;
 use App\Models\Company\Employee;
@@ -27,7 +29,7 @@ final class CustomerFields
                 $customer = $state ? Customer::query()->find($state) : null;
                 $check = app(CreditCheck::class);
 
-                return $customer && $check->needsNotice($customer) ? "Overdue: an invoice is older than {$check->noticeDays()} days" : null;
+                return $customer && HakAkses::canSpecial(HakKhusus::SeeCreditData) && $check->needsNotice($customer) ? "Overdue: an invoice is older than {$check->noticeDays()} days" : null;
             })
             ->hintColor('danger')
             ->afterStateUpdated(function (Set $set, $state) use ($fillsTerms): void {

@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\Reports;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Reports\ExcelExport;
 use App\Domain\Reports\Period;
 use App\Domain\Shared\Format;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpPage;
-use App\Models\Company\Branch;
 use App\Modules\ModuleRegistry;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Panel;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -116,7 +117,7 @@ abstract class ReportPage extends ErpPage implements HasTable
         return [
             'from' => today()->startOfMonth()->toDateString(),
             'until' => today()->toDateString(),
-            'branch_id' => null,
+            'branch_id' => BranchFields::reportBranch(null),
         ];
     }
 
@@ -139,7 +140,7 @@ abstract class ReportPage extends ErpPage implements HasTable
             $fields[] = DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat(Format::DATE_INPUT)->live();
         }
         if ($this->usesBranch()) {
-            $fields[] = Select::make('branch_id')->label(__('Branch'))->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id'))->placeholder(__('All branches'))->native(false)->live();
+            $fields[] = BranchFields::filter();
         }
 
         return $schema->components([Section::make()->columns(4)->schema(array_merge($fields, $this->extraFilters()))])->statePath('filters');
@@ -155,7 +156,7 @@ abstract class ReportPage extends ErpPage implements HasTable
         return new Period(
             $this->filters['from'] ?? today()->startOfMonth()->toDateString(),
             $this->filters['until'] ?? today()->toDateString(),
-            isset($this->filters['branch_id']) && $this->filters['branch_id'] !== '' ? (int) $this->filters['branch_id'] : null,
+            BranchFields::reportBranch($this->filters['branch_id'] ?? null),
         );
     }
 
@@ -178,6 +179,7 @@ abstract class ReportPage extends ErpPage implements HasTable
         return [
             Action::make('export')
                 ->label(__('Export to Excel'))
+                ->visible(fn () => HakAkses::canSpecial(HakKhusus::ExportData))
                 ->icon('heroicon-m-arrow-down-tray')
                 ->color('gray')
                 ->action(fn (): BinaryFileResponse => ExcelExport::download(

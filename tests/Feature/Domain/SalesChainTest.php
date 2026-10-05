@@ -216,7 +216,8 @@ class SalesChainTest extends TestCase
         AccessGroup::query()->where('name', 'Sales')->firstOrFail()->users()->attach($sales);
         $this->actingAs($sales);
 
-        $order = $this->order(10, 150_000);
+        // An operator without the back-date right enters today's orders.
+        $order = $this->order(10, 150_000, today()->toDateString());
         $this->assertSame('awaiting', $order->approval_status);
 
         $approval = app(OrderApproval::class);
@@ -228,7 +229,7 @@ class SalesChainTest extends TestCase
         $this->assertCount(1, $approval->rulesFor($order));
         $this->assertFalse($approval->canApprove($order, $admin), 'a covering rule names who approves');
         $this->assertTrue($approval->canApprove($order, $approver));
-        $this->assertCount(0, $approval->rulesFor($this->order(1, 150_000)), 'below the rule\'s amount');
+        $this->assertCount(0, $approval->rulesFor($this->order(1, 150_000, today()->toDateString())), 'below the rule\'s amount');
         try {
             $approval->approve($order, $sales);
             $this->fail('sales cannot approve');

@@ -11,13 +11,13 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\ExpenseAccruals\Pages\CreateExpenseAccrual;
 use App\Filament\Resources\GeneralLedger\ExpenseAccruals\Pages\EditExpenseAccrual;
 use App\Filament\Resources\GeneralLedger\ExpenseAccruals\Pages\ListExpenseAccruals;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayAction;
-use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\ExpenseAccrual;
 use Filament\Actions\EditAction;
@@ -96,8 +96,7 @@ class ExpenseAccrualResource extends ErpResource
                 Tab::make(__('Other info'))->schema([
                     DatePicker::make('due_date')->label(__('Due date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)
                         ->default(fn () => today()->addDays(30)),
-                    Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false)
-                        ->default(fn () => Branch::default()?->id),
+                    BranchFields::select(),
                     Textarea::make('description')->label(__('fields.description'))->rows(3),
                 ]),
             ]),

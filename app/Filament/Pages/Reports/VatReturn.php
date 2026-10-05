@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\Reports;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Reports\ExcelExport;
 use App\Domain\Shared\Enums\TaxDocumentCode;
@@ -101,6 +103,7 @@ class VatReturn extends ErpPage implements HasTable
         return [
             Action::make('export')
                 ->label(__('Export to Excel'))
+                ->visible(fn () => HakAkses::canSpecial(HakKhusus::ExportData))
                 ->icon('heroicon-m-arrow-down-tray')
                 ->color('gray')
                 ->action(fn (): BinaryFileResponse => ExcelExport::download(

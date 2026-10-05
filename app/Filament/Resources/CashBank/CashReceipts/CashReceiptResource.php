@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\CashBank\CashReceipts\Pages\CreateCashReceipt;
 use App\Filament\Resources\CashBank\CashReceipts\Pages\EditCashReceipt;
 use App\Filament\Resources\CashBank\CashReceipts\Pages\ListCashReceipts;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -89,6 +90,7 @@ class CashReceiptResource extends ErpResource
                         ->addActionLabel('Add line'),
                 ]),
                 Tab::make(__('Other info'))->schema([
+                    BranchFields::select(),
                     TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->helperText(__('Filling this registers a giro received that clears or bounces later.')),
                     DatePicker::make('cheque_date')->label(__('Giro due date'))->native(false)->displayFormat(Format::DATE_INPUT),
                     Textarea::make('payer')->label(__('Payer'))->rows(2),

@@ -13,6 +13,7 @@ use App\Filament\Resources\FixedAssets\AssetChanges\Pages\CreateAssetChange;
 use App\Filament\Resources\FixedAssets\AssetChanges\Pages\EditAssetChange;
 use App\Filament\Resources\FixedAssets\AssetChanges\Pages\ListAssetChanges;
 use App\Filament\Support\AssetFields;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -93,7 +94,7 @@ class AssetChangeResource extends ErpResource
                 ]),
                 Tab::make(__('Other info'))->schema([
                     Toggle::make('new_intangible')->label(__('Intangible asset'))->default(null)->dehydrated(fn ($state) => $state !== null),
-                    Select::make('branch_id')->label(__('Branch'))->relationship('branch', 'name')->preload()->native(false),
+                    BranchFields::select(__('Branch'), defaulted: false)->required(false),
                     Select::make('asset_account_id')->label(__('Asset account (new)'))->options(fn () => Account::options(AccountType::FixedAsset, AccountType::OtherCurrentAsset))->searchable()->native(false)->placeholder(__('Unchanged')),
                     Toggle::make('new_fiscal')->label(__('Fiscal asset'))->default(null)->dehydrated(fn ($state) => $state !== null),
                 ])->columns(2),

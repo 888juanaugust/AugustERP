@@ -13,6 +13,7 @@ use App\Filament\Resources\Company\Employees\Pages\CreateEmployee;
 use App\Filament\Resources\Company\Employees\Pages\EditEmployee;
 use App\Filament\Resources\Company\Employees\Pages\ListEmployees;
 use App\Filament\Support\AddressFields;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\NumberFields;
 use App\Models\Company\Employee;
@@ -74,7 +75,7 @@ class EmployeeResource extends MasterResource
                     NumberFields::make(TransactionType::Employee, 'Employee ID'),
                     TextInput::make('position')->label(__('Position'))->maxLength(100),
                     DatePicker::make('join_date')->label(__('Join date'))->native(false)->displayFormat(Format::DATE_INPUT),
-                    Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false),
+                    BranchFields::select(defaulted: false),
                     Toggle::make('is_salesman')->label(__('Salesperson: may be named on sales documents'))->inline(false),
                     self::activeToggle()->inline(false),
                     Textarea::make('notes')->label(__('fields.memo'))->rows(2)->columnSpanFull(),

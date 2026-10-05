@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Sales\SalesInvoices;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Sales\CreditCheck;
@@ -124,7 +126,7 @@ class SalesInvoiceResource extends ErpResource
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
                 TextColumn::make('age')->label(__('Age (days)'))->state(fn (SalesInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd()
-                    ->color(fn (SalesInvoice $r) => ($notice = app(CreditCheck::class)->noticeDays()) > 0 && $r->payment_status !== 'paid' && $r->trans_date->diffInDays(today()) > $notice ? 'danger' : null),
+                    ->color(fn (SalesInvoice $r) => HakAkses::canSpecial(HakKhusus::SeeCreditData) && ($notice = app(CreditCheck::class)->noticeDays()) > 0 && $r->payment_status !== 'paid' && $r->trans_date->diffInDays(today()) > $notice ? 'danger' : null),
                 Rupiah::make('total')->label(__('fields.total')),
                 TextColumn::make('nsfp')->label(__('NSFP'))->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_printed')->label(__('fields.is_printed'))->boolean()->toggleable(isToggledHiddenByDefault: true),

@@ -219,6 +219,7 @@ final class PricedDocumentForm
     {
         return Tab::make(__('fields.other_info'))->schema([
             ...$extra,
+            BranchFields::select(),
             Textarea::make('to_address')->label(__('Address'))->rows(2),
             Textarea::make('description')->label(__('fields.description'))->rows(2),
             Toggle::make('taxable')->label(__('fields.taxable'))->default(true)->live(),

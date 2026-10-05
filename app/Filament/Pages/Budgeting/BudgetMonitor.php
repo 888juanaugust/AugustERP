@@ -8,9 +8,9 @@ use App\Domain\Access\MenuKey;
 use App\Domain\Budgeting\BudgetMonitor as Monitor;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpPage;
 use App\Filament\Support\Months;
-use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -48,7 +48,7 @@ class BudgetMonitor extends ErpPage implements HasTable
             'year' => today()->year,
             'month' => null,
             'account_id' => null,
-            'branch_id' => null,
+            'branch_id' => BranchFields::reportBranch(null),
         ]);
     }
 
@@ -62,7 +62,7 @@ class BudgetMonitor extends ErpPage implements HasTable
                     Select::make('account_id')->label(__('Account'))
                         ->options(fn () => Account::options(AccountType::Revenue, AccountType::CostOfSales, AccountType::Expense, AccountType::OtherIncome, AccountType::OtherExpense))
                         ->placeholder(__('All accounts'))->nullable()->searchable()->native(false)->live(),
-                    Select::make('branch_id')->label(__('Branch'))->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id')->all())->placeholder(__('All branches'))->nullable()->native(false)->live(),
+                    BranchFields::filter(),
                 ]),
             ])
             ->statePath('filters');
@@ -115,9 +115,9 @@ class BudgetMonitor extends ErpPage implements HasTable
 
         $month = $this->filters['month'] ?? null;
         $accountId = $this->filters['account_id'] ?? null;
-        $branchId = $this->filters['branch_id'] ?? null;
+        $branchId = BranchFields::reportBranch($this->filters['branch_id'] ?? null);
 
-        $rows = Monitor::rows($year, $month ? (int) $month : null, $accountId ? (int) $accountId : null, $branchId ? (int) $branchId : null);
+        $rows = Monitor::rows($year, $month ? (int) $month : null, $accountId ? (int) $accountId : null, $branchId);
 
         // The total alone means nothing was budgeted or spent: show the empty state instead.
         if (count($rows) === 1) {
