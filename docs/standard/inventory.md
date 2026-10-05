@@ -34,7 +34,7 @@ Menu key `vendor__purchase-requisition` · module `purchasing`
 
 **Columns:** Number · Date · Request type · Notes · Status · Estimated total · Approval
 
-**Filters:** Trans date · Request type
+**Filters:** Trans date · Request type · Printed
 
 **Actions:** Approve · Reject · Edit · Create order
 
@@ -66,7 +66,7 @@ Menu key `inventory__item-transfer` · module `inventory`
 
 **Columns:** Number · Date · Process · To / from · Warehouse · Notes · Delivery status · Approval
 
-**Filters:** Trans date · Process · Delivery status · Warehouse
+**Filters:** Trans date · Process · Delivery status · From warehouse · To warehouse
 
 **Actions:** Approve · Reject · Edit · Receive · Print
 
@@ -85,7 +85,7 @@ Menu key `inventory__item-transfer` · module `inventory`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Memo
+**Line grid "Lines":** Item · Category · Quantity · Unit · Memo
 
 #### Tab: Other info
 
@@ -99,7 +99,7 @@ Menu key `inventory__item-adjustment` · module `inventory`
 
 ### List
 
-**Columns:** Number · Date · Notes · Lines · Opening · Approval
+**Columns:** Number · Date · Notes · Lines · Total cost · Opening · Approval
 
 **Filters:** Trans date
 
@@ -201,7 +201,7 @@ Menu key `inventory__item` · module `inventory`
 
 ### List
 
-**Columns:** Item code · Type · Unit · Item name · Brand · Category · Available stock · Purchase price · Selling price · Minimum stock
+**Columns:** Item code · Type · Unit · Item name · Brand · Category · Available stock · In my warehouses · Purchase price · Selling price · Minimum stock
 
 **Filters:** Active · Item type · Category · Brand
 

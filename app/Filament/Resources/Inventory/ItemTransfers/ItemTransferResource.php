@@ -19,6 +19,7 @@ use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PrintAction;
+use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemTransfer;
 use App\Models\Inventory\Warehouse;
 use Brick\Math\BigDecimal;
@@ -27,6 +28,7 @@ use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
@@ -36,6 +38,7 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
@@ -82,12 +85,14 @@ class ItemTransferResource extends ErpResource
                         ->orderColumn('sort')
                         ->table([
                             TableColumn::make(__('Item')),
+                            TableColumn::make(__('Category')),
                             TableColumn::make(__('Quantity'))->alignment(Alignment::End),
                             TableColumn::make(__('Unit')),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             LineItemFields::item(stockedOnly: true),
+                            Placeholder::make('category')->hiddenLabel()->content(fn (Get $get) => $get('item_id') ? (Item::query()->with('category')->find($get('item_id'))?->category?->name ?? '—') : ''),
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
                             TextInput::make('memo')->maxLength(255),
@@ -129,7 +134,8 @@ class ItemTransferResource extends ErpResource
                 DocumentListFilters::dateRange(),
                 SelectFilter::make('item_transfer_type')->label(__('Process'))->options(['send' => __('Send'), 'receive' => __('Receive')]),
                 SelectFilter::make('status')->label(__('Delivery status'))->options(['pending' => __('Pending'), 'partial' => __('Partial'), 'processed' => __('Processed')]),
-                SelectFilter::make('warehouse_id')->label(__('Warehouse'))->relationship('warehouse', 'name'),
+                SelectFilter::make('warehouse_id')->label(__('From warehouse'))->relationship('warehouse', 'name'),
+                SelectFilter::make('reference_warehouse_id')->label(__('To warehouse'))->relationship('referenceWarehouse', 'name'),
             ])
             ->recordActions([
                 ...ApprovalActions::make(),

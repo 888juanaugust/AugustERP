@@ -65,6 +65,8 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
             'day_from' => 1,
             'day_to' => 31,
             'branch_id' => BranchFields::reportBranch(null),
+            'document' => 'all',
+            'status' => 'all',
             'search' => null,
         ]);
     }
@@ -77,7 +79,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
 
         return $schema
             ->components([
-                Section::make()->columns(5)->schema([
+                Section::make()->columns(4)->schema([
                     Select::make('kind')->label(__('Tax'))
                         ->options([TaxFiling::OUT => __('VAT out (sales)'), TaxFiling::IN => __('VAT in (purchases)')])
                         ->default(TaxFiling::OUT)->native(false)->selectablePlaceholder(false)->live(),
@@ -88,6 +90,12 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                     Select::make('day_from')->label(__('From day'))->options($days)->default(1)->native(false)->selectablePlaceholder(false)->live(),
                     Select::make('day_to')->label(__('To day'))->options($days)->default(31)->native(false)->selectablePlaceholder(false)->live(),
                     BranchFields::filter(),
+                    Select::make('document')->label(__('Document'))
+                        ->options(['all' => __('All'), 'invoice' => __('Tax invoice'), 'aggregated' => __('Aggregated (no buyer tax ID)')])
+                        ->default('all')->native(false)->selectablePlaceholder(false)->live(),
+                    Select::make('status')->label(__('Status'))
+                        ->options(['all' => __('All'), 'draft' => __('Draft'), 'exported' => __('Exported'), 'numbered' => __('Numbered')])
+                        ->default('all')->native(false)->selectablePlaceholder(false)->live(),
                     TextInput::make('search')->label(__('Search'))->placeholder(__('Number, serial or name'))->live(onBlur: true),
                 ]),
             ])
@@ -102,7 +110,10 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn () => FilingDocuments::query($this->kind(), $this->from(), $this->until(), $this->branchId(), $this->filters['search'] ?? null))
+            ->query(fn () => FilingDocuments::narrow(
+                FilingDocuments::query($this->kind(), $this->from(), $this->until(), $this->branchId(), $this->filters['search'] ?? null),
+                $this->kind(), $this->filters['document'] ?? 'all', $this->filters['status'] ?? 'all',
+            ))
             ->columns([
                 TextColumn::make('trans_date')->label(__('Tax date'))->formatStateUsing(fn ($state) => Format::date($state))->sortable(),
                 TextColumn::make('number')->label(__('Transaction No.'))->fontFamily('mono')->searchable(),
@@ -111,7 +122,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                     ->placeholder('—')->fontFamily('mono'),
                 Rupiah::make('dpp_total')->label(__('Tax base (DPP)')),
                 Rupiah::make('tax_total')->label(__('VAT')),
-                TextColumn::make('document')->label(__('Document'))->state(fn () => 'Tax invoice'),
+                TextColumn::make('document')->label(__('Document'))->state(fn ($record) => blank(($record->customer ?? $record->vendor)?->wp_number) ? __('Aggregated') : __('Tax invoice')),
                 TextColumn::make('status')->label(__('Status'))->badge()
                     ->state(fn ($record) => FilingDocuments::status($record))
                     ->formatStateUsing(fn (string $state) => ucfirst($state))
@@ -120,8 +131,11 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                         'exported' => 'warning',
                         default => 'gray',
                     }),
+                TextColumn::make('correction')->label(__('Correction'))->badge()->color('warning')
+                    ->state(fn ($record) => FilingDocuments::isCorrection($record) ? __('Replacement') : null)->placeholder('—'),
                 TextColumn::make('party_tax_id')->label(__('Tax ID'))->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_number)->placeholder('—'),
                 TextColumn::make('party_name')->label(__('Name'))->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_name ?: ($record->customer ?? $record->vendor)?->name),
+                TextColumn::make('info')->label(__('Info'))->state(fn ($record) => implode(' ', FilingDocuments::info($record)))->wrap()->placeholder('—')->color('warning'),
             ])
             ->recordActions([
                 Action::make('clearSerial')

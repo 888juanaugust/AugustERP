@@ -172,6 +172,7 @@ class PurchasePaymentResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
+                DocumentListFilters::dateRange('cheque_date', 'Cheque date'),
                 SelectFilter::make('payment_method')->label(__('Method'))->options(PaymentMethod::class),
                 SelectFilter::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('vendor_id')->label(__('Paid to'))->relationship('vendor', 'name')->searchable(),

@@ -33,6 +33,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 
@@ -138,7 +139,7 @@ class PurchaseReturnResource extends ErpResource
                 ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable()])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable(), TernaryFilter::make('is_printed')->label(__('fields.is_printed'))])
             ->recordActions([...ApprovalActions::make(), EditAction::make(), PrintAction::make()]);
     }
 

@@ -35,6 +35,7 @@ use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 /** Purchase Requisitions: what the business asks to buy; purchase orders pull from them. */
@@ -111,7 +112,7 @@ class PurchaseRequisitionResource extends ErpResource
                 ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('requisition_type')->label(__('Request type'))->options(['buy' => __('Buy items'), 'send' => __('Send items')])])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('requisition_type')->label(__('Request type'))->options(['buy' => __('Buy items'), 'send' => __('Send items')]), TernaryFilter::make('is_printed')->label(__('fields.is_printed'))])
             ->recordActions([
                 ...ApprovalActions::make(),
                 EditAction::make(),

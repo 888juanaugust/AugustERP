@@ -164,6 +164,7 @@ class CashPaymentResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
+                DocumentListFilters::dateRange('cheque_date', 'Cheque date'),
                 SelectFilter::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
             ->recordActions([...ApprovalActions::make(), EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);

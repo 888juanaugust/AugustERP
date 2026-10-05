@@ -12,13 +12,17 @@ use App\Domain\Reports\ExcelExport;
 use App\Domain\Shared\Enums\TaxDocumentCode;
 use App\Domain\Shared\Format;
 use App\Domain\Tax\FilingDocuments;
+use App\Domain\Tax\TaxFilingService;
 use App\Filament\Support\ErpPage;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
+use App\Models\Tax\VatReturnRecord;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -108,6 +112,31 @@ class VatReturn extends ErpPage implements HasTable
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('saveReturn')
+                ->label(__('Save return'))
+                ->icon('heroicon-m-document-check')
+                ->visible(fn () => static::canUpdate())
+                ->requiresConfirmation()
+                ->modalDescription(fn () => __('Saves the VAT return for :from – :until with a number from the VAT return series.', ['from' => Format::date($this->from()), 'until' => Format::date($this->until())]))
+                ->schema([Textarea::make('notes')->label(__('Notes'))->rows(2)])
+                ->action(function (array $data): void {
+                    try {
+                        $return = app(TaxFilingService::class)->saveReturn($this->from(), $this->until(), $data['notes'] ?? null);
+                    } catch (\RuntimeException $e) {
+                        Notification::make()->title(__('Cannot save'))->body($e->getMessage())->danger()->send();
+
+                        return;
+                    }
+                    Notification::make()->title(__('VAT return :number saved: :amount payable', ['number' => $return->number, 'amount' => Format::money($return->payable)]))->success()->send();
+                }),
+            Action::make('savedReturns')
+                ->label(__('Saved returns'))
+                ->icon('heroicon-m-folder')
+                ->color('gray')
+                ->modalHeading(__('Saved VAT returns'))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel(__('Close'))
+                ->modalContent(fn () => view('filament.pages.reports.vat-returns-saved', ['returns' => VatReturnRecord::query()->latest('id')->limit(24)->get()])),
             Action::make('export')
                 ->label(__('Export to Excel'))
                 ->visible(fn () => HakAkses::canSpecial(HakKhusus::ExportData))

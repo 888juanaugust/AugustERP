@@ -36,6 +36,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 /** Sales Down Payments: an invoice for money up front with its own VAT; a receivable, deducted on the sales invoice. */
@@ -102,7 +103,7 @@ class SalesDownPaymentResource extends ErpResource
                 Rupiah::make('total')->label(__('fields.total')),
             ])
             ->defaultSort('trans_date', 'desc')
-            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('customer_id')->label(__('fields.customer'))->relationship('customer', 'name')->searchable()])
+            ->filters([DocumentListFilters::dateRange(), SelectFilter::make('customer_id')->label(__('fields.customer'))->relationship('customer', 'name')->searchable(), TernaryFilter::make('is_printed')->label(__('fields.is_printed'))])
             ->recordActions([
                 EditAction::make(),
                 Action::make('receive')->label(__('Receive payment'))->icon('heroicon-m-banknotes')->color('primary')

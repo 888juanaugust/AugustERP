@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Domain\Tax;
 
 use App\Domain\Audit\Auditor;
+use App\Domain\Numbering\NumberGenerator;
+use App\Domain\Numbering\TransactionType;
 use App\Models\Purchasing\PurchaseInvoice;
 use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
+use App\Models\Tax\VatReturnRecord;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -111,5 +114,43 @@ final class TaxFilingService
         }
         $document->forceFill(['nsfp' => null] + ($document instanceof SalesInvoice ? ['nsfp_filed_at' => null] : []))->saveQuietly();
         Auditor::log('tax_serial_cleared', $document, $document->number, ['serial' => $serial], (string) $document->trans_date?->toDateString());
+    }
+
+    /**
+     * Saves the VAT return for a period: VAT out and VAT in with their tax
+     * bases, and what is payable (a negative amount is a surplus to carry),
+     * numbered from the VAT return series and logged.
+     */
+    public function saveReturn(CarbonImmutable|string $from, CarbonImmutable|string $until, ?string $notes = null): VatReturnRecord
+    {
+        $from = CarbonImmutable::parse($from);
+        $until = CarbonImmutable::parse($until);
+        $sum = function (string $kind) use ($from, $until): array {
+            $docs = FilingDocuments::query($kind, $from, $until)->get(['id', 'dpp_total', 'tax_total']);
+
+            return ['base' => (int) $docs->sum('dpp_total'), 'tax' => (int) $docs->sum('tax_total'), 'count' => $docs->count()];
+        };
+        $out = $sum(TaxFiling::OUT);
+        $in = $sum(TaxFiling::IN);
+        $numbers = app(NumberGenerator::class);
+        $series = $numbers->defaultSeries(TransactionType::VatReturn, auth()->user()) ?? throw new RuntimeException(__('No number series for :type.', ['type' => TransactionType::VatReturn->getLabel()]));
+
+        return DB::transaction(function () use ($numbers, $series, $from, $until, $out, $in, $notes): VatReturnRecord {
+            $return = VatReturnRecord::query()->create([
+                'number' => $numbers->next($series, $until),
+                'series_id' => $series->id,
+                'from_date' => $from->toDateString(),
+                'until_date' => $until->toDateString(),
+                'vat_out_base' => $out['base'], 'vat_out' => $out['tax'],
+                'vat_in_base' => $in['base'], 'vat_in' => $in['tax'],
+                'payable' => $out['tax'] - $in['tax'],
+                'document_count' => $out['count'] + $in['count'],
+                'notes' => $notes,
+                'created_by' => auth()->id(),
+            ]);
+            Auditor::log('vat_return_saved', $return, $return->number, ['payable' => $return->payable], $until->toDateString());
+
+            return $return;
+        });
     }
 }

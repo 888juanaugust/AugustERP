@@ -178,7 +178,7 @@ Menu key `customer__sales-downpayment` · module `sales`
 
 **Columns:** Number · Date · Customer · Notes · Status · Age (days) · Total
 
-**Filters:** Trans date · Customer
+**Filters:** Trans date · Customer · Printed
 
 **Actions:** Edit · Receive payment
 
@@ -290,7 +290,7 @@ Menu key `customer__sales-receipt` · module `sales`
 
 **Columns:** Number · Date · Cheque No. · Cheque date · Customer · Bank · Notes · Credit used · Giro · Amount received
 
-**Filters:** Trans date · Method · Bank · Received from
+**Filters:** Trans date · Cheque date · Method · Bank · Received from
 
 **Actions:** Edit · Giro cleared · Giro bounced · Print
 
@@ -312,7 +312,7 @@ Menu key `customer__sales-receipt` · module `sales`
 
 #### Tab: Invoices
 
-**Line grid "Lines":** Invoice · Open balance · Pay · Discount · Discount account
+**Line grid "Lines":** Invoice · Invoice date · Invoice total · Open balance · Pay · Discount · Discount account
 
 #### Tab: Other info
 

@@ -13,8 +13,9 @@ use App\Modules\ModuleRegistry;
 use Carbon\CarbonImmutable;
 
 /**
- * What a month holds: invoices falling due, giros maturing, recurring
- * transactions scheduled, the month's end, and the company's own notes.
+ * What a stretch of days holds (a month, a week, the agenda): invoices
+ * falling due, giros maturing, recurring transactions scheduled, month ends,
+ * and the company's own notes.
  */
 final class CalendarFeed
 {
@@ -22,7 +23,13 @@ final class CalendarFeed
     public static function month(int $year, int $month): array
     {
         $from = CarbonImmutable::create($year, $month, 1);
-        $until = $from->endOfMonth();
+
+        return self::between($from, $from->endOfMonth());
+    }
+
+    /** @return array<string, list<array{kind: string, title: string, url: ?string}>> date → events, for any range (a week, the agenda) */
+    public static function between(CarbonImmutable $from, CarbonImmutable $until): array
+    {
         $events = [];
         $add = function (string $date, string $kind, string $title, ?string $url = null) use (&$events): void {
             $events[$date][] = ['kind' => $kind, 'title' => $title, 'url' => $url];
@@ -43,7 +50,10 @@ final class CalendarFeed
         foreach (CalendarEvent::query()->whereBetween('starts_on', [$from->toDateString(), $until->toDateString()])->orderBy('starts_on')->get() as $event) {
             $add($event->starts_on->toDateString(), 'note', $event->title);
         }
-        $add($until->toDateString(), 'period', app(ModuleRegistry::class)->isEnabled('fixed-assets') ? 'Month end: close the period and run depreciation' : 'Month end: close the period');
+        $monthEnd = app(ModuleRegistry::class)->isEnabled('fixed-assets') ? 'Month end: close the period and run depreciation' : 'Month end: close the period';
+        for ($end = $from->endOfMonth()->startOfDay(); $end->lte($until); $end = $end->addDay()->endOfMonth()->startOfDay()) {
+            $add($end->toDateString(), 'period', $monthEnd);
+        }
         ksort($events);
 
         return $events;

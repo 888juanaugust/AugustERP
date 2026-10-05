@@ -228,7 +228,7 @@ Menu key `vendor__purchase-payment` · module `purchasing`
 
 **Columns:** Number · Date · Cheque No. · Cheque date · Vendor · Bank · Method · Notes · Giro · Amount paid · Approval
 
-**Filters:** Trans date · Method · Bank · Paid to
+**Filters:** Trans date · Cheque date · Method · Bank · Paid to
 
 **Actions:** Approve · Reject · Edit · Giro cleared · Giro bounced · Print
 
@@ -268,7 +268,7 @@ Menu key `vendor__purchase-return` · module `purchasing`
 
 **Columns:** Number · Date · Vendor · Return from · Notes · Credit used · Total · Approval
 
-**Filters:** Trans date · Vendor
+**Filters:** Trans date · Vendor · Printed
 
 **Actions:** Approve · Reject · Edit · Print
 
@@ -515,7 +515,7 @@ Menu key `vendor__transfer-order` · module `purchasing`
 
 #### Tab: Invoices
 
-**Line grid "Lines":** Invoice · Vendor · Open balance · Pay · Discount
+**Line grid "Lines":** Invoice · Vendor · Invoice date · Invoice total · Open balance · Pay · Discount
 
 #### Tab: Other info
 

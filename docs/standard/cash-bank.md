@@ -31,7 +31,7 @@ Menu key `cash-bank__other-payment` · module `cash-bank`
 
 **Columns:** Number · Date · Cash / Bank · Cheque No. · Notes · Giro · Amount · Approval
 
-**Filters:** Trans date · Cash / Bank
+**Filters:** Trans date · Cheque date · Cash / Bank
 
 **Actions:** Approve · Reject · Edit · Giro cleared · Giro bounced · Memorize · Print
 
@@ -71,7 +71,7 @@ Menu key `cash-bank__other-deposit` · module `cash-bank`
 
 **Columns:** Number · Date · Cash / Bank · Cheque No. · Notes · Giro · Amount · Approval
 
-**Filters:** Trans date · Cash / Bank
+**Filters:** Trans date · Cheque date · Cash / Bank
 
 **Actions:** Approve · Reject · Edit · Giro cleared · Giro bounced · Memorize · Print
 

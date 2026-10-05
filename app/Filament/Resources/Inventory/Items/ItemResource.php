@@ -26,6 +26,7 @@ use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemCategory;
+use App\Models\Inventory\ItemCost;
 use App\Models\Inventory\Unit;
 use App\Models\Inventory\Warehouse;
 use Filament\Actions\DeleteAction;
@@ -232,6 +233,9 @@ class ItemResource extends MasterResource
     {
         $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
         $onHand = fn () => once(fn () => StockQuery::onHandMap());
+        // What sits in the warehouses this user may use.
+        $mine = fn () => once(fn () => ItemCost::query()->whereIn('warehouse_id', Warehouse::query()->visibleTo(auth()->user())->select('id'))
+            ->groupBy('item_id')->selectRaw('item_id, SUM(qty_on_hand) AS qty')->pluck('qty', 'item_id')->all());
 
         return $table
             ->modifyQueryUsing(fn ($query) => $query->with(['unit1', 'brand', 'category']))
@@ -244,6 +248,7 @@ class ItemResource extends MasterResource
                 TextColumn::make('category.name')->label(__('Category'))->placeholder('—')->toggleable(),
                 TextColumn::make('stock')->label(__('Available stock'))->state(fn (Item $r) => Format::quantity($onHand()[$r->id] ?? '0'))->alignEnd()
                     ->url(fn (Item $r) => StockByWarehouse::getUrl(['item' => $r->id])),
+                TextColumn::make('my_stock')->label(__('In my warehouses'))->state(fn (Item $r) => Format::quantity((string) ($mine()[$r->id] ?? '0')))->alignEnd()->toggleable(),
                 Rupiah::make('purchase_price')->label(__('Purchase price'))->visible($seesCost),
                 Rupiah::make('sell_price')->label(__('Selling price')),
                 TextColumn::make('min_stock')->label(__('Minimum stock'))->state(fn (Item $r) => Format::quantity($r->min_stock))->alignEnd(),
