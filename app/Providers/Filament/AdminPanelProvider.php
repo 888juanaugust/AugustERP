@@ -9,6 +9,7 @@ use App\Filament\Pages\Workspace;
 use App\Filament\Support\SafeDelete;
 use App\Filament\Support\SideTabIcons;
 use App\Filament\Widgets\CompanyPulse;
+use App\Http\Controllers\A1SlipController;
 use App\Http\Controllers\PrintController;
 use App\Http\Middleware\EndInactiveSessions;
 use App\Http\Middleware\EnforceAccessWindow;
@@ -110,6 +111,7 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
             ])
             ->routes(fn () => Route::get('/print/{alias}/{id}', PrintController::class)->name('print'))
+            ->authenticatedRoutes(fn () => Route::get('/payroll/a1/{employee}/{year}', A1SlipController::class)->whereNumber(['employee', 'year'])->name('a1'))
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.shell.head'))
             ->renderHook(
                 PanelsRenderHook::LAYOUT_START,

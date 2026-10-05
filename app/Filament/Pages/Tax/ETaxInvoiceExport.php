@@ -207,7 +207,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel(__('Close'))
                 ->modalContent(fn () => view('filament.pages.tax.filings', [
-                    'filings' => TaxFiling::query()->where('format', $this->format())->latest('created_at')->limit(20)->get(),
+                    'filings' => TaxFiling::query()->where('format', $this->format())->whereIn('kind', [TaxFiling::OUT, TaxFiling::IN])->latest('created_at')->limit(20)->get(),
                 ])),
         ];
     }

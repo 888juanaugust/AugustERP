@@ -5,8 +5,11 @@ namespace Database\Seeders\Demo;
 use App\Domain\Numbering\NumberGenerator;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Posting\DocumentRepository;
+use App\Domain\Shared\Enums\PtkpStatus;
+use App\Domain\Shared\Enums\WorkStatus;
 use App\Models\Company\Employee;
 use App\Models\Company\PaymentTerm;
+use App\Models\Company\SalaryComponent;
 use App\Models\Company\TaxCode;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
@@ -57,8 +60,16 @@ class DemoCompanySeeder extends Seeder
         }
 
         $salespeople = [];
-        foreach (['Alex Doe', 'Sam Roe'] as $name) {
-            $salespeople[] = Employee::query()->firstOrCreate(['name' => $name], ['number' => $number(TransactionType::Employee), 'is_salesman' => true, 'position' => 'Sales representative']);
+        foreach ([['Alex Doe', PtkpStatus::K1, 9_000_000], ['Sam Roe', PtkpStatus::TK0, 7_500_000]] as $i => [$name, $ptkp, $pay]) {
+            $employee = Employee::query()->firstOrCreate(['name' => $name], ['number' => $number(TransactionType::Employee), 'is_salesman' => true, 'position' => 'Sales representative',
+                'nik_no' => '317101010190000'.($i + 1), 'join_date' => CarbonImmutable::today()->startOfYear()->subYear()->toDateString(),
+                'withhold_income_tax' => true, 'work_status' => WorkStatus::Permanent, 'tax_status' => $ptkp]);
+            // With payroll on, a monthly salary to calculate payroll from.
+            $salary = SalaryComponent::query()->where('fee_type', 'salary')->first();
+            if ($salary !== null) {
+                $employee->salaryComponents()->firstOrCreate(['salary_component_id' => $salary->id], ['amount' => $pay]);
+            }
+            $salespeople[] = $employee;
         }
 
         $priceCategory = PriceCategory::query()->where('is_default', true)->value('id');

@@ -21,9 +21,13 @@ use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
 use App\Models\Company\Employee;
 use App\Models\Company\PayrollEntry;
+use App\Models\Company\SalaryComponent;
+use App\Modules\ModuleRegistry;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -34,6 +38,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -78,6 +83,8 @@ class EmployeeResource extends MasterResource
                     NumberFields::make(TransactionType::Employee, 'Employee ID'),
                     TextInput::make('position')->label(__('Position'))->maxLength(100),
                     DatePicker::make('join_date')->label(__('Join date'))->native(false),
+                    DatePicker::make('exit_date')->label(__('Exit date'))->native(false)->afterOrEqual('join_date')
+                        ->helperText(__('Payroll stops after this month, and that month works out the year\'s tax.')),
                     BranchFields::select(defaulted: false),
                     Toggle::make('is_salesman')->label(__('Salesperson: may be named on sales documents'))->inline(false),
                     self::activeToggle()->inline(false),
@@ -99,10 +106,32 @@ class EmployeeResource extends MasterResource
                                 Select::make('start_year_payment')->label(__('year'))
                                     ->options(collect(range((int) date('Y') - 5, (int) date('Y') + 1))->mapWithKeys(fn (int $y) => [$y => (string) $y])->all())->native(false),
                             ]),
-                            MoneyInput::make('previous_income')->label(__('Income earned before joining'))->prefix(Format::symbol())->default(0),
-                            MoneyInput::make('previous_tax')->label(__('Tax withheld before joining'))->prefix(Format::symbol())->default(0),
+                            MoneyInput::make('previous_income')->label(__('Net income from an earlier employer this year'))->prefix(Format::symbol())->default(0),
+                            MoneyInput::make('previous_tax')->label(__('Tax withheld by that employer'))->prefix(Format::symbol())->default(0),
                         ]),
                 ]),
+                Tab::make(__('Pay'))
+                    ->visible(fn () => app(ModuleRegistry::class)->isEnabled('payroll'))
+                    ->schema([
+                        Repeater::make('salaryComponents')->label(__('Paid every month'))
+                            ->relationship()
+                            ->orderColumn('sort')
+                            ->table([TableColumn::make(__('Component')), TableColumn::make(__('Amount'))->alignment(Alignment::End)])
+                            ->schema([
+                                Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->required()->native(false)->distinct(),
+                                MoneyInput::make('amount')->required()->default(0),
+                            ])
+                            ->defaultItems(0)
+                            ->addActionLabel('Add a component')
+                            ->helperText(__('"Calculate payroll" on a payroll entry pays these, adds BPJS and works out the income tax.')),
+                        Grid::make(4)->schema([
+                            Toggle::make('bpjs_health')->label(__('BPJS Health'))->default(true)->inline(false),
+                            Toggle::make('bpjs_employment')->label(__('BPJS Employment (JHT, JKK, JKM)'))->default(true)->inline(false),
+                            Toggle::make('jp_participant')->label(__('Pension (JP)'))->default(true)->inline(false),
+                            Select::make('jkk_rate')->label(__('Work accident rate (JKK)'))->options(fn () => collect((array) config('payroll.bpjs.jkk_rates'))->mapWithKeys(fn ($r) => [(string) $r => $r.' %'])->all())->default('0.24')->native(false)
+                                ->formatStateUsing(fn ($state) => $state === null ? null : (string) (float) $state),
+                        ]),
+                    ]),
                 Tab::make(__('Salary account'))->schema([
                     Grid::make(3)->schema([
                         Select::make('bank_id')->label(__('Bank'))->relationship('bank', 'name')->preload()->searchable()->native(false),

@@ -90,6 +90,11 @@ enum PreferensiKey: string
     case GiroPayableAccount = 'accounts.giro_payable';
     case ExchangeGainAccount = 'accounts.exchange_gain';
     case ExchangeLossAccount = 'accounts.exchange_loss';
+    case SalaryExpenseAccount = 'accounts.salary_expense';
+    case SalaryPayableAccount = 'accounts.salary_payable';
+    case Pph21PayableAccount = 'accounts.pph21_payable';
+    case BpjsPayableAccount = 'accounts.bpjs_payable';
+    case BpjsExpenseAccount = 'accounts.bpjs_expense';
 
     // Other
     case DecimalFormat = 'other.decimal_format';
@@ -136,7 +141,8 @@ enum PreferensiKey: string
             self::ReturnCostAccount, self::TemporaryPaymentAccount, self::ReceivableAccount,
             self::CustomerDownPaymentAccount, self::SalesDiscountAccount, self::PayableAccount,
             self::VendorDownPaymentAccount, self::CostOfSalesAccount, self::InventoryAccount,
-            self::GoodsInTransitAccount, self::RoundingAccount, self::GiroReceivableAccount, self::GiroPayableAccount, self::ExchangeGainAccount, self::ExchangeLossAccount => PreferensiType::Account,
+            self::GoodsInTransitAccount, self::RoundingAccount, self::GiroReceivableAccount, self::GiroPayableAccount, self::ExchangeGainAccount, self::ExchangeLossAccount,
+            self::SalaryExpenseAccount, self::SalaryPayableAccount, self::Pph21PayableAccount, self::BpjsPayableAccount, self::BpjsExpenseAccount => PreferensiType::Account,
             self::AgingRangeDays, self::AgingIntervalDays, self::CreditNoticeDays, self::CreditFreezeDays => PreferensiType::Int,
             self::TransactionExtraColumns, self::ItemExtraColumns, self::ExtraDateColumns => PreferensiType::TextList,
             default => match ($this->tab()) {
@@ -263,6 +269,11 @@ enum PreferensiKey: string
             self::GiroPayableAccount => __('Giros payable (cheques issued, not yet cleared)'),
             self::ExchangeGainAccount => __('Realised exchange gains'),
             self::ExchangeLossAccount => __('Realised exchange losses'),
+            self::SalaryExpenseAccount => __('Salaries (a component without its own account)'),
+            self::SalaryPayableAccount => __('Net pay owed to employees'),
+            self::Pph21PayableAccount => __('Income tax Art. 21 withheld'),
+            self::BpjsPayableAccount => __('BPJS contributions owed'),
+            self::BpjsExpenseAccount => __('BPJS contributions paid by the employer'),
             self::DecimalFormat => __('Number format'),
             self::QuantityDecimals => __('Decimals on quantities'),
             self::PriceDecimals => __('Decimals on prices'),
@@ -296,7 +307,7 @@ enum PreferensiKey: string
             self::DateFormat => __('How dates are typed and shown in date fields; tables keep "17 Oct 2026".'),
             self::FixedAssets, self::BudgetTarget, self::Tax, self::Approval, self::SalesExtras, self::Payroll => __('Switches the module and its screens on or off; data already entered is kept.'),
             self::MultiBranch => __('Shows the Branches screen and branch filters; one default branch always exists.'),
-            self::MultiCurrency => __('Shows the Currencies screen; amounts stay in the base currency.'),
+            self::MultiCurrency => __('Shows the Currencies screen; with a foreign currency active, documents can be in it, kept in both currencies.'),
             self::Department => __('Shows the Departments screen; documents carry a department on the header and per line, and the income statement and ledger reports filter by it.'),
             self::Project => __('Shows the Projects screen; documents carry a project on the header and per line, and the income statement and ledger reports filter by it.'),
             self::LastPriceUpdatedByBill => __('A purchase invoice sets the item\'s purchase price to what it paid per base unit, when it is the item\'s latest invoice.'),

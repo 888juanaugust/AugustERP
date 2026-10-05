@@ -15,6 +15,7 @@ use App\Models\Company\Contact;
 use App\Models\Company\Currency;
 use App\Models\Company\CurrencyRate;
 use App\Models\Company\Employee;
+use App\Models\Company\EmployeeSalaryComponent;
 use App\Models\Company\Fob;
 use App\Models\Company\MemorizedTransaction;
 use App\Models\Company\OpeningBalance;
@@ -64,6 +65,7 @@ final class CompanyModule extends BaseModule
             'fob' => Fob::class,
             'audit_log' => AuditLog::class,
             'employee' => Employee::class,
+            'employee_salary_component' => EmployeeSalaryComponent::class,
             'contact' => Contact::class,
             'recurring_transaction' => RecurringTransaction::class,
             'memorized_transaction' => MemorizedTransaction::class,

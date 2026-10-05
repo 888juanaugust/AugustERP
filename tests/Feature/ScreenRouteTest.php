@@ -99,8 +99,6 @@ class ScreenRouteTest extends TestCase
             $this->assertContains($key->value, $built, $key->label().' is not built');
         }
 
-        $this->assertEqualsCanonicalizing([
-            MenuKey::EmailTaxInvoice->value, MenuKey::IncomeTaxArt21Return->value, MenuKey::WithholdingSlips->value,
-        ], $placeholders);
+        $this->assertEqualsCanonicalizing([MenuKey::EmailTaxInvoice->value], $placeholders);
     }
 }

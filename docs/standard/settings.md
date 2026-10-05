@@ -120,6 +120,11 @@ Menu key `company__preferences` · module `settings`
 | Giros payable (cheques issued, not yet cleared) | `accounts__giro_payable` | select |  |
 | Realised exchange gains | `accounts__exchange_gain` | select |  |
 | Realised exchange losses | `accounts__exchange_loss` | select |  |
+| Salaries (a component without its own account) | `accounts__salary_expense` | select |  |
+| Net pay owed to employees | `accounts__salary_payable` | select |  |
+| Income tax Art. 21 withheld | `accounts__pph21_payable` | select |  |
+| BPJS contributions owed | `accounts__bpjs_payable` | select |  |
+| BPJS contributions paid by the employer | `accounts__bpjs_expense` | select |  |
 
 #### Tab: Other
 

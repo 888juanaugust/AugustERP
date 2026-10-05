@@ -2,13 +2,15 @@
 
 namespace App\Models\Company;
 
+use App\Domain\Documents\Accounts;
+use App\Domain\Payroll\IncomeKinds;
+use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
 use App\Domain\Posting\Tags;
 use App\Domain\Settlement\Contracts\PaidByPayment;
 use App\Domain\Settlement\SettlementService;
-use App\Models\GeneralLedger\Account;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,9 +19,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * A payroll entry: the journal of one pay period, employee by employee.
  * Gross pay is the expense, the income tax withheld is owed to the tax
- * office, the net is owed to the employees until paid. Payroll itself
- * (the calculation) is outside the system. The net pay is settled by payment
- * lines pointing at the entry.
+ * office, the net is owed to the employees until paid; BPJS contributions
+ * and deductions are owed to their accounts. The lines are typed, or worked
+ * out by payroll (PayrollRun). The net pay is settled by payment lines
+ * pointing at the entry.
  */
 class PayrollEntry extends Model implements PaidByPayment, Postable
 {
@@ -72,17 +75,26 @@ class PayrollEntry extends Model implements PaidByPayment, Postable
 
     public function buildPostings(PostingBuilder $builder): void
     {
-        $taxAccount = $this->tax_payable_account_id ?? Account::query()->where('no', '2220')->value('id');
-        $fallbackExpense = Account::query()->where('no', '6100')->value('id');
+        $taxAccount = $this->tax_payable_account_id ?? Accounts::payroll(PreferensiKey::Pph21PayableAccount);
         $tax = 0;
         $net = 0;
+        $contributions = [];
         foreach ($this->lines()->with(['employee', 'component'])->get() as $line) {
-            $expense = $line->component?->expense_account_id ?? $fallbackExpense;
-            $builder->debit($expense, (int) $line->gross_amount, $line->employee?->name, null, Tags::of($line));
+            // A component's own account, else salaries, or BPJS for an employer contribution worked out by payroll.
+            $expense = $line->component?->expense_account_id
+                ?? Accounts::payroll(IncomeKinds::isEmployerContribution($line->fee_type) ? PreferensiKey::BpjsExpenseAccount : PreferensiKey::SalaryExpenseAccount);
+            $builder->signed($expense, (int) $line->gross_amount, $line->employee?->name, null, Tags::of($line));
             $tax += (int) $line->income_tax;
             $net += (int) $line->net_amount;
+            if ((int) $line->contribution_amount !== 0) {
+                $account = (int) ($line->contribution_account_id ?? Accounts::payroll(PreferensiKey::BpjsPayableAccount));
+                $contributions[$account] = ($contributions[$account] ?? 0) + (int) $line->contribution_amount;
+            }
         }
-        $builder->credit($taxAccount, $tax, 'Income tax withheld');
-        $builder->credit($this->expense_payable_account_id, $net, $this->description ?: 'Net pay, '.$this->periodLabel());
+        $builder->signed($taxAccount, -$tax, 'Income tax withheld');
+        foreach ($contributions as $account => $amount) {
+            $builder->signed($account, -$amount, 'BPJS and deductions, '.$this->periodLabel());
+        }
+        $builder->signed($this->expense_payable_account_id, -$net, $this->description ?: 'Net pay, '.$this->periodLabel());
     }
 }

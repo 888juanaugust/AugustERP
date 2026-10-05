@@ -10,7 +10,7 @@ Module group `company`. 16 screens in the standard menu.
 - Tax codes carry a rate and the accounts for tax on sales and purchases; a code may compute its base as a fraction of the price (the 12 % VAT whose base is 11/12 of the price is the seeded default). Prices on a document are entered including or excluding tax, per document.
 - Payment terms name a due period in days, an early-payment discount and its window; chosen per customer or vendor and per document.
 - Shipping methods and FOB terms are masters chosen on orders and deliveries.
-- Employees are the salespeople named on sales documents, customers and commissions; salary components feed payroll entries when the payroll module is on.
+- Employees are the salespeople named on sales documents, customers and commissions. With the payroll module on, an employee's Pay tab holds the salary components paid every month and their amounts, BPJS participation (health; employment: old-age savings, work accident and death; pension) and the work-accident rate of their risk group; the Income tax tab holds the PTKP status, the month tax counting starts and any net income and tax from an earlier employer that year; an exit date ends payroll after that month. Salary components each name an income kind (salary, allowances, overtime, bonus, employer-paid insurance, employee contributions, deductions), which decides whether it is taxed, on which A1 row it falls, and whether it is paid, deducted or owed to a fund.
 - Recurring transactions make their document (journal voucher, payment or receipt) on schedule; memorized transactions are templates filled in by hand. The calendar shows what falls due: receivables, payables, maturing giros, recurring runs, notes and month end, by month, by week, or as an agenda of the next 30 days.
 - Month-end process closes months in order; a closed month refuses any addition, change or deletion dated in it, on the old and the new date of an edit; reopening takes a special right and is audited.
 - The activity log is the append-only record of who did what, with the document's revisions before and after each change.
@@ -313,6 +313,7 @@ Menu key `company__employee` · module `company`
 | Employee ID | `number` | text |  |
 | Position | `position` | text |  |
 | Join date | `join_date` | date |  |
+| Exit date | `exit_date` | date |  |
 | Branch | `branch_id` | select |  |
 | Salesperson: may be named on sales documents | `is_salesman` | toggle |  |
 | Active | `is_active` | toggle |  |
@@ -340,8 +341,19 @@ Menu key `company__employee` · module `company`
 | Non-taxable income status (PTKP) | `tax_status` | select |  |
 | Tax counted from month | `start_month_payment` | select |  |
 | year | `start_year_payment` | select |  |
-| Income earned before joining | `previous_income` | number |  |
-| Tax withheld before joining | `previous_tax` | number |  |
+| Net income from an earlier employer this year | `previous_income` | number |  |
+| Tax withheld by that employer | `previous_tax` | number |  |
+
+#### Tab: Pay
+
+**Line grid "Paid every month":** Component · Amount
+
+| Field | Column | Type | Required |
+|---|---|---|---|
+| BPJS Health | `bpjs_health` | toggle |  |
+| BPJS Employment (JHT, JKK, JKM) | `bpjs_employment` | toggle |  |
+| Pension (JP) | `jp_participant` | toggle |  |
+| Work accident rate (JKK) | `jkk_rate` | select |  |
 
 #### Tab: Salary account
 
