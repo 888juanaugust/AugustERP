@@ -52,7 +52,25 @@
     --ae-gap-card: 12px;
     --ae-pad-card: 16px;
     --ae-sidebar-inset: 12px;
-    --ae-sidebar-width: 200px;
+
+    /* Workspace shell */
+    --ae-rail-width: 56px;
+    --ae-rail-bg: var(--ae-ink);
+    --ae-rail-icon: #c3cbdc;
+    --ae-topbar-height: 56px;
+    --ae-tabstrip-height: 38px;
+    --ae-side-tabs-width: 48px;
+
+    /* Tiles of the module menu, by what the screen is for */
+    --ae-tile-setup-bg: #eaf0fd;
+    --ae-tile-setup-edge: #bfd0f6;
+    --ae-tile-setup-fg: #2f5bea;
+    --ae-tile-work-bg: #e7f6ec;
+    --ae-tile-work-edge: #b7e0c3;
+    --ae-tile-work-fg: #166534;
+    --ae-tile-tool-bg: #f2edfd;
+    --ae-tile-tool-edge: #d7c9f6;
+    --ae-tile-tool-fg: #6941c6;
 }
 
 /* Proposed dark palette (DESIGN.md), not yet reviewed: dark mode stays off. */
@@ -81,73 +99,6 @@
 
 .fi-body :is(table, .fi-ta-cell, .fi-wi-stats-overview-stat-value, .fi-in-text, .fi-fo-field-wrp input[inputmode='decimal'], input[inputmode='numeric']) {
     font-variant-numeric: tabular-nums;
-}
-
-/* ---------- Floating sidebar ---------- */
-
-@media (min-width: 1024px) {
-    .fi-body:not(.fi-body-has-top-navigation) .fi-sidebar {
-        top: var(--ae-sidebar-inset);
-        height: calc(100dvh - 2 * var(--ae-sidebar-inset));
-        margin-inline-start: var(--ae-sidebar-inset);
-        background: var(--ae-surface);
-        border: 1px solid var(--ae-card-edge);
-        border-radius: var(--ae-radius);
-        box-shadow: var(--ae-shadow-card);
-    }
-
-    .fi-body-has-topbar:not(.fi-body-has-top-navigation) .fi-sidebar {
-        top: var(--ae-sidebar-inset);
-        height: calc(100dvh - 2 * var(--ae-sidebar-inset));
-    }
-}
-
-.fi-sidebar-nav {
-    padding: 16px 12px 20px;
-    gap: 20px;
-}
-
-.fi-sidebar-nav-groups {
-    margin-inline: 0;
-    gap: 18px;
-}
-
-.fi-sidebar-header {
-    padding-inline: 16px;
-}
-
-.fi-sidebar-group-label {
-    font-size: 11px;
-    line-height: 16px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ae-muted);
-}
-
-.fi-sidebar-item-btn {
-    padding: 8px 9px;
-    border-radius: var(--ae-radius-md);
-}
-
-.fi-sidebar-item-label {
-    font-size: 13.5px;
-    font-weight: 500;
-    color: var(--ae-ink);
-}
-
-.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
-.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:focus-visible {
-    background: var(--ae-surface-sunken);
-}
-
-.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-    background: var(--ae-accent-soft);
-}
-
-.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon,
-.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
-    color: var(--ae-accent);
 }
 
 /* ---------- Topbar on the canvas, page header ---------- */
@@ -519,3 +470,335 @@
     color: var(--ae-muted, #6b7280);
     padding-top: 14px;
 }
+
+/* ---------- Workspace shell: icon rail, tile menu, tabs, framed screens ---------- */
+
+[x-cloak] {
+    display: none !important;
+}
+
+.ae-rail {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 40;
+    display: none;
+}
+
+.ae-rail-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: var(--ae-rail-width);
+    height: 100%;
+    padding-block: 12px;
+    background: var(--ae-rail-bg);
+    overflow-y: auto;
+}
+
+.ae-rail-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--ae-radius-md);
+    color: var(--ae-rail-icon);
+    transition: background-color 120ms, color 120ms;
+}
+
+.ae-rail-btn:hover,
+.ae-rail-btn:focus-visible,
+.ae-rail-btn.is-open {
+    background: rgb(255 255 255 / 0.12);
+    color: #ffffff;
+    outline: none;
+}
+
+.ae-rail-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.ae-rail-sep {
+    width: 24px;
+    height: 1px;
+    margin-block: 4px;
+    background: rgb(255 255 255 / 0.16);
+}
+
+.ae-rail-btn[data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    inset-inline-start: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 4px 8px;
+    border-radius: var(--ae-radius-sm);
+    background: var(--ae-ink);
+    color: #ffffff;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: var(--ae-shadow-pop);
+}
+
+.ae-flyout {
+    position: fixed;
+    top: var(--ae-sidebar-inset);
+    inset-inline-start: calc(var(--ae-rail-width) + 8px);
+    width: min(720px, calc(100vw - var(--ae-rail-width) - 24px));
+    max-height: calc(100dvh - 2 * var(--ae-sidebar-inset));
+    overflow-y: auto;
+    padding: 18px 20px 20px;
+    background: var(--ae-surface);
+    border: 1px solid var(--ae-card-edge);
+    border-radius: var(--ae-radius);
+    box-shadow: var(--ae-shadow-pop);
+}
+
+.ae-flyout-title {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--ae-accent);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ae-ink);
+}
+
+.ae-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.ae-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 112px;
+    padding: 14px 10px;
+    border: 1px solid;
+    border-radius: var(--ae-radius-md);
+    text-align: center;
+    transition: box-shadow 120ms, transform 120ms;
+}
+
+.ae-tile:hover,
+.ae-tile:focus-visible {
+    box-shadow: var(--ae-shadow-card);
+    transform: translateY(-1px);
+    outline: 3px solid var(--ae-focus-ring);
+    outline-offset: 0;
+}
+
+.ae-tile-icon {
+    width: 34px;
+    height: 34px;
+}
+
+.ae-tile-label {
+    font-size: 12.5px;
+    line-height: 16px;
+    color: var(--ae-ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ae-tile-setup { background: var(--ae-tile-setup-bg); border-color: var(--ae-tile-setup-edge); color: var(--ae-tile-setup-fg); }
+.ae-tile-work  { background: var(--ae-tile-work-bg);  border-color: var(--ae-tile-work-edge);  color: var(--ae-tile-work-fg); }
+.ae-tile-tool  { background: var(--ae-tile-tool-bg);  border-color: var(--ae-tile-tool-edge);  color: var(--ae-tile-tool-fg); }
+
+.ae-menu-btn {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-inline-end: 8px;
+    border-radius: var(--ae-radius-sm);
+    color: var(--ae-ink);
+}
+
+.ae-menu-btn-icon {
+    width: 22px;
+    height: 22px;
+}
+
+@media (min-width: 1024px) {
+    .ae-rail {
+        display: block;
+    }
+
+    .ae-menu-btn {
+        display: none;
+    }
+
+    .fi-body:has(.ae-rail) .fi-topbar {
+        padding-inline-start: calc(var(--ae-rail-width) + var(--ae-pad-page));
+    }
+}
+
+/* Narrow screens: the rail opens as a full-screen sheet from the topbar button. */
+@media (max-width: 1023.98px) {
+    .ae-rail.is-mobile-open {
+        display: flex;
+        inset: 0;
+        background: var(--ae-canvas);
+    }
+
+    .ae-rail.is-mobile-open .ae-flyout {
+        inset-inline-start: calc(var(--ae-rail-width) + 8px);
+        width: calc(100vw - var(--ae-rail-width) - 16px);
+    }
+}
+
+/* The workspace: a strip of tabs over one live frame per open screen. */
+.fi-body:has(.ae-workspace) .fi-topbar {
+    height: var(--ae-topbar-height);
+}
+
+.ae-workspace {
+    position: fixed;
+    top: var(--ae-topbar-height);
+    inset-inline-end: 0;
+    bottom: 0;
+    inset-inline-start: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+    .ae-workspace {
+        inset-inline-start: var(--ae-rail-width);
+    }
+}
+
+.ae-tabstrip {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: var(--ae-tabstrip-height);
+    padding-inline: 12px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--ae-line);
+}
+
+.ae-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 220px;
+    height: 32px;
+    padding-inline: 12px 6px;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: var(--ae-radius-sm) var(--ae-radius-sm) 0 0;
+    color: var(--ae-muted);
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.ae-tab:hover {
+    color: var(--ae-ink);
+}
+
+.ae-tab.is-active {
+    background: var(--ae-surface);
+    border-color: var(--ae-card-edge);
+    box-shadow: inset 0 2px 0 var(--ae-accent);
+    color: var(--ae-ink);
+    font-weight: 500;
+}
+
+.ae-tab.is-pinned {
+    padding-inline-end: 12px;
+}
+
+.ae-tab-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ae-tab-close {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: var(--ae-radius-full);
+    font-size: 15px;
+    line-height: 1;
+    color: var(--ae-muted);
+}
+
+.ae-tab-close:hover {
+    background: var(--ae-neutral-bg);
+    color: var(--ae-ink);
+}
+
+.ae-frames {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
+
+.ae-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: var(--ae-canvas);
+}
+
+/* A screen inside a tab: the shell already shows the rail, topbar and tabs. */
+html.ae-framed .fi-topbar-ctn,
+html.ae-framed .fi-topbar,
+html.ae-framed .ae-rail {
+    display: none;
+}
+
+html.ae-framed .fi-main {
+    padding-top: 6px;
+}
+
+/* ---------- Form tabs as icons down the left side ---------- */
+
+.fi-sc-tabs.fi-vertical:not(.ae-tabs-labelled) > .fi-tabs {
+    flex: 0 0 var(--ae-side-tabs-width);
+    width: var(--ae-side-tabs-width);
+    padding: 6px;
+    align-items: center;
+}
+
+.fi-sc-tabs.fi-vertical:not(.ae-tabs-labelled) > .fi-tabs > .fi-tabs-item:has(> .fi-icon) {
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+}
+
+.fi-sc-tabs.fi-vertical:not(.ae-tabs-labelled) > .fi-tabs > .fi-tabs-item:has(> .fi-icon) > .fi-tabs-item-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.fi-sc-tabs.fi-vertical:not(.ae-tabs-labelled) > .fi-tabs > .fi-tabs-item > .fi-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.fi-sc-tabs.fi-vertical > .fi-sc-tabs-tab.fi-active {
+    margin-inline-start: 12px;
+    min-width: 0;
+}
+

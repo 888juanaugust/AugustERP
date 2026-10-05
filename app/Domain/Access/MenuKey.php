@@ -236,6 +236,38 @@ enum MenuKey: string
         };
     }
 
+    /** What the screen is for: its tile colour in the module menu. */
+    public function kind(): ScreenKind
+    {
+        return match ($this) {
+            self::Preferences, self::AccessGroups, self::Users, self::Numbering, self::PrintLayouts, self::TransactionApprovers,
+            self::Currencies, self::Branches, self::TaxCodes, self::PaymentTerms, self::ShippingMethods, self::FOBTerms, self::SalaryComponents, self::Employees,
+            self::ChartOfAccounts, self::Budgets,
+            self::CustomerCategories, self::PriceCategories, self::Customers, self::SalesmanCommissions, self::SalesTargets,
+            self::VendorPrices, self::VendorCategories, self::Vendors,
+            self::ItemsAndServices, self::Warehouses, self::Units, self::ItemCategories, self::ItemBrands,
+            self::FixedAssets, self::AssetCategories, self::FiscalAssetCategories => ScreenKind::Setup,
+
+            self::RecurringTransactions, self::MonthEndProcess,
+            self::ExpenseAccruals, self::PayrollEntries, self::JournalVouchers, self::BudgetTransfers,
+            self::Payments, self::Receipts, self::BankTransfers, self::BankStatements, self::BankReconciliation,
+            self::SalesQuotations, self::SalesOrders, self::DeliveryOrders, self::SalesDownPayments, self::SalesInvoices, self::SalesReceipts, self::SalesReturns, self::InvoiceExchanges, self::PriceAndDiscountAdjustments, self::CheckIns,
+            self::PurchaseOrders, self::GoodsReceipts, self::PurchaseDownPayments, self::PurchaseInvoices, self::PurchasePayments, self::PurchaseReturns, self::VendorClaims, self::PaymentOrders, self::VendorTransfers,
+            self::PurchaseRequisitions, self::ItemTransfers, self::InventoryAdjustments, self::StockOpnameOrders, self::StockOpnameResults,
+            self::AssetChanges, self::AssetDisposals, self::AssetTransfers,
+            self::ETaxInvoiceExport, self::EmailTaxInvoice, self::LegacyETaxExport => ScreenKind::Work,
+
+            self::AddOnStore, self::FinancingProgram,
+            self::Contacts, self::MemorizedTransactions, self::Calendar, self::ActivityLog,
+            self::BudgetMonitor, self::AccountHistory, self::JournalActivityLog,
+            self::InternetBanking, self::BankBook, self::VirtualAccounts, self::EPayment,
+            self::ECommerceLinks,
+            self::OrderFulfilment, self::StockByWarehouse, self::MinimumStock,
+            self::AssetsByLocation,
+            self::ReportCatalogue, self::VATReturn, self::AIAnalysis, self::IncomeTaxArt21Return, self::WithholdingSlips => ScreenKind::Tool,
+        };
+    }
+
     /** Screens of the standard menu that this product does not reproduce (vendor services of the original product). */
     public function isReplicated(): bool
     {

@@ -74,6 +74,15 @@ implements its tokens and `AdminPanelProvider` its settings, with the colours ov
 per client in `config/client.php`. Components use tokens, never raw hex. Geist is
 self-hosted; no font or asset is loaded from a third party. Dark mode is off.
 
+**The shell is the workspace** (`App\Filament\Pages\Workspace`, the panel's home): a dark
+icon rail of the module groups, a tile menu per group built by `App\Filament\Shell\Menu`
+(tiles coloured by `MenuKey::kind()`), and every screen opened as a live tab in its own
+frame. Filament's sidebar is off (`->navigation(false)`). Screens need nothing special to
+live in a tab: `resources/js/shell/bridge.js` hides the chrome in a frame, opens links to
+other screens as new tabs and reports the tab's title. Form tabs stand down the left side as
+icons; a new form tab name needs its icon in `App\Filament\Support\SideTabIcons`
+(`ShellMenuTest` fails otherwise). `npm run smoke:shell` drives the shell in Chromium.
+
 ## Invariants
 
 If a change appears to require breaking one, stop and ask.

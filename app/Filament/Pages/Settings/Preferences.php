@@ -57,6 +57,7 @@ class Preferences extends ErpPage
         return $schema
             ->components([
                 Tabs::make('preferences')
+                    ->extraAttributes(['class' => 'ae-tabs-labelled'])
                     ->persistTabInQueryString()
                     ->tabs(array_map(fn (PreferensiTab $tab) => $this->tab($tab), PreferensiTab::cases())),
             ])
