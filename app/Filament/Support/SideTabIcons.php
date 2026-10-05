@@ -33,6 +33,7 @@ final class SideTabIcons
         'Transfer fees' => Heroicon::OutlinedArrowsRightLeft,
         'Other' => Heroicon::OutlinedEllipsisHorizontalCircle,
         'Notes' => Heroicon::OutlinedPencilSquare,
+        'Progress' => Heroicon::OutlinedChartBar,
         'Opening balance' => Heroicon::OutlinedCalendarDays,
         'Tax info' => Heroicon::OutlinedReceiptPercent,
         'Tax' => Heroicon::OutlinedReceiptPercent,

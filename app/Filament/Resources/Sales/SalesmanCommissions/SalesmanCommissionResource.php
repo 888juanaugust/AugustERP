@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Sales\SalesmanCommissions;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Shared\Format;
+use App\Filament\Resources\Sales\SalesmanCommissions\Pages\CommissionStatement;
 use App\Filament\Resources\Sales\SalesmanCommissions\Pages\ManageSalesmanCommissions;
 use App\Filament\Support\MasterResource;
 use App\Models\Sales\SalesmanCommission;
@@ -100,6 +101,6 @@ class SalesmanCommissionResource extends MasterResource
 
     public static function getPages(): array
     {
-        return ['index' => ManageSalesmanCommissions::route('/')];
+        return ['index' => ManageSalesmanCommissions::route('/'), 'statement' => CommissionStatement::route('/statement')];
     }
 }
