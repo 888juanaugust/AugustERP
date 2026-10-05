@@ -6,14 +6,18 @@ use App\Domain\Access\AccessWindow;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
+use App\Domain\Imports\MasterImporter;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Posting\Exceptions\DocumentLockedException;
 use App\Domain\Printing\PrintJob;
 use App\Domain\Tax\TaxFilingService;
+use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Pages\Reports\InventoryValue;
 use App\Filament\Pages\Reports\TrialBalance;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\JournalVoucherResource;
+use App\Filament\Resources\Sales\Customers\CustomerResource;
 use App\Filament\Resources\Sales\Customers\Pages\EditCustomer;
 use App\Filament\Resources\Settings\AccessGroups\AccessGroupResource;
 use App\Filament\Resources\Settings\Users\Pages\EditUser;
@@ -173,6 +177,63 @@ class AccessControlTest extends TestCase
         $this->actingAs($admin);
         User::query()->where('access_type', 'administrator')->whereKeyNot($admin->id)->update(['access_type' => 'operator']);
         $refused(fn () => $admin->forceFill(['access_type' => 'operator'])->save(), 'only active administrator');
+    }
+
+    public function test_a_password_someone_else_chose_is_changed_before_anything_else(): void
+    {
+        $admin = $this->actingAsAdmin();
+        $admin->forceFill(['password' => 'chosen-by-installer', 'password_change_required' => true])->save();
+        $this->freshRequest();
+
+        $this->get(CustomerResource::getUrl())->assertRedirect(EditProfile::getUrl());
+        $this->get(EditProfile::getUrl())->assertOk();
+
+        Livewire::test(EditProfile::class)
+            ->fillForm(['password' => 'my-own-password-1', 'passwordConfirmation' => 'my-own-password-1', 'currentPassword' => 'chosen-by-installer'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+        $this->assertFalse($admin->fresh()->password_change_required, 'changed: the screens open again');
+    }
+
+    public function test_cost_and_credit_data_never_reach_someone_without_the_right(): void
+    {
+        $this->actingAsAdmin();
+        $customer = $this->sampleCustomer(['credit_limit_amount' => 987_654_321, 'credit_limit_amount_enabled' => true]);
+
+        $this->operator('Sales'); // edits customers, no "see credit data", no "see cost"
+        $page = Livewire::test(EditCustomer::class, ['record' => $customer->getRouteKey()]);
+        $this->assertNull($page->get('data.credit_limit_amount'));
+        $page->assertDontSee('987654321')->assertDontSee('987.654.321');
+        $page->call('save')->assertHasNoFormErrors();
+        $this->assertSame(987_654_321, (int) $customer->fresh()->credit_limit_amount, 'and saving leaves it as it was');
+
+        $this->operator('Finance'); // reads the reports, no "see cost"
+        Livewire::test(InventoryValue::class)->assertTableColumnHidden('avg_cost')->assertTableColumnHidden('value')->assertTableColumnVisible('quantity');
+    }
+
+    public function test_an_import_changes_only_what_the_user_may_change(): void
+    {
+        $this->actingAsAdmin();
+        $customer = $this->sampleCustomer(['credit_limit_amount' => 10_000_000, 'credit_limit_amount_enabled' => true]);
+        $csv = tempnam(sys_get_temp_dir(), 'imp').'.csv';
+        $write = function (array $row) use ($csv): void {
+            $out = fopen($csv, 'w');
+            fputcsv($out, MasterImporter::columns('customers'), ',', '"', '\\');
+            fputcsv($out, $row, ',', '"', '\\');
+            fclose($out);
+        };
+
+        $this->operator('Sales'); // creates and updates customers, no "see credit data"
+        $write([$customer->number, 'Acme Trading', '', '', '', '', '', '', '', '', '', '', '999999999', '']);
+        $result = app(MasterImporter::class)->import('customers', $csv);
+        $this->assertSame(0, $result['updated']);
+        $this->assertStringContainsString('see credit data', $result['errors'][0]);
+        $this->assertSame(10_000_000, (int) $customer->fresh()->credit_limit_amount);
+
+        $write([$customer->number, 'Acme Trading Renamed', '', '', '', '', '', '', '', '', '', '', '', '']);
+        $this->assertSame(1, app(MasterImporter::class)->import('customers', $csv)['updated'], 'without the column, the row goes through');
+        $this->assertSame(10_000_000, (int) $customer->fresh()->credit_limit_amount);
+        @unlink($csv);
     }
 
     public function test_the_print_page_needs_sign_in_a_signed_link_and_the_branch(): void

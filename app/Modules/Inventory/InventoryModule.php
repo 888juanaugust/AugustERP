@@ -14,6 +14,7 @@ use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemBrand;
 use App\Models\Inventory\ItemCategory;
 use App\Models\Inventory\ItemTransfer;
+use App\Models\Inventory\ItemTransferLine;
 use App\Models\Inventory\StockMovement;
 use App\Models\Inventory\StockOpnameOrder;
 use App\Models\Inventory\StockOpnameResult;
@@ -49,6 +50,7 @@ final class InventoryModule extends BaseModule
             'stock_movement' => StockMovement::class,
             'inventory_adjustment' => InventoryAdjustment::class,
             'item_transfer' => ItemTransfer::class,
+            'item_transfer_line' => ItemTransferLine::class,
             'stock_opname_order' => StockOpnameOrder::class,
             'stock_opname_result' => StockOpnameResult::class,
         ];
@@ -64,5 +66,8 @@ final class InventoryModule extends BaseModule
         $context->approvals->register(new ApprovalType(InventoryAdjustment::class, TransactionType::InventoryAdjustment));
         $context->approvals->register(new ApprovalType(ItemTransfer::class, TransactionType::ItemTransfer));
         $context->approvals->register(OpnameApprover::type());
+
+        // A received transfer's lines take from the sent transfer's: its processed quantities follow them.
+        $context->fulfilment->register(ItemTransferLine::class, ItemTransferLine::class);
     }
 }

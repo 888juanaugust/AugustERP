@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\Inventory;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Access\MenuKey;
 use App\Domain\Inventory\Replenishment;
 use App\Domain\Inventory\StockQuery;
@@ -69,7 +70,7 @@ class OrderFulfilment extends ErpPage implements HasTable
             $cover[$itemId] = BigDecimal::max(BigDecimal::zero(), BigDecimal::of($onHand[$itemId] ?? '0'))->plus($onOrder[$itemId] ?? '0');
         }
 
-        return SalesOrder::query()->with(['customer', 'lines'])
+        return BranchLimit::apply(SalesOrder::query(), auth()->user())->with(['customer', 'lines'])
             ->where('approval_status', SalesOrder::APPROVED)
             ->whereIn('status', ['pending', 'partial'])
             ->orderBy('ship_date')->orderBy('trans_date')

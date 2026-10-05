@@ -16,7 +16,8 @@ use RuntimeException;
 /**
  * Receives (part of) a sent transfer: a receive document referencing the
  * send's lines, posted from In Transit into the destination; the send's
- * processed quantities and status follow.
+ * processed quantities (worked out by the fulfilment service from the lines
+ * that name them) and status follow, and come back when a receipt goes.
  */
 final class TransferReceiver
 {
@@ -63,9 +64,9 @@ final class TransferReceiver
                     'unit_id' => $line->item->unit1_id,
                     'base_quantity' => (string) $qty,
                     'memo' => $line->memo,
+                    'source_line_type' => $line->getMorphClass(), // the send's processed quantities follow, as for every pulled line
                     'source_line_id' => $line->id,
                 ]);
-                $line->forceFill(['processed_quantity' => (string) BigDecimal::of((string) $line->processed_quantity)->plus($qty)])->saveQuietly();
             }
 
             if ($receive->lines()->count() === 0) {

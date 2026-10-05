@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Company\RecurringTransactions;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Company\RecurringRunner;
 use App\Domain\Shared\Enums\AccountType;
@@ -16,6 +18,8 @@ use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
 use App\Models\Company\RecurringTransaction;
 use App\Models\GeneralLedger\Account;
+use Carbon\CarbonImmutable;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -75,7 +79,14 @@ class RecurringTransactionResource extends ErpResource
                     TextInput::make('category')->label(__('Category'))->maxLength(50)->datalist(fn () => self::categories()),
                     Select::make('transaction_type')->label(__('Document'))->options(RecurringTransaction::types())->required()->native(false)->live(),
                     Select::make('frequency')->label(__('Frequency'))->options(RecurringTransaction::frequencies())->default('monthly')->required()->native(false),
-                    DatePicker::make('next_run_on')->label(__('Next run'))->required()->native(false)->default(today()),
+                    DatePicker::make('next_run_on')->label(__('Next run'))->required()->native(false)->default(today())
+                        // A first run before today makes back-dated documents: that takes the back-date right.
+                        ->rule(fn (?RecurringTransaction $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
+                            $changed = $record === null || $record->next_run_on?->toDateString() !== CarbonImmutable::parse($value)->toDateString();
+                            if ($changed && CarbonImmutable::parse($value)->lt(today()) && ! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::BackdateTransactions)) {
+                                $fail(__('Dating a transaction before today takes the "back-date transactions" right.'));
+                            }
+                        }),
                     DatePicker::make('end_on')->label(__('Until'))->native(false)->nullable(),
                     Select::make('status')->label(__('fields.status'))->options(self::statuses())->default('active')->required()->native(false),
                 ]),
@@ -147,9 +158,9 @@ class RecurringTransactionResource extends ErpResource
                     ->label(__('Run now'))
                     ->icon('heroicon-m-play')
                     ->color('primary')
-                    ->visible(fn ($record): bool => $record->status === 'active')
+                    ->visible(fn ($record): bool => $record->status === 'active' && static::canCreate())
                     ->requiresConfirmation()
-                    ->modalDescription(fn ($record): string => 'Makes and posts the document dated '.Format::date($record->next_run_on).'.')
+                    ->modalDescription(fn ($record): string => __('Makes and posts the document dated :date.', ['date' => Format::date($record->next_run_on)]))
                     ->action(function ($record): void {
                         try {
                             $document = app(RecurringRunner::class)->run($record);

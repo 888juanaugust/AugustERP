@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Audit\Auditor;
 use App\Domain\Printing\PdfRenderer;
 use App\Domain\Shared\Locales;
@@ -128,7 +129,8 @@ final class TaxInvoiceMailer
      */
     public function attachMany(array $files): array
     {
-        $invoices = SalesInvoice::query()->whereNotNull('nsfp')->where('nsfp', '!=', '')->get(['id', 'number', 'nsfp', 'coretax_pdf_path']);
+        // Only invoices in the user's branches: a PDF never lands on another branch's invoice.
+        $invoices = BranchLimit::apply(SalesInvoice::query(), auth()->user())->whereNotNull('nsfp')->where('nsfp', '!=', '')->get(['id', 'number', 'nsfp', 'coretax_pdf_path']);
         $bySerial = $invoices->keyBy(fn (SalesInvoice $i) => self::digits((string) $i->nsfp));
         $matched = [];
         $unmatched = [];

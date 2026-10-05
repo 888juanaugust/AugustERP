@@ -30,4 +30,12 @@ class ItemCost extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
+
+    /** What a unit of the item costs in the warehouse now: its moving average there, else the item's purchase price. */
+    public static function current(int $itemId, ?int $warehouseId): string
+    {
+        $average = $warehouseId !== null ? static::query()->where('item_id', $itemId)->where('warehouse_id', $warehouseId)->value('avg_cost') : null;
+
+        return (string) ($average ?? Item::query()->whereKey($itemId)->value('purchase_price') ?? 0);
+    }
 }

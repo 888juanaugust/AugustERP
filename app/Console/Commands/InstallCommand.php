@@ -51,7 +51,7 @@ class InstallCommand extends Command
 
         $company = $this->option('company') ?: ($interactive ? text('Company name', required: true, default: (string) config('app.name')) : (string) config('app.name'));
         $adminEmail = $this->option('admin-email') ?: env('ADMIN_EMAIL') ?: ($interactive ? text('Administrator email', default: 'admin@example.test', required: true) : 'admin@example.test');
-        $adminPassword = $this->option('admin-password') ?: env('ADMIN_PASSWORD') ?: ($interactive ? password('Administrator password (blank keeps "password")') : null);
+        $adminPassword = $this->option('admin-password') ?: env('ADMIN_PASSWORD') ?: ($interactive ? password('Administrator password (12 characters or more; blank makes one)') : null);
         $enable = self::keys($this->option('enable'));
         $disable = self::keys($this->option('disable'));
         if ($interactive && $enable === [] && $disable === []) {

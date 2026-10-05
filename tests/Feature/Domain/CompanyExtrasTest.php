@@ -16,6 +16,8 @@ use App\Models\Company\RecurringTransaction;
 use App\Models\Company\SalaryComponent;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalVoucher;
+use App\Models\Settings\AccessGroup;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -125,6 +127,23 @@ class CompanyExtrasTest extends TestCase
         $this->assertSame('2026-01-15', $broken->fresh()->next_run_on->toDateString(), 'and left as it was');
 
         $this->artisan('erp:recurring', ['on' => '2026-04-30'])->assertFailed();
+    }
+
+    public function test_a_schedule_runs_only_as_someone_who_may_make_its_document(): void
+    {
+        $sales = User::factory()->create();
+        AccessGroup::query()->where('name', 'Sales')->firstOrFail()->users()->attach($sales);
+        $recurring = RecurringTransaction::query()->create(['name' => 'Rent', 'transaction_type' => 'journal_voucher', 'frequency' => 'monthly',
+            'next_run_on' => '2026-11-01', 'status' => 'active', 'created_by' => $sales->id, 'template' => ['lines' => [
+                ['account_id' => $this->account('6200'), 'debit' => 1_000, 'credit' => 0],
+                ['account_id' => $this->account('2230'), 'debit' => 0, 'credit' => 1_000],
+            ]]]);
+
+        auth()->forgetUser(); // the morning schedule: made as the schedule's author, who may not make journal vouchers
+        $result = app(RecurringRunner::class)->runDue('2026-11-15');
+        $this->assertSame([], $result['made']);
+        $this->assertStringContainsString('may not make', $result['failed'][0]);
+        $this->assertSame(0, JournalVoucher::query()->count());
     }
 
     public function test_a_recurring_journal_runs_on_its_dates_and_never_twice_for_one_date(): void

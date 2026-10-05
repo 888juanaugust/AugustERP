@@ -101,7 +101,7 @@ class ItemResource extends MasterResource
                                 ->searchable()->native(false)->columnSpan(2),
                             Select::make('preferred_vendor_id')->label(__('Preferred vendor'))->relationship('preferredVendor', 'name', fn ($query) => $query->where('is_active', true))->searchable()->preload()->native(false),
                             Select::make('vendor_unit_id')->label(__('Purchase unit'))->relationship('vendorUnit', 'name')->preload()->native(false),
-                            self::money('purchase_price', __('Purchase price')),
+                            self::money('purchase_price', __('Purchase price'))->visible(fn (): bool => HakAkses::canSpecial(HakKhusus::SeeCost)),
                             TextInput::make('min_purchase_qty')->label(__('Minimum purchase quantity'))->numeric()->minValue(0)->default(0),
                             TextInput::make('min_stock')->label(__('Minimum stock'))->numeric()->minValue(0)->default(0)
                                 ->helperText(__('Across all warehouses; a warehouse below may have its own.')),
@@ -168,6 +168,8 @@ class ItemResource extends MasterResource
                                 ->helperText(__('Posted as the opening adjustment by the inventory module; after that, stock moves only through documents.'))
                                 ->relationship()
                                 ->orderColumn('sort')
+                                // Opening stock is stock at a cost: entered by someone who may see cost (a disabled list is not saved).
+                                ->disabled(fn (): bool => ! app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost))
                                 ->table([
                                     TableColumn::make(__('Date')),
                                     TableColumn::make(__('Quantity')),

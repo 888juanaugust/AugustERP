@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Domain;
 
+use App\Domain\Access\HakKhusus;
 use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Posting\Exceptions\DocumentLockedException;
@@ -111,6 +112,27 @@ class ApprovalEngineTest extends TestCase
         $this->assertSame(2, $request->required_count);
         $this->assertSame(['Ana', 'Ben', 'Cy'], collect($request->slots)->pluck('name')->all());
         $this->assertTrue($this->engine->isApproved($po), 'a rule added later does not reach back to a document already approved');
+    }
+
+    public function test_who_changed_the_document_does_not_approve_the_change(): void
+    {
+        $this->rule('purchase_order', 0, TransactionApprover::ANY_ONE, ['Ana', 'Ben']);
+        $po = $this->order(1_000_000);
+
+        // Ben, an approver who may edit others' documents, raises the price on the clerk's order: it waits for approval again, and not his.
+        $editors = AccessGroup::query()->create(['name' => 'Editors']);
+        $editors->syncSpecialRights([HakKhusus::EditOthersTransactions->value]);
+        $editors->users()->attach($this->people['Ben']);
+        $this->actingAs($this->people['Ben']);
+        $this->freshRequest();
+        $before = $this->docs->beforeUpdate($po->fresh());
+        $po->lines()->first()->update(['unit_price' => 5_000_000]);
+        $po->refreshTotal();
+        $this->docs->updated($po->fresh(), $before);
+        $this->assertSame('awaiting', $this->engine->status($po->fresh()));
+        $this->assertFalse($this->engine->canApprove($po->fresh(), $this->people['Ben']));
+        $this->assertThrows(fn () => $this->engine->approve($po->fresh(), $this->people['Ben']), RuntimeException::class, 'last changed');
+        $this->assertTrue($this->approveAs('Ana', $po));
     }
 
     public function test_at_least_two_needs_two_different_people_and_never_the_one_who_entered_it(): void

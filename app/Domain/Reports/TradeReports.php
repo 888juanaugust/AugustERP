@@ -229,14 +229,14 @@ final class TradeReports
     }
 
     /** @return Collection<int, OpeningBalance> the party kind's opening balances still open, posted by the period's end */
-    private static function openOpenings(string $party, Period $period): Collection
+    private static function openOpenings(string $party, Period $period, bool $past = false): Collection
     {
         $type = $party === 'customer' ? (new Customer)->getMorphClass() : (new Vendor)->getMorphClass();
 
         return OpeningBalance::query()->with('party')
             ->where('party_type', $type)
             ->where('trans_date', '<=', $period->untilDate())
-            ->where('payment_status', '!=', 'paid')
+            ->when(! $past, fn (Builder $q) => $q->where('payment_status', '!=', 'paid'))
             ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
             ->get();
     }
@@ -247,18 +247,21 @@ final class TradeReports
         $settlement = app(SettlementService::class);
         $foreign = Currencies::isForeign($currencyId);
         $asOf = $period->until;
+        // As at a past date, an invoice paid since was still open then: it is read with the settlements up to that date.
+        $past = $period->untilDate() < today()->toDateString();
         $open = $invoices
             ->where('trans_date', '<=', $period->untilDate())
-            ->where('payment_status', '!=', 'paid')
+            ->when(! $past, fn (Builder $q) => $q->where('payment_status', '!=', 'paid'))
             ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
             ->get()
-            ->concat(self::openOpenings($party, $period))
+            ->concat(self::openOpenings($party, $period, $past))
             ->when($foreign, fn (Collection $docs) => $docs->filter(fn (Model $doc) => (int) $doc->getAttribute('currency_id') === $currencyId));
         $columns = AgingBuckets::all();
         $buckets = array_fill_keys(array_column($columns, 'key'), 0);
         $byParty = [];
         foreach ($open as $invoice) {
-            $balance = $foreign ? $settlement->foreignBalance($invoice) : $settlement->balance($invoice);
+            $balance = $past ? $settlement->balanceAsOf($invoice, $period->untilDate(), $foreign)
+                : ($foreign ? $settlement->foreignBalance($invoice) : $settlement->balance($invoice));
             if ($balance <= 0) {
                 continue;
             }

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,6 +46,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::preventLazyLoading(! $this->app->isProduction());
+
+        // Every password a person sets (the Users screen, the profile page): twelve characters at least, and in
+        // production not one found in public breach lists.
+        Password::defaults(fn () => $this->app->isProduction() ? Password::min(12)->uncompromised() : Password::min(12));
 
         // A client's own migrations and translations live under app/Client
         // (see docs/CLIENTS.md); its strings override the template's.

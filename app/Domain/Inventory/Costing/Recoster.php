@@ -7,6 +7,8 @@ namespace App\Domain\Inventory\Costing;
 use App\Domain\Posting\PostingService;
 use App\Models\GeneralLedger\Posting;
 use App\Models\Inventory\StockMovement;
+use App\Models\Sales\Delivery;
+use App\Models\Sales\SalesInvoice;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -20,7 +22,8 @@ use Illuminate\Support\Carbon;
  */
 final class Recoster
 {
-    public const SYNC_LIMIT = 50;
+    /** Documents re-posted inside the request; beyond this many, a queued job takes them (a test may lower it). */
+    public static int $syncLimit = 50;
 
     private bool $running = false;
 
@@ -71,12 +74,28 @@ final class Recoster
         }
     }
 
-    private function run(): void
+    /**
+     * Re-posts a batch from the queue (RecostJob): the whole list in one pass, the documents it reaches added to the
+     * same pass, never a new job.
+     *
+     * @param  list<array{type: string, id: int, date: string, in: bool}>  $entries
+     */
+    public function runBatch(array $entries): void
+    {
+        foreach ($entries as $entry) {
+            $this->queue["{$entry['type']}:{$entry['id']}"] = $entry;
+        }
+        $this->run(batch: true);
+    }
+
+    private function run(bool $batch = false): void
     {
         $this->running = true;
         try {
-            if (count($this->queue) > self::SYNC_LIMIT) {
-                RecostJob::dispatch(array_values($this->queue));
+            if (! $batch && count($this->queue) > self::$syncLimit) {
+                // Too many for the request: a job takes them once this save has committed (before, it would read the
+                // old average); the job re-posts them in one pass.
+                RecostJob::dispatch(array_values($this->queue))->afterCommit();
                 $this->queue = [];
 
                 return;
@@ -92,11 +111,33 @@ final class Recoster
                 $document = self::resolve($entry['type'], $entry['id']);
                 if ($document !== null) {
                     $this->postings->post($document, auth()->id());
+                    $this->queueDependents($document);
                 }
             }
         } finally {
             $this->running = false;
             $this->done = [];
+        }
+    }
+
+    /**
+     * Documents that read this one's cost when they post, re-posted after it: an invoice made from a delivery moves
+     * the delivery's cost from goods delivered not invoiced to cost of sales, so it follows the delivery's new cost.
+     */
+    private function queueDependents(Model $document): void
+    {
+        if (! $document instanceof Delivery) {
+            return;
+        }
+        $lineIds = $document->lines()->pluck('id');
+        $invoices = SalesInvoice::query()
+            ->whereHas('lines', fn ($q) => $q->where('source_line_type', 'delivery_line')->whereIn('source_line_id', $lineIds))
+            ->get(['id', 'trans_date']);
+        foreach ($invoices as $invoice) {
+            $key = $invoice->getMorphClass().':'.$invoice->id;
+            if (! isset($this->done[$key])) {
+                $this->queue[$key] = ['type' => $invoice->getMorphClass(), 'id' => (int) $invoice->id, 'date' => $invoice->trans_date->toDateString(), 'in' => false];
+            }
         }
     }
 

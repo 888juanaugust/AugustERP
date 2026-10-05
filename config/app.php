@@ -65,6 +65,12 @@ return [
     |
     */
 
+    /*
+    | The proxies in front of the app (a load balancer, Caddy, nginx): addresses or ranges, comma-separated, or "*".
+    */
+
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
     'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
 
     /*

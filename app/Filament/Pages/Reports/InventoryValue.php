@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\Reports;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Reports\InventoryReports;
 use App\Models\Inventory\ItemCategory;
 use Filament\Forms\Components\Select;
@@ -82,8 +84,8 @@ class InventoryValue extends ReportPage
             static::text('category', __('Category')),
             static::text('warehouse', __('Warehouse')),
             static::quantity('quantity', __('On hand')),
-            static::quantity('avg_cost', __('Average cost')),
-            static::money('value', __('Value')),
+            static::quantity('avg_cost', __('Average cost'))->visible(fn (): bool => HakAkses::canSpecial(HakKhusus::SeeCost)),
+            static::money('value', __('Value'))->visible(fn (): bool => HakAkses::canSpecial(HakKhusus::SeeCost)),
         ];
     }
 
@@ -100,8 +102,9 @@ class InventoryValue extends ReportPage
             $row['category'],
             $row['warehouse'],
             $row['quantity'],
-            $row['avg_cost'],
-            $row['value'],
+            // Cost leaves only with the "see cost" right.
+            HakAkses::canSpecial(HakKhusus::SeeCost) ? $row['avg_cost'] : null,
+            HakAkses::canSpecial(HakKhusus::SeeCost) ? $row['value'] : null,
         ];
     }
 }

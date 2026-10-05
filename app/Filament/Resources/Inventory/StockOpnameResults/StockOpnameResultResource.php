@@ -106,7 +106,7 @@ class StockOpnameResultResource extends ErpResource
                             LineItemFields::item(stockedOnly: true),
                             LineItemFields::quantity('counted_qty', __('Counted'))->minValue(0),
                             LineItemFields::unit(),
-                            TextInput::make('system_qty')->numeric()->disabled()->dehydrated()->default(0),
+                            TextInput::make('system_qty')->numeric()->disabled()->dehydrated(false)->default(0), // read from stock on every save, never from the form
                             LineItemFields::baseQuantity(),
                         ])
                         ->minItems(1)

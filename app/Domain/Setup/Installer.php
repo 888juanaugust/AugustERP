@@ -18,6 +18,7 @@ use Database\Seeders\System\AdminUserSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 
 /**
@@ -30,6 +31,8 @@ use InvalidArgumentException;
  */
 final class Installer
 {
+    public const MIN_PASSWORD = 12;
+
     public const INSTALLED_AT = 'system.installed_at';
 
     /** @var array<string, array{0: string, 1: string, 2: ?string}> code → symbol, name, country */
@@ -133,6 +136,9 @@ final class Installer
         if (trim($options->company) === '') {
             throw new InvalidArgumentException('The company name is required.');
         }
+        if (filled($options->adminPassword) && mb_strlen((string) $options->adminPassword) < self::MIN_PASSWORD) {
+            throw new InvalidArgumentException('The administrator password needs at least '.self::MIN_PASSWORD.' characters; leave it out to have one made.');
+        }
         if ($options->locale !== null && ! isset(Locales::names()[$options->locale])) {
             throw new InvalidArgumentException('Unknown language "'.$options->locale.'"; one of '.implode(', ', array_keys(Locales::names())).'.');
         }
@@ -186,17 +192,28 @@ final class Installer
         $this->log[] = 'Optional modules on: '.($on === [] ? 'none' : implode(', ', $on)).'.';
     }
 
+    /**
+     * The first administrator. An account that exists already is left exactly as it is (a forced run never resets
+     * a password or reactivates anyone); a new one takes the password given, or a random one printed once, and
+     * must change it at first sign-in.
+     */
     private function ensureAdmin(InstallOptions $options): User
     {
-        $password = $options->adminPassword ?: 'password';
-        if ($options->adminPassword === null || $options->adminPassword === '') {
-            $this->log[] = 'No administrator password given: using "password"; change it after the first login.';
-        }
+        $existing = User::query()->where('email', $options->adminEmail)->first();
+        if ($existing !== null) {
+            $this->log[] = "Administrator {$options->adminEmail} exists already: left as it is".(filled($options->adminPassword) ? ' (the password given was not used).' : '.');
 
-        return User::query()->updateOrCreate(
-            ['email' => $options->adminEmail],
-            ['name' => $options->adminName, 'password' => Hash::make($password), 'access_type' => 'administrator', 'is_active' => true],
-        );
+            return $existing;
+        }
+        $password = $options->adminPassword;
+        if (blank($password)) {
+            $password = Str::password(16, symbols: false);
+            $this->log[] = "Administrator password (shown once, changed at first sign-in): {$password}";
+        }
+        $admin = new User(['name' => $options->adminName, 'email' => $options->adminEmail, 'access_type' => 'administrator', 'is_active' => true]);
+        $admin->forceFill(['password' => Hash::make($password), 'password_change_required' => true])->save();
+
+        return $admin;
     }
 
     private function seed(string $class): void

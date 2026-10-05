@@ -68,6 +68,17 @@ class PurchaseReturn extends Model implements Postable
         $this->forceFill(['status' => $this->payment_status === 'paid' ? 'processed' : 'pending'])->saveQuietly();
     }
 
+    protected static function booted(): void
+    {
+        // A goods receipt is booked at its net value; VAT in comes with the invoice. A return against a receipt
+        // therefore carries no VAT either: it takes back the net value from goods received not invoiced.
+        static::saving(function (self $return): void {
+            if ($return->return_type === 'receipt') {
+                $return->taxable = false;
+            }
+        });
+    }
+
     public function isCredit(): bool
     {
         return true;

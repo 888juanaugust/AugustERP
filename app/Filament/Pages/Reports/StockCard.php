@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages\Reports;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Reports\InventoryReports;
 use App\Models\Inventory\Item;
 use Filament\Forms\Components\Select;
@@ -82,9 +84,9 @@ class StockCard extends ReportPage
             static::text('warehouse', __('Warehouse')),
             static::quantity('in', __('In')),
             static::quantity('out', __('Out')),
-            static::quantity('unit_cost', __('Unit cost')),
+            static::quantity('unit_cost', __('Unit cost'))->visible(fn (): bool => HakAkses::canSpecial(HakKhusus::SeeCost)),
             static::quantity('balance_qty', __('Balance qty')),
-            static::money('balance_value', __('Balance value')),
+            static::money('balance_value', __('Balance value'))->visible(fn (): bool => HakAkses::canSpecial(HakKhusus::SeeCost)),
         ];
     }
 
@@ -101,9 +103,10 @@ class StockCard extends ReportPage
             $row['warehouse'],
             $row['in'],
             $row['out'],
-            $row['unit_cost'],
+            // Cost leaves only with the "see cost" right.
+            HakAkses::canSpecial(HakKhusus::SeeCost) ? $row['unit_cost'] : null,
             $row['balance_qty'],
-            $row['balance_value'],
+            HakAkses::canSpecial(HakKhusus::SeeCost) ? $row['balance_value'] : null,
         ];
     }
 }

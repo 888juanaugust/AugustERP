@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Fulfilment\SourceLineGuard;
 use App\Domain\Sales\SellingPriceGuard;
 use Filament\Resources\Pages\EditRecord;
 
@@ -41,6 +42,7 @@ abstract class EditDocument extends EditRecord
             $this->record->refreshTotal();
         }
         app(SellingPriceGuard::class)->check($this->record);
+        app(SourceLineGuard::class)->check($this->record);
         DocumentPages::afterUpdated($this->record, $this->snapshot);
     }
 

@@ -70,11 +70,14 @@ final class Menu
         return $groups;
     }
 
-    /** @return array<string, string> path → menu key value, for every registered screen, so a framed page can tell one screen from another */
+    /** @return array<string, string> path → menu key value, for every screen the user may open, so a framed page can tell one screen from another */
     public static function paths(): array
     {
         $paths = [];
         foreach (self::screens() as $key => $class) {
+            if (! $class::canAccess()) {
+                continue; // the browser learns only the screens it can reach
+            }
             $paths[self::path(self::url($class))] = $key;
         }
 

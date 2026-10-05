@@ -53,11 +53,13 @@ final class OpnameApprover
         if ($result->isApproved()) {
             throw new RuntimeException(__(':number is already approved.', ['number' => $result->number]));
         }
-        if (! $this->approvals->approve($result, $approver)) {
-            return null;
-        }
 
+        // One transaction: if the variance cannot post (a closed month, stock going negative, no back-date right),
+        // the approval is not recorded either, and the count can be approved again once that is put right.
         return DB::transaction(function () use ($result, $approver): ?InventoryAdjustment {
+            if (! $this->approvals->approve($result, $approver)) {
+                return null;
+            }
             $result->load(['order', 'lines.item.units']);
             $warehouse = $result->order->warehouse_id;
             $lines = [];
