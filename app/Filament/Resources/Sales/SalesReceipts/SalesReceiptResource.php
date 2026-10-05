@@ -76,13 +76,13 @@ class SalesReceiptResource extends ErpResource
     {
         return $schema->components([
             Section::make()->columns(3)->schema([
-                CustomerFields::select(fillsTerms: false, label: 'Received from'),
+                CustomerFields::select(fillsTerms: false, label: __('Received from')),
                 Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)->live()
                     ->afterStateUpdated(fn (Set $set, Get $get, $state) => CurrencyFields::forBank($set, $get, $state)),
                 Select::make('payment_method')->label(__('Payment method'))->options(PaymentMethod::class)->default(PaymentMethod::BankTransfer)->required()->native(false)->live(),
                 DatePicker::make('trans_date')->label(__('Payment date'))->required()->native(false)->default(today())->live(onBlur: true)
                     ->afterStateUpdated(fn (Set $set, Get $get) => Currencies::isForeign($get('currency_id')) ? CurrencyFields::fillRates($set, $get, $get('currency_id')) : null),
-                NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
+                NumberFields::make(TransactionType::CashBankVoucher, __('Voucher No.')),
                 Placeholder::make('amount_preview')->label(__('Amount received'))->content(fn (Get $get) => SettlementLineFields::sum($get('lines'), $get('currency_id'))),
                 ...CurrencyFields::header(taxRate: false),
                 Toggle::make('use_credit')->label(__('Use credit notes'))->live()->inline(false),
@@ -104,7 +104,7 @@ class SalesReceiptResource extends ErpResource
                             $set('lines', $rows);
                             Notification::make()->title(__(':count open document(s) pulled', ['count' => count($rows)]))->success()->send();
                         }),
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -129,9 +129,9 @@ class SalesReceiptResource extends ErpResource
                                     $set('amount', $proposal['amount']);
                                     $set('discount', $proposal['discount']);
                                 }),
-                            Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
-                            Placeholder::make('invoice_total')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::total($doc), $doc->currency_id) : ''),
-                            Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
+                            Placeholder::make('invoice_date')->label(__('Invoice date'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
+                            Placeholder::make('invoice_total')->label(__('Invoice total'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::total($doc), $doc->currency_id) : ''),
+                            Placeholder::make('open')->label(__('Open balance'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
                             SettlementLineFields::amount('amount', __('Pay'))->required()->live(onBlur: true),
                             SettlementLineFields::amount('discount', __('Discount'))->live(onBlur: true),
                             Select::make('discount_account_id')->options(fn () => Account::options(AccountType::Revenue, AccountType::OtherExpense, AccountType::Expense))->native(false)->placeholder(__('Sales Discounts')),
@@ -183,7 +183,7 @@ class SalesReceiptResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                DocumentListFilters::dateRange('cheque_date', 'Cheque date'),
+                DocumentListFilters::dateRange('cheque_date', __('Cheque date')),
                 SelectFilter::make('payment_method')->label(__('Method'))->options(PaymentMethod::class),
                 SelectFilter::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank)),
                 SelectFilter::make('customer_id')->label(__('Received from'))->relationship('customer', 'name')->searchable(),

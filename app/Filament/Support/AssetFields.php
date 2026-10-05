@@ -10,10 +10,10 @@ use Filament\Forms\Components\Select;
 /** The asset lookup every fixed-asset document opens with: active assets, found by number or name. */
 final class AssetFields
 {
-    public static function select(string $name = 'fixed_asset_id', string $label = 'Asset'): Select
+    public static function select(string $name = 'fixed_asset_id', ?string $label = null): Select
     {
         return Select::make($name)
-            ->label($label)
+            ->label($label ?? __('Asset'))
             ->searchable()
             ->getSearchResultsUsing(fn (string $search) => FixedAsset::query()->active()
                 ->where(fn ($query) => $query->where('number', 'ilike', "%{$search}%")->orWhere('name', 'ilike', "%{$search}%"))

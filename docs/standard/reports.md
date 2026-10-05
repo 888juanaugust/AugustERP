@@ -77,7 +77,7 @@ Menu key `report__formulir-1721-bukti-potong` · module `payroll` · switched by
 
 ### List
 
-**Columns:** Employee · Months · Gross · Occupational cost · Pension contributions · Net income · PTKP · Taxable income · Tax for the year · Withheld · Still to withhold · Status
+**Columns:** Employee · Months · Gross · Occupational cost · Pension contributions · Net income for the year · PTKP · Taxable income · Tax for the year · Withheld · Still to withhold · Status
 
 **Actions:** Print A1
 

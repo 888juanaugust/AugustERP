@@ -27,5 +27,6 @@ final readonly class InstallOptions
         public bool $demo = false,
         public bool $fresh = false,
         public bool $force = false,
+        public ?string $locale = null,
     ) {}
 }

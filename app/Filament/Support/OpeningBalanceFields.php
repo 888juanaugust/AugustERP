@@ -34,7 +34,7 @@ final class OpeningBalanceFields
     {
         $currencies = Currencies::enabled();
 
-        return Repeater::make('openingBalances')
+        return Repeater::make('openingBalances')->label(__('Opening balances'))
             ->hiddenLabel()
             ->relationship()
             ->orderColumn('sort')
@@ -61,8 +61,8 @@ final class OpeningBalanceFields
                 MoneyInput::inCurrency('amount', fn (Get $get) => Currencies::decimals($get('currency_id')))->required()->prefix(fn (Get $get) => CurrencyFields::symbol($get('currency_id'))),
                 Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
                 TextInput::make('number')->maxLength(40),
-                TextInput::make('description')->maxLength(255),
-                Placeholder::make('open')->hiddenLabel()->content(fn (?OpeningBalance $record): string => $record === null
+                TextInput::make('description')->label(__('Description'))->maxLength(255),
+                Placeholder::make('open')->label(__('Open'))->hiddenLabel()->content(fn (?OpeningBalance $record): string => $record === null
                     ? '—'
                     : ($record->paid_amount > 0 ? CurrencyFields::number(SettlementLineFields::open($record), $record->currency_id) : __('Unpaid'))),
             ])

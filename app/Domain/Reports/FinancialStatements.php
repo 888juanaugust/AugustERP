@@ -24,7 +24,7 @@ final class FinancialStatements
         $net = Ledger::closingNet($period);
         $rows = [];
         $totals = [];
-        foreach (['current_assets' => 'Current assets', 'non_current_assets' => 'Non-current assets', 'current_liabilities' => 'Current liabilities', 'non_current_liabilities' => 'Non-current liabilities', 'equity' => 'Equity'] as $section => $label) {
+        foreach (['current_assets' => __('Current assets'), 'non_current_assets' => __('Non-current assets'), 'current_liabilities' => __('Current liabilities'), 'non_current_liabilities' => __('Non-current liabilities'), 'equity' => __('Equity')] as $section => $label) {
             $rows[] = ['id' => "h-{$section}", 'section' => $section, 'no' => '', 'name' => $label, 'level' => 0, 'amount' => 0, 'is_total' => false, 'is_heading' => true];
             $sum = 0;
             foreach ($accounts as $account) {
@@ -49,9 +49,9 @@ final class FinancialStatements
                 $yearStart = FiscalYear::startOf($period->untilDate());
                 $retained = Ledger::netIncome(Ledger::closingNet($period->withDates($yearStart->subYears(100), $yearStart->subDay())), $accounts);
                 if ($retained !== 0) {
-                    $rows[] = ['id' => 'retained-earnings', 'section' => $section, 'no' => '', 'name' => 'Retained earnings', 'level' => 1, 'amount' => $retained, 'is_total' => false, 'is_heading' => false];
+                    $rows[] = ['id' => 'retained-earnings', 'section' => $section, 'no' => '', 'name' => __('Retained earnings'), 'level' => 1, 'amount' => $retained, 'is_total' => false, 'is_heading' => false];
                 }
-                $rows[] = ['id' => 'net-income', 'section' => $section, 'no' => '', 'name' => 'Net income this year', 'level' => 1, 'amount' => $income - $retained, 'is_total' => false, 'is_heading' => false];
+                $rows[] = ['id' => 'net-income', 'section' => $section, 'no' => '', 'name' => __('Net income this year'), 'level' => 1, 'amount' => $income - $retained, 'is_total' => false, 'is_heading' => false];
                 $sum += $income;
             }
             $totals[$section] = $sum;
@@ -59,8 +59,8 @@ final class FinancialStatements
         }
         $assets = $totals['current_assets'] + $totals['non_current_assets'];
         $liabilitiesEquity = $totals['current_liabilities'] + $totals['non_current_liabilities'] + $totals['equity'];
-        $rows[] = ['id' => 't-assets', 'section' => 'summary', 'no' => '', 'name' => 'Total assets', 'level' => 0, 'amount' => $assets, 'is_total' => true, 'is_heading' => false];
-        $rows[] = ['id' => 't-liabilities-equity', 'section' => 'summary', 'no' => '', 'name' => 'Total liabilities and equity', 'level' => 0, 'amount' => $liabilitiesEquity, 'is_total' => true, 'is_heading' => false];
+        $rows[] = ['id' => 't-assets', 'section' => 'summary', 'no' => '', 'name' => __('Total assets'), 'level' => 0, 'amount' => $assets, 'is_total' => true, 'is_heading' => false];
+        $rows[] = ['id' => 't-liabilities-equity', 'section' => 'summary', 'no' => '', 'name' => __('Total liabilities and equity'), 'level' => 0, 'amount' => $liabilitiesEquity, 'is_total' => true, 'is_heading' => false];
 
         return $rows;
     }
@@ -76,7 +76,7 @@ final class FinancialStatements
         }
         $rows = [];
         $sums = [];
-        foreach (['revenue' => 'Revenue', 'cost_of_sales' => 'Cost of sales', 'expenses' => 'Operating expenses', 'other_income' => 'Other income', 'other_expenses' => 'Other expenses'] as $section => $label) {
+        foreach (['revenue' => __('Revenue'), 'cost_of_sales' => __('Cost of sales'), 'expenses' => __('Operating expenses'), 'other_income' => __('Other income'), 'other_expenses' => __('Other expenses')] as $section => $label) {
             $rows[] = ['id' => "h-{$section}", 'no' => '', 'name' => $label, 'level' => 0, 'amount' => 0, 'is_total' => false, 'is_heading' => true];
             $sum = 0;
             foreach ($accounts as $account) {
@@ -95,13 +95,13 @@ final class FinancialStatements
             $sums[$section] = $sum;
             $rows[] = ['id' => "t-{$section}", 'no' => '', 'name' => "Total {$label}", 'level' => 0, 'amount' => $sum, 'is_total' => true, 'is_heading' => false];
             if ($section === 'cost_of_sales') {
-                $rows[] = ['id' => 't-gross', 'no' => '', 'name' => 'Gross profit', 'level' => 0, 'amount' => $sums['revenue'] - $sum, 'is_total' => true, 'is_heading' => false];
+                $rows[] = ['id' => 't-gross', 'no' => '', 'name' => __('Gross profit'), 'level' => 0, 'amount' => $sums['revenue'] - $sum, 'is_total' => true, 'is_heading' => false];
             }
             if ($section === 'expenses') {
-                $rows[] = ['id' => 't-operating', 'no' => '', 'name' => 'Operating income', 'level' => 0, 'amount' => $sums['revenue'] - $sums['cost_of_sales'] - $sum, 'is_total' => true, 'is_heading' => false];
+                $rows[] = ['id' => 't-operating', 'no' => '', 'name' => __('Operating income'), 'level' => 0, 'amount' => $sums['revenue'] - $sums['cost_of_sales'] - $sum, 'is_total' => true, 'is_heading' => false];
             }
         }
-        $rows[] = ['id' => 't-net', 'no' => '', 'name' => 'Net income', 'level' => 0, 'amount' => $sums['revenue'] - $sums['cost_of_sales'] - $sums['expenses'] + $sums['other_income'] - $sums['other_expenses'], 'is_total' => true, 'is_heading' => false];
+        $rows[] = ['id' => 't-net', 'no' => '', 'name' => __('Net income'), 'level' => 0, 'amount' => $sums['revenue'] - $sums['cost_of_sales'] - $sums['expenses'] + $sums['other_income'] - $sums['other_expenses'], 'is_total' => true, 'is_heading' => false];
 
         return $rows;
     }
@@ -133,7 +133,7 @@ final class FinancialStatements
             $sum['closing_debit'] += max(0, $close);
             $sum['closing_credit'] += max(0, -$close);
         }
-        $rows[] = ['id' => 'total', 'no' => '', 'name' => 'Total', 'opening' => $sum['opening_debit'] - $sum['opening_credit'], 'debit' => $sum['debit'], 'credit' => $sum['credit'], 'closing' => $sum['closing_debit'] - $sum['closing_credit'], 'is_total' => true];
+        $rows[] = ['id' => 'total', 'no' => '', 'name' => __('Total'), 'opening' => $sum['opening_debit'] - $sum['opening_credit'], 'debit' => $sum['debit'], 'credit' => $sum['credit'], 'closing' => $sum['closing_debit'] - $sum['closing_credit'], 'is_total' => true];
 
         return $rows;
     }
@@ -159,10 +159,10 @@ final class FinancialStatements
         $periodIncome = Ledger::netIncome($closing, $accounts) - $openingIncome;
 
         return [
-            ['id' => 'opening', 'name' => 'Equity at the start of the period (including earlier income)', 'amount' => $openingEquity + $openingIncome, 'is_total' => false],
-            ['id' => 'contributions', 'name' => 'Capital contributed less withdrawn', 'amount' => $contributions, 'is_total' => false],
-            ['id' => 'income', 'name' => 'Net income of the period', 'amount' => $periodIncome, 'is_total' => false],
-            ['id' => 'closing', 'name' => 'Equity at the end of the period', 'amount' => $openingEquity + $openingIncome + $contributions + $periodIncome, 'is_total' => true],
+            ['id' => 'opening', 'name' => __('Equity at the start of the period (including earlier income)'), 'amount' => $openingEquity + $openingIncome, 'is_total' => false],
+            ['id' => 'contributions', 'name' => __('Capital contributed less withdrawn'), 'amount' => $contributions, 'is_total' => false],
+            ['id' => 'income', 'name' => __('Net income of the period'), 'amount' => $periodIncome, 'is_total' => false],
+            ['id' => 'closing', 'name' => __('Equity at the end of the period'), 'amount' => $openingEquity + $openingIncome + $contributions + $periodIncome, 'is_total' => true],
         ];
     }
 
@@ -207,14 +207,14 @@ final class FinancialStatements
                     default => 'operating',
                 };
                 $share = (int) round($cashNet * abs($net) / $weight);
-                $name = $account ? "{$account->no} {$account->name}" : 'Other';
+                $name = $account ? "{$account->no} {$account->name}" : __('Other');
                 $buckets[$section][$name] = ($buckets[$section][$name] ?? 0) + $share;
             }
         }
 
         $rows = [];
         $total = 0;
-        foreach (['operating' => 'Operating activities', 'investing' => 'Investing activities', 'financing' => 'Financing activities'] as $section => $label) {
+        foreach (['operating' => __('Operating activities'), 'investing' => __('Investing activities'), 'financing' => __('Financing activities')] as $section => $label) {
             $rows[] = ['id' => "h-{$section}", 'name' => $label, 'amount' => 0, 'is_total' => false, 'is_heading' => true];
             $sum = 0;
             ksort($buckets[$section]);
@@ -231,9 +231,9 @@ final class FinancialStatements
                 $openingCash += $net;
             }
         }
-        $rows[] = ['id' => 't-net', 'name' => 'Net change in cash', 'amount' => $total, 'is_total' => true, 'is_heading' => false];
-        $rows[] = ['id' => 'opening-cash', 'name' => 'Cash at the start', 'amount' => $openingCash, 'is_total' => false, 'is_heading' => false];
-        $rows[] = ['id' => 'closing-cash', 'name' => 'Cash at the end', 'amount' => $openingCash + $total, 'is_total' => true, 'is_heading' => false];
+        $rows[] = ['id' => 't-net', 'name' => __('Net change in cash'), 'amount' => $total, 'is_total' => true, 'is_heading' => false];
+        $rows[] = ['id' => 'opening-cash', 'name' => __('Cash at the start'), 'amount' => $openingCash, 'is_total' => false, 'is_heading' => false];
+        $rows[] = ['id' => 'closing-cash', 'name' => __('Cash at the end'), 'amount' => $openingCash + $total, 'is_total' => true, 'is_heading' => false];
 
         return $rows;
     }

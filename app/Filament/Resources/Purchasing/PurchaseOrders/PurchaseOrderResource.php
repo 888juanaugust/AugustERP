@@ -57,7 +57,7 @@ class PurchaseOrderResource extends ErpResource
             PricedDocumentForm::header(VendorFields::select(), TransactionType::PurchaseOrder),
             Tabs::make('order')->tabs([
                 PricedDocumentForm::linesTab(
-                    before: [PullAction::make('Pull from requisitions', 'vendor_id',
+                    before: [PullAction::make(__('Pull from requisitions'), 'vendor_id',
                         fn (Get $get) => PurchaseRequisition::query()->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                         fn (int $id) => PricedDocumentForm::pulledLines(PurchaseRequisition::query()->findOrFail($id)->lines()->with('item')->get(), 'purchase_requisition_line', withPrices: false),
                     )],

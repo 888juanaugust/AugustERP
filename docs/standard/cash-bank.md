@@ -49,7 +49,7 @@ Menu key `cash-bank__other-payment` · module `cash-bank`
 
 #### Tab: Payment details
 
-**Line grid "Lines":** Settles · Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
+**Line grid "Line items":** Settles · Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
 
 #### Tab: Other info
 
@@ -91,7 +91,7 @@ Menu key `cash-bank__other-deposit` · module `cash-bank`
 
 #### Tab: Receipt details
 
-**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
+**Line grid "Line items":** Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
 
 #### Tab: Other info
 

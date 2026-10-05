@@ -188,10 +188,10 @@ class VatReturn extends ErpPage implements HasTable
         }
 
         foreach ($totals as $k => $sum) {
-            $rows[] = $this->summaryRow("t-{$k}", $k === TaxFiling::IN ? 'Total VAT in' : 'Total VAT out', $sum['dpp'], $sum['tax']);
+            $rows[] = $this->summaryRow("t-{$k}", $k === TaxFiling::IN ? __('Total VAT in') : __('Total VAT out'), $sum['dpp'], $sum['tax']);
         }
         if (count($kinds) === 2) {
-            $rows[] = $this->summaryRow('t-payable', 'VAT payable (out − in)', null, $totals[TaxFiling::OUT]['tax'] - $totals[TaxFiling::IN]['tax']);
+            $rows[] = $this->summaryRow('t-payable', __('VAT payable (out − in)'), null, $totals[TaxFiling::OUT]['tax'] - $totals[TaxFiling::IN]['tax']);
         }
 
         return $rows;

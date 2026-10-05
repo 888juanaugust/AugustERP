@@ -57,7 +57,7 @@ class PurchaseReturnResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(VendorFields::select(), TransactionType::PurchaseReturn, 'Return No.', [
+            PricedDocumentForm::header(VendorFields::select(), TransactionType::PurchaseReturn, __('Return No.'), [
                 Select::make('return_type')->label(__('Return from'))->options(['invoice' => __('Invoice'), 'receipt' => __('Receipt'), 'none' => __('No invoice'), 'down_payment' => __('Down payment')])->default('invoice')->required()->native(false)->live()
                     ->afterStateUpdated(fn (Set $set) => $set('source_key', null)),
                 Select::make('source_key')->label(__('Document'))
@@ -82,7 +82,7 @@ class PurchaseReturnResource extends ErpResource
             ]),
             Tabs::make('return')->tabs([
                 PricedDocumentForm::linesTab(
-                    before: [PullAction::make('Pull the lines of the document', 'vendor_id',
+                    before: [PullAction::make(__('Pull the lines of the document'), 'vendor_id',
                         function (Get $get) {
                             $key = $get('source_key');
                             $doc = $key ? PayableFields::resolve($key) ?? (str_starts_with($key, 'goods_receipt:') ? GoodsReceipt::query()->find((int) substr($key, 14)) : null) : null;

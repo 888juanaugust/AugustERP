@@ -6,6 +6,7 @@ namespace App\Domain\Tax;
 
 use App\Domain\Audit\Auditor;
 use App\Domain\Printing\PdfRenderer;
+use App\Domain\Shared\Locales;
 use App\Jobs\SendTaxInvoiceMail;
 use App\Mail\TaxInvoiceMessage;
 use App\Models\Sales\SalesInvoice;
@@ -100,8 +101,11 @@ final class TaxInvoiceMailer
             }
             try {
                 $user = $request->user ?? throw new RuntimeException(__('Nobody to render the invoice as.'));
-                $pdf = $this->pdf->render('sales_invoice', $invoice->id, $user);
-                Mail::to($request->recipient)->send(new TaxInvoiceMessage($invoice, $request->serial, (string) $invoice->coretax_pdf_path, $pdf));
+                // A document to a customer goes in the company's language, whoever queued it.
+                Locales::using(Locales::companyDefault(), function () use ($invoice, $user, $request): void {
+                    $pdf = $this->pdf->render('sales_invoice', $invoice->id, $user);
+                    Mail::to($request->recipient)->send(new TaxInvoiceMessage($invoice, $request->serial, (string) $invoice->coretax_pdf_path, $pdf));
+                });
             } catch (Throwable $e) {
                 $answer(TaxInvoiceMail::FAILED, mb_substr($e->getMessage(), 0, 2000));
 

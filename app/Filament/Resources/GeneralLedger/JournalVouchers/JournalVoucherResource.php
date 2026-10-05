@@ -62,13 +62,13 @@ class JournalVoucherResource extends ErpResource
                 ->columns(3)
                 ->schema([
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
-                    NumberFields::make(TransactionType::JournalVoucher, 'Number'),
+                    NumberFields::make(TransactionType::JournalVoucher, __('Number')),
                     BranchFields::select(),
                     ...TagFields::header(),
                 ]),
             Tabs::make('voucher')->tabs([
                 Tab::make(__('Journal lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -80,11 +80,11 @@ class JournalVoucherResource extends ErpResource
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
+                            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->required()->native(false),
                             self::money('debit', __('Debit')),
                             self::money('credit', __('Credit')),
                             ...TagFields::lineFields(),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                         ])
                         ->live()
                         ->minItems(2)
@@ -100,7 +100,7 @@ class JournalVoucherResource extends ErpResource
                                 $fail(__('The journal has no amounts.'));
                             }
                         }),
-                    Placeholder::make('totals')
+                    Placeholder::make('totals')->label(__('Total'))
                         ->hiddenLabel()
                         ->content(fn (Get $get): string => 'Debit '.Format::rupiah(LineTotals::sum($get('lines'), 'debit')).'   ·   Credit '.Format::rupiah(LineTotals::sum($get('lines'), 'credit'))),
                 ]),

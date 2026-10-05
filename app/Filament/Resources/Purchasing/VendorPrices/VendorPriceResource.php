@@ -64,7 +64,7 @@ class VendorPriceResource extends ErpResource
             ]),
             Tabs::make('prices')->tabs([
                 Tab::make(__('fields.lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -72,7 +72,7 @@ class VendorPriceResource extends ErpResource
                         ->schema([
                             LineItemFields::item(groups: false),
                             LineItemFields::unit(),
-                            TextInput::make('price')->numeric()->required()->prefix(Format::symbol()),
+                            TextInput::make('price')->label(__('Price'))->numeric()->required()->prefix(Format::symbol()),
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel(__('Add item')),
                 ]),

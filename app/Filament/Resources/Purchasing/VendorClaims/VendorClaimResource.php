@@ -58,12 +58,12 @@ class VendorClaimResource extends ErpResource
             Section::make()->columns(3)->schema([
                 Select::make('claim_type')->label(__('Claim type'))->options(['send' => __('Send goods to the vendor'), 'receive' => __('Receive goods from the vendor')])->default('send')->required()->native(false),
                 VendorFields::select(),
-                NumberFields::make(TransactionType::VendorClaim, 'Claim No.'),
+                NumberFields::make(TransactionType::VendorClaim, __('Claim No.')),
                 DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
             ]),
             Tabs::make('claim')->tabs([
                 Tab::make(__('fields.lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -73,7 +73,7 @@ class VendorClaimResource extends ErpResource
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
                             ...TagFields::lineFields(),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                             LineItemFields::baseQuantity(),
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel(__('Add line'))

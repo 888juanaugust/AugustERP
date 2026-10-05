@@ -58,10 +58,10 @@ class SalesOrderResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(CustomerFields::select(label: 'Ordered by'), TransactionType::SalesOrder, 'Order No.'),
+            PricedDocumentForm::header(CustomerFields::select(label: __('Ordered by')), TransactionType::SalesOrder, __('Order No.')),
             Tabs::make('order')->tabs([
                 SalesLinesTab::make(
-                    before: [PullAction::make('Pull from quotations', 'customer_id',
+                    before: [PullAction::make(__('Pull from quotations'), 'customer_id',
                         fn (Get $get) => SalesQuotation::query()->where('customer_id', $get('customer_id'))->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                         fn (int $id) => PricedDocumentForm::pulledLines(SalesQuotation::query()->findOrFail($id)->lines()->with('item')->get(), 'sales_quotation_line'),
                     )],

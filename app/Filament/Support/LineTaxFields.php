@@ -28,9 +28,9 @@ final class LineTaxFields
     public static function fields(?\Closure $untaxed = null): array
     {
         return [
-            Select::make('tax_code_id')->options(fn () => TaxCode::query()->where('is_active', true)->orderBy('description')->pluck('description', 'id'))->native(false)->placeholder(__('No tax'))
+            Select::make('tax_code_id')->label(__('Tax'))->options(fn () => TaxCode::query()->where('is_active', true)->orderBy('description')->pluck('description', 'id'))->native(false)->placeholder(__('No tax'))
                 ->disabled(fn (Get $get) => $untaxed !== null && $untaxed($get)),
-            TextInput::make('tax_invoice_number')->maxLength(40)->placeholder(__('Supplier tax invoice'))
+            TextInput::make('tax_invoice_number')->label(__('Tax invoice No.'))->maxLength(40)->placeholder(__('Supplier tax invoice'))
                 ->disabled(fn (Get $get) => $untaxed !== null && $untaxed($get)),
             BranchFields::select(defaulted: false)->hiddenLabel()->required(false)->placeholder(__('As the document')),
         ];

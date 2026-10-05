@@ -53,18 +53,29 @@ ownership, reachability and switch.
 
 ## Language
 
-**The product speaks English and is translatable.** Every string the UI shows passes
-through `__()`; the English text is the key, so no `lang/en.json` is needed. A locale is
-added with `node tools/i18n/extract-strings.mjs <locale>` (writes `lang/<locale>.json` to
-fill in) plus copies of `lang/en/{menu,fields,status}.php`; `lang/id/menu.php` already
-holds the Indonesian screen names. `node tools/i18n/wrap-literals.mjs` wraps new literals;
-`TranslationGuardTest` fails the build on one it would have wrapped. Buttons are verbs
-("Save order", "Record payment"), never "Submit".
+**The product speaks English and Indonesian.** The company's language is Preferences →
+Other → Language (`erp:install --locale=id`); each user may choose their own on their
+profile, and `SetLocale` applies it to the app and Carbon on every panel request. Anything
+sent to a customer (the tax invoice email and its PDF) goes in the company's language
+through `Locales::using()`. Every string the UI shows passes through `__()`; the English
+text is the key, so no `lang/en.json` is needed, and `lang/id.json` holds the Indonesian.
+Grouped keys live in `lang/{en,id}/{menu,fields,status}.php`; `Format::code($value, $group)`
+reads the status groups and `Format::monthName()` / `Format::months()` give month names.
+Every field, entry, column and filter gets an explicit `->label(__('…'))`: Filament's
+default label is made from the column name and is never translated. Helpers take the
+label already translated (`NumberFields::make($type, __('Invoice No.'))`).
+
+After adding strings run `node tools/i18n/wrap-literals.mjs` (wraps literals a developer
+left bare) and `node tools/i18n/extract-strings.mjs id` (adds the new keys to
+`lang/id.json` empty, to translate). `TranslationGuardTest` fails the build on a literal
+it would have wrapped; `IndonesianTranslationTest` fails it on a key without Indonesian,
+on a field without a label, and on English text on any screen rendered in Indonesian.
+Buttons are verbs ("Save order", "Record payment"), never "Submit".
 
 Numbers and dates follow the Indonesian convention through `App\Domain\Shared\Format`
-(`Rp 18.450.000`, `17 Oct 2026` in tables, `17/10/2026` in inputs), with the base
-currency's symbol from `Format::symbol()`. Locale number and date formats are on the
-roadmap. Code identifiers are English; Indonesian domain words without an English
+(`Rp 18.450.000`, `17 Oct 2026` in tables (`17 Okt 2026` in Indonesian), `17/10/2026` in inputs), with the base
+currency's symbol from `Format::symbol()`; the separators and date order are their own
+preferences. Code identifiers are English; Indonesian domain words without an English
 equivalent in daily use (`giro`, `faktur pajak`, `NPWP`, `NITKU`) stay as they are.
 
 ## Design

@@ -67,15 +67,15 @@ class SalesInvoiceResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(CustomerFields::select(), TransactionType::SalesInvoice, 'Invoice No.'),
+            PricedDocumentForm::header(CustomerFields::select(), TransactionType::SalesInvoice, __('Invoice No.')),
             Tabs::make('invoice')->tabs([
                 SalesLinesTab::make(
                     before: [
-                        PullAction::make('Pull from deliveries', 'customer_id',
+                        PullAction::make(__('Pull from deliveries'), 'customer_id',
                             fn (Get $get) => Delivery::query()->where('customer_id', $get('customer_id'))->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                             fn (int $id) => PricedDocumentForm::pulledLines(Delivery::query()->findOrFail($id)->lines()->with('item')->get(), 'delivery_line'),
                         ),
-                        PullAction::make('Pull from orders', 'customer_id',
+                        PullAction::make(__('Pull from orders'), 'customer_id',
                             fn (Get $get) => SalesOrder::query()->where('customer_id', $get('customer_id'))->where('approval_status', SalesOrder::APPROVED)->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                             fn (int $id) => PricedDocumentForm::pulledLines(SalesOrder::query()->findOrFail($id)->lines()->with('item')->get(), 'sales_order_line'),
                         )->name('pullOrders'),

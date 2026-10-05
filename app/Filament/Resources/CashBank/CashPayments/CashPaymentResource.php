@@ -74,7 +74,7 @@ class CashPaymentResource extends ErpResource
             Section::make()->columns(3)->schema([
                 Select::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
                 DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
-                NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
+                NumberFields::make(TransactionType::CashBankVoucher, __('Voucher No.')),
                 Placeholder::make('amount_preview')->label(__('Amount'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
             ]),
             Tabs::make('payment')->tabs([
@@ -101,7 +101,7 @@ class CashPaymentResource extends ErpResource
                             $set('lines', $rows);
                             Notification::make()->title(__(':count open document(s) pulled', ['count' => count($data['documents'] ?? [])]))->success()->send();
                         }),
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -114,7 +114,7 @@ class CashPaymentResource extends ErpResource
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            Select::make('payable_key')
+                            Select::make('payable_key')->label(__('Settles'))
                                 ->options(fn (Get $get) => AccrualFields::openFor($get('payable_key'))->map(fn (array $open) => $open['label'])->all())
                                 ->placeholder(__('Nothing: an expense'))
                                 ->searchable()->native(false)->live()
@@ -125,12 +125,12 @@ class CashPaymentResource extends ErpResource
                                         $set('amount', $open['balance']);
                                     }
                                 }),
-                            Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false)
+                            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->required()->native(false)
                                 ->disabled(fn (Get $get) => filled($get('payable_key')))->dehydrated(),
                             PricedDocumentForm::money('amount', __('Amount'))->required()->live(onBlur: true),
                             ...LineTaxFields::fields(fn (Get $get) => filled($get('payable_key'))),
                             ...TagFields::lineFields(),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                         ])
                         ->minItems(1)->defaultItems(1)->live()
                         ->addActionLabel(__('Add line'))
@@ -168,7 +168,7 @@ class CashPaymentResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                DocumentListFilters::dateRange('cheque_date', 'Cheque date'),
+                DocumentListFilters::dateRange('cheque_date', __('Cheque date')),
                 SelectFilter::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
             ->recordActions([...ApprovalActions::make(), EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);

@@ -73,7 +73,7 @@ class CustomerResource extends MasterResource
                 ->columns(3)
                 ->schema([
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(150)->columnSpan(2),
-                    NumberFields::make(TransactionType::Customer, 'Customer ID'),
+                    NumberFields::make(TransactionType::Customer, __('Customer ID')),
                     Select::make('category_id')->label(__('Category'))->relationship('category', 'name')->preload()->searchable()->native(false)
                         ->default(fn () => CustomerCategory::query()->where('is_default', true)->value('id')),
                     TextInput::make('work_phone')->label(__('Work phone'))->tel()->maxLength(30),
@@ -88,9 +88,9 @@ class CustomerResource extends MasterResource
             Tabs::make('customer')
                 ->persistTabInQueryString()
                 ->tabs([
-                    Tab::make(__('Billing address'))->schema([AddressFields::make('bill', 'Billing address')]),
+                    Tab::make(__('Billing address'))->schema([AddressFields::make('bill', __('Billing address'))]),
                     Tab::make(__('Contacts'))->schema([
-                        Repeater::make('contacts')
+                        Repeater::make('contacts')->label(__('Contacts'))
                             ->hiddenLabel()
                             ->relationship()
                             ->orderColumn('sort')
@@ -111,7 +111,7 @@ class CustomerResource extends MasterResource
                     ]),
                     Tab::make(__('Shipping'))->schema([
                         Toggle::make('ship_same_as_bill')->label(__('Same as the billing address'))->default(true)->live(),
-                        AddressFields::make('ship', 'Shipping address')->visible(fn (Get $get) => ! $get('ship_same_as_bill')),
+                        AddressFields::make('ship', __('Shipping address'))->visible(fn (Get $get) => ! $get('ship_same_as_bill')),
                         Repeater::make('addresses')
                             ->label(__('Other delivery addresses'))
                             ->relationship()
@@ -158,14 +158,14 @@ class CustomerResource extends MasterResource
                             TextInput::make('tax_invoice_email')->label(__('Tax invoices go to'))->email()->maxLength(150)->placeholder(__('The customer\'s email')),
                         ]),
                         Toggle::make('tax_same_as_bill')->label(__('Tax address is the billing address'))->default(true)->live(),
-                        AddressFields::make('tax', 'Tax address')->visible(fn (Get $get) => ! $get('tax_same_as_bill')),
+                        AddressFields::make('tax', __('Tax address'))->visible(fn (Get $get) => ! $get('tax_same_as_bill')),
                     ]),
                     Tab::make(__('Opening balance'))->schema([
                         OpeningBalanceFields::repeater(__('Add open invoice')),
                     ]),
                     Tab::make(__('Other'))->schema([
                         Fieldset::make(__('Credit limit'))->visible(fn () => HakAkses::canSpecial(HakKhusus::SeeCreditData))->schema([
-                            Radio::make('credit_limit_mode')
+                            Radio::make('credit_limit_mode')->label(__('Credit limit'))
                                 ->hiddenLabel()
                                 ->options(['per_customer' => __('Per customer'), 'parent' => __('Shared with a parent customer')])
                                 ->default('per_customer')

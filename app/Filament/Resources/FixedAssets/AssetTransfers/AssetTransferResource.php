@@ -57,7 +57,7 @@ class AssetTransferResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
-                NumberFields::make(TransactionType::AssetTransfer, 'Transfer No.'),
+                NumberFields::make(TransactionType::AssetTransfer, __('Transfer No.')),
                 Select::make('from_location_id')->label(__('From location'))->options(fn () => AssetLocation::options())->required()->native(false)->live(),
                 Select::make('to_location_id')->label(__('To location'))->options(fn () => AssetLocation::options())->required()->native(false)
                     ->different('from_location_id')
@@ -65,7 +65,7 @@ class AssetTransferResource extends ErpResource
             ]),
             Tabs::make('transfer')->tabs([
                 Tab::make(__('Asset details'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -76,7 +76,7 @@ class AssetTransferResource extends ErpResource
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            Select::make('fixed_asset_id')
+                            Select::make('fixed_asset_id')->label(__('Asset'))
                                 ->searchable()
                                 ->getSearchResultsUsing(fn (string $search, Get $get) => FixedAsset::query()->active()
                                     ->when($get('../../from_location_id'), fn ($query, $location) => $query->where('location_id', $location))
@@ -88,9 +88,9 @@ class AssetTransferResource extends ErpResource
                                 ->live()
                                 ->native(false)
                                 ->afterStateUpdated(fn (Set $set, $state) => $set('quantity', $state ? FixedAsset::query()->find($state)?->quantityRemaining() : null)),
-                            Placeholder::make('asset_name')->hiddenLabel()->content(fn (Get $get) => ($id = $get('fixed_asset_id')) ? (FixedAsset::query()->find($id)?->name ?? '') : ''),
-                            TextInput::make('quantity')->numeric()->required(),
-                            TextInput::make('memo')->maxLength(255),
+                            Placeholder::make('asset_name')->label(__('Asset name'))->hiddenLabel()->content(fn (Get $get) => ($id = $get('fixed_asset_id')) ? (FixedAsset::query()->find($id)?->name ?? '') : ''),
+                            TextInput::make('quantity')->label(__('Quantity'))->numeric()->required(),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                         ])
                         ->minItems(1)
                         ->defaultItems(1)

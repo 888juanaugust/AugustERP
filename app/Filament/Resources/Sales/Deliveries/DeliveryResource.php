@@ -57,12 +57,12 @@ class DeliveryResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(CustomerFields::select(label: 'Ship to'), TransactionType::DeliveryOrder, 'Delivery No.', [
+            PricedDocumentForm::header(CustomerFields::select(label: __('Ship to')), TransactionType::DeliveryOrder, __('Delivery No.'), [
                 Select::make('shipment_id')->label(__('fields.shipment'))->relationship('shipment', 'name')->preload()->native(false),
             ]),
             Tabs::make('delivery')->tabs([
                 SalesLinesTab::make(
-                    before: [PullAction::make('Pull from orders', 'customer_id',
+                    before: [PullAction::make(__('Pull from orders'), 'customer_id',
                         fn (Get $get) => SalesOrder::query()->where('customer_id', $get('customer_id'))->where('approval_status', SalesOrder::APPROVED)->whereIn('status', ['pending', 'partial'])->orderByDesc('trans_date')->get(),
                         fn (int $id) => PricedDocumentForm::pulledLines(SalesOrder::query()->findOrFail($id)->lines()->with('item')->get(), 'sales_order_line'),
                     )],

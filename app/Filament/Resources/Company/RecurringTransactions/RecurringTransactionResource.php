@@ -36,7 +36,13 @@ use RuntimeException;
 /** Recurring Transactions: a journal, payment or receipt that repeats; each run makes and posts the document on its date, by hand from here or by the daily schedule. */
 class RecurringTransactionResource extends ErpResource
 {
-    public const STATUSES = ['active' => 'Active', 'paused' => 'Paused', 'done' => 'Done'];
+    public const STATUSES = ['active', 'paused', 'done'];
+
+    /** @return array<string, string> status → its label */
+    public static function statuses(): array
+    {
+        return collect(self::STATUSES)->mapWithKeys(fn (string $s) => [$s => Format::code($s, 'recurring')])->all();
+    }
 
     protected static ?string $model = RecurringTransaction::class;
 
@@ -71,7 +77,7 @@ class RecurringTransactionResource extends ErpResource
                     Select::make('frequency')->label(__('Frequency'))->options(RecurringTransaction::frequencies())->default('monthly')->required()->native(false),
                     DatePicker::make('next_run_on')->label(__('Next run'))->required()->native(false)->default(today()),
                     DatePicker::make('end_on')->label(__('Until'))->native(false)->nullable(),
-                    Select::make('status')->label(__('fields.status'))->options(self::STATUSES)->default('active')->required()->native(false),
+                    Select::make('status')->label(__('fields.status'))->options(self::statuses())->default('active')->required()->native(false),
                 ]),
             Section::make(__('Template'))
                 ->description(__('What each run puts on the document; the date is the run date and the number comes from the default series.'))
@@ -122,7 +128,7 @@ class RecurringTransactionResource extends ErpResource
                 Tanggal::make('last_run_on')->label(__('Last run'))->placeholder('—'),
                 TextColumn::make('run_count')->label(__('Runs'))->alignEnd(),
                 TextColumn::make('status')->label(__('fields.status'))->badge()
-                    ->formatStateUsing(fn (string $state): string => self::STATUSES[$state] ?? $state)
+                    ->formatStateUsing(fn (string $state): string => Format::code($state, 'recurring'))
                     ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
                         'paused' => 'warning',
@@ -133,7 +139,7 @@ class RecurringTransactionResource extends ErpResource
             ->filters([
                 SelectFilter::make('transaction_type')->label(__('Document'))->options(RecurringTransaction::types()),
                 SelectFilter::make('category')->label(__('Category'))->options(fn () => self::categories()),
-                SelectFilter::make('status')->label(__('fields.status'))->options(self::STATUSES),
+                SelectFilter::make('status')->label(__('fields.status'))->options(self::statuses()),
             ])
             ->recordActions([
                 EditAction::make(),

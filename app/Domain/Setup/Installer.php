@@ -7,6 +7,7 @@ namespace App\Domain\Setup;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Shared\Format;
+use App\Domain\Shared\Locales;
 use App\Models\Company\Currency;
 use App\Models\Preference;
 use App\Models\User;
@@ -89,6 +90,7 @@ final class Installer
             PreferensiKey::CompanyEmail->value => $options->email,
             PreferensiKey::CompanyNpwp->value => $options->taxId,
             PreferensiKey::FiscalYearStartMonth->value => (string) $options->fiscalYearStart,
+            ...($options->locale !== null ? [PreferensiKey::Language->value => $options->locale] : []),
         ], fn ($value) => $value !== null && $value !== ''));
         $this->log[] = "Company: {$options->company}.";
 
@@ -130,6 +132,9 @@ final class Installer
     {
         if (trim($options->company) === '') {
             throw new InvalidArgumentException('The company name is required.');
+        }
+        if ($options->locale !== null && ! isset(Locales::names()[$options->locale])) {
+            throw new InvalidArgumentException('Unknown language "'.$options->locale.'"; one of '.implode(', ', array_keys(Locales::names())).'.');
         }
         if (! isset(self::CURRENCIES[strtoupper($options->currency)])) {
             throw new InvalidArgumentException('Unknown currency "'.$options->currency.'"; one of '.implode(', ', array_keys(self::CURRENCIES)).'.');

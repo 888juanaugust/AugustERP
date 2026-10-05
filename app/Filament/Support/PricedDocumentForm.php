@@ -47,7 +47,7 @@ use Illuminate\Support\HtmlString;
  */
 final class PricedDocumentForm
 {
-    public static function header(Select $party, TransactionType $type, string $numberLabel = 'Number', array $extra = []): Section
+    public static function header(Select $party, TransactionType $type, ?string $numberLabel = null, array $extra = []): Section
     {
         return Section::make()
             ->columns(3)
@@ -110,10 +110,10 @@ final class PricedDocumentForm
         ];
         $pricesEditable ??= ! $salesman || app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ChangeSellingPrice);
         if ($prices) {
-            $fields[] = TextInput::make('unit_price')->numeric()->default(0)->live(onBlur: true)->prefix(fn (Get $get) => CurrencyFields::symbol($get('../../currency_id')))->readOnly(! $pricesEditable);
-            $fields[] = TextInput::make('discount_percent')->numeric()->default(0)->minValue(0)->maxValue(100)->live(onBlur: true);
-            $fields[] = Placeholder::make('amount_preview')->hiddenLabel()->content(fn (Get $get) => CurrencyFields::number(self::lineAmount($get), $get('../../currency_id')));
-            $fields[] = Select::make('tax_code_id')->options(fn () => TaxCode::query()->where('is_active', true)->orderBy('description')->pluck('description', 'id'))->native(false)->live();
+            $fields[] = TextInput::make('unit_price')->label(__('Unit price'))->numeric()->default(0)->live(onBlur: true)->prefix(fn (Get $get) => CurrencyFields::symbol($get('../../currency_id')))->readOnly(! $pricesEditable);
+            $fields[] = TextInput::make('discount_percent')->label(__('Disc %'))->numeric()->default(0)->minValue(0)->maxValue(100)->live(onBlur: true);
+            $fields[] = Placeholder::make('amount_preview')->label(__('Amount'))->hiddenLabel()->content(fn (Get $get) => CurrencyFields::number(self::lineAmount($get), $get('../../currency_id')));
+            $fields[] = Select::make('tax_code_id')->label(__('Tax'))->options(fn () => TaxCode::query()->where('is_active', true)->orderBy('description')->pluck('description', 'id'))->native(false)->live();
         }
         if (! $prices) {
             // Price-less grids (receipts) still carry the price the goods came in at, for the ledger.
@@ -122,18 +122,18 @@ final class PricedDocumentForm
             $fields[] = Hidden::make('tax_code_id')->dehydrated();
         }
         if ($warehouse) {
-            $fields[] = Select::make('warehouse_id')->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->native(false)->required()
+            $fields[] = Select::make('warehouse_id')->label(__('Warehouse'))->options(fn () => Warehouse::query()->visibleTo(auth()->user())->where('is_system', false)->where('is_active', true)->orderBy('name')->pluck('name', 'id'))->native(false)->required()
                 ->default(fn () => Warehouse::default()?->id);
         }
         if ($salesman) {
-            $fields[] = Select::make('salesman_id')->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->native(false)
+            $fields[] = Select::make('salesman_id')->label(__('fields.salesman'))->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->native(false)
                 ->default(fn (Get $get) => $get('../../customer_id') ? Customer::query()->find($get('../../customer_id'))?->salesman_id : null);
         }
         if ($processed) {
-            $fields[] = TextInput::make('processed_quantity')->numeric()->disabled()->dehydrated(false)->default(0);
+            $fields[] = TextInput::make('processed_quantity')->label(__('fields.processed_quantity'))->numeric()->disabled()->dehydrated(false)->default(0);
         }
         array_push($fields, ...TagFields::lineFields());
-        $fields[] = TextInput::make('memo')->maxLength(255);
+        $fields[] = TextInput::make('memo')->label(__('Memo'))->maxLength(255);
         $fields[] = LineItemFields::baseQuantity();
         $fields[] = Hidden::make('source_line_type')->dehydrated();
         $fields[] = Hidden::make('source_line_id')->dehydrated();
@@ -141,7 +141,7 @@ final class PricedDocumentForm
 
         return Tab::make(__('fields.lines'))->schema([
             ...$before,
-            Repeater::make('lines')
+            Repeater::make('lines')->label(__('fields.lines'))
                 ->hiddenLabel()
                 ->relationship()
                 ->orderColumn('sort')
@@ -248,7 +248,7 @@ final class PricedDocumentForm
 
     public static function totals(): Placeholder
     {
-        return Placeholder::make('totals')
+        return Placeholder::make('totals')->label(__('Total'))
             ->hiddenLabel()
             ->content(function (Get $get): HtmlString {
                 $currencyId = $get('currency_id');
@@ -332,10 +332,10 @@ final class PricedDocumentForm
     {
         $columns = [TableColumn::make(__('Charge')), TableColumn::make(__('Amount'))->alignment(Alignment::End), ...TagFields::columns(), TableColumn::make(__('Description'))];
         $fields = [
-            Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::OtherIncome))->searchable()->required()->native(false),
+            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::OtherIncome))->searchable()->required()->native(false),
             MoneyInput::inCurrency('amount', fn (Get $get) => CurrencyFields::decimals($get('../../currency_id')))->label(__('Amount'))->default(0)->live(onBlur: true),
             ...TagFields::lineFields(),
-            TextInput::make('description')->maxLength(255),
+            TextInput::make('description')->label(__('Description'))->maxLength(255),
         ];
         if ($allocateToCost) {
             $columns[] = TableColumn::make(__('Into item cost'));
@@ -343,7 +343,7 @@ final class PricedDocumentForm
         }
 
         return Tab::make(__('fields.other_charges'))->schema([
-            Repeater::make('charges')
+            Repeater::make('charges')->label(__('fields.other_charges'))
                 ->hiddenLabel()
                 ->relationship()
                 ->orderColumn('sort')

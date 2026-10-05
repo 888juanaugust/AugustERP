@@ -68,7 +68,7 @@ class SalesDownPaymentResource extends ErpResource
                 CustomerFields::select(),
                 DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today())->live(onBlur: true)
                     ->afterStateUpdated(fn (Set $set, Get $get) => Currencies::isForeign($get('currency_id')) ? CurrencyFields::fillRates($set, $get, $get('currency_id')) : null),
-                NumberFields::make(TransactionType::SalesInvoice, 'Invoice No.'),
+                NumberFields::make(TransactionType::SalesInvoice, __('Invoice No.')),
                 ...CurrencyFields::header(),
             ]),
             Tabs::make('down-payment')->tabs([

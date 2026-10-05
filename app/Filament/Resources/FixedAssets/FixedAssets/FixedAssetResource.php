@@ -77,7 +77,7 @@ class FixedAssetResource extends ErpResource
                     TextInput::make('name')->label(__('Name'))->required()->maxLength(255),
                     DatePicker::make('trans_date')->label(__('Purchase date'))->required()->native(false)->default(today())->live(),
                     DatePicker::make('usage_date')->label(__('In use from'))->required()->native(false)->default(today()),
-                    NumberFields::make(TransactionType::FixedAsset, 'Asset code'),
+                    NumberFields::make(TransactionType::FixedAsset, __('Asset code')),
                     Select::make('asset_category_id')->label(__('Asset category'))
                         ->options(fn () => AssetCategory::query()->active()->orderBy('name')->pluck('name', 'id'))
                         ->required()->native(false)->live()
@@ -105,9 +105,9 @@ class FixedAssetResource extends ErpResource
                 ->persistTabInQueryString()
                 ->tabs([
                     Tab::make(__('General'))->columns(3)->schema([
-                        self::accountSelect('asset_account_id', 'Asset account', AccountType::FixedAsset, AccountType::OtherCurrentAsset),
-                        self::accountSelect('accumulated_depreciation_account_id', 'Accumulated depreciation account', AccountType::AccumulatedDepreciation),
-                        self::accountSelect('depreciation_expense_account_id', 'Depreciation expense account', AccountType::Expense, AccountType::OtherExpense),
+                        self::accountSelect('asset_account_id', __('Asset account'), AccountType::FixedAsset, AccountType::OtherCurrentAsset),
+                        self::accountSelect('accumulated_depreciation_account_id', __('Accumulated depreciation account'), AccountType::AccumulatedDepreciation),
+                        self::accountSelect('depreciation_expense_account_id', __('Depreciation expense account'), AccountType::Expense, AccountType::OtherExpense),
                     ]),
                     Tab::make(__('Other info'))->columns(2)->schema([
                         Select::make('location_id')->label(__('Initial location'))
@@ -134,7 +134,7 @@ class FixedAssetResource extends ErpResource
                                 ->content(fn (?FixedAsset $record) => $record ? new HtmlString(view('filament.fixed-assets.fiscal-schedule', ['years' => FiscalDepreciator::years($record->loadMissing('fiscalCategory'))])->render()) : null),
                         ]),
                     Tab::make(__('Expenditure accounts'))->schema([
-                        Repeater::make('expenditures')
+                        Repeater::make('expenditures')->label(__('Expenditures'))
                             ->hiddenLabel()
                             ->relationship()
                             ->orderColumn('sort')
@@ -145,9 +145,9 @@ class FixedAssetResource extends ErpResource
                                 TableColumn::make(__('Amount'))->alignment(Alignment::End),
                             ])
                             ->schema([
-                                Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
-                                TextInput::make('description')->maxLength(255),
-                                DatePicker::make('trans_date')->native(false)->default(fn (Get $get) => $get('../../trans_date')),
+                                Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->required()->native(false),
+                                TextInput::make('description')->label(__('Description'))->maxLength(255),
+                                DatePicker::make('trans_date')->label(__('fields.trans_date'))->native(false)->default(fn (Get $get) => $get('../../trans_date')),
                                 PricedDocumentForm::money('amount', __('Amount'))->required()->live(onBlur: true),
                             ])
                             ->minItems(1)

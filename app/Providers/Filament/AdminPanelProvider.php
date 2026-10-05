@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Shared\Format;
+use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Workspace;
 use App\Filament\Support\SafeDelete;
 use App\Filament\Support\SideTabIcons;
@@ -13,6 +14,7 @@ use App\Http\Controllers\A1SlipController;
 use App\Http\Controllers\PrintController;
 use App\Http\Middleware\EndInactiveSessions;
 use App\Http\Middleware\EnforceAccessWindow;
+use App\Http\Middleware\SetLocale;
 use Filament\Actions\DeleteAction;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
@@ -81,6 +83,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile(EditProfile::class, isSimple: false)
             ->profile()
             ->multiFactorAuthentication([
                 AppAuthentication::make()->recoverable(),
@@ -133,7 +136,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->middleware([EndInactiveSessions::class], isPersistent: true)
+            ->middleware([EndInactiveSessions::class, SetLocale::class], isPersistent: true)
             ->authMiddleware([
                 Authenticate::class,
                 EnforceAccessWindow::class,

@@ -52,7 +52,7 @@ class StockOpnameOrderResource extends ErpResource
                 ->columns(3)
                 ->schema([
                     DatePicker::make('trans_date')->label(__('Order date'))->required()->native(false)->default(today()),
-                    NumberFields::make(TransactionType::StockOpnameOrder, 'Order No.'),
+                    NumberFields::make(TransactionType::StockOpnameOrder, __('Order No.')),
                     DatePicker::make('start_date')->label(__('Count starts'))->required()->native(false)->default(today()),
                     TextInput::make('person_charged')->label(__('Person in charge'))->required()->maxLength(100),
                     Select::make('users')->label(__('Counted by'))->relationship('users', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))->multiple()->preload()->required()->native(false),
@@ -89,7 +89,7 @@ class StockOpnameOrderResource extends ErpResource
             ->defaultSort('trans_date', 'desc')
             ->filters([
                 DocumentListFilters::dateRange(),
-                SelectFilter::make('status')->options(['open' => __('Open'), 'counted' => __('Counted'), 'closed' => __('Closed')]),
+                SelectFilter::make('status')->label(__('Status'))->options(['open' => __('Open'), 'counted' => __('Counted'), 'closed' => __('Closed')]),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()->hidden(fn (StockOpnameOrder $r) => $r->results()->exists())]);
     }

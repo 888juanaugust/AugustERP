@@ -57,7 +57,7 @@ class SalesReturnResource extends ErpResource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            PricedDocumentForm::header(CustomerFields::select(), TransactionType::SalesReturn, 'Return No.', [
+            PricedDocumentForm::header(CustomerFields::select(), TransactionType::SalesReturn, __('Return No.'), [
                 Select::make('return_type')->label(__('Return from'))->options(['invoice' => __('Invoice'), 'delivery' => __('Delivery'), 'none' => __('No invoice'), 'down_payment' => __('Down payment')])->default('invoice')->required()->native(false)->live()
                     ->afterStateUpdated(fn (Set $set) => $set('source_key', null)),
                 Select::make('source_key')->label(__('Document'))
@@ -82,7 +82,7 @@ class SalesReturnResource extends ErpResource
             ]),
             Tabs::make('return')->tabs([
                 SalesLinesTab::make(
-                    before: [PullAction::make('Pull the lines of the document', 'customer_id', fn () => [], fn () => [])->action(function (Set $set, Get $get): void {
+                    before: [PullAction::make(__('Pull the lines of the document'), 'customer_id', fn () => [], fn () => [])->action(function (Set $set, Get $get): void {
                         $key = (string) $get('source_key');
                         [$type, $id] = array_pad(explode(':', $key, 2), 2, null);
                         $doc = match ($type) {

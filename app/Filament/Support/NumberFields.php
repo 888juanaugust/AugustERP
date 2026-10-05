@@ -19,9 +19,10 @@ use Filament\Schemas\Components\Utilities\Get;
  */
 final class NumberFields
 {
-    public static function make(TransactionType $type, string $label = 'Number'): Group
+    public static function make(TransactionType $type, ?string $label = null): Group
     {
         $generator = app(NumberGenerator::class);
+        $label ??= __('fields.number');
 
         return Group::make([
             Toggle::make('manual_number')
@@ -31,7 +32,7 @@ final class NumberFields
                 ->dehydrated(false)
                 ->visibleOn('create'),
             Select::make('series_id')
-                ->label($label.' format')
+                ->label(__(':label format', ['label' => $label]))
                 ->options(fn () => $generator->seriesFor($type, auth()->user())->pluck('name', 'id'))
                 ->default(fn () => $generator->defaultSeries($type, auth()->user())?->id)
                 ->native(false)

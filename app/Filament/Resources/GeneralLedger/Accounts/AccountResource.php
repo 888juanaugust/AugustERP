@@ -71,7 +71,7 @@ class AccountResource extends MasterResource
                     ->visible(fn (Get $get) => ($get('account_type') instanceof AccountType ? $get('account_type')->value : $get('account_type')) === AccountType::CashBank->value)
                     ->schema([
                         Select::make('bank_id')->label(__('Bank'))->relationship('bank', 'name')->preload()->searchable()->native(false),
-                        TextInput::make('bank_account')->label(__('Account number'))->maxLength(50),
+                        TextInput::make('bank_account')->label(__('Bank account number'))->maxLength(50),
                         TextInput::make('bank_account_name')->label(__('Account holder'))->maxLength(150),
                         CurrencyFields::select(__('An account in a foreign currency holds that currency: it receives and pays only in it, and its balance is kept in both.'))
                             ->disabled(fn (?Account $record) => $record !== null && JournalLine::query()->where('account_id', $record->getKey())->exists()),

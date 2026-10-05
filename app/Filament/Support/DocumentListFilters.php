@@ -12,8 +12,10 @@ use Illuminate\Database\Eloquent\Builder;
 /** The date-range filter every document list carries. */
 final class DocumentListFilters
 {
-    public static function dateRange(string $column = 'trans_date', string $label = 'Date'): Filter
+    public static function dateRange(string $column = 'trans_date', ?string $label = null): Filter
     {
+        $label ??= __('fields.trans_date');
+
         return Filter::make($column)
             ->schema([
                 DatePicker::make('from')->label(__(':label from', ['label' => $label]))->native(false),
@@ -23,8 +25,8 @@ final class DocumentListFilters
                 ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate($column, '>=', $d))
                 ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate($column, '<=', $d)))
             ->indicateUsing(fn (array $data) => array_filter([
-                ($data['from'] ?? null) ? "{$label} from ".Format::date($data['from']) : null,
-                ($data['until'] ?? null) ? "{$label} until ".Format::date($data['until']) : null,
+                ($data['from'] ?? null) ? __(':label from :date', ['label' => $label, 'date' => Format::date($data['from'])]) : null,
+                ($data['until'] ?? null) ? __(':label until :date', ['label' => $label, 'date' => Format::date($data['until'])]) : null,
             ]));
     }
 }

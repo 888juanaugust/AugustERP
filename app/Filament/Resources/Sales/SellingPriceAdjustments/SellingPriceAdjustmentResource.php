@@ -66,7 +66,7 @@ class SellingPriceAdjustmentResource extends ErpResource
             ]),
             Tabs::make('adjustment')->tabs([
                 Tab::make(__('fields.lines'))->schema([
-                    Repeater::make('lines')
+                    Repeater::make('lines')->label(__('fields.lines'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -75,8 +75,8 @@ class SellingPriceAdjustmentResource extends ErpResource
                             LineItemFields::item(),
                             LineItemFields::unit(),
                             // A wholesale break: applies from this quantity (in the line's unit) on items that use wholesale prices.
-                            TextInput::make('min_quantity')->numeric()->minValue(0)->default(0),
-                            TextInput::make('value')->numeric()->required()->minValue(0)
+                            TextInput::make('min_quantity')->label(__('From quantity'))->numeric()->minValue(0)->default(0),
+                            TextInput::make('value')->label(__('New value'))->numeric()->required()->minValue(0)
                                 ->prefix(fn (Get $get) => $get('../../sales_adjustment_type') === 'discount' ? '%' : Format::symbol()),
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel(__('Add item')),
@@ -98,12 +98,12 @@ class SellingPriceAdjustmentResource extends ErpResource
                 TextColumn::make('priceCategory.name')->label(__('Price category')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
                 Tanggal::make('end_date')->label(__('Ends on'))->placeholder('—'),
-                TextColumn::make('sales_adjustment_type')->label(__('Adjustment type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'price' ? 'Price' : 'Discount (%)'),
+                TextColumn::make('sales_adjustment_type')->label(__('Adjustment type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => $state === 'price' ? __('Price') : __('Discount (%)')),
                 IconColumn::make('is_active')->label(__('fields.is_active'))->boolean(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
-                DocumentListFilters::dateRange('trans_date', 'Effective'),
+                DocumentListFilters::dateRange('trans_date', __('Effective')),
                 TernaryFilter::make('is_active')->label(__('fields.is_active')),
                 SelectFilter::make('price_category_id')->label(__('Price category'))->relationship('priceCategory', 'name'),
                 SelectFilter::make('sales_adjustment_type')->label(__('Adjustment type'))->options(['price' => __('Price'), 'discount' => __('Discount (%)')]),

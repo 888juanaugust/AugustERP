@@ -62,7 +62,7 @@ class BankTransferResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 DatePicker::make('trans_date')->label(__('Date'))->required()->native(false)->default(today()),
-                NumberFields::make(TransactionType::BankTransfer, 'Transfer No.'),
+                NumberFields::make(TransactionType::BankTransfer, __('Transfer No.')),
                 Select::make('from_bank_account_id')->label(__('From cash / bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)->live(),
                 PricedDocumentForm::money('amount', __('Amount transferred'))->required()->live(onBlur: true),
                 Select::make('to_bank_account_id')->label(__('To cash / bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)
@@ -72,7 +72,7 @@ class BankTransferResource extends ErpResource
             ]),
             Tabs::make('transfer')->tabs([
                 Tab::make(__('Transfer fees'))->schema([
-                    Repeater::make('fees')
+                    Repeater::make('fees')->label(__('Fees'))
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
@@ -83,10 +83,10 @@ class BankTransferResource extends ErpResource
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense))->searchable()->required()->native(false),
+                            Select::make('account_id')->label(__('Account'))->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense))->searchable()->required()->native(false),
                             Select::make('charged_to')->options(['from' => __('The sending account'), 'to' => __('The receiving account')])->default('from')->required()->native(false),
                             PricedDocumentForm::money('amount', __('Amount'))->required()->live(onBlur: true),
-                            TextInput::make('memo')->maxLength(255),
+                            TextInput::make('memo')->label(__('Memo'))->maxLength(255),
                         ])
                         ->defaultItems(0)->live()
                         ->addActionLabel(__('Add fee')),

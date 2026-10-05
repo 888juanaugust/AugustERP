@@ -360,7 +360,7 @@ Menu key `company__employee` · module `company`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Bank | `bank_id` | select |  |
-| Account number | `bank_account` | text |  |
+| Bank account number | `bank_account` | text |  |
 | Account holder | `bank_account_name` | text |  |
 
 ## Recurring Transactions
