@@ -25,6 +25,6 @@ Confirm with the client's accountant before relying on these figures:
 
 - The delivery order's journal: goods delivered but not yet invoiced go to the "Goods delivered, not yet invoiced" account named in Preferences; the invoice that follows moves them to cost of sales.
 - Same-day costing order: movements are costed by date, receipts before issues on the same day, then in entry order.
-- Retained earnings on the balance sheet are computed from the income statement, not formed by a closing entry.
+- Retained earnings on the balance sheet are computed from the income statement (prior fiscal years' income), not formed by a closing entry.
 - Withholding tax codes are modelled as a tax type but take part in no posting.
 - Cost is a moving average per warehouse; FIFO is not offered.

@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Inventory\Items;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
+use App\Domain\Company\DataStart;
 use App\Domain\Inventory\StockQuery;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
@@ -161,7 +162,7 @@ class ItemResource extends MasterResource
                                     TableColumn::make(__('Warehouse')),
                                 ])
                                 ->schema([
-                                    DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
+                                    DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
                                     TextInput::make('quantity')->numeric()->required(),
                                     Select::make('unit_id')->relationship('unit', 'name')->native(false)->placeholder(__('Base unit')),
                                     TextInput::make('unit_cost')->numeric()->prefix(Format::symbol())->default(0)

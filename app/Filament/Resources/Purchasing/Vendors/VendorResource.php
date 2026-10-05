@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Purchasing\Vendors;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Company\DataStart;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Enums\TaxDocumentCode;
@@ -150,7 +151,7 @@ class VendorResource extends MasterResource
                                 TableColumn::make(__('Description')),
                             ])
                             ->schema([
-                                DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
+                                DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
                                 TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix(Format::symbol()),
                                 Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
                                 TextInput::make('number')->maxLength(60),

@@ -111,6 +111,18 @@ enum PreferensiKey: string
         return PreferensiTab::from(explode('.', $this->value, 2)[0]);
     }
 
+    /**
+     * Whether the Preferences screen offers the key. Keys no part of this
+     * release uses (attachments, extra columns, financial categories,
+     * employee loans, the temporary payment account) are hidden; a value
+     * already stored is kept.
+     */
+    public function isOffered(): bool
+    {
+        return ! in_array($this->tab(), [PreferensiTab::Attachments, PreferensiTab::ExtraAttributes], true)
+            && ! in_array($this, [self::FinancialCategory, self::EmployeeLoan, self::TemporaryPaymentAccount], true);
+    }
+
     public function type(): PreferensiType
     {
         return match ($this) {
@@ -139,7 +151,7 @@ enum PreferensiKey: string
             self::FiscalYearStartMonth => '1',
             self::MultiBranch, self::MultiCurrency, self::Tax, self::Approval, self::FixedAssets, self::BudgetTarget => true,
             self::Department, self::Project, self::FinancialCategory, self::EmployeeLoan => false,
-            self::CogsSource => 'last_purchase_cost',
+            self::CogsSource => 'sales_invoice_cogs',
             self::ReturnCostCharge => 'item_cogs_account',
             self::UpdateCostOnReturnResave, self::NewCustomerInclusiveTax => true,
             self::LastPriceUpdatedByBill => true,
@@ -213,7 +225,7 @@ enum PreferensiKey: string
             self::CompanyNpwp => __('Company tax ID (NPWP)'),
             self::Klu => __('Business classification (KLU)'),
             self::Nitku => __('Business location ID (NITKU)'),
-            self::CogsSource => __('Cost of goods sold taken from'),
+            self::CogsSource => __('Cost of returned goods taken from'),
             self::ReturnCostCharge => __('Sales return cost is charged'),
             self::ReturnCostAccount => __('Sales return cost account'),
             self::UpdateCostOnReturnResave => __('Update item cost when a sales return is saved again'),
@@ -266,7 +278,7 @@ enum PreferensiKey: string
     public function help(): ?string
     {
         return match ($this) {
-            self::CogsSource => __('What the cost of a sold item is taken from when the invoice posts.'),
+            self::CogsSource => __('The cost a returned item comes back at: the cost it left with on the invoice, or its last purchase price.'),
             self::AccessRestriction => __('Applies to every access group that follows these preferences.'),
             self::AgingRangeDays => __('Receivables older than this are reported as the last bucket.'),
             self::AllowNegativeStock => __('When off, a delivery or adjustment that would take stock below zero is refused.'),
@@ -278,7 +290,11 @@ enum PreferensiKey: string
             self::FixedAssets, self::BudgetTarget, self::Tax, self::Approval, self::SalesExtras, self::Payroll => __('Switches the module and its screens on or off; data already entered is kept.'),
             self::MultiBranch => __('Shows the Branches screen and branch filters; one default branch always exists.'),
             self::MultiCurrency => __('Shows the Currencies screen; amounts stay in the base currency.'),
-            self::Department, self::Project, self::FinancialCategory, self::EmployeeLoan => __('Reserved: not used by this release.'),
+            self::Department, self::Project => __('Reserved: not used by this release.'),
+            self::LastPriceUpdatedByBill => __('A purchase invoice sets the item\'s purchase price to what it paid per base unit, when it is the item\'s latest invoice.'),
+            self::DataStartDate => __('Nothing can be dated before it; opening balances default to it.'),
+            self::FiscalYearStartMonth => __('Splits retained earnings from this year\'s income on the balance sheet, and starts year-to-date reports and new targets.'),
+            self::UpdateCostOnReturnResave => __('When off, saving a return again keeps the cost its goods first came back at.'),
             default => null,
         };
     }

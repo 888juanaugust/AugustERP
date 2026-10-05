@@ -7,10 +7,13 @@ use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Inventory\Costing\CostEngine;
 use App\Domain\Inventory\GroupItems;
+use App\Domain\Pengaturan\Preferensi;
+use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
 use App\Models\Company\Branch;
+use App\Models\Inventory\Item;
 use App\Models\Inventory\StockMovement;
 use App\Models\User;
 use Brick\Math\BigDecimal;
@@ -89,6 +92,11 @@ class SalesReturn extends Model implements Postable
     {
         $engine = app(CostEngine::class);
         $customer = $this->customer;
+        $prefs = app(Preferensi::class);
+        // Preferences: the returned cost goes back to the item's cost of sales account, or to one fixed account.
+        $chargeTo = $prefs->get(PreferensiKey::ReturnCostCharge) === 'account' && $prefs->get(PreferensiKey::ReturnCostAccount)
+            ? (int) $prefs->get(PreferensiKey::ReturnCostAccount)
+            : null;
 
         foreach ($this->lines()->with(['item.category', 'taxCode'])->get() as $line) {
             $net = $line->netAmount();
@@ -96,21 +104,44 @@ class SalesReturn extends Model implements Postable
             if ((int) $line->tax_amount > 0) {
                 $builder->debit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out reversed');
             }
-            // A group item comes back as its components, each at the cost it left with.
+            // A group item comes back as its components, each at its return cost.
             foreach (GroupItems::explode($line->item, (string) $line->base_quantity) as $piece) {
                 $item = $piece['item'];
-                $unitCost = $this->costItLeftWith($line, $item->id) ?? $engine->costAt($item->id, $line->warehouse_id, $this->trans_date);
+                $unitCost = $this->returnCost($line, $item, $engine);
                 $total = BigDecimal::of($unitCost)->multipliedBy($piece['base_quantity'])->toScale(0, RoundingMode::HalfUp)->toInt();
                 $builder->stock(['item_id' => $item->id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => $piece['base_quantity'],
                     'unit_cost' => $unitCost, 'total_cost' => $total, 'source_line_type' => 'sales_return_line', 'source_line_id' => $line->id]);
                 $builder->debit(Accounts::inventory($item), $total, $line->memo);
-                $builder->credit(Accounts::costOfSales($item, $customer), $total, $line->memo);
+                $builder->credit($chargeTo ?? Accounts::costOfSales($item, $customer), $total, $line->memo);
             }
         }
         foreach ($this->charges as $charge) {
             $builder->debit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges');
         }
         $builder->credit(Accounts::receivable($customer), (int) $this->total, $this->description ?? "Return from {$customer->name}");
+    }
+
+    /**
+     * The unit cost a returned item comes back at. Preferences choose the
+     * cost it left with on the invoice (or delivery) the return points at,
+     * or the item's last purchase price; either falls back to the moving
+     * average on the return's date. With "update item cost on re-save" off,
+     * saving the return again keeps the cost its goods first came back at.
+     */
+    private function returnCost(SalesReturnLine $line, Item $item, CostEngine $engine): string
+    {
+        $prefs = app(Preferensi::class);
+        if (! $prefs->get(PreferensiKey::UpdateCostOnReturnResave)) {
+            $earlier = StockMovement::query()->where('source_line_type', 'sales_return_line')->where('source_line_id', $line->id)->where('item_id', $item->id)->latest('id')->value('unit_cost');
+            if ($earlier !== null) {
+                return (string) $earlier;
+            }
+        }
+        $cost = $prefs->get(PreferensiKey::CogsSource) === 'last_purchase_cost'
+            ? ((int) $item->purchase_price > 0 ? (string) $item->purchase_price : null)
+            : $this->costItLeftWith($line, $item->id);
+
+        return $cost ?? $engine->costAt($item->id, $line->warehouse_id, $this->trans_date);
     }
 
     /** The unit cost an item left with, when the return points at an invoice whose line moved it (itself, or as a group's component). */

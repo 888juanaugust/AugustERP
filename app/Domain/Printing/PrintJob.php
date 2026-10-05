@@ -9,8 +9,8 @@ use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
 use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Audit\Auditor;
+use App\Domain\Company\CompanyIdentity;
 use App\Domain\Pengaturan\Preferensi;
-use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\Company\PrintLayout;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -47,13 +47,7 @@ final class PrintJob
             'document' => $document,
             'meta' => $meta,
             'layout' => $layout,
-            'company' => [
-                'name' => (string) ($this->prefs->get(PreferensiKey::CompanyName) ?: $this->prefs->get(PreferensiKey::TaxCompanyName) ?: config('app.name')),
-                'address' => (string) $this->prefs->get(PreferensiKey::CompanyAddress),
-                'phone' => (string) $this->prefs->get(PreferensiKey::CompanyPhone),
-                'email' => (string) $this->prefs->get(PreferensiKey::CompanyEmail),
-                'npwp' => (string) $this->prefs->get(PreferensiKey::CompanyNpwp),
-            ],
+            'company' => app(CompanyIdentity::class)->letterhead(),
             'title' => (string) (($layout['title'] ?? null) ?: $meta['title']),
         ];
     }

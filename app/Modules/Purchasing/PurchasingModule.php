@@ -7,6 +7,7 @@ namespace App\Modules\Purchasing;
 use App\Domain\Access\MenuKey;
 use App\Domain\Approval\ApprovalType;
 use App\Domain\Numbering\TransactionType;
+use App\Domain\Purchasing\LastPurchasePrice;
 use App\Models\Purchasing\GoodsReceipt;
 use App\Models\Purchasing\GoodsReceiptLine;
 use App\Models\Purchasing\PaymentOrder;
@@ -73,6 +74,10 @@ final class PurchasingModule extends BaseModule
         $context->fulfilment->register(PurchaseOrderLine::class, GoodsReceiptLine::class);
         $context->fulfilment->register(PurchaseOrderLine::class, PurchaseInvoiceLine::class);
         $context->fulfilment->register(GoodsReceiptLine::class, PurchaseInvoiceLine::class);
+
+        // A purchase invoice keeps the item's last purchase price, when Preferences say so.
+        $context->postings->extend(fn ($posting) => $context->app->make(LastPurchasePrice::class)->afterPosting($posting));
+        $context->postings->onUnpost(fn ($posting) => $context->app->make(LastPurchasePrice::class)->afterUnposting($posting));
 
         // The documents that may wait for approval, under the transaction type approval rules name them by.
         $context->approvals->register(new ApprovalType(PurchaseRequisition::class, TransactionType::PurchaseRequisition));

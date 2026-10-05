@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Sales\Customers;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
+use App\Domain\Company\DataStart;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
@@ -169,7 +170,7 @@ class CustomerResource extends MasterResource
                                 TableColumn::make(__('Description')),
                             ])
                             ->schema([
-                                DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT),
+                                DatePicker::make('trans_date')->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
                                 TextInput::make('amount')->required()->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()->prefix(Format::symbol()),
                                 Select::make('payment_term_id')->relationship('paymentTerm', 'name')->native(false),
                                 TextInput::make('number')->maxLength(60),

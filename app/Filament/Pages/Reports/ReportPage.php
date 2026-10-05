@@ -7,6 +7,7 @@ namespace App\Filament\Pages\Reports;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
+use App\Domain\Company\FiscalYear;
 use App\Domain\Reports\ExcelExport;
 use App\Domain\Reports\Period;
 use App\Domain\Shared\Format;
@@ -111,11 +112,22 @@ abstract class ReportPage extends ErpPage implements HasTable
         return true;
     }
 
+    /** Whether the report opens on the fiscal year to date (the income statement, say) rather than this month. */
+    protected function yearToDate(): bool
+    {
+        return false;
+    }
+
+    protected function defaultFrom(): string
+    {
+        return $this->yearToDate() ? FiscalYear::startOf()->toDateString() : today()->startOfMonth()->toDateString();
+    }
+
     /** @return array<string, mixed> */
     protected function defaultFilters(): array
     {
         return [
-            'from' => today()->startOfMonth()->toDateString(),
+            'from' => $this->defaultFrom(),
             'until' => today()->toDateString(),
             'branch_id' => BranchFields::reportBranch(null),
         ];
@@ -154,7 +166,7 @@ abstract class ReportPage extends ErpPage implements HasTable
     protected function period(): Period
     {
         return new Period(
-            $this->filters['from'] ?? today()->startOfMonth()->toDateString(),
+            $this->filters['from'] ?? $this->defaultFrom(),
             $this->filters['until'] ?? today()->toDateString(),
             BranchFields::reportBranch($this->filters['branch_id'] ?? null),
         );

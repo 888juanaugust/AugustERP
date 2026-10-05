@@ -9,6 +9,11 @@ use App\Domain\Reports\FinancialStatements;
 /** Cash Flow Statement (R-05): the period's cash movements by activity. */
 class CashFlowStatement extends ReportPage
 {
+    protected function yearToDate(): bool
+    {
+        return true;
+    }
+
     public static function reportKey(): string
     {
         return 'cash-flow';

@@ -4,6 +4,7 @@ Module group `settings`. 8 screens in the standard menu.
 
 ## Behaviours
 
+- Preferences the release does not use yet (attachments, extra columns, financial categories, employee loans, the temporary payment account) are not offered on the screen; a stored value is kept. The company's fax prints on the letterhead; the data start date is the first day anything can be dated and the default date of opening balances.
 - Preferences are the one source of truth for every switch: the company's identity, the modules that are on, the default accounts the posting layer uses, the business rules, the aging basis, the attachments and extra columns. Every change is audited with the old and the new value.
 - Access is by group: each group holds the five rights (view, create, update, delete, print) per screen plus the special rights (see cost, change selling price, see credit data, override credit limit, open a closed period, back-date, edit others' transactions, delete posted transactions, approve transactions, export). A user belongs to groups, may carry per-user grants or revocations, and is limited to the branches and warehouses assigned to them. A group's rights can be copied from another group.
 - The special rights are enforced: without "see credit data" the customer's credit limits, the overdue notice on sales documents and the exposure in the approval prompt are hidden (stored values are kept); without "back-date" a document cannot be saved dated before today, or moved there (editing it on the date it already has is allowed); without "delete posted transactions" a posted document cannot be deleted and its Delete button is hidden; without "export" reports and the VAT return have no Export button.
@@ -59,8 +60,6 @@ Menu key `company__preferences` · module `settings`
 | Budgets and targets | `features__budget_target` | toggle |  |
 | Departments | `features__department` | toggle |  |
 | Projects | `features__project` | toggle |  |
-| Financial categories | `features__financial_category` | toggle |  |
-| Employee loans | `features__employee_loan` | toggle |  |
 | Sales extras: check-ins, commissions, targets | `features__sales_extras` | toggle |  |
 | Payroll entries and salary components | `features__payroll` | toggle |  |
 
@@ -80,7 +79,7 @@ Menu key `company__preferences` · module `settings`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
-| Cost of goods sold taken from | `sales__cogs_source` | select |  |
+| Cost of returned goods taken from | `sales__cogs_source` | select |  |
 | Sales return cost is charged | `sales__return_cost_charge` | select |  |
 | Sales return cost account | `sales__return_cost_account` | select |  |
 | Update item cost when a sales return is saved again | `sales__update_item_cost_on_return_resave` | toggle |  |
@@ -92,7 +91,6 @@ Menu key `company__preferences` · module `settings`
 |---|---|---|---|
 | Last purchase price is updated by purchase invoices | `purchasing__last_price_updated_by_bill` | toggle |  |
 | Only for invoices dated from | `purchasing__last_price_cutoff_date` | date |  |
-| Temporary cash account for pending payments | `purchasing__temporary_payment_account` | select |  |
 
 #### Tab: Restrictions
 
@@ -101,28 +99,6 @@ Menu key `company__preferences` · module `settings`
 | Access restriction | `restrictions__mode` | select |  |
 | Access allowed from | `restrictions__from` | time |  |
 | Access allowed until | `restrictions__until` | time |  |
-
-#### Tab: Attachments
-
-| Field | Column | Type | Required |
-|---|---|---|---|
-| Sales quotations | `attachments__sales_quotation` | toggle |  |
-| Sales orders | `attachments__sales_order` | toggle |  |
-| Delivery orders | `attachments__delivery_order` | toggle |  |
-| Sales invoices | `attachments__sales_invoice` | toggle |  |
-| Sales receipts | `attachments__sales_receipt` | toggle |  |
-| Sales returns | `attachments__sales_return` | toggle |  |
-| Invoice exchanges | `attachments__invoice_exchange` | toggle |  |
-| Customers | `attachments__customer` | toggle |  |
-| Price and discount adjustments | `attachments__price_adjustment` | toggle |  |
-
-#### Tab: Extra Attributes
-
-**Line grid "Extra text columns on transactions":** Label
-
-**Line grid "Extra text columns on items":** Label
-
-**Line grid "Extra date columns":** Label
 
 #### Tab: Default Accounts
 

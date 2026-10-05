@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\GeneralLedger\Accounts;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Company\DataStart;
 use App\Domain\Posting\AccountBalances;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
@@ -74,7 +75,7 @@ class AccountResource extends MasterResource
                 Tab::make(__('Opening balance'))->schema([
                     TextInput::make('opening_amount')->label(__('Balance'))->prefix(Format::symbol())->mask(RawJs::make('$money($input, \',\', \'.\', 0)'))->stripCharacters('.')->numeric()
                         ->helperText(__('With the account\'s normal sign: a positive liability is a credit balance. Posted against Opening Balance Equity.')),
-                    DatePicker::make('opening_date')->label(__('As of'))->native(false)->displayFormat(Format::DATE_INPUT),
+                    DatePicker::make('opening_date')->label(__('As of'))->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => DataStart::openingDate()),
                 ]),
                 self::usersTab(),
             ]),

@@ -116,18 +116,18 @@ final class TradeReports
     }
 
     /** Receivables by age (R-09). @return list<array<string, mixed>> */
-    public static function receivableAging(Period $period, string $basis = 'invoice_date'): array
+    public static function receivableAging(Period $period, ?string $basis = null): array
     {
-        return self::aging(SalesInvoice::query()->with('customer'), 'customer', $period, $basis);
+        return self::aging(SalesInvoice::query()->with('customer'), 'customer', $period, $basis ?? AgingBuckets::defaultBasis());
     }
 
     /** Payables by age (R-12). @return list<array<string, mixed>> */
-    public static function payableAging(Period $period, string $basis = 'invoice_date'): array
+    public static function payableAging(Period $period, ?string $basis = null): array
     {
-        return self::aging(PurchaseInvoice::query()->with('vendor'), 'vendor', $period, $basis);
+        return self::aging(PurchaseInvoice::query()->with('vendor'), 'vendor', $period, $basis ?? AgingBuckets::defaultBasis());
     }
 
-    /** Buckets by days since the invoice (or its due) date, as at the period's end. */
+    /** Buckets (from Preferences) by days since the invoice (or its due) date, as at the period's end. */
     private static function aging(Builder $invoices, string $party, Period $period, string $basis): array
     {
         $settlement = app(SettlementService::class);
@@ -137,7 +137,8 @@ final class TradeReports
             ->where('payment_status', '!=', 'paid')
             ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
             ->get();
-        $buckets = ['current' => 0, '1_30' => 0, '31_60' => 0, '61_90' => 0, '91_120' => 0, 'over_120' => 0];
+        $columns = AgingBuckets::all();
+        $buckets = array_fill_keys(array_column($columns, 'key'), 0);
         $byParty = [];
         foreach ($open as $invoice) {
             $balance = $settlement->balance($invoice);
@@ -146,14 +147,7 @@ final class TradeReports
             }
             $reference = CarbonImmutable::parse($basis === 'due_date' && $invoice->due_date ? $invoice->due_date : $invoice->trans_date);
             $days = (int) $reference->diffInDays($asOf, false);
-            $bucket = match (true) {
-                $days <= 0 => 'current',
-                $days <= 30 => '1_30',
-                $days <= 60 => '31_60',
-                $days <= 90 => '61_90',
-                $days <= 120 => '91_120',
-                default => 'over_120',
-            };
+            $bucket = AgingBuckets::keyFor($days, $columns);
             $name = $invoice->{$party}?->name ?? '—';
             $id = $invoice->{"{$party}_id"};
             $byParty[$id] ??= ['id' => $id, 'name' => $name, 'invoices' => 0] + $buckets + ['total' => 0, 'oldest_days' => 0];

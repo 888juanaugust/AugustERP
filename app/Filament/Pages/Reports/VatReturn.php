@@ -7,6 +7,7 @@ namespace App\Filament\Pages\Reports;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
+use App\Domain\Company\CompanyIdentity;
 use App\Domain\Reports\ExcelExport;
 use App\Domain\Shared\Enums\TaxDocumentCode;
 use App\Domain\Shared\Format;
@@ -41,6 +42,12 @@ class VatReturn extends ErpPage implements HasTable
     public static function menuKey(): MenuKey
     {
         return MenuKey::VATReturn;
+    }
+
+    /** The company's VAT identity heads the return. */
+    public function getSubheading(): ?string
+    {
+        return app(CompanyIdentity::class)->taxIdentityLine() ?: null;
     }
 
     public function mount(): void
@@ -108,7 +115,7 @@ class VatReturn extends ErpPage implements HasTable
                 ->color('gray')
                 ->action(fn (): BinaryFileResponse => ExcelExport::download(
                     'VAT Return',
-                    Format::date($this->from()).' – '.Format::date($this->until()),
+                    trim(Format::date($this->from()).' – '.Format::date($this->until()).'   '.app(CompanyIdentity::class)->taxIdentityLine()),
                     ['Tax', 'Tax invoice No.', 'Transaction No.', 'Date', 'Document kind', 'Description', 'Tax base (DPP)', 'VAT', 'Customer / Vendor'],
                     array_map(fn (array $row) => [$row['kind'], $row['serial'], $row['number'], $row['trans_date'], $row['document'], $row['description'], $row['dpp'], $row['tax'], $row['party']], $this->rows()),
                 )),
