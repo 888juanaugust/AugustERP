@@ -58,6 +58,8 @@ class ChartOfAccountsSeeder extends Seeder
             ['7200', 'Rounding Gains', AccountType::OtherIncome, true],
             ['8100', 'Bank Charges', AccountType::OtherExpense, false],
             ['8200', 'Rounding Losses', AccountType::OtherExpense, true],
+            ['7300', 'Exchange Gains', AccountType::OtherIncome, true],
+            ['8300', 'Exchange Losses', AccountType::OtherExpense, true],
         ];
 
         foreach ($rows as [$no, $name, $type, $system]) {
@@ -82,6 +84,8 @@ class ChartOfAccountsSeeder extends Seeder
             PreferensiKey::InventoryAccount->value => $id('1300'),
             PreferensiKey::GoodsInTransitAccount->value => $id('1310'),
             PreferensiKey::RoundingAccount->value => $id('7200'),
+            PreferensiKey::ExchangeGainAccount->value => $id('7300'),
+            PreferensiKey::ExchangeLossAccount->value => $id('8300'),
             PreferensiKey::GiroReceivableAccount->value => $id('1105'),
             PreferensiKey::GiroPayableAccount->value => $id('2105'),
             PreferensiKey::TemporaryPaymentAccount->value => $id('1103'),

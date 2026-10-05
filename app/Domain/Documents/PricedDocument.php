@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Documents;
 
+use App\Domain\Currency\Currencies;
+use App\Domain\Currency\ForeignTotals;
 use App\Domain\Fulfilment\StatusDeriver;
 use App\Models\Company\Fob;
 use App\Models\Company\Shipment;
@@ -25,6 +27,12 @@ trait PricedDocument
 
     public function refreshPricedTotal(): void
     {
+        if (Currencies::isForeign($this->getAttribute('currency_id'))) {
+            ForeignTotals::refreshPriced($this);
+            $this->refreshStatus();
+
+            return;
+        }
         $lines = $this->lines()->get();
         $charges = method_exists($this, 'charges') ? $this->charges()->get() : collect();
 

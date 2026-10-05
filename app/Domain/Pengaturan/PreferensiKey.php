@@ -88,6 +88,8 @@ enum PreferensiKey: string
     case RoundingAccount = 'accounts.rounding';
     case GiroReceivableAccount = 'accounts.giro_receivable';
     case GiroPayableAccount = 'accounts.giro_payable';
+    case ExchangeGainAccount = 'accounts.exchange_gain';
+    case ExchangeLossAccount = 'accounts.exchange_loss';
 
     // Other
     case DecimalFormat = 'other.decimal_format';
@@ -134,7 +136,7 @@ enum PreferensiKey: string
             self::ReturnCostAccount, self::TemporaryPaymentAccount, self::ReceivableAccount,
             self::CustomerDownPaymentAccount, self::SalesDiscountAccount, self::PayableAccount,
             self::VendorDownPaymentAccount, self::CostOfSalesAccount, self::InventoryAccount,
-            self::GoodsInTransitAccount, self::RoundingAccount, self::GiroReceivableAccount, self::GiroPayableAccount => PreferensiType::Account,
+            self::GoodsInTransitAccount, self::RoundingAccount, self::GiroReceivableAccount, self::GiroPayableAccount, self::ExchangeGainAccount, self::ExchangeLossAccount => PreferensiType::Account,
             self::AgingRangeDays, self::AgingIntervalDays, self::CreditNoticeDays, self::CreditFreezeDays => PreferensiType::Int,
             self::TransactionExtraColumns, self::ItemExtraColumns, self::ExtraDateColumns => PreferensiType::TextList,
             default => match ($this->tab()) {
@@ -259,6 +261,8 @@ enum PreferensiKey: string
             self::RoundingAccount => __('Rounding differences'),
             self::GiroReceivableAccount => __('Giros receivable (cheques received, not yet cleared)'),
             self::GiroPayableAccount => __('Giros payable (cheques issued, not yet cleared)'),
+            self::ExchangeGainAccount => __('Realised exchange gains'),
+            self::ExchangeLossAccount => __('Realised exchange losses'),
             self::DecimalFormat => __('Number format'),
             self::QuantityDecimals => __('Decimals on quantities'),
             self::PriceDecimals => __('Decimals on prices'),

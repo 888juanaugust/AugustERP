@@ -13,6 +13,7 @@ use App\Models\Company\Branch;
 use App\Models\Company\CalendarEvent;
 use App\Models\Company\Contact;
 use App\Models\Company\Currency;
+use App\Models\Company\CurrencyRate;
 use App\Models\Company\Employee;
 use App\Models\Company\Fob;
 use App\Models\Company\MemorizedTransaction;
@@ -56,6 +57,7 @@ final class CompanyModule extends BaseModule
         return [
             'branch' => Branch::class,
             'currency' => Currency::class,
+            'currency_rate' => CurrencyRate::class,
             'tax_code' => TaxCode::class,
             'payment_term' => PaymentTerm::class,
             'shipment' => Shipment::class,

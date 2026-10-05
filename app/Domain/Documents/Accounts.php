@@ -62,6 +62,18 @@ final class Accounts
             ?? Account::query()->where('account_type', 'equity')->orderBy('no')->value('id'));
     }
 
+    /** Where a realised exchange difference goes: a gain, or a loss. */
+    public static function exchangeDifference(int $difference): int
+    {
+        $key = $difference >= 0 ? PreferensiKey::ExchangeGainAccount : PreferensiKey::ExchangeLossAccount;
+        $id = (int) app(Preferensi::class)->get($key);
+        if ($id === 0) {
+            throw new \RuntimeException(__('Set the account for :what under Preferences → Accounts first.', ['what' => $key->label()]));
+        }
+
+        return $id;
+    }
+
     public static function giroReceivable(): int
     {
         return (int) app(Preferensi::class)->get(PreferensiKey::GiroReceivableAccount);
