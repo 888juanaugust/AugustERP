@@ -8,15 +8,19 @@ use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Company\FiscalYear;
+use App\Domain\Currency\Convert;
+use App\Domain\Currency\Currencies;
 use App\Domain\Reports\ExcelExport;
 use App\Domain\Reports\Period;
 use App\Domain\Shared\Format;
 use App\Filament\Support\BranchFields;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\ErpPage;
 use App\Filament\Support\TagFields;
 use App\Modules\ModuleRegistry;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Panel;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -222,8 +226,45 @@ abstract class ReportPage extends ErpPage implements HasTable
     protected static function money(string $name, string $label): TextColumn
     {
         return TextColumn::make($name)->label($label)->alignEnd()
-            ->formatStateUsing(fn ($state): string => $state === '' || $state === null ? '' : Format::number((int) $state))
+            ->formatStateUsing(fn ($state, $livewire): string => $state === '' || $state === null ? '' : ($livewire instanceof self ? $livewire->formatMoney((int) $state) : Format::number((int) $state)))
             ->extraCellAttributes(['class' => 'ae-money']);
+    }
+
+    /** An amount of the report: whole base units, or the minor units of the currency the report is filtered to. */
+    public function formatMoney(int $amount): string
+    {
+        return CurrencyFields::number($amount, $this->reportCurrency());
+    }
+
+    /** The foreign currency the report is filtered to; null: every currency, in the base currency. */
+    protected function reportCurrency(): ?int
+    {
+        $currencyId = $this->filters['currency_id'] ?? null;
+
+        return Currencies::isForeign($currencyId) ? (int) $currencyId : null;
+    }
+
+    /** An amount for the spreadsheet: as it is, or in major units of the report's foreign currency. */
+    protected function exportMoney(mixed $amount): mixed
+    {
+        $currencyId = $this->reportCurrency();
+        if ($currencyId === null || $amount === null || $amount === '') {
+            return $amount;
+        }
+
+        return (float) Convert::major((int) $amount, Currencies::decimals($currencyId));
+    }
+
+    /** "Currency": every currency in the base currency (the default), or one foreign currency in its own amounts. */
+    protected static function currencyFilter(): Select
+    {
+        return Select::make('currency_id')
+            ->label(__('Currency'))
+            ->options(fn () => Currencies::foreignOptions())
+            ->placeholder(fn () => __('All, in :code', ['code' => Currencies::base()?->code]))
+            ->native(false)
+            ->live()
+            ->visible(fn () => Currencies::enabled());
     }
 
     protected static function text(string $name, string $label): TextColumn

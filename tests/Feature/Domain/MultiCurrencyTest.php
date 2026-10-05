@@ -18,6 +18,7 @@ use App\Models\Purchasing\Vendor;
 use App\Models\Sales\Customer;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesReceipt;
+use App\Models\Sales\SalesReturn;
 use App\Models\Settlement\PaymentAllocation;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -169,6 +170,38 @@ class MultiCurrencyTest extends TestCase
         $this->assertSame(0, $this->balance('1150'), 'the emptied dollar account leaves no rupiah behind');
         $this->assertSame(0, (int) JournalLine::query()->active()->where('account_id', $bankUsd->id)->sum('fc_amount'));
         $this->assertSame(300_000 + 200_000, $this->balance('7300') - $this->balance('8300') + 0, 'gain on the receipt, gain on paying the bill below its value');
+    }
+
+    public function test_a_return_settles_as_a_credit_and_a_settled_invoice_is_locked(): void
+    {
+        $invoice = $this->invoice();
+        $return = SalesReturn::query()->create(['number' => 'SR-1', 'trans_date' => '2026-11-12', 'customer_id' => $this->customer->id, 'taxable' => false, 'inclusive_tax' => false,
+            'currency_id' => $this->usd->id, 'exchange_rate' => '15500', 'created_by' => auth()->id()]);
+        $return->lines()->create(['sort' => 0, 'item_id' => $this->service->id, 'quantity' => 1, 'unit_id' => $this->service->unit1_id, 'base_quantity' => 1, 'fc_unit_price' => '200.00', 'unit_price' => 0, 'warehouse_id' => Warehouse::default()->id]);
+        $return->refreshTotal();
+        app(DocumentRepository::class)->created($return);
+        $this->assertSame([20_000, 3_100_000], [(int) $return->fresh()->fc_total, (int) $return->fresh()->total]);
+
+        // USD 800.00 received at 15,800 for the invoice less the credit.
+        $receipt = SalesReceipt::query()->create(['number' => 'RC-1', 'trans_date' => '2026-11-16', 'customer_id' => $this->customer->id, 'bank_account_id' => $this->account('1102'),
+            'currency_id' => $this->usd->id, 'exchange_rate' => '15800', 'created_by' => auth()->id()]);
+        $receipt->lines()->create(['sort' => 0, 'receivable_type' => 'sales_invoice', 'receivable_id' => $invoice->id, 'fc_amount' => 100_000, 'fc_discount' => 0, 'amount' => 0, 'discount' => 0]);
+        $receipt->lines()->create(['sort' => 1, 'receivable_type' => 'sales_return', 'receivable_id' => $return->id, 'fc_amount' => -20_000, 'fc_discount' => 0, 'amount' => 0, 'discount' => 0]);
+        $receipt->refreshTotal();
+        app(DocumentRepository::class)->created($receipt);
+
+        $this->assertSame(12_640_000, (int) $receipt->fresh()->amount);
+        $this->assertSame(0, $this->balance('1200'), 'the invoice and the credit leave at their booked values');
+        $this->assertSame(300_000 - 60_000, $this->balance('7300'), 'gain on the invoice, less the dearer credit');
+        $this->assertSame('paid', $invoice->fresh()->payment_status);
+        $this->assertSame('paid', $return->fresh()->payment_status);
+
+        try {
+            app(DocumentRepository::class)->beforeUpdate($invoice->fresh());
+            $this->fail('a settled invoice is locked');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('payments have been applied', $e->getMessage());
+        }
     }
 
     public function test_currencies_must_match(): void

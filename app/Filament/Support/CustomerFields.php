@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Models\Company\Employee;
 use App\Models\Sales\Customer;
 use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 
 /** The customer lookup every sales document opens with; picking one fills terms, address, tax default and the salesperson. */
@@ -32,9 +33,13 @@ final class CustomerFields
                 return $customer && HakAkses::canSpecial(HakKhusus::SeeCreditData) && $check->needsNotice($customer) ? "Overdue: an invoice is older than {$check->noticeDays()} days" : null;
             })
             ->hintColor('danger')
-            ->afterStateUpdated(function (Set $set, $state) use ($fillsTerms): void {
+            ->afterStateUpdated(function (Set $set, Get $get, $state) use ($fillsTerms): void {
                 $customer = $state ? Customer::query()->find($state) : null;
-                if ($customer === null || ! $fillsTerms) {
+                if ($customer === null) {
+                    return;
+                }
+                CurrencyFields::forParty($set, $get, $customer->currency_id);
+                if (! $fillsTerms) {
                     return;
                 }
                 $set('payment_term_id', $customer->payment_term_id);

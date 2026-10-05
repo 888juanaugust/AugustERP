@@ -58,6 +58,7 @@ Menu key `general-ledger__glaccount` · module `general-ledger`
 | Bank | `bank_id` | select |  |
 | Account number | `bank_account` | text |  |
 | Account holder | `bank_account_name` | text |  |
+| Currency | `currency_id` | select |  |
 
 #### Tab: Opening balance
 

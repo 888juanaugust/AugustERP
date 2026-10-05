@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Purchasing\PurchaseInvoices\Pages;
 use App\Domain\Numbering\TransactionType;
 use App\Filament\Resources\Purchasing\PurchaseInvoices\PurchaseInvoiceResource;
 use App\Filament\Support\CreateDocument;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\DocumentPages;
 use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\TagFields;
@@ -36,7 +37,8 @@ class CreatePurchaseInvoice extends CreateDocument
         if ($source === null) {
             return;
         }
-        $this->form->fill(array_merge($this->form->getRawState(), [
+        $state = $this->form->getRawState();
+        $this->form->fill(array_merge($state, CurrencyFields::fromSource($source, $state['trans_date'] ?? null), [
             'vendor_id' => $source->vendor_id,
             'taxable' => $source->taxable,
             'inclusive_tax' => $source->inclusive_tax,

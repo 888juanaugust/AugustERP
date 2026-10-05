@@ -9,21 +9,24 @@ use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Sales\CreditCheck;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\SalesInvoices\Pages\CreateSalesInvoice;
 use App\Filament\Resources\Sales\SalesInvoices\Pages\EditSalesInvoice;
 use App\Filament\Resources\Sales\SalesInvoices\Pages\ListSalesInvoices;
 use App\Filament\Resources\Sales\SalesReceipts\SalesReceiptResource;
 use App\Filament\Support\ApprovalActions;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
+use App\Filament\Support\DownPaymentDeductions;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\SalesLinesTab;
+use App\Filament\Support\SettlementLineFields;
 use App\Models\Sales\Delivery;
 use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
@@ -32,16 +35,11 @@ use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Repeater\TableColumn;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -90,23 +88,10 @@ class SalesInvoiceResource extends ErpResource
                 ]),
                 PricedDocumentForm::chargesTab(),
                 Tab::make(__('Down payments'))->schema([
-                    Repeater::make('downPayments')
-                        ->hiddenLabel()
-                        ->relationship()
-                        ->table([TableColumn::make(__('Down payment')), TableColumn::make(__('Amount deducted'))->alignment(Alignment::End)])
-                        ->schema([
-                            Select::make('sales_down_payment_id')
-                                ->options(fn (Get $get) => SalesDownPayment::query()->where('customer_id', $get('../../customer_id'))->whereIn('status', ['pending', 'partial'])->get()
-                                    ->mapWithKeys(fn ($dp) => [$dp->id => "{$dp->number} · ".Format::date($dp->trans_date).' · open '.Format::rupiah($dp->remaining())]))
-                                ->required()->native(false)->live()
-                                ->afterStateUpdated(fn (Set $set, $state) => $set('amount', $state ? (string) SalesDownPayment::query()->find($state)?->remaining() : 0)),
-                            PricedDocumentForm::money('amount', 'Amount')->required()->minValue(1),
-                        ])
-                        ->defaultItems(0)
-                        ->addActionLabel('Deduct a down payment'),
+                    DownPaymentDeductions::repeater(SalesDownPayment::class, 'sales_down_payment_id', 'customer_id'),
                 ]),
                 Tab::make(__('Payment info'))->schema([
-                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesInvoice $record) => $record ? Format::rupiah($record->paid_amount).' of '.Format::rupiah($record->total - $record->down_payment_total).' · open '.Format::rupiah($record->balance()) : '—'),
+                    Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesInvoice $record) => $record ? CurrencyFields::documentAmount($record, 'paid_amount').' of '.CurrencyFields::format(SettlementLineFields::total($record), $record->currency_id).' · open '.CurrencyFields::format(SettlementLineFields::open($record), $record->currency_id) : '—'),
                 ]),
             ]),
         ])->columns(1);
@@ -129,6 +114,7 @@ class SalesInvoiceResource extends ErpResource
                 TextColumn::make('age')->label(__('Age (days)'))->state(fn (SalesInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd()
                     ->color(fn (SalesInvoice $r) => HakAkses::canSpecial(HakKhusus::SeeCreditData) && ($notice = app(CreditCheck::class)->noticeDays()) > 0 && $r->payment_status !== 'paid' && $r->trans_date->diffInDays(today()) > $notice ? 'danger' : null),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
                 TextColumn::make('nsfp')->label(__('NSFP'))->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_printed')->label(__('fields.is_printed'))->boolean()->toggleable(isToggledHiddenByDefault: true),
                 ApprovalActions::column(),

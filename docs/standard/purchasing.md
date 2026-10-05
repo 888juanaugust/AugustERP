@@ -11,6 +11,7 @@ Module group `purchasing`. 12 screens in the standard menu.
 - Vendors carry payment terms, tax status and identity, default tax, bank accounts, contacts and opening payables.
 - A vendor's opening balances are the bills still open at the data start date: each posts on the data start date (Dr Opening Balance Equity / Cr payable), ages from its own date, is settled by payments like a bill and is locked once paid. "Discount on the total" is spread over the lines, so stock value and expense are net of it.
 - With departments or projects on, orders, receipts, invoices, returns, vendor claims, down payments and payments carry a department and a project on the header and on every line and charge. A line's own wins; a line that names none, and the document's own legs (receivable or payable, tax, down payments), take the header's. A document made from another, or a line pulled from one, keeps its source's tags; the income statement filtered by a department shows its revenue and cost of sales.
+- In a foreign currency: a vendor's currency opens their orders, receipts, bills, returns and down payments in it, at the rate on the document's date (changeable per document); amounts are typed in the currency and kept beside the rupiah ones the ledger reads. A payment settles bills in its own currency only; the payable leaves at the value it was booked at and the difference to what was paid is a realised exchange gain or loss. Money paid out of a foreign-currency bank account is valued at that account's average rate, its difference realised too.
 
 ## Screens
 
@@ -48,6 +49,9 @@ Menu key `vendor__purchase-order` · module `purchasing`
 | Enter the number by hand | `manual_number` | toggle |  |
 | Number format | `series_id` | select |  |
 | Number | `number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -103,6 +107,9 @@ Menu key `vendor__receive-item` · module `purchasing`
 | Form No. format | `series_id` | select |  |
 | Form No. | `number` | text |  |
 | Vendor's delivery note No. | `receive_number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -147,6 +154,9 @@ Menu key `vendor__purchase-downpayment` · module `purchasing`
 | Enter the number by hand | `manual_number` | toggle |  |
 | Form No. format | `series_id` | select |  |
 | Form No. | `number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Down payment
 
@@ -191,6 +201,9 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 | Form No. format | `series_id` | select |  |
 | Form No. | `number` | text |  |
 | Vendor's invoice No. | `bill_number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -254,6 +267,8 @@ Menu key `vendor__purchase-payment` · module `purchasing`
 | Voucher No. format | `series_id` | select |  |
 | Voucher No. | `number` | text |  |
 | Amount paid | `amount_preview` | computed |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Cheque date | `cheque_date` | date |  |
 
@@ -295,6 +310,9 @@ Menu key `vendor__purchase-return` · module `purchasing`
 | Return No. | `number` | text |  |
 | Return from | `return_type` | select | yes |
 | Document | `source_key` | select |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -467,6 +485,7 @@ Menu key `vendor__vendor` · module `purchasing`
 |---|---|---|---|
 | Default discount (%) | `default_purchase_disc` | number |  |
 | Payment term | `payment_term_id` | select |  |
+| Currency | `currency_id` | select |  |
 | Default invoice description | `default_invoice_desc` | textarea |  |
 | Payable account | `payable_account_id` | select |  |
 | Down payment account | `down_payment_account_id` | select |  |

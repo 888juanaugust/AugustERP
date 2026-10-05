@@ -16,6 +16,7 @@ Module group `sales`. 16 screens in the standard menu.
 - A sales target's Progress tab shows, per line, the quantity and net value sold within the target's dates and branch (less returns) for its item, category, salesperson or month, against the target.
 - With departments or projects on, quotations, orders, deliveries, invoices, returns, down payments and receipts carry a department and a project on the header and on every line and charge. A line's own wins; a line that names none, and the document's own legs (receivable or payable, tax, down payments), take the header's. A document made from another, or a line pulled from one, keeps its source's tags; the income statement filtered by a department shows its revenue and cost of sales.
 - "Discount on the total" is spread over the lines in proportion; each line's revenue, cost, commission and the sales reports are net of its share.
+- In a foreign currency (Multiple currencies on and a foreign currency active): a customer's currency opens their documents in it, at the rate on the document's date from the Currencies screen; the rate (and, for VAT, the Minister of Finance's tax rate) can be changed per document. Prices, charges, down payments and receipts are typed in the document's currency and kept beside the rupiah amounts, which are the document's at its rate and are what the ledger, tax and reports read; VAT is computed in rupiah at the tax rate. Lines are pulled only from documents in the same currency, and a document made from another keeps its currency. A receipt settles documents in its own currency only; the receivable leaves at the value it was booked at and the difference to what was received is a realised exchange gain or loss (Preferences → Accounts). A giro in a foreign currency is refused.
 
 ## Screens
 
@@ -57,6 +58,9 @@ Menu key `customer__sales-quotation` · module `sales`
 | Enter the number by hand | `manual_number` | toggle |  |
 | Number format | `series_id` | select |  |
 | Number | `number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -105,6 +109,9 @@ Menu key `customer__sales-order` · module `sales`
 | Enter the number by hand | `manual_number` | toggle |  |
 | Order No. format | `series_id` | select |  |
 | Order No. | `number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -160,6 +167,9 @@ Menu key `customer__delivery-order` · module `sales`
 | Delivery No. format | `series_id` | select |  |
 | Delivery No. | `number` | text |  |
 | Shipping method | `shipment_id` | select |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -200,6 +210,9 @@ Menu key `customer__sales-downpayment` · module `sales`
 | Enter the number by hand | `manual_number` | toggle |  |
 | Invoice No. format | `series_id` | select |  |
 | Invoice No. | `number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Down payment
 
@@ -250,6 +263,9 @@ Menu key `customer__sales-invoice` · module `sales`
 | Enter the number by hand | `manual_number` | toggle |  |
 | Invoice No. format | `series_id` | select |  |
 | Invoice No. | `number` | text |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -319,6 +335,8 @@ Menu key `customer__sales-receipt` · module `sales`
 | Voucher No. format | `series_id` | select |  |
 | Voucher No. | `number` | text |  |
 | Amount received | `amount_preview` | computed |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
 | Use credit notes | `use_credit` | toggle |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Cheque date | `cheque_date` | date |  |
@@ -361,6 +379,9 @@ Menu key `customer__sales-return` · module `sales`
 | Return No. | `number` | text |  |
 | Return from | `return_type` | select | yes |
 | Document | `source_key` | select |  |
+| Currency | `currency_id` | select |  |
+| Rate | `exchange_rate` | number |  |
+| Tax rate (KMK) | `tax_exchange_rate` | number |  |
 
 #### Tab: Line items
 
@@ -534,6 +555,7 @@ Menu key `customer__customer` · module `sales`
 | Default salesperson | `salesman_id` | select |  |
 | Payment term | `payment_term_id` | select |  |
 | Default discount (%) | `default_sales_disc` | number |  |
+| Currency | `currency_id` | select |  |
 | Default invoice description | `default_invoice_desc` | text |  |
 
 **Fieldset: Accounts**

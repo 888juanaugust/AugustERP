@@ -40,6 +40,14 @@ final class Currencies
         return $model !== null && self::isForeign($model->getAttribute('currency_id'));
     }
 
+    /** Whether two documents are in the same currency (null and the base currency's id both mean the base currency). */
+    public static function same(int|string|null $a, int|string|null $b): bool
+    {
+        $foreignA = self::isForeign($a);
+
+        return $foreignA === self::isForeign($b) && (! $foreignA || (int) $a === (int) $b);
+    }
+
     public static function decimals(int|string|null $currencyId): int
     {
         return self::isForeign($currencyId) ? (int) (Currency::query()->whereKey($currencyId)->value('decimals') ?? 2) : 0;

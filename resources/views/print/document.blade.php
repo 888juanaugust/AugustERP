@@ -6,6 +6,15 @@
     $landscape = ($s['orientation'] ?? 'portrait') === 'landscape';
     $paper = $s['paper'] ?? 'A4';
     $lines = method_exists($document, 'lines') ? $document->lines()->get() : collect();
+    // A document in a foreign currency prints its own currency's amounts (the fc_* columns), with the rate and VAT in the base currency.
+    $currencyId = $document->getAttribute('currency_id');
+    $foreign = \App\Domain\Currency\Currencies::isForeign($currencyId);
+    $amount = fn ($model, string $column) => $foreign && $model->getAttribute('fc_'.$column) !== null
+        ? \App\Filament\Support\CurrencyFields::number((int) $model->getAttribute('fc_'.$column), $currencyId)
+        : Format::number((int) $model->getAttribute($column));
+    $grand = fn (string $column, ?string $less = null) => $foreign && $document->getAttribute('fc_'.$column) !== null
+        ? \App\Filament\Support\CurrencyFields::format((int) $document->getAttribute('fc_'.$column) - ($less ? (int) $document->getAttribute('fc_'.$less) : 0), $currencyId)
+        : Format::rupiah((int) ($document->getAttribute($column) ?? 0) - ($less ? (int) ($document->getAttribute($less) ?? 0) : 0));
 @endphp
 <!doctype html>
 <html lang="en">
@@ -100,36 +109,40 @@
                     <td>{{ $line->item?->name }}@if ($line->memo)<br><small>{{ $line->memo }}</small>@endif</td>
                     <td class="num">{{ Format::quantity($line->quantity) }}</td>
                     @if ($s['show_unit'] ?? true)<td>{{ $line->unit?->name }}</td>@endif
-                    <td class="num">{{ Format::price($line->unit_price) }}</td>
-                    @if ($s['show_discount'] ?? true)<td class="num">{{ $line->discount_amount ? Format::number((int) $line->discount_amount) : '' }}</td>@endif
-                    @if ($s['show_tax'] ?? true)<td class="num">{{ $line->tax_amount ? Format::number((int) $line->tax_amount) : '' }}</td>@endif
-                    <td class="num">{{ Format::number((int) $line->amount) }}</td>
+                    <td class="num">{{ $foreign && $line->fc_unit_price !== null ? \App\Filament\Support\CurrencyFields::price($line->fc_unit_price, $currencyId) : Format::price($line->unit_price) }}</td>
+                    @if ($s['show_discount'] ?? true)<td class="num">{{ $line->discount_amount ? $amount($line, 'discount_amount') : '' }}</td>@endif
+                    @if ($s['show_tax'] ?? true)<td class="num">{{ $line->tax_amount ? $amount($line, 'tax_amount') : '' }}</td>@endif
+                    <td class="num">{{ $amount($line, 'amount') }}</td>
                 </tr>
             @endforeach
             </tbody>
         </table>
         <table class="totals">
-            <tr><td>{{ __('Subtotal') }}</td><td class="num">{{ Format::number((int) ($document->subtotal ?? 0)) }}</td></tr>
-            @if ((int) ($document->discount_amount ?? 0))<tr><td>{{ __('Discount') }}</td><td class="num">−{{ Format::number((int) $document->discount_amount) }}</td></tr>@endif
-            @if ((int) ($document->charges_total ?? 0))<tr><td>{{ __('Other charges') }}</td><td class="num">{{ Format::number((int) $document->charges_total) }}</td></tr>@endif
-            @if (($s['show_tax'] ?? true) && (int) ($document->tax_total ?? 0))<tr><td>{{ __('VAT') }}</td><td class="num">{{ Format::number((int) $document->tax_total) }}</td></tr>@endif
-            @if ((int) ($document->down_payment_total ?? 0))<tr><td>{{ __('Down payment') }}</td><td class="num">−{{ Format::number((int) $document->down_payment_total) }}</td></tr>@endif
-            <tr class="grand"><td>{{ __('Total') }}</td><td class="num">{{ Format::rupiah((int) ($document->total ?? 0) - (int) ($document->down_payment_total ?? 0)) }}</td></tr>
+            <tr><td>{{ __('Subtotal') }}</td><td class="num">{{ $amount($document, 'subtotal') }}</td></tr>
+            @if ((int) ($document->discount_amount ?? 0))<tr><td>{{ __('Discount') }}</td><td class="num">−{{ $amount($document, 'discount_amount') }}</td></tr>@endif
+            @if ((int) ($document->charges_total ?? 0))<tr><td>{{ __('Other charges') }}</td><td class="num">{{ $amount($document, 'charges_total') }}</td></tr>@endif
+            @if (($s['show_tax'] ?? true) && (int) ($document->tax_total ?? 0))<tr><td>{{ __('VAT') }}</td><td class="num">{{ $amount($document, 'tax_total') }}</td></tr>@endif
+            @if ((int) ($document->down_payment_total ?? 0))<tr><td>{{ __('Down payment') }}</td><td class="num">−{{ $amount($document, 'down_payment_total') }}</td></tr>@endif
+            <tr class="grand"><td>{{ __('Total') }}</td><td class="num">{{ $grand('total', 'down_payment_total') }}</td></tr>
         </table>
+        @if ($foreign)
+            <p class="notes">{{ __('Rate :rate per :code.', ['rate' => Format::quantity((string) $document->exchange_rate, 8), 'code' => \App\Domain\Currency\Currencies::code($currencyId)]) }}@if ((int) ($document->tax_total ?? 0)) {{ __('DPP :dpp and VAT :vat in :symbol, at the tax rate :rate.', ['dpp' => Format::number((int) $document->dpp_total), 'vat' => Format::number((int) $document->tax_total), 'symbol' => Format::symbol(), 'rate' => Format::quantity((string) ($document->tax_exchange_rate ?: $document->exchange_rate), 8)]) }}@endif</p>
+        @endif
     @elseif ($shape === 'settlement')
         <table>
             <thead><tr><th>{{ __('Document') }}</th><th class="num">{{ __('Applied') }}</th><th class="num">{{ __('Discount') }}</th></tr></thead>
             <tbody>
             @foreach ($lines as $line)
                 @php $target = $line->receivable ?? $line->payable ?? null; @endphp
-                <tr><td class="mono">{{ $target?->number ?? '—' }}</td><td class="num">{{ Format::number((int) $line->amount) }}</td><td class="num">{{ $line->discount ? Format::number((int) $line->discount) : '' }}</td></tr>
+                <tr><td class="mono">{{ $target?->number ?? '—' }}</td><td class="num">{{ $amount($line, 'amount') }}</td><td class="num">{{ $line->discount ? $amount($line, 'discount') : '' }}</td></tr>
             @endforeach
             </tbody>
         </table>
         <table class="totals">
             <tr><td>{{ $meta['party'] === 'customer' ? 'Received into' : 'Paid from' }}</td><td class="num">{{ $document->bankAccount?->name }}</td></tr>
             @if ($document->cheque_no ?? null)<tr><td>{{ __('Cheque / giro') }}</td><td class="num">{{ $document->cheque_no }} @if ($document->cheque_date) · {{ Format::date($document->cheque_date) }} @endif</td></tr>@endif
-            <tr class="grand"><td>{{ __('Amount') }}</td><td class="num">{{ Format::rupiah((int) $document->amount) }}</td></tr>
+            @if ($foreign)<tr><td>{{ __('Rate') }}</td><td class="num">{{ Format::quantity((string) $document->exchange_rate, 8) }}</td></tr>@endif
+            <tr class="grand"><td>{{ __('Amount') }}</td><td class="num">{{ $grand('amount') }}</td></tr>
         </table>
     @elseif ($shape === 'cash')
         <div class="parties">

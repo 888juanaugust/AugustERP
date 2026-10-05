@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports;
 
+use App\Domain\Currency\Currencies;
 use App\Domain\Fulfilment\StatusDeriver;
 use App\Domain\Settlement\SettlementService;
 use App\Models\Company\OpeningBalance;
@@ -127,28 +128,34 @@ final class TradeReports
         return $out;
     }
 
-    /** Receivables by age (R-09). @return list<array<string, mixed>> */
-    public static function receivableAging(Period $period, ?string $basis = null): array
+    /**
+     * Receivables by age (R-09): every currency in the base currency, or (given a foreign currency) only that
+     * currency's documents in its own minor units.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public static function receivableAging(Period $period, ?string $basis = null, ?int $currencyId = null): array
     {
-        return self::aging(SalesInvoice::query()->with('customer'), 'customer', $period, $basis ?? AgingBuckets::defaultBasis());
+        return self::aging(SalesInvoice::query()->with('customer'), 'customer', $period, $basis ?? AgingBuckets::defaultBasis(), $currencyId);
     }
 
-    /** Payables by age (R-12). @return list<array<string, mixed>> */
-    public static function payableAging(Period $period, ?string $basis = null): array
+    /** Payables by age (R-12), as receivableAging(). @return list<array<string, mixed>> */
+    public static function payableAging(Period $period, ?string $basis = null, ?int $currencyId = null): array
     {
-        return self::aging(PurchaseInvoice::query()->with('vendor'), 'vendor', $period, $basis ?? AgingBuckets::defaultBasis());
+        return self::aging(PurchaseInvoice::query()->with('vendor'), 'vendor', $period, $basis ?? AgingBuckets::defaultBasis(), $currencyId);
     }
 
     /**
      * A customer's or vendor's statement: the balance brought forward, then
      * every invoice, down payment, opening balance, return and receipt or
-     * payment in the period with the running balance owed.
+     * payment in the period with the running balance owed. Given a foreign
+     * currency, only that currency's documents, in its own minor units.
      *
      * @return list<array{id: string, trans_date: ?string, number: string, kind: string, charge: ?int, payment: ?int, balance: int, is_total?: bool}>
      */
-    public static function statement(string $party, int $partyId, Period $period): array
+    public static function statement(string $party, int $partyId, Period $period, ?int $currencyId = null): array
     {
-        $entries = self::statementEntries($party, $partyId, $period)->sortBy(fn (array $e) => $e['trans_date'].'|'.$e['order'].'|'.$e['number'])->values();
+        $entries = self::statementEntries($party, $partyId, $period, Currencies::isForeign($currencyId) ? $currencyId : null)->sortBy(fn (array $e) => $e['trans_date'].'|'.$e['order'].'|'.$e['number'])->values();
         $from = $period->fromDate();
         $balance = 0;
         foreach ($entries as $entry) {
@@ -171,8 +178,9 @@ final class TradeReports
     }
 
     /** @return Collection<int, array{id: string, trans_date: string, order: int, number: string, kind: string, charge: ?int, payment: ?int}> up to the period's end */
-    private static function statementEntries(string $party, int $partyId, Period $period): Collection
+    private static function statementEntries(string $party, int $partyId, Period $period, ?int $currencyId): Collection
     {
+        $foreign = $currencyId !== null;
         $customer = $party === 'customer';
         $sources = $customer
             ? [[SalesInvoice::class, __('Invoice'), 1], [SalesDownPayment::class, __('Down payment'), 1], [SalesReturn::class, __('Return'), -1], [SalesReceipt::class, __('Receipt'), -1]]
@@ -181,9 +189,10 @@ final class TradeReports
         $out = collect();
         foreach ($sources as [$class, $kind, $sign]) {
             $docs = $class::query()->where($column, $partyId)->where('trans_date', '<=', $period->untilDate())
-                ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))->get();
+                ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
+                ->when($foreign, fn (Builder $q) => $q->where('currency_id', $currencyId))->get();
             foreach ($docs as $doc) {
-                $amount = self::statementAmount($doc);
+                $amount = self::statementAmount($doc, $foreign);
                 if ($amount === null) {
                     continue;
                 }
@@ -193,28 +202,30 @@ final class TradeReports
         }
         $type = $customer ? (new Customer)->getMorphClass() : (new Vendor)->getMorphClass();
         foreach (OpeningBalance::query()->where('party_type', $type)->where('party_id', $partyId)->where('trans_date', '<=', $period->untilDate())
-            ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))->get() as $opening) {
-            $out->push(['id' => 'opening_balance:'.$opening->id, 'trans_date' => $opening->trans_date->toDateString(), 'order' => 0, 'number' => $opening->postingNumber(), 'kind' => __('Opening balance'), 'charge' => (int) $opening->amount, 'payment' => null]);
+            ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
+            ->when($foreign, fn (Builder $q) => $q->where('currency_id', $currencyId))->get() as $opening) {
+            $out->push(['id' => 'opening_balance:'.$opening->id, 'trans_date' => $opening->trans_date->toDateString(), 'order' => 0, 'number' => $opening->postingNumber(), 'kind' => __('Opening balance'), 'charge' => (int) ($foreign ? $opening->fc_amount : $opening->amount), 'payment' => null]);
         }
 
         return $out;
     }
 
-    /** What a document adds to or takes from the balance owed; null when it counts for nothing (a bounced giro). */
-    private static function statementAmount(Model $doc): ?int
+    /** What a document adds to or takes from the balance owed (in its own currency when $foreign); null when it counts for nothing (a bounced giro). */
+    private static function statementAmount(Model $doc, bool $foreign = false): ?int
     {
+        $fc = $foreign ? 'fc_' : '';
         if ($doc instanceof SalesReceipt || $doc instanceof PurchasePayment) {
             if ($doc->giro?->isBounced()) {
                 return null;
             }
 
-            return (int) $doc->lines()->sum(DB::raw('amount + discount'));
+            return (int) $doc->lines()->sum(DB::raw($foreign ? 'coalesce(fc_amount, 0) + coalesce(fc_discount, 0)' : 'amount + discount'));
         }
         if ($doc instanceof SalesInvoice || $doc instanceof PurchaseInvoice) {
-            return (int) $doc->total - (int) $doc->down_payment_total;
+            return (int) $doc->{$fc.'total'} - (int) $doc->{$fc.'down_payment_total'};
         }
 
-        return (int) $doc->total;
+        return (int) $doc->{$fc.'total'};
     }
 
     /** @return Collection<int, OpeningBalance> the party kind's opening balances still open, posted by the period's end */
@@ -231,21 +242,23 @@ final class TradeReports
     }
 
     /** Buckets (from Preferences) by days since the invoice (or its due) date, as at the period's end. */
-    private static function aging(Builder $invoices, string $party, Period $period, string $basis): array
+    private static function aging(Builder $invoices, string $party, Period $period, string $basis, ?int $currencyId = null): array
     {
         $settlement = app(SettlementService::class);
+        $foreign = Currencies::isForeign($currencyId);
         $asOf = $period->until;
         $open = $invoices
             ->where('trans_date', '<=', $period->untilDate())
             ->where('payment_status', '!=', 'paid')
             ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
             ->get()
-            ->concat(self::openOpenings($party, $period));
+            ->concat(self::openOpenings($party, $period))
+            ->when($foreign, fn (Collection $docs) => $docs->filter(fn (Model $doc) => (int) $doc->getAttribute('currency_id') === $currencyId));
         $columns = AgingBuckets::all();
         $buckets = array_fill_keys(array_column($columns, 'key'), 0);
         $byParty = [];
         foreach ($open as $invoice) {
-            $balance = $settlement->balance($invoice);
+            $balance = $foreign ? $settlement->foreignBalance($invoice) : $settlement->balance($invoice);
             if ($balance <= 0) {
                 continue;
             }

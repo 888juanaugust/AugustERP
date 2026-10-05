@@ -19,6 +19,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 trait PricedDocument
 {
+    /** A line of a document in the base currency carries no foreign amounts (a document moved back from a foreign currency loses them). */
+    private const BASE_ONLY_LINE = ['fc_unit_price' => null, 'fc_discount_amount' => null, 'fc_header_discount' => null, 'fc_amount' => null, 'fc_tax_amount' => null];
+
     /** Recomputes every line's amounts and the header totals; called after lines are saved, before posting. */
     public function refreshTotal(): void
     {
@@ -54,7 +57,11 @@ trait PricedDocument
                 'amount' => $computed['amount'],
                 'dpp_amount' => $computed['dpp_amount'],
                 'tax_amount' => $computed['tax_amount'],
+                ...self::BASE_ONLY_LINE,
             ])->saveQuietly();
+        }
+        foreach ($charges as $charge) {
+            $charge->forceFill(['fc_amount' => null])->saveQuietly();
         }
 
         $this->forceFill([
@@ -64,6 +71,13 @@ trait PricedDocument
             'dpp_total' => $result['dpp_total'],
             'tax_total' => $result['tax_total'],
             'total' => $result['total'],
+            'exchange_rate' => 1,
+            'tax_exchange_rate' => null,
+            'fc_subtotal' => null,
+            'fc_discount_amount' => null,
+            'fc_charges_total' => null,
+            'fc_tax_total' => null,
+            'fc_total' => null,
         ])->saveQuietly();
 
         $this->refreshStatus();

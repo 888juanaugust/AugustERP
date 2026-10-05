@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Sales\SalesInvoices\Pages;
 use App\Domain\Numbering\TransactionType;
 use App\Filament\Resources\Sales\SalesInvoices\SalesInvoiceResource;
 use App\Filament\Support\CreateDocument;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\DocumentPages;
 use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\TagFields;
@@ -38,7 +39,8 @@ class CreateSalesInvoice extends CreateDocument
         if ($source === null || ($source instanceof SalesOrder && ! $source->isApproved())) {
             return;
         }
-        $this->form->fill(array_merge($this->form->getRawState(), [
+        $state = $this->form->getRawState();
+        $this->form->fill(array_merge($state, CurrencyFields::fromSource($source, $state['trans_date'] ?? null), [
             'customer_id' => $source->customer_id,
             'taxable' => $source->taxable,
             'inclusive_tax' => $source->inclusive_tax,
@@ -56,7 +58,7 @@ class CreateSalesInvoice extends CreateDocument
                 $orderLine = ($deliveryLine = DeliveryLine::query()->find($line['source_line_id'])) && $deliveryLine->source_line_type === 'sales_order_line'
                     ? SalesOrderLine::query()->find($deliveryLine->source_line_id) : null;
                 if ($orderLine) {
-                    $line['unit_price'] = (string) $orderLine->unit_price;
+                    $line['unit_price'] = (string) ($orderLine->fc_unit_price ?? $orderLine->unit_price);
                     $line['discount_percent'] = (string) $orderLine->discount_percent;
                     $line['tax_code_id'] = $orderLine->tax_code_id;
                     $line['salesman_id'] = $orderLine->salesman_id;

@@ -2,7 +2,7 @@ This is the functional standard of the template: what every module does, screen 
 
 ## Rules every installation keeps
 
-- Money is stored as whole units of the base currency (BIGINT); tax base and tax are computed and stored per line; a document's totals are sums of its lines.
+- Money is stored as whole units of the base currency (BIGINT); tax base and tax are computed and stored per line; a document's totals are sums of its lines. A document in a foreign currency also keeps its own currency's amounts (in that currency's cents) beside them; only the base amounts are posted, taxed and reported, and exchange differences are realised on settlement, never revalued at month end.
 - Postings (journal, stock movements, payment allocations) are derived from documents by one posting layer and are never written by hand; the audit log and document revisions only grow.
 - A recorded document may be edited or deleted, subject to access rights, the closed-period lock (on the old and the new date) and blockers: reconciled, settled, referenced by a later document.
 - Nothing still in use can be deleted: a customer, item, unit, account, tax code, department or any other record that a document, a ledger entry or another record points at is refused with the screens that use it ("used on Sales Invoices, the stock ledger"), and the advice to deactivate it where it can be deactivated. The refusal leaves everything as it was.
@@ -32,3 +32,4 @@ Confirm with the client's accountant before relying on these figures:
 - Fiscal depreciation follows the fiscal group's method and rate with the rest in the last year of the useful life; the groups, rates and the first-year month count are for the accountant to confirm.
 - The early-payment discount is proposed on the open balance including VAT; whether the VAT on it should be corrected (a credit note on the tax invoice) is for the accountant.
 - Cost is a moving average per warehouse; FIFO is not offered.
+- Foreign currencies: VAT on a foreign document is computed in rupiah at the Minister of Finance's rate (the document's own rate when none is given); a foreign down payment is valued at its own rate and the difference realised when the invoice that deducts it is settled (not fixed at the down payment's date as IFRIC 22 would); a difference between the goods receipt's rate and the bill's stays in the stock's value. Unrealised month-end revaluation is not done.

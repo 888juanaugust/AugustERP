@@ -14,6 +14,7 @@ use App\Filament\Resources\Sales\SalesOrders\Pages\CreateSalesOrder;
 use App\Filament\Resources\Sales\SalesOrders\Pages\EditSalesOrder;
 use App\Filament\Resources\Sales\SalesOrders\Pages\ListSalesOrders;
 use App\Filament\Support\ApprovalActions;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -101,6 +102,7 @@ class SalesOrderResource extends ErpResource
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([

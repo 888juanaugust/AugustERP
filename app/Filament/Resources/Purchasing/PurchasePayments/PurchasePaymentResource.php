@@ -5,27 +5,26 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Purchasing\PurchasePayments;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Currency\Currencies;
 use App\Domain\Documents\PaymentMethod;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Settlement\EarlyPaymentDiscount;
-use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Enums\AccountType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\CreatePurchasePayment;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\EditPurchasePayment;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\ListPurchasePayments;
 use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\GiroActions;
-use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayableFields;
-use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\PrintAction;
+use App\Filament\Support\SettlementLineFields;
 use App\Filament\Support\TagFields;
 use App\Filament\Support\VendorFields;
 use App\Models\GeneralLedger\Account;
@@ -75,11 +74,14 @@ class PurchasePaymentResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 VendorFields::select(fillsTerms: false)->label(__('Paid to')),
-                Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false),
+                Select::make('bank_account_id')->label(__('Bank'))->options(fn () => Account::options(AccountType::CashBank))->searchable()->required()->native(false)->live()
+                    ->afterStateUpdated(fn (Set $set, Get $get, $state) => CurrencyFields::forBank($set, $get, $state)),
                 Select::make('payment_method')->label(__('Payment method'))->options(PaymentMethod::class)->default(PaymentMethod::BankTransfer)->required()->native(false)->live(),
-                DatePicker::make('trans_date')->label(__('Payment date'))->required()->native(false)->default(today()),
+                DatePicker::make('trans_date')->label(__('Payment date'))->required()->native(false)->default(today())->live(onBlur: true)
+                    ->afterStateUpdated(fn (Set $set, Get $get) => Currencies::isForeign($get('currency_id')) ? CurrencyFields::fillRates($set, $get, $get('currency_id')) : null),
                 NumberFields::make(TransactionType::CashBankVoucher, 'Voucher No.'),
-                Placeholder::make('amount_preview')->label(__('Amount paid'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
+                Placeholder::make('amount_preview')->label(__('Amount paid'))->content(fn (Get $get) => SettlementLineFields::sum($get('lines'), $get('currency_id'))),
+                ...CurrencyFields::header(taxRate: false),
                 TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
                 DatePicker::make('cheque_date')->label(__('Cheque date'))->native(false)->visible(fn (Get $get) => $get('payment_method') === PaymentMethod::Cheque->value || $get('payment_method') === PaymentMethod::Cheque),
             ]),
@@ -92,9 +94,8 @@ class PurchasePaymentResource extends ErpResource
                         ->visible(fn (Get $get) => (bool) $get('vendor_id'))
                         ->action(function (Set $set, Get $get): void {
                             $rows = [];
-                            foreach (PayableFields::openFor((int) $get('vendor_id')) as $key => $open) {
-                                $proposal = EarlyPaymentDiscount::propose($open['model'], $open['balance'], $get('trans_date'));
-                                $rows[(string) Str::uuid()] = ['payable_key' => $key, 'amount' => $proposal['pay'], 'discount' => $proposal['discount']];
+                            foreach (PayableFields::openFor((int) $get('vendor_id'), $get('currency_id')) as $key => $open) {
+                                $rows[(string) Str::uuid()] = ['payable_key' => $key, ...SettlementLineFields::proposal($open['model'], $get('trans_date'))];
                             }
                             $set('lines', $rows);
                             Notification::make()->title(__(':count open document(s) pulled', ['count' => count($rows)]))->success()->send();
@@ -112,28 +113,29 @@ class PurchasePaymentResource extends ErpResource
                         ])
                         ->schema([
                             Select::make('payable_key')
-                                ->options(fn (Get $get) => PayableFields::openFor((int) $get('../../vendor_id'))->map(fn ($o) => $o['label'])->all())
+                                ->options(fn (Get $get) => PayableFields::openFor((int) $get('../../vendor_id'), $get('../../currency_id'))->map(fn ($o) => $o['label'])->all())
                                 ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
                                 ->required()->native(false)->live()
                                 ->afterStateUpdated(function (Set $set, Get $get, $state): void {
                                     // Paid within the term's discount days, the early-payment discount is proposed.
                                     $doc = $state ? PayableFields::resolve($state) : null;
-                                    $proposal = $doc ? EarlyPaymentDiscount::propose($doc, app(SettlementService::class)->balance($doc), $get('../../trans_date')) : ['pay' => 0, 'discount' => 0];
-                                    $set('amount', $proposal['pay']);
+                                    $proposal = $doc ? SettlementLineFields::proposal($doc, $get('../../trans_date')) : ['amount' => 0, 'discount' => 0];
+                                    $set('amount', $proposal['amount']);
                                     $set('discount', $proposal['discount']);
                                 }),
-                            Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
-                            PricedDocumentForm::money('amount', 'Pay')->required()->live(onBlur: true)->minValue(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) && method_exists($doc, 'isCredit') && $doc->isCredit() ? null : 0),
-                            PricedDocumentForm::money('discount', 'Discount')->live(onBlur: true),
+                            Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
+                            SettlementLineFields::amount('amount', 'Pay')->required()->live(onBlur: true)
+                                ->rule(fn (Get $get) => SettlementLineFields::notNegativeUnlessCredit(fn () => ($key = $get('payable_key')) ? PayableFields::resolve($key) : null)),
+                            SettlementLineFields::amount('discount', 'Discount')->live(onBlur: true),
                             Select::make('discount_account_id')->options(fn () => Account::options(AccountType::CostOfSales, AccountType::OtherIncome, AccountType::OtherExpense))->native(false)->placeholder(__('Purchase Discounts')),
                             Hidden::make('payable_type'),
                             Hidden::make('payable_id'),
                         ])
                         ->minItems(1)->defaultItems(0)->live()
                         ->addActionLabel('Add document')
-                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => $data + ['payable_key' => ($data['payable_type'] ?? '').':'.($data['payable_id'] ?? '')])
-                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::splitKey($data))
-                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::splitKey($data)),
+                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data, Get $get) => SettlementLineFields::fromForeign($data, $get('currency_id')) + ['payable_key' => ($data['payable_type'] ?? '').':'.($data['payable_id'] ?? '')])
+                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => SettlementLineFields::toForeign(self::splitKey($data), $get('currency_id')))
+                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => SettlementLineFields::toForeign(self::splitKey($data), $get('currency_id'))),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     BranchFields::select(),
@@ -169,6 +171,7 @@ class PurchasePaymentResource extends ErpResource
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
                 TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount paid')),
+                ...InCurrency::make('fc_amount'),
                 ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')

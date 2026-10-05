@@ -16,4 +16,9 @@ class CreatePurchaseDownPayment extends CreateDocument
     {
         return TransactionType::PurchaseInvoice;
     }
+
+    protected function foreignFields(): array
+    {
+        return ['amount' => 'fc_amount'];
+    }
 }

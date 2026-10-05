@@ -10,4 +10,9 @@ use App\Filament\Support\EditDocument;
 class EditPurchaseDownPayment extends EditDocument
 {
     protected static string $resource = PurchaseDownPaymentResource::class;
+
+    protected function foreignFields(): array
+    {
+        return ['amount' => 'fc_amount'];
+    }
 }

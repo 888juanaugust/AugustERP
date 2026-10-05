@@ -24,13 +24,14 @@ abstract class PartyStatement extends ReportPage
 
     protected function defaultFilters(): array
     {
-        return parent::defaultFilters() + ['party_id' => null];
+        return parent::defaultFilters() + ['party_id' => null, 'currency_id' => null];
     }
 
     protected function extraFilters(): array
     {
         return [
             Select::make('party_id')->label(static::partyLabel())->options(fn () => static::parties())->searchable()->native(false)->live(),
+            static::currencyFilter(),
         ];
     }
 
@@ -38,7 +39,7 @@ abstract class PartyStatement extends ReportPage
     {
         $partyId = (int) ($this->filters['party_id'] ?? 0);
 
-        return $partyId > 0 ? TradeReports::statement(static::party(), $partyId, $this->period()) : [];
+        return $partyId > 0 ? TradeReports::statement(static::party(), $partyId, $this->period(), $this->reportCurrency()) : [];
     }
 
     protected function columns(): array
@@ -60,6 +61,6 @@ abstract class PartyStatement extends ReportPage
 
     protected function exportRow(array $row): array
     {
-        return [$row['trans_date'], $row['number'], $row['kind'], $row['charge'], $row['payment'], $row['balance']];
+        return [$row['trans_date'], $row['number'], $row['kind'], $this->exportMoney($row['charge']), $this->exportMoney($row['payment']), $this->exportMoney($row['balance'])];
     }
 }
