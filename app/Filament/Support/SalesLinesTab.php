@@ -28,6 +28,7 @@ final class SalesLinesTab
                 return PriceResolver::resolve($customer, $item, $get('unit_id') ? (int) $get('unit_id') : null, $get('../../trans_date') ?: today())['price'];
             },
             salesman: true,
+            groupItems: true,
         );
 
         return $tab;

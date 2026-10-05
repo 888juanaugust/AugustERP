@@ -19,13 +19,15 @@ use Filament\Schemas\Components\Utilities\Set;
  */
 final class LineItemFields
 {
-    public static function item(string $name = 'item_id', bool $stockedOnly = false): Select
+    /** @param  bool  $groups  whether group items are offered (selling); a group is never bought, received or counted */
+    public static function item(string $name = 'item_id', bool $stockedOnly = false, bool $groups = true): Select
     {
         return Select::make($name)
             ->label(__('fields.item'))
             ->searchable()
             ->getSearchResultsUsing(fn (string $search) => Item::query()->active()
                 ->when($stockedOnly, fn ($q) => $q->where('item_type', 'inventory'))
+                ->when(! $groups, fn ($q) => $q->where('item_type', '!=', 'group'))
                 ->where(fn ($q) => $q->where('name', 'ilike', "%{$search}%")->orWhere('number', 'ilike', "%{$search}%"))
                 ->orderBy('number')->limit(30)->get()
                 ->mapWithKeys(fn (Item $i) => [$i->id => "{$i->number} · {$i->name}"])->all())

@@ -5,11 +5,13 @@ namespace App\Models\Sales;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Inventory\Costing\CostEngine;
+use App\Domain\Inventory\GroupItems;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
 use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
+use App\Models\Inventory\Item;
 use App\Models\Inventory\StockMovement;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -98,24 +100,33 @@ class SalesInvoice extends Model implements Postable
                 $builder->credit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out');
             }
 
-            if (! $line->item->item_type->isStocked()) {
+            $pieces = GroupItems::explode($line->item, (string) $line->base_quantity);
+            if ($pieces === []) {
                 continue;
             }
             if ($line->source_line_type === 'delivery_line' && $line->source_line_id) {
-                // Cost moves from in-transit to cost of goods sold, in proportion to what this invoice takes of the delivery line.
+                // Cost moves from in-transit to cost of goods sold, in proportion to what this invoice takes of the delivery line,
+                // per item the delivery moved (a group item's components each carry their own cost of sales account).
                 $deliveryLine = DeliveryLine::query()->find($line->source_line_id);
-                $cost = $deliveryLine ? StockMovement::query()->active()->where('source_line_type', 'delivery_line')->where('source_line_id', $deliveryLine->id)->sum('total_cost') : 0;
-                $share = $deliveryLine && ! BigDecimal::of((string) $deliveryLine->base_quantity)->isZero()
-                    ? BigDecimal::of((int) $cost)->multipliedBy((string) $line->base_quantity)->dividedBy((string) $deliveryLine->base_quantity, 0, RoundingMode::HalfUp)->toInt()
-                    : 0;
-                $builder->debit(Accounts::costOfSales($line->item, $customer), $share, $line->memo);
-                $builder->credit($transit, $share, $line->memo);
+                if ($deliveryLine === null || BigDecimal::of((string) $deliveryLine->base_quantity)->isZero()) {
+                    continue;
+                }
+                $costs = StockMovement::query()->active()->where('source_line_type', 'delivery_line')->where('source_line_id', $deliveryLine->id)
+                    ->groupBy('item_id')->orderBy('item_id')->selectRaw('item_id, sum(total_cost) as cost')->pluck('cost', 'item_id');
+                foreach ($costs as $itemId => $cost) {
+                    $share = BigDecimal::of((int) $cost)->multipliedBy((string) $line->base_quantity)->dividedBy((string) $deliveryLine->base_quantity, 0, RoundingMode::HalfUp)->toInt();
+                    $moved = (int) $itemId === $line->item_id ? $line->item : Item::query()->with('category')->find($itemId);
+                    $builder->debit(Accounts::costOfSales($moved, $customer), $share, $line->memo);
+                    $builder->credit($transit, $share, $line->memo);
+                }
             } else {
-                $cost = $engine->issueCost($line->item_id, $line->warehouse_id, $this->trans_date, (string) $line->base_quantity);
-                $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => (string) $line->base_quantity,
-                    'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'sales_invoice_line', 'source_line_id' => $line->id]);
-                $builder->debit(Accounts::costOfSales($line->item, $customer), $cost['total_cost'], $line->memo);
-                $builder->credit(Accounts::inventory($line->item), $cost['total_cost'], $line->memo);
+                foreach ($pieces as $piece) {
+                    $cost = $engine->issueCost($piece['item']->id, $line->warehouse_id, $this->trans_date, $piece['base_quantity']);
+                    $builder->stock(['item_id' => $piece['item']->id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => $piece['base_quantity'],
+                        'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'sales_invoice_line', 'source_line_id' => $line->id]);
+                    $builder->debit(Accounts::costOfSales($piece['item'], $customer), $cost['total_cost'], $line->memo);
+                    $builder->credit(Accounts::inventory($piece['item']), $cost['total_cost'], $line->memo);
+                }
             }
         }
 

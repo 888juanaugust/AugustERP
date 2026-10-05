@@ -5,6 +5,7 @@ namespace App\Models\Sales;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Inventory\Costing\CostEngine;
+use App\Domain\Inventory\GroupItems;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
@@ -93,15 +94,16 @@ class SalesReturn extends Model implements Postable
             if ((int) $line->tax_amount > 0) {
                 $builder->debit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out reversed');
             }
-            if (! $line->item->item_type->isStocked()) {
-                continue;
+            // A group item comes back as its components, each at the cost it left with.
+            foreach (GroupItems::explode($line->item, (string) $line->base_quantity) as $piece) {
+                $item = $piece['item'];
+                $unitCost = $this->costItLeftWith($line, $item->id) ?? $engine->costAt($item->id, $line->warehouse_id, $this->trans_date);
+                $total = BigDecimal::of($unitCost)->multipliedBy($piece['base_quantity'])->toScale(0, RoundingMode::HalfUp)->toInt();
+                $builder->stock(['item_id' => $item->id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => $piece['base_quantity'],
+                    'unit_cost' => $unitCost, 'total_cost' => $total, 'source_line_type' => 'sales_return_line', 'source_line_id' => $line->id]);
+                $builder->debit(Accounts::inventory($item), $total, $line->memo);
+                $builder->credit(Accounts::costOfSales($item, $customer), $total, $line->memo);
             }
-            $unitCost = $this->costItLeftWith($line) ?? $engine->costAt($line->item_id, $line->warehouse_id, $this->trans_date);
-            $total = BigDecimal::of($unitCost)->multipliedBy((string) $line->base_quantity)->toScale(0, RoundingMode::HalfUp)->toInt();
-            $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => (string) $line->base_quantity,
-                'unit_cost' => $unitCost, 'total_cost' => $total, 'source_line_type' => 'sales_return_line', 'source_line_id' => $line->id]);
-            $builder->debit(Accounts::inventory($line->item), $total, $line->memo);
-            $builder->credit(Accounts::costOfSales($line->item, $customer), $total, $line->memo);
         }
         foreach ($this->charges as $charge) {
             $builder->debit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges');
@@ -109,8 +111,8 @@ class SalesReturn extends Model implements Postable
         $builder->credit(Accounts::receivable($customer), (int) $this->total, $this->description ?? "Return from {$customer->name}");
     }
 
-    /** The unit cost the goods left with, when the return points at an invoice whose line moved stock. */
-    private function costItLeftWith(SalesReturnLine $line): ?string
+    /** The unit cost an item left with, when the return points at an invoice whose line moved it (itself, or as a group's component). */
+    private function costItLeftWith(SalesReturnLine $line, int $movedItemId): ?string
     {
         if ($this->source_type !== 'sales_invoice' || ! $this->source_id) {
             return null;
@@ -119,8 +121,9 @@ class SalesReturn extends Model implements Postable
         if ($invoiceLine === null) {
             return null;
         }
-        $movement = StockMovement::query()->active()->where('source_line_type', 'sales_invoice_line')->where('source_line_id', $invoiceLine->id)->first()
-            ?? ($invoiceLine->source_line_type === 'delivery_line' ? StockMovement::query()->active()->where('source_line_type', 'delivery_line')->where('source_line_id', $invoiceLine->source_line_id)->first() : null);
+        $movements = StockMovement::query()->active()->where('item_id', $movedItemId);
+        $movement = (clone $movements)->where('source_line_type', 'sales_invoice_line')->where('source_line_id', $invoiceLine->id)->first()
+            ?? ($invoiceLine->source_line_type === 'delivery_line' ? (clone $movements)->where('source_line_type', 'delivery_line')->where('source_line_id', $invoiceLine->source_line_id)->first() : null);
 
         return $movement ? (string) $movement->unit_cost : null;
     }
