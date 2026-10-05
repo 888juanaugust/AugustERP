@@ -5,13 +5,15 @@ namespace App\Models\GeneralLedger;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Settlement\Contracts\PaidByPayment;
+use App\Domain\Settlement\SettlementService;
 use App\Models\Company\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** Expenses booked against a payable account, to be paid later. */
-class ExpenseAccrual extends Model implements Postable
+/** Expenses booked against a payable account, paid later by a payment line that settles it. */
+class ExpenseAccrual extends Model implements PaidByPayment, Postable
 {
     use PostsToLedger;
 
@@ -49,11 +51,13 @@ class ExpenseAccrual extends Model implements Postable
 
     public function refreshTotal(): void
     {
-        $total = (int) $this->lines()->sum('amount');
-        $this->forceFill([
-            'total' => $total,
-            'status' => $this->paid_amount <= 0 ? 'unpaid' : ($this->paid_amount >= $total ? 'paid' : 'partial'),
-        ])->saveQuietly();
+        $this->forceFill(['total' => (int) $this->lines()->sum('amount')])->saveQuietly();
+        app(SettlementService::class)->refresh($this);
+    }
+
+    public function settlementAccountId(): int
+    {
+        return (int) $this->payable_account_id;
     }
 
     public function balance(): int

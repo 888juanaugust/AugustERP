@@ -16,6 +16,7 @@ use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\PayAction;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\ExpenseAccrual;
@@ -112,7 +113,7 @@ class ExpenseAccrualResource extends ErpResource
                 Tanggal::make('due_date')->label(__('Due date')),
                 Rupiah::make('total')->label(__('fields.total')),
                 Rupiah::make('paid_amount')->label(__('fields.paid')),
-                TextColumn::make('status')->label(__('fields.status'))->badge()
+                TextColumn::make('payment_status')->label(__('fields.status'))->badge()
                     ->formatStateUsing(fn (string $state) => __('status.payment.'.match ($state) {
                         'partial' => 'partially_paid', default => $state
                     }))
@@ -123,7 +124,7 @@ class ExpenseAccrualResource extends ErpResource
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
-                SelectFilter::make('status')->options(['unpaid' => __('Unpaid'), 'partial' => __('Partially paid'), 'paid' => __('Paid')]),
+                SelectFilter::make('payment_status')->label(__('fields.status'))->options(['unpaid' => __('Unpaid'), 'partial' => __('Partially paid'), 'paid' => __('Paid')]),
                 Filter::make('trans_date')
                     ->schema([
                         DatePicker::make('from')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT),
@@ -133,7 +134,7 @@ class ExpenseAccrualResource extends ErpResource
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '>=', $d))
                         ->when($data['until'] ?? null, fn ($q, $d) => $q->whereDate('trans_date', '<=', $d))),
             ])
-            ->recordActions([EditAction::make()]);
+            ->recordActions([EditAction::make(), PayAction::make()]);
     }
 
     public static function getPages(): array

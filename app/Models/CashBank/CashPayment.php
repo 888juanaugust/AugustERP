@@ -8,16 +8,23 @@ use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Settlement\Contracts\PaidByPayment;
+use App\Domain\Settlement\SettlementService;
+use App\Domain\Shared\Format;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use RuntimeException;
 
 /**
  * Payment: money out of a cash or bank account to any accounts, one line
- * each (K-02). Paid by giro, it credits giros payable until the giro clears.
+ * each (K-02). A line may settle an expense accrual or a payroll entry: it
+ * then debits that document's own payable account and is allocated to it,
+ * never more than is open. Paid by giro, it credits giros payable until the
+ * giro clears.
  */
 class CashPayment extends Model implements GiroSource, Postable
 {
@@ -69,10 +76,23 @@ class CashPayment extends Model implements GiroSource, Postable
         if ($this->giro?->isBounced()) {
             return; // a bounced giro paid nothing
         }
+        $settlement = app(SettlementService::class);
         $total = 0;
-        foreach ($this->lines as $line) {
-            $builder->signed($line->account_id, (int) $line->amount, $line->memo, $line->branch_id);
-            $total += (int) $line->amount;
+        foreach ($this->lines()->with('payable')->get() as $line) {
+            $amount = (int) $line->amount;
+            $payable = $line->payable;
+            if ($payable instanceof PaidByPayment) {
+                // The earlier revision of this payment is already superseded, so the balance is what is open without it.
+                $open = $settlement->balance($payable);
+                if ($amount > $open) {
+                    throw new RuntimeException(__(':number has :open open; a payment line cannot settle more.', ['number' => $payable->number, 'open' => Format::money($open)]));
+                }
+                $builder->signed($payable->settlementAccountId(), $amount, $line->memo ?: $payable->number, $line->branch_id);
+                $builder->allocate(['receivable_type' => $line->payable_type, 'receivable_id' => $line->payable_id, 'amount' => $amount, 'discount' => 0]);
+            } else {
+                $builder->signed($line->account_id, $amount, $line->memo, $line->branch_id);
+            }
+            $total += $amount;
         }
         $credit = $this->giro?->isOutstanding() ? Accounts::giroPayable() : $this->bank_account_id;
         $builder->credit($credit, $total, $this->description ?: ($this->payee ? "Payment to {$this->payee}" : null));
