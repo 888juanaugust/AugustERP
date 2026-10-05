@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Sales\SalesReceipts;
 use App\Domain\Access\MenuKey;
 use App\Domain\Documents\PaymentMethod;
 use App\Domain\Numbering\TransactionType;
+use App\Domain\Settlement\EarlyPaymentDiscount;
 use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
@@ -94,7 +95,8 @@ class SalesReceiptResource extends ErpResource
                         ->action(function (Set $set, Get $get): void {
                             $rows = [];
                             foreach (ReceivableFields::openFor((int) $get('customer_id'), (bool) $get('use_credit')) as $key => $open) {
-                                $rows[(string) Str::uuid()] = ['receivable_key' => $key, 'amount' => $open['balance'], 'discount' => 0];
+                                $proposal = EarlyPaymentDiscount::propose($open['model'], $open['balance'], $get('trans_date'));
+                                $rows[(string) Str::uuid()] = ['receivable_key' => $key, 'amount' => $proposal['pay'], 'discount' => $proposal['discount']];
                             }
                             $set('lines', $rows);
                             Notification::make()->title(__(':count open document(s) pulled', ['count' => count($rows)]))->success()->send();
@@ -115,7 +117,13 @@ class SalesReceiptResource extends ErpResource
                                 ->options(fn (Get $get) => ReceivableFields::openFor((int) $get('../../customer_id'), (bool) $get('../../use_credit'))->map(fn ($o) => $o['label'])->all())
                                 ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
                                 ->required()->native(false)->live()
-                                ->afterStateUpdated(fn (Set $set, $state) => $set('amount', $state && ($doc = PayableFields::resolve($state)) ? app(SettlementService::class)->balance($doc) : 0)),
+                                ->afterStateUpdated(function (Set $set, Get $get, $state): void {
+                                    // Paid within the term's discount days, the early-payment discount is proposed.
+                                    $doc = $state ? PayableFields::resolve($state) : null;
+                                    $proposal = $doc ? EarlyPaymentDiscount::propose($doc, app(SettlementService::class)->balance($doc), $get('../../trans_date')) : ['pay' => 0, 'discount' => 0];
+                                    $set('amount', $proposal['pay']);
+                                    $set('discount', $proposal['discount']);
+                                }),
                             Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::number(app(SettlementService::class)->balance($doc)) : ''),
                             PricedDocumentForm::money('amount', 'Pay')->required()->live(onBlur: true),
                             PricedDocumentForm::money('discount', 'Discount')->live(onBlur: true),

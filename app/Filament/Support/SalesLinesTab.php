@@ -6,6 +6,7 @@ namespace App\Filament\Support;
 
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
+use App\Domain\Inventory\Units\UnitConverter;
 use App\Domain\Sales\PriceResolver;
 use App\Models\Inventory\Item;
 use App\Models\Sales\Customer;
@@ -25,7 +26,11 @@ final class SalesLinesTab
             priceResolver: function (Item $item, Get $get) {
                 $customer = $get('../../customer_id') ? Customer::query()->find($get('../../customer_id')) : null;
 
-                return PriceResolver::resolve($customer, $item, $get('unit_id') ? (int) $get('unit_id') : null, $get('../../trans_date') ?: today())['price'];
+                $unitId = $get('unit_id') ? (int) $get('unit_id') : null;
+                $item->loadMissing('units');
+                $baseQuantity = is_numeric($get('quantity')) ? UnitConverter::toBase($item, (string) $get('quantity'), $unitId ?? $item->unit1_id) : null;
+
+                return PriceResolver::resolve($customer, $item, $unitId, $get('../../trans_date') ?: today(), $baseQuantity)['price'];
             },
             salesman: true,
             groupItems: true,

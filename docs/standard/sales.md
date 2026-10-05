@@ -5,7 +5,8 @@ Module group `sales`. 16 screens in the standard menu.
 ## Behaviours
 
 - The chain is quotation → order → delivery (partial or several) → invoice (from one or several deliveries, or direct) → receipt. Fulfilment status (waiting, partial, processed, closed) is derived from quantities; "Pull" picks open upstream documents of the customer, "Process" opens the next document prefilled.
-- Prices are typed freely by those with the right; otherwise they come from the customer's price category and the price adjustments in force on the document's date. Discounts per line and per document; other charges to any account; tax included or excluded per document.
+- Prices are typed freely by those with the right; otherwise they come from the customer's price category and the price adjustments in force on the document's date. Discount adjustments come from the customer's discount category (a price category), else their price category. An item that uses wholesale prices takes the highest quantity break its line reaches and is priced again when the quantity or unit changes; an item with a minimum sale quantity is not sold below it.
+- Receipts propose the payment term's early-payment discount when paid within its discount days (on the open balance, tax included); the same holds for vendor payments. Discounts per line and per document; other charges to any account; tax included or excluded per document.
 - The order's approval, when the Sales Order Approval rule is on, follows the approval rules and the credit check: amount limit (open receivables plus open orders), age limit, and the company's freeze days.
 - Deliveries move stock out at the moving average cost; the invoice moves goods delivered to cost of sales. Down payments carry their own tax and are deducted on the invoice. Returns refer to an invoice (or none), bring goods back and issue a credit automatically; the goods come back at the cost they left with on that invoice, or at the item's last purchase price, as Preferences choose, credited to the item's cost of sales account or a fixed account, and saving a return again re-costs it unless Preferences say to keep its first cost. Invoice exchange records the handing of invoices to the customer for payment scheduling.
 - Customers carry billing, shipping and tax addresses, contacts, a category, a price and a discount category, a default salesperson, payment term and discount, tax identity for the tax invoice, credit limits (own or the parent's), and opening receivables.
@@ -510,7 +511,7 @@ Menu key `customer__customer` · module `sales`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Price category | `price_category_id` | select |  |
-| Discount category | `discount_category_id` | select |  |
+| Discount category | `discount_price_category_id` | select |  |
 | Default salesperson | `salesman_id` | select |  |
 | Payment term | `payment_term_id` | select |  |
 | Default discount (%) | `default_sales_disc` | number |  |
@@ -600,7 +601,7 @@ Menu key `inventory__sellingprice-adjustment` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Unit · New value
+**Line grid "Lines":** Item · Unit · From quantity · New value
 
 #### Tab: Other info
 

@@ -53,6 +53,12 @@ class Customer extends Model implements HasAuditReference
         return $this->belongsTo(DiscountCategory::class);
     }
 
+    /** The price category whose discount adjustments apply to the customer; none means their price category's. */
+    public function discountPriceCategory(): BelongsTo
+    {
+        return $this->belongsTo(PriceCategory::class, 'discount_price_category_id');
+    }
+
     public function salesman(): BelongsTo
     {
         return $this->belongsTo(Employee::class, 'salesman_id');

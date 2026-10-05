@@ -70,10 +70,12 @@ class SellingPriceAdjustmentResource extends ErpResource
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
-                        ->table([TableColumn::make(__('Item')), TableColumn::make(__('Unit')), TableColumn::make(__('New value'))->alignment(Alignment::End)])
+                        ->table([TableColumn::make(__('Item')), TableColumn::make(__('Unit')), TableColumn::make(__('From quantity'))->alignment(Alignment::End), TableColumn::make(__('New value'))->alignment(Alignment::End)])
                         ->schema([
                             LineItemFields::item(),
                             LineItemFields::unit(),
+                            // A wholesale break: applies from this quantity (in the line's unit) on items that use wholesale prices.
+                            TextInput::make('min_quantity')->numeric()->minValue(0)->default(0),
                             TextInput::make('value')->numeric()->required()->minValue(0)
                                 ->prefix(fn (Get $get) => $get('../../sales_adjustment_type') === 'discount' ? '%' : Format::symbol()),
                         ])
