@@ -34,7 +34,7 @@ class InstallCommand extends Command
         {--admin-name= : The first administrator\'s name}
         {--admin-email= : The first administrator\'s email (defaults to ADMIN_EMAIL)}
         {--admin-password= : The first administrator\'s password (defaults to ADMIN_PASSWORD)}
-        {--enable=* : Optional modules to switch on (fixed-assets, tax, approval, budgets, payroll, sales-extras)}
+        {--enable=* : Optional modules to switch on (fixed-assets, tax, approval, budgets, payroll, sales-extras, departments, projects)}
         {--disable=* : Optional modules to switch off}
         {--demo : Seed the demo company}
         {--no-demo : Do not seed the demo company, and do not ask}

@@ -12,6 +12,7 @@ use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\StockMovement;
@@ -44,7 +45,7 @@ class SalesReturn extends Model implements Postable
 
     public function lines(): HasMany
     {
-        return $this->hasMany(SalesReturnLine::class)->orderBy('sort');
+        return $this->hasMany(SalesReturnLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function charges(): HasMany
@@ -100,9 +101,9 @@ class SalesReturn extends Model implements Postable
 
         foreach ($this->lines()->with(['item.category', 'taxCode'])->get() as $line) {
             $net = $line->netAmount();
-            $builder->debit(Accounts::salesReturn($line->item, $customer), $net, $line->memo);
+            $builder->debit(Accounts::salesReturn($line->item, $customer), $net, $line->memo, tags: Tags::of($line));
             if ((int) $line->tax_amount > 0) {
-                $builder->debit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out reversed');
+                $builder->debit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out reversed', tags: Tags::of($line));
             }
             // A group item comes back as its components, each at its return cost.
             foreach (GroupItems::explode($line->item, (string) $line->base_quantity) as $piece) {
@@ -111,12 +112,12 @@ class SalesReturn extends Model implements Postable
                 $total = BigDecimal::of($unitCost)->multipliedBy($piece['base_quantity'])->toScale(0, RoundingMode::HalfUp)->toInt();
                 $builder->stock(['item_id' => $item->id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => $piece['base_quantity'],
                     'unit_cost' => $unitCost, 'total_cost' => $total, 'source_line_type' => 'sales_return_line', 'source_line_id' => $line->id]);
-                $builder->debit(Accounts::inventory($item), $total, $line->memo);
-                $builder->credit($chargeTo ?? Accounts::costOfSales($item, $customer), $total, $line->memo);
+                $builder->debit(Accounts::inventory($item), $total, $line->memo, tags: Tags::of($line));
+                $builder->credit($chargeTo ?? Accounts::costOfSales($item, $customer), $total, $line->memo, tags: Tags::of($line));
             }
         }
         foreach ($this->charges as $charge) {
-            $builder->debit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges');
+            $builder->debit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges', tags: Tags::of($charge));
         }
         $builder->credit(Accounts::receivable($customer), (int) $this->total, $this->description ?? "Return from {$customer->name}");
     }

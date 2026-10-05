@@ -10,6 +10,7 @@ use App\Domain\Inventory\GroupItems;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
 use App\Models\Inventory\Item;
@@ -42,7 +43,7 @@ class SalesInvoice extends Model implements Postable
 
     public function lines(): HasMany
     {
-        return $this->hasMany(SalesInvoiceLine::class)->orderBy('sort');
+        return $this->hasMany(SalesInvoiceLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function charges(): HasMany
@@ -97,9 +98,9 @@ class SalesInvoice extends Model implements Postable
 
         foreach ($this->lines()->with(['item.category', 'taxCode'])->get() as $line) {
             $net = $line->netAmount();
-            $builder->credit(Accounts::sales($line->item, $customer), $net, $line->memo);
+            $builder->credit(Accounts::sales($line->item, $customer), $net, $line->memo, tags: Tags::of($line));
             if ((int) $line->tax_amount > 0) {
-                $builder->credit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out');
+                $builder->credit(Accounts::vatOut($line->taxCode), (int) $line->tax_amount, 'VAT out', tags: Tags::of($line));
             }
 
             $pieces = GroupItems::explode($line->item, (string) $line->base_quantity);
@@ -118,22 +119,22 @@ class SalesInvoice extends Model implements Postable
                 foreach ($costs as $itemId => $cost) {
                     $share = BigDecimal::of((int) $cost)->multipliedBy((string) $line->base_quantity)->dividedBy((string) $deliveryLine->base_quantity, 0, RoundingMode::HalfUp)->toInt();
                     $moved = (int) $itemId === $line->item_id ? $line->item : Item::query()->with('category')->find($itemId);
-                    $builder->debit(Accounts::costOfSales($moved, $customer), $share, $line->memo);
-                    $builder->credit($transit, $share, $line->memo);
+                    $builder->debit(Accounts::costOfSales($moved, $customer), $share, $line->memo, tags: Tags::of($line));
+                    $builder->credit($transit, $share, $line->memo, tags: Tags::of($line));
                 }
             } else {
                 foreach ($pieces as $piece) {
                     $cost = $engine->issueCost($piece['item']->id, $line->warehouse_id, $this->trans_date, $piece['base_quantity']);
                     $builder->stock(['item_id' => $piece['item']->id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => $piece['base_quantity'],
                         'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'sales_invoice_line', 'source_line_id' => $line->id]);
-                    $builder->debit(Accounts::costOfSales($piece['item'], $customer), $cost['total_cost'], $line->memo);
-                    $builder->credit(Accounts::inventory($piece['item']), $cost['total_cost'], $line->memo);
+                    $builder->debit(Accounts::costOfSales($piece['item'], $customer), $cost['total_cost'], $line->memo, tags: Tags::of($line));
+                    $builder->credit(Accounts::inventory($piece['item']), $cost['total_cost'], $line->memo, tags: Tags::of($line));
                 }
             }
         }
 
         foreach ($this->charges as $charge) {
-            $builder->credit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges');
+            $builder->credit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges', tags: Tags::of($charge));
         }
 
         $dpTotal = 0;

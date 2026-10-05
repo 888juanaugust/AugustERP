@@ -28,7 +28,7 @@ class PurchaseOrder extends Model implements HasAuditReference
 
     public function lines(): HasMany
     {
-        return $this->hasMany(PurchaseOrderLine::class)->orderBy('sort');
+        return $this->hasMany(PurchaseOrderLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function charges(): HasMany

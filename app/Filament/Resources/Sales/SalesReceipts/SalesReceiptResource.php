@@ -27,6 +27,7 @@ use App\Filament\Support\PayableFields;
 use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\PrintAction;
 use App\Filament\Support\ReceivableFields;
+use App\Filament\Support\TagFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\Sales\SalesReceipt;
 use Filament\Actions\Action;
@@ -143,6 +144,7 @@ class SalesReceiptResource extends ErpResource
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     BranchFields::select(),
+                    ...TagFields::header(),
                     Textarea::make('description')->label(__('fields.description'))->rows(3),
                 ]),
             ]),

@@ -8,6 +8,7 @@ use App\Domain\Documents\PricedDocument;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use App\Models\Inventory\StockMovement;
 use Brick\Math\BigDecimal;
@@ -36,7 +37,7 @@ class GoodsReceipt extends Model implements Postable
 
     public function lines(): HasMany
     {
-        return $this->hasMany(GoodsReceiptLine::class)->orderBy('sort');
+        return $this->hasMany(GoodsReceiptLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function vendor(): BelongsTo
@@ -58,11 +59,11 @@ class GoodsReceipt extends Model implements Postable
                 $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => (string) $line->base_quantity,
                     'unit_cost' => (string) BigDecimal::of($net)->dividedBy((string) $line->base_quantity, 4, RoundingMode::HalfUp), 'total_cost' => $net,
                     'source_line_type' => 'goods_receipt_line', 'source_line_id' => $line->id]);
-                $builder->debit(Accounts::inventory($line->item), $net, $line->memo);
+                $builder->debit(Accounts::inventory($line->item), $net, $line->memo, tags: Tags::of($line));
             } else {
-                $builder->debit(Accounts::purchaseExpense($line->item), $net, $line->memo);
+                $builder->debit(Accounts::purchaseExpense($line->item), $net, $line->memo, tags: Tags::of($line));
             }
-            $builder->credit($grni, $net, $line->memo);
+            $builder->credit($grni, $net, $line->memo, tags: Tags::of($line));
         }
     }
 }

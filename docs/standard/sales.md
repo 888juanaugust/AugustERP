@@ -13,6 +13,7 @@ Module group `sales`. 16 screens in the standard menu.
 - Check-ins, commissions and targets (the Sales extras module) are off by default.
 - The commission statement (on the Salesman Commissions screen) shows what each salesperson earned in a period: net sales of the invoice lines that name them less their return lines, on the invoice's date or as customers pay (Preferences), each payment counting its share of the invoice. A rule applies when active and in force, covering the salesperson and meeting its requirement (sales value or quantity in a range, or once per quantity block); it pays a percentage of sales or gross profit, or a fixed amount. Commission levels are kept on the rule but not used, as employees carry no level. Nothing is posted.
 - A sales target's Progress tab shows, per line, the quantity and net value sold within the target's dates and branch (less returns) for its item, category, salesperson or month, against the target.
+- With departments or projects on, quotations, orders, deliveries, invoices, returns, down payments and receipts carry a department and a project on the header and on every line and charge. A line's own wins; a line that names none, and the document's own legs (receivable or payable, tax, down payments), take the header's. A document made from another, or a line pulled from one, keeps its source's tags; the income statement filtered by a department shows its revenue and cost of sales.
 
 ## Screens
 
@@ -57,7 +58,7 @@ Menu key `customer__sales-quotation` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Salesperson · Processed · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Salesperson · Processed · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -69,6 +70,8 @@ Menu key `customer__sales-quotation` · module `sales`
 |---|---|---|---|
 | Payment term | `payment_term_id` | select |  |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -77,7 +80,7 @@ Menu key `customer__sales-quotation` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Description
+**Line grid "Charges":** Charge · Amount · Department · Project · Description
 
 ## Sales Orders
 
@@ -103,7 +106,7 @@ Menu key `customer__sales-order` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Processed · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Processed · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -116,6 +119,8 @@ Menu key `customer__sales-order` · module `sales`
 | Payment term | `payment_term_id` | select |  |
 | PO number | `po_number` | text |  |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -127,7 +132,7 @@ Menu key `customer__sales-order` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Description
+**Line grid "Charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull from quotations
 
@@ -156,13 +161,15 @@ Menu key `customer__delivery-order` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Warehouse · Salesperson · Processed · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Warehouse · Salesperson · Processed · Department · Project · Memo
 
 #### Tab: Other info
 
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | PO number | `po_number` | text |  |
 | FOB | `fob_id` | select |  |
 | Address | `to_address` | textarea |  |
@@ -207,6 +214,8 @@ Menu key `customer__sales-downpayment` · module `sales`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Payment term | `payment_term_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
@@ -242,7 +251,7 @@ Menu key `customer__sales-invoice` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -257,6 +266,8 @@ Menu key `customer__sales-invoice` · module `sales`
 | Due date | `due_date` | date |  |
 | Tax invoice serial (NSFP) | `nsfp` | text |  |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -268,7 +279,7 @@ Menu key `customer__sales-invoice` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Description
+**Line grid "Charges":** Charge · Amount · Department · Project · Description
 
 #### Tab: Down payments
 
@@ -319,6 +330,8 @@ Menu key `customer__sales-receipt` · module `sales`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Notes | `description` | textarea |  |
 
 **Actions:** Pull every open document
@@ -349,7 +362,7 @@ Menu key `customer__sales-return` · module `sales`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Salesperson · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -360,6 +373,8 @@ Menu key `customer__sales-return` · module `sales`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -368,7 +383,7 @@ Menu key `customer__sales-return` · module `sales`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Description
+**Line grid "Charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull the lines of the document
 

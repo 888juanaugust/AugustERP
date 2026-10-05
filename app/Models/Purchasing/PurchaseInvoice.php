@@ -8,6 +8,7 @@ use App\Domain\Documents\PricedDocument;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Domain\Shared\Money;
 use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
@@ -41,7 +42,7 @@ class PurchaseInvoice extends Model implements Postable
 
     public function lines(): HasMany
     {
-        return $this->hasMany(PurchaseInvoiceLine::class)->orderBy('sort');
+        return $this->hasMany(PurchaseInvoiceLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function charges(): HasMany
@@ -100,7 +101,7 @@ class PurchaseInvoice extends Model implements Postable
             if ($charge->allocate_to_cost) {
                 $landed += (int) $charge->amount;
             } else {
-                $builder->debit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges');
+                $builder->debit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges', tags: Tags::of($charge));
             }
         }
         $stocked = $lines->filter(fn ($l) => $l->item->item_type->isStocked());
@@ -117,13 +118,13 @@ class PurchaseInvoice extends Model implements Postable
             if ($line->source_line_type === 'goods_receipt_line' && $line->source_line_id) {
                 $receiptLine = GoodsReceiptLine::query()->find($line->source_line_id);
                 $received = $receiptLine ? $this->proportion($receiptLine->netAmount(), (string) $receiptLine->base_quantity, (string) $line->base_quantity) : $net;
-                $builder->debit($grni, $received, $line->memo);
+                $builder->debit($grni, $received, $line->memo, tags: Tags::of($line));
                 $difference = $net - $received + $landedShare;
                 if ($difference !== 0) {
                     if ($isStocked) {
                         $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id ?? $receiptLine?->warehouse_id, 'direction' => StockMovement::IN, 'base_quantity' => '0', 'unit_cost' => 0, 'total_cost' => $difference, 'source_line_type' => 'purchase_invoice_line', 'source_line_id' => $line->id]);
                     }
-                    $builder->signed($valueAccount, $difference, 'Price difference / landed cost');
+                    $builder->signed($valueAccount, $difference, 'Price difference / landed cost', tags: Tags::of($line));
                 }
             } else {
                 $cost = $net + $landedShare;
@@ -132,11 +133,11 @@ class PurchaseInvoice extends Model implements Postable
                         'unit_cost' => (string) BigDecimal::of($cost)->dividedBy((string) $line->base_quantity, 4, RoundingMode::HalfUp), 'total_cost' => $cost,
                         'source_line_type' => 'purchase_invoice_line', 'source_line_id' => $line->id]);
                 }
-                $builder->debit($valueAccount, $cost, $line->memo);
+                $builder->debit($valueAccount, $cost, $line->memo, tags: Tags::of($line));
             }
 
             if ((int) $line->tax_amount > 0) {
-                $builder->debit(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, 'VAT in');
+                $builder->debit(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, 'VAT in', tags: Tags::of($line));
             }
         }
 

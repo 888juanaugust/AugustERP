@@ -9,6 +9,7 @@ use App\Domain\Inventory\Costing\CostEngine;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use App\Models\Inventory\StockMovement;
 use Illuminate\Database\Eloquent\Model;
@@ -38,7 +39,7 @@ class PurchaseReturn extends Model implements Postable
 
     public function lines(): HasMany
     {
-        return $this->hasMany(PurchaseReturnLine::class)->orderBy('sort');
+        return $this->hasMany(PurchaseReturnLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function charges(): HasMany
@@ -89,17 +90,17 @@ class PurchaseReturn extends Model implements Postable
                 $cost = $engine->issueCost($line->item_id, $line->warehouse_id, $this->trans_date, (string) $line->base_quantity);
                 $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => (string) $line->base_quantity,
                     'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'purchase_return_line', 'source_line_id' => $line->id]);
-                $builder->credit(Accounts::inventory($line->item), $cost['total_cost'], $line->memo);
-                $builder->signed(Accounts::inventoryAdjustments(), $cost['total_cost'] - $net, 'Return price vs cost');
+                $builder->credit(Accounts::inventory($line->item), $cost['total_cost'], $line->memo, tags: Tags::of($line));
+                $builder->signed(Accounts::inventoryAdjustments(), $cost['total_cost'] - $net, 'Return price vs cost', tags: Tags::of($line));
             } else {
-                $builder->credit(Accounts::purchaseExpense($line->item), $net, $line->memo);
+                $builder->credit(Accounts::purchaseExpense($line->item), $net, $line->memo, tags: Tags::of($line));
             }
             if ((int) $line->tax_amount > 0) {
-                $builder->credit(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, 'VAT in reversed');
+                $builder->credit(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, 'VAT in reversed', tags: Tags::of($line));
             }
         }
         foreach ($this->charges as $charge) {
-            $builder->credit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges');
+            $builder->credit($charge->account_id, (int) $charge->amount, $charge->description ?? 'Other charges', tags: Tags::of($charge));
         }
         $builder->debit($owed, (int) $this->total, $this->description ?? "Return to {$this->vendor->name}");
     }

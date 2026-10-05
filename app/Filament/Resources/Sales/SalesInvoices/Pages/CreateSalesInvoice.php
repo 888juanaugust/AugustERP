@@ -9,6 +9,7 @@ use App\Filament\Resources\Sales\SalesInvoices\SalesInvoiceResource;
 use App\Filament\Support\CreateDocument;
 use App\Filament\Support\DocumentPages;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\TagFields;
 use App\Models\Sales\Delivery;
 use App\Models\Sales\DeliveryLine;
 use App\Models\Sales\SalesOrder;
@@ -46,6 +47,7 @@ class CreateSalesInvoice extends CreateDocument
             'to_address' => $source->to_address,
             'discount_percent' => (string) $source->discount_percent,
             'description' => "From {$source->number}",
+            ...TagFields::from($source),
         ]));
         $lines = PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), $kind === 'delivery' ? 'delivery_line' : 'sales_order_line');
         if ($kind === 'delivery') {

@@ -37,7 +37,7 @@ class SalesOrder extends Model implements HasAuditReference
 
     public function lines(): HasMany
     {
-        return $this->hasMany(SalesOrderLine::class)->orderBy('sort');
+        return $this->hasMany(SalesOrderLine::class)->orderBy('sort')->chaperone(); // each line knows its document without a query
     }
 
     public function charges(): HasMany

@@ -9,6 +9,7 @@ use App\Filament\Resources\Purchasing\GoodsReceipts\GoodsReceiptResource;
 use App\Filament\Support\CreateDocument;
 use App\Filament\Support\PrefillsFromSource;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\TagFields;
 use App\Models\Purchasing\PurchaseOrder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,6 +39,7 @@ class CreateGoodsReceipt extends CreateDocument
             'shipment_id' => $source->shipment_id,
             'fob_id' => $source->fob_id,
             'description' => "From order {$source->number}",
+            ...TagFields::from($source),
             'lines' => PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), 'purchase_order_line'),
         ];
     }

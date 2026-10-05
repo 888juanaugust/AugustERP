@@ -87,6 +87,7 @@ final class PricedDocumentForm
         if ($processed) {
             $columns[] = TableColumn::make(__('Processed'))->alignment(Alignment::End);
         }
+        array_push($columns, ...TagFields::columns());
         $columns[] = TableColumn::make(__('Memo'));
 
         $fields = [
@@ -127,6 +128,7 @@ final class PricedDocumentForm
         if ($processed) {
             $fields[] = TextInput::make('processed_quantity')->numeric()->disabled()->dehydrated(false)->default(0);
         }
+        array_push($fields, ...TagFields::lineFields());
         $fields[] = TextInput::make('memo')->maxLength(255);
         $fields[] = LineItemFields::baseQuantity();
         $fields[] = Hidden::make('source_line_type')->dehydrated();
@@ -187,7 +189,7 @@ final class PricedDocumentForm
                 $data[$column] = 0;
             }
         }
-        foreach (['source_line_type', 'source_line_id', 'tax_code_id', 'warehouse_id', 'unit_id'] as $column) {
+        foreach (['source_line_type', 'source_line_id', 'tax_code_id', 'warehouse_id', 'unit_id', 'department_id', 'project_id'] as $column) {
             if (isset($data[$column]) && $data[$column] === '') {
                 $data[$column] = null;
             }
@@ -248,6 +250,7 @@ final class PricedDocumentForm
         return Tab::make(__('fields.other_info'))->schema([
             ...$extra,
             BranchFields::select(),
+            ...TagFields::header(),
             Textarea::make('to_address')->label(__('Address'))->rows(2),
             Textarea::make('description')->label(__('fields.description'))->rows(2),
             Toggle::make('taxable')->label(__('fields.taxable'))->default(true)->live(),
@@ -263,10 +266,11 @@ final class PricedDocumentForm
 
     public static function chargesTab(bool $allocateToCost = false): Tab
     {
-        $columns = [TableColumn::make(__('Charge')), TableColumn::make(__('Amount'))->alignment(Alignment::End), TableColumn::make(__('Description'))];
+        $columns = [TableColumn::make(__('Charge')), TableColumn::make(__('Amount'))->alignment(Alignment::End), ...TagFields::columns(), TableColumn::make(__('Description'))];
         $fields = [
             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::OtherIncome))->searchable()->required()->native(false),
             self::money('amount', 'Amount')->live(onBlur: true),
+            ...TagFields::lineFields(),
             TextInput::make('description')->maxLength(255),
         ];
         if ($allocateToCost) {
@@ -306,6 +310,8 @@ final class PricedDocumentForm
                 'memo' => $line->memo,
                 'source_line_type' => $sourceLineType,
                 'source_line_id' => $line->id,
+                'department_id' => $line->department_id ?? null,
+                'project_id' => $line->project_id ?? null,
             ];
             if (isset($line->salesman_id)) {
                 $row['salesman_id'] = $line->salesman_id;

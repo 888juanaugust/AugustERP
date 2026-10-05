@@ -15,6 +15,7 @@ use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\TagFields;
 use App\Filament\Support\VendorFields;
 use App\Models\Purchasing\VendorClaim;
 use Filament\Actions\Action;
@@ -66,11 +67,12 @@ class VendorClaimResource extends ErpResource
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
-                        ->table([TableColumn::make(__('Item')), TableColumn::make(__('Quantity'))->alignment(Alignment::End), TableColumn::make(__('Unit')), TableColumn::make(__('Memo'))])
+                        ->table([TableColumn::make(__('Item')), TableColumn::make(__('Quantity'))->alignment(Alignment::End), TableColumn::make(__('Unit')), ...TagFields::columns(), TableColumn::make(__('Memo'))])
                         ->schema([
                             LineItemFields::item(groups: false),
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
+                            ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                             LineItemFields::baseQuantity(),
                         ])
@@ -79,6 +81,7 @@ class VendorClaimResource extends ErpResource
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data])[0]),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
+                    ...TagFields::header(),
                     Textarea::make('to_address')->label(__('Vendor\'s address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),
                 ]),

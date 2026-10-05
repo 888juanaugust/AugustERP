@@ -9,6 +9,7 @@ Module group `purchasing`. 12 screens in the standard menu.
 - With "last purchase price is updated by purchase invoices" on (the default), an item's purchase price follows its latest purchase invoice dated from the cutoff date, net of discount and included tax, per base unit; deleting that invoice falls back to the one before.
 - Vendor prices are the default purchase price per vendor and item. Payment orders instruct the bank to pay several vendor invoices; vendor transfers pay many vendors in one document.
 - Vendors carry payment terms, tax status and identity, default tax, bank accounts, contacts and opening payables.
+- With departments or projects on, orders, receipts, invoices, returns, vendor claims, down payments and payments carry a department and a project on the header and on every line and charge. A line's own wins; a line that names none, and the document's own legs (receivable or payable, tax, down payments), take the header's. A document made from another, or a line pulled from one, keeps its source's tags; the income statement filtered by a department shows its revenue and cost of sales.
 
 ## Screens
 
@@ -49,7 +50,7 @@ Menu key `vendor__purchase-order` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Processed · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Processed · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -62,6 +63,8 @@ Menu key `vendor__purchase-order` · module `purchasing`
 | Payment term | `payment_term_id` | select |  |
 | Vendor bank account | `vendor_bank_account_id` | select |  |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -73,7 +76,7 @@ Menu key `vendor__purchase-order` · module `purchasing`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Description
+**Line grid "Charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull from requisitions
 
@@ -102,13 +105,15 @@ Menu key `vendor__receive-item` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Warehouse · Processed · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Warehouse · Processed · Department · Project · Memo
 
 #### Tab: Other info
 
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -157,6 +162,8 @@ Menu key `vendor__purchase-downpayment` · module `purchasing`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Vendor bank account | `vendor_bank_account_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
@@ -186,7 +193,7 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -201,6 +208,8 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 | Due date | `due_date` | date |  |
 | Tax invoice No. (vendor) | `tax_invoice_number` | text |  |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -212,7 +221,7 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Description · Into item cost
+**Line grid "Charges":** Charge · Amount · Department · Project · Description · Into item cost
 
 #### Tab: Down payments
 
@@ -256,6 +265,8 @@ Menu key `vendor__purchase-payment` · module `purchasing`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Notes | `description` | textarea |  |
 
 **Actions:** Pull every open document
@@ -286,7 +297,7 @@ Menu key `vendor__purchase-return` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Unit price · Disc % · Amount · Tax · Warehouse · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -297,6 +308,8 @@ Menu key `vendor__purchase-return` · module `purchasing`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -305,7 +318,7 @@ Menu key `vendor__purchase-return` · module `purchasing`
 
 #### Tab: Other charges
 
-**Line grid "Charges":** Charge · Amount · Description
+**Line grid "Charges":** Charge · Amount · Department · Project · Description
 
 **Actions:** Pull the lines of the document
 
@@ -334,12 +347,14 @@ Menu key `vendor__vendor-claim` · module `purchasing`
 
 #### Tab: Line items
 
-**Line grid "Lines":** Item · Quantity · Unit · Memo
+**Line grid "Lines":** Item · Quantity · Unit · Department · Project · Memo
 
 #### Tab: Other info
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Vendor's address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 

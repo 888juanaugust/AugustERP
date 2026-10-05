@@ -20,6 +20,7 @@ use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\PrintAction;
 use App\Filament\Support\PullAction;
 use App\Filament\Support\SalesLinesTab;
+use App\Filament\Support\TagFields;
 use App\Models\Sales\Delivery;
 use App\Models\Sales\SalesOrder;
 use Filament\Actions\Action;
@@ -70,6 +71,7 @@ class DeliveryResource extends ErpResource
                 ),
                 Tab::make(__('fields.other_info'))->columns(2)->schema([
                     BranchFields::select(),
+                    ...TagFields::header(),
                     TextInput::make('po_number')->label(__('fields.po_number'))->maxLength(60),
                     Select::make('fob_id')->label(__('fields.fob'))->relationship('fob', 'name')->preload()->native(false),
                     Textarea::make('to_address')->label(__('Address'))->rows(2),

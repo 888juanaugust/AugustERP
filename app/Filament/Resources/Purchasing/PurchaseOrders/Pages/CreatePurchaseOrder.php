@@ -11,6 +11,7 @@ use App\Filament\Support\DocumentPages;
 use App\Filament\Support\PrefillsFromSource;
 use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\ReorderLines;
+use App\Filament\Support\TagFields;
 use App\Models\Purchasing\PurchaseRequisition;
 use Illuminate\Database\Eloquent\Model;
 
@@ -49,6 +50,7 @@ class CreatePurchaseOrder extends CreateDocument
     {
         return [
             'description' => "From requisition {$source->number}",
+            ...TagFields::from($source),
             'lines' => PricedDocumentForm::pulledLines($source->lines()->with('item')->get(), 'purchase_requisition_line', withPrices: false),
         ];
     }
