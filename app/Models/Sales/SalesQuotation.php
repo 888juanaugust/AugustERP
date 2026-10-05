@@ -2,6 +2,7 @@
 
 namespace App\Models\Sales;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Domain\Documents\PricedDocument;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SalesQuotation extends Model implements HasAuditReference
 {
     use PricedDocument, RecordsActivity;
+    use RequiresApproval;
 
     protected $guarded = [];
 

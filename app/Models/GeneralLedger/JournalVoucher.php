@@ -2,6 +2,7 @@
 
 namespace App\Models\GeneralLedger;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class JournalVoucher extends Model implements Postable
 {
     use PostsToLedger;
+    use RequiresApproval;
 
     protected $guarded = [];
 

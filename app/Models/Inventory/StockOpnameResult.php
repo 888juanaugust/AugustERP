@@ -2,6 +2,7 @@
 
 namespace App\Models\Inventory;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\User;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class StockOpnameResult extends Model implements HasAuditReference
 {
     use RecordsActivity;
+    use RequiresApproval;
 
     public const DRAFT = 'draft';
 

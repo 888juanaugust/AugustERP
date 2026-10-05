@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Settlement;
 
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Posting\PostingBuilder;
 use App\Models\GeneralLedger\Posting;
 use App\Models\Settlement\PaymentAllocation;
@@ -12,12 +13,17 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 /** Writes the allocations a payment's posting declared and refreshes the settled documents. Registered on the PostingService. */
 final class AllocationLedger
 {
-    public function __construct(private readonly SettlementService $settlement) {}
+    public function __construct(private readonly SettlementService $settlement, private readonly ApprovalEngine $approvals) {}
 
     public function write(Posting $posting, PostingBuilder $builder): void
     {
         $touched = [];
         foreach ($builder->allocations() as $i => $a) {
+            // A document still waiting for approval, or rejected, cannot be settled.
+            $class = Relation::getMorphedModel($a['receivable_type']) ?? $a['receivable_type'];
+            if (($settled = $class::query()->find($a['receivable_id'])) !== null) {
+                $this->approvals->assertApproved($settled, __('is not approved; it cannot be settled yet.'));
+            }
             PaymentAllocation::query()->create([
                 'posting_id' => $posting->id,
                 'sort' => $i,

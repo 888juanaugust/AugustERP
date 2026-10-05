@@ -7,6 +7,7 @@ namespace App\Domain\Printing;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Audit\Auditor;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
@@ -33,6 +34,7 @@ final class PrintJob
         if ($menu !== null && ! $this->akses->allows($user, $menu, Hak::Print)) {
             throw new RuntimeException('Printing this document takes the print right on its screen.');
         }
+        app(ApprovalEngine::class)->assertApproved($document, __('is not approved; it cannot be printed yet.'));
 
         $layout = $this->layoutFor($meta['type']->value, $user, $layoutId);
 

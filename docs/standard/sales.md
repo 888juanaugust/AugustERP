@@ -36,11 +36,11 @@ Menu key `customer__sales-quotation` · module `sales`
 
 ### List
 
-**Columns:** Number · Date · Customer · Notes · Status · Total
+**Columns:** Number · Date · Customer · Notes · Status · Total · Approval
 
 **Filters:** Trans date · Ordered by · Printed
 
-**Actions:** Edit · Create order · Print
+**Actions:** Approve · Reject · Edit · Create order · Print
 
 ### Form
 
@@ -134,11 +134,11 @@ Menu key `customer__delivery-order` · module `sales`
 
 ### List
 
-**Columns:** Number · Date · Customer · Shipping method · Notes · Status
+**Columns:** Number · Date · Customer · Shipping method · Notes · Status · Approval
 
 **Filters:** Trans date · Ship to · Shipping method
 
-**Actions:** Edit · Invoice · Print
+**Actions:** Approve · Reject · Edit · Invoice · Print
 
 ### Form
 
@@ -221,11 +221,11 @@ Menu key `customer__sales-invoice` · module `sales`
 
 ### List
 
-**Columns:** Number · Date · Customer · Notes · Status · Age (days) · Total · NSFP · Printed
+**Columns:** Number · Date · Customer · Notes · Status · Age (days) · Total · NSFP · Printed · Approval
 
 **Filters:** Trans date · Customer · Printed
 
-**Actions:** Edit · Receive payment · Print
+**Actions:** Approve · Reject · Edit · Receive payment · Print
 
 ### Form
 
@@ -326,11 +326,11 @@ Menu key `customer__sales-return` · module `sales`
 
 ### List
 
-**Columns:** Number · Date · Customer · Return from · Notes · Credit used · Total
+**Columns:** Number · Date · Customer · Return from · Notes · Credit used · Total · Approval
 
 **Filters:** Trans date · Customer · Return from · Printed
 
-**Actions:** Edit · Print
+**Actions:** Approve · Reject · Edit · Print
 
 ### Form
 

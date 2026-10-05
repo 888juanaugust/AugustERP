@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\GeneralLedger;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Approval\ApprovalType;
+use App\Domain\Numbering\TransactionType;
 use App\Domain\Posting\Blockers\ReferencedBlocker;
 use App\Domain\Posting\Blockers\SettledBlocker;
 use App\Domain\Settlement\AllocationLedger;
@@ -60,5 +62,9 @@ final class GeneralLedgerModule extends BaseModule
         // What keeps a document from changing: payments applied to it, documents made from it.
         $context->guard->addBlocker($context->app->make(SettledBlocker::class));
         $context->guard->addBlocker($context->app->make(ReferencedBlocker::class));
+
+        // The documents that may wait for approval, under the transaction type approval rules name them by.
+        $context->approvals->register(new ApprovalType(JournalVoucher::class, TransactionType::JournalVoucher));
+        $context->approvals->register(new ApprovalType(ExpenseAccrual::class, TransactionType::ExpenseAccrual));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models\Purchasing;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Posting\Contracts\Postable;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class GoodsReceipt extends Model implements Postable
 {
     use PostsToLedger, PricedDocument;
+    use RequiresApproval;
 
     protected $guarded = [];
 

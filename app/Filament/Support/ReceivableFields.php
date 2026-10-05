@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Format;
 use App\Models\Sales\SalesDownPayment;
@@ -25,7 +26,7 @@ final class ReceivableFields
         }
         $out = collect();
         foreach ($classes as $class) {
-            foreach ($class::query()->where('customer_id', $customerId)->where('payment_status', '!=', 'paid')->orderBy('trans_date')->get() as $doc) {
+            foreach ($class::query()->where('customer_id', $customerId)->where('payment_status', '!=', 'paid')->orderBy('trans_date')->get()->filter(fn ($doc) => app(ApprovalEngine::class)->isApproved($doc)) as $doc) {
                 $balance = $settlement->balance($doc);
                 if ($balance === 0) {
                     continue;

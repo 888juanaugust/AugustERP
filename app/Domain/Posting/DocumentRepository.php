@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Posting;
 
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Audit\Auditor;
 use App\Domain\CashBank\Contracts\GiroSource;
 use App\Domain\CashBank\GiroService;
@@ -12,13 +13,14 @@ use App\Domain\Posting\Contracts\AppliesEffects;
 use App\Domain\Posting\Contracts\Postable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
  * The write path of every document: guard, save, post (when the document
- * posts), refresh the documents it pulled from, record the revision and the
- * audit entry, all in one transaction. The Filament document pages call these
+ * posts), refresh the documents it pulled from, keep its approval request,
+ * record the revision and the audit entry, all in one transaction. The Filament document pages call these
  * hooks around their own saving.
  */
 final class DocumentRepository
@@ -28,6 +30,7 @@ final class DocumentRepository
         private readonly DocumentGuard $guard,
         private readonly Revisions $revisions,
         private readonly FulfilmentService $fulfilment,
+        private readonly ApprovalEngine $approvals,
     ) {}
 
     /** After a new document and its lines are in the database. */
@@ -37,6 +40,7 @@ final class DocumentRepository
             $document->refresh();
             $this->guard->assertDateAllowed(null, $this->dateOf($document));
             $this->guard->assertBranchAllowed($this->branchOf($document));
+            $this->assertSourcesApproved($this->fulfilment->sourcesOf($document));
             $this->syncGiro($document);
             if ($document instanceof Postable) {
                 $this->postings->post($document);
@@ -45,6 +49,7 @@ final class DocumentRepository
                 $document->applyEffects();
             }
             $this->fulfilment->refreshUpstream($document);
+            $this->approvals->sync($document);
             $this->revisions->record($document, 'created', null, $this->snapshot($document));
             Auditor::log('created', $document, $this->number($document), [], $this->date($document));
         });
@@ -73,6 +78,7 @@ final class DocumentRepository
     {
         DB::transaction(function () use ($document, $before): void {
             $document->refresh();
+            $this->assertSourcesApproved(array_diff_key($this->fulfilment->sourcesOf($document), $before['sources'] ?? []));
             $this->syncGiro($document);
             if ($document instanceof Postable) {
                 $this->postings->post($document);
@@ -81,6 +87,7 @@ final class DocumentRepository
                 $document->applyEffects();
             }
             $this->fulfilment->refreshUpstream($document, $before['sources'] ?? []);
+            $this->approvals->sync($document);
             $after = $this->snapshot($document);
             unset($before['sources']);
             $this->revisions->record($document, 'updated', $before, $after);
@@ -109,11 +116,34 @@ final class DocumentRepository
             if ($document instanceof AppliesEffects) {
                 $document->revertEffects();
             }
+            $this->approvals->forget($document);
             $this->revisions->record($document, 'deleted', $before, null);
             Auditor::log('deleted', $document, $this->number($document), ['before' => $before['header'] ?? null], $this->date($document));
             $document->delete();
             $this->fulfilment->refreshUpstream($document, $sources);
         });
+    }
+
+    /**
+     * Nothing is made from a document still waiting for approval, or rejected.
+     *
+     * @param  array<string, array{0: string, 1: int}>  $sources  source line type and id
+     */
+    private function assertSourcesApproved(array $sources): void
+    {
+        $checked = [];
+        foreach ($sources as [$type, $id]) {
+            $class = Relation::getMorphedModel($type) ?? $type;
+            $line = $class::query()->find($id);
+            $parent = $line !== null && method_exists($line, 'document') ? $line->document() : null;
+            if ($parent === null || isset($checked[$parent::class.':'.$parent->getKey()])) {
+                continue;
+            }
+            $checked[$parent::class.':'.$parent->getKey()] = true;
+            if (! $this->approvals->isApproved($parent)) {
+                throw new Exceptions\DocumentLockedException(__(':number is not approved; nothing can be made from it yet.', ['number' => (string) $parent->getAttribute('number')]));
+            }
+        }
     }
 
     /** A receipt or payment by cheque registers its giro before it posts, so the posting follows the giro's state. */

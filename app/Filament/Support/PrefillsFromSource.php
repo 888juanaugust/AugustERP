@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Approval\ApprovalEngine;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -24,6 +26,10 @@ trait PrefillsFromSource
         $id = request()->integer('source');
         if ($id > 0) {
             $source = $this->sourceModel()::query()->find($id);
+            if ($source !== null && ! app(ApprovalEngine::class)->isApproved($source)) {
+                Notification::make()->title(__(':number is not approved; nothing can be made from it yet.', ['number' => $source->getAttribute('number')]))->warning()->send();
+                $source = null;
+            }
             if ($source !== null) {
                 $data = $this->dataFromSource($source);
                 $lines = $data['lines'] ?? null;

@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\ItemTransfers\Pages\CreateItemTransfer;
 use App\Filament\Resources\Inventory\ItemTransfers\Pages\EditItemTransfer;
 use App\Filament\Resources\Inventory\ItemTransfers\Pages\ListItemTransfers;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -121,6 +122,7 @@ class ItemTransferResource extends ErpResource
                     ->color(fn (string $state) => match ($state) {
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -130,6 +132,7 @@ class ItemTransferResource extends ErpResource
                 SelectFilter::make('warehouse_id')->label(__('Warehouse'))->relationship('warehouse', 'name'),
             ])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make()->visible(fn (ItemTransfer $r) => $r->isSend()),
                 self::receiveAction(),
                 PrintAction::make(),

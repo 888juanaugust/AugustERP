@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Settlement\Contracts\PaidByPayment;
 use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Format;
@@ -25,7 +26,7 @@ final class AccrualFields
         $settlement = app(SettlementService::class);
         $out = collect();
         foreach (self::DOCUMENTS as $class) {
-            $docs = $class::query()->where('payment_status', '!=', 'paid')->orderBy('trans_date')->get();
+            $docs = $class::query()->where('payment_status', '!=', 'paid')->orderBy('trans_date')->get()->filter(fn ($doc) => app(ApprovalEngine::class)->isApproved($doc));
             foreach ($docs as $doc) {
                 $balance = $settlement->balance($doc);
                 if ($balance <= 0) {

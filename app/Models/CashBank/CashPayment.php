@@ -2,6 +2,7 @@
 
 namespace App\Models\CashBank;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\CashBank\Contracts\GiroSource;
 use App\Domain\CashBank\GiroDetails;
 use App\Domain\Documents\Accounts;
@@ -29,6 +30,7 @@ use RuntimeException;
 class CashPayment extends Model implements GiroSource, Postable
 {
     use PostsToLedger;
+    use RequiresApproval;
 
     protected $guarded = [];
 

@@ -11,6 +11,7 @@ use App\Filament\Resources\Purchasing\PurchaseInvoices\Pages\CreatePurchaseInvoi
 use App\Filament\Resources\Purchasing\PurchaseInvoices\Pages\EditPurchaseInvoice;
 use App\Filament\Resources\Purchasing\PurchaseInvoices\Pages\ListPurchaseInvoices;
 use App\Filament\Resources\Purchasing\PurchasePayments\PurchasePaymentResource;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -126,6 +127,7 @@ class PurchaseInvoiceResource extends ErpResource
                 TextColumn::make('age')->label(__('Age (days)'))->state(fn (PurchaseInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
                 Rupiah::make('total')->label(__('fields.total')),
                 IconColumn::make('is_printed')->label(__('fields.is_printed'))->boolean()->toggleable(isToggledHiddenByDefault: true),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -134,6 +136,7 @@ class PurchaseInvoiceResource extends ErpResource
                 TernaryFilter::make('is_printed')->label(__('fields.is_printed')),
             ])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('pay')->label(__('Pay'))->icon('heroicon-m-banknotes')->color('primary')
                     ->visible(fn (PurchaseInvoice $record) => $record->payment_status !== 'paid' && PurchasePaymentResource::canCreate())

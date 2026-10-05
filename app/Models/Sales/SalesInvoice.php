@@ -2,6 +2,7 @@
 
 namespace App\Models\Sales;
 
+use App\Domain\Approval\RequiresApproval;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Inventory\Costing\CostEngine;
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SalesInvoice extends Model implements Postable
 {
     use PostsToLedger, PricedDocument;
+    use RequiresApproval;
 
     protected $guarded = [];
 

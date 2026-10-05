@@ -8,12 +8,12 @@ use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Sales\OrderApproval;
 use App\Filament\Resources\Sales\Deliveries\DeliveryResource;
 use App\Filament\Resources\Sales\SalesInvoices\SalesInvoiceResource;
 use App\Filament\Resources\Sales\SalesOrders\Pages\CreateSalesOrder;
 use App\Filament\Resources\Sales\SalesOrders\Pages\EditSalesOrder;
 use App\Filament\Resources\Sales\SalesOrders\Pages\ListSalesOrders;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -27,9 +27,7 @@ use App\Models\Sales\SalesOrder;
 use App\Models\Sales\SalesQuotation;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -75,41 +73,14 @@ class SalesOrderResource extends ErpResource
 
     public static function approveAction(): Action
     {
-        return Action::make('approve')
-            ->label(__('Approve'))
-            ->icon('heroicon-m-check-badge')
-            ->color('success')
-            ->requiresConfirmation()
-            ->modalDescription(fn (SalesOrder $record) => HakAkses::canSpecial(HakKhusus::SeeCreditData)
-                ? 'Credit check: '.CustomerFields::exposureSummary($record->customer).'. Approving lets the order ship.'
-                : __('Approving lets the order ship.'))
-            ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(OrderApproval::class)->canApprove($record, auth()->user()))
-            ->action(function (SalesOrder $record): void {
-                try {
-                    app(OrderApproval::class)->approve($record, auth()->user());
-                    Notification::make()->title(__(':number approved', ['number' => $record->number]))->success()->send();
-                } catch (\RuntimeException $e) {
-                    Notification::make()->title(__('Cannot approve'))->body($e->getMessage())->danger()->persistent()->send();
-                }
-            });
+        return ApprovalActions::approve(fn (SalesOrder $record) => HakAkses::canSpecial(HakKhusus::SeeCreditData)
+            ? 'Credit check: '.CustomerFields::exposureSummary($record->customer).'. Approving lets the order ship.'
+            : __('Approving lets the order ship.'));
     }
 
     public static function rejectAction(): Action
     {
-        return Action::make('reject')
-            ->label(__('Reject'))
-            ->icon('heroicon-m-x-circle')
-            ->color('danger')
-            ->schema([Textarea::make('reason')->label(__('Reason'))->required()->rows(2)])
-            ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(OrderApproval::class)->canApprove($record, auth()->user()))
-            ->action(function (SalesOrder $record, array $data): void {
-                try {
-                    app(OrderApproval::class)->reject($record, auth()->user(), $data['reason']);
-                    Notification::make()->title(__(':number rejected', ['number' => $record->number]))->warning()->send();
-                } catch (\RuntimeException $e) {
-                    Notification::make()->title(__('Cannot reject'))->body($e->getMessage())->danger()->send();
-                }
-            });
+        return ApprovalActions::reject();
     }
 
     public static function table(Table $table): Table

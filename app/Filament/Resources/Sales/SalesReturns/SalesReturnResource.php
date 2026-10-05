@@ -10,6 +10,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\SalesReturns\Pages\CreateSalesReturn;
 use App\Filament\Resources\Sales\SalesReturns\Pages\EditSalesReturn;
 use App\Filament\Resources\Sales\SalesReturns\Pages\ListSalesReturns;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -125,6 +126,7 @@ class SalesReturnResource extends ErpResource
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([
@@ -133,7 +135,7 @@ class SalesReturnResource extends ErpResource
                 SelectFilter::make('return_type')->label(__('Return from'))->options(['invoice' => __('Invoice'), 'delivery' => __('Delivery'), 'none' => __('No invoice'), 'down_payment' => __('Down payment')]),
                 TernaryFilter::make('is_printed')->label(__('fields.is_printed')),
             ])
-            ->recordActions([EditAction::make(), PrintAction::make()]);
+            ->recordActions([...ApprovalActions::make(), EditAction::make(), PrintAction::make()]);
     }
 
     public static function getPages(): array

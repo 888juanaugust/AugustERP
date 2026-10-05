@@ -10,6 +10,7 @@ use App\Filament\Resources\Purchasing\GoodsReceipts\Pages\CreateGoodsReceipt;
 use App\Filament\Resources\Purchasing\GoodsReceipts\Pages\EditGoodsReceipt;
 use App\Filament\Resources\Purchasing\GoodsReceipts\Pages\ListGoodsReceipts;
 use App\Filament\Resources\Purchasing\PurchaseInvoices\PurchaseInvoiceResource;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
@@ -80,10 +81,12 @@ class GoodsReceiptResource extends ErpResource
                     ->color(fn (string $state) => match ($state) {
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('Received from'))->relationship('vendor', 'name')->searchable()])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('invoice')->label(__('Invoice'))->icon('heroicon-m-document-text')->color('primary')
                     ->visible(fn (GoodsReceipt $record) => in_array($record->status, ['pending', 'partial'], true) && PurchaseInvoiceResource::canCreate())

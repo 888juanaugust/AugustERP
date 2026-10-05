@@ -11,6 +11,7 @@ use App\Filament\Resources\Purchasing\PurchaseInvoices\PurchaseInvoiceResource;
 use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\CreatePurchaseOrder;
 use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\EditPurchaseOrder;
 use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\ListPurchaseOrders;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -82,10 +83,12 @@ class PurchaseOrderResource extends ErpResource
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable()])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('receive')->label(__('Receive'))->icon('heroicon-m-inbox-arrow-down')->color('primary')
                     ->visible(fn (PurchaseOrder $record) => in_array($record->status, ['pending', 'partial'], true) && GoodsReceiptResource::canCreate())

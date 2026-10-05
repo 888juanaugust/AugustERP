@@ -10,6 +10,7 @@ use App\Filament\Resources\Sales\SalesOrders\SalesOrderResource;
 use App\Filament\Resources\Sales\SalesQuotations\Pages\CreateSalesQuotation;
 use App\Filament\Resources\Sales\SalesQuotations\Pages\EditSalesQuotation;
 use App\Filament\Resources\Sales\SalesQuotations\Pages\ListSalesQuotations;
+use App\Filament\Support\ApprovalActions;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -71,10 +72,12 @@ class SalesQuotationResource extends ErpResource
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('customer_id')->label(__('Ordered by'))->relationship('customer', 'name')->searchable(), TernaryFilter::make('is_printed')->label(__('fields.is_printed'))])
             ->recordActions([
+                ...ApprovalActions::make(),
                 EditAction::make(),
                 Action::make('order')->label(__('Create order'))->icon('heroicon-m-arrow-right-circle')->color('primary')
                     ->visible(fn (SalesQuotation $record) => in_array($record->status, ['pending', 'partial'], true) && SalesOrderResource::canCreate())

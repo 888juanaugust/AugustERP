@@ -6,7 +6,7 @@ namespace App\Filament\Support;
 
 use Filament\Resources\Pages\EditRecord;
 
-/** A document's edit page: guarded before, re-posted and revisioned after. */
+/** A document's edit page: guarded before, re-posted and revisioned after; Approve and Reject when it waits for approval. */
 abstract class EditDocument extends EditRecord
 {
     private array $snapshot = [];
@@ -30,6 +30,6 @@ abstract class EditDocument extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [DocumentPages::deleteAction()];
+        return [...ApprovalActions::make(), DocumentPages::deleteAction()];
     }
 }

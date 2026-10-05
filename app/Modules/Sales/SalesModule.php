@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Sales;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Approval\ApprovalType;
+use App\Domain\Numbering\TransactionType;
+use App\Domain\Sales\OrderApproval;
 use App\Models\Sales\Customer;
 use App\Models\Sales\CustomerCategory;
 use App\Models\Sales\Delivery;
@@ -76,5 +79,12 @@ final class SalesModule extends BaseModule
         $context->fulfilment->register(SalesOrderLine::class, DeliveryLine::class);
         $context->fulfilment->register(SalesOrderLine::class, SalesInvoiceLine::class);
         $context->fulfilment->register(DeliveryLine::class, SalesInvoiceLine::class);
+
+        // The documents that may wait for approval, under the transaction type approval rules name them by.
+        $context->approvals->register(new ApprovalType(SalesQuotation::class, TransactionType::SalesQuotation));
+        $context->approvals->register(new ApprovalType(Delivery::class, TransactionType::DeliveryOrder));
+        $context->approvals->register(new ApprovalType(SalesInvoice::class, TransactionType::SalesInvoice));
+        $context->approvals->register(new ApprovalType(SalesReturn::class, TransactionType::SalesReturn));
+        $context->approvals->register(OrderApproval::type());
     }
 }
