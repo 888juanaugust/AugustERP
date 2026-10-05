@@ -5,6 +5,7 @@ namespace App\Models\CashBank;
 use App\Models\GeneralLedger\Account;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class CashPaymentLine extends Model
 {
@@ -25,5 +26,11 @@ class CashPaymentLine extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /** The accrual or payroll entry this line settles, if any. */
+    public function payable(): MorphTo
+    {
+        return $this->morphTo();
     }
 }

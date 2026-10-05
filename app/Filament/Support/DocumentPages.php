@@ -22,7 +22,12 @@ final class DocumentPages
 {
     public static function afterCreated(Model $record): void
     {
-        app(DocumentRepository::class)->created($record);
+        try {
+            app(DocumentRepository::class)->created($record);
+        } catch (RuntimeException $e) {
+            Notification::make()->title(__('Cannot save'))->body($e->getMessage())->danger()->persistent()->send();
+            throw (new Halt)->rollBackDatabaseTransaction();
+        }
     }
 
     /** @return array the snapshot to hand to afterUpdated() */
@@ -40,7 +45,12 @@ final class DocumentPages
 
     public static function afterUpdated(Model $record, array $before): void
     {
-        app(DocumentRepository::class)->updated($record, $before);
+        try {
+            app(DocumentRepository::class)->updated($record, $before);
+        } catch (RuntimeException $e) {
+            Notification::make()->title(__('Cannot save'))->body($e->getMessage())->danger()->persistent()->send();
+            throw (new Halt)->rollBackDatabaseTransaction();
+        }
     }
 
     /**

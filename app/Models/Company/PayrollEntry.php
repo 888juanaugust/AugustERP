@@ -5,6 +5,8 @@ namespace App\Models\Company;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Settlement\Contracts\PaidByPayment;
+use App\Domain\Settlement\SettlementService;
 use App\Models\GeneralLedger\Account;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -15,9 +17,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * A payroll entry: the journal of one pay period, employee by employee.
  * Gross pay is the expense, the income tax withheld is owed to the tax
  * office, the net is owed to the employees until paid. Payroll itself
- * (the calculation) is outside the system.
+ * (the calculation) is outside the system. The net pay is settled by payment
+ * lines pointing at the entry.
  */
-class PayrollEntry extends Model implements Postable
+class PayrollEntry extends Model implements PaidByPayment, Postable
 {
     use PostsToLedger;
 
@@ -58,6 +61,12 @@ class PayrollEntry extends Model implements Postable
         $gross = (int) $this->lines()->sum('gross_amount');
         $tax = (int) $this->lines()->sum('income_tax');
         $this->forceFill(['gross_total' => $gross, 'tax_total' => $tax, 'total' => (int) $this->lines()->sum('net_amount')])->saveQuietly();
+        app(SettlementService::class)->refresh($this);
+    }
+
+    public function settlementAccountId(): int
+    {
+        return (int) $this->expense_payable_account_id;
     }
 
     public function buildPostings(PostingBuilder $builder): void

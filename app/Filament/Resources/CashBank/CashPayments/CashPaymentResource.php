@@ -11,6 +11,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\CashBank\CashPayments\Pages\CreateCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\EditCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\ListCashPayments;
+use App\Filament\Support\AccrualFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -25,6 +26,7 @@ use App\Models\Company\MemorizedTransaction;
 use App\Models\GeneralLedger\Account;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -37,14 +39,16 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 
-/** Payments: money out of a cash or bank account to any accounts, one line each; paid by giro it waits in giros payable until the giro clears. */
+/** Payments: money out of a cash or bank account to any accounts, one line each, a line may settle an expense accrual or a payroll entry; paid by giro it waits in giros payable until the giro clears. */
 class CashPaymentResource extends ErpResource
 {
     protected static ?string $model = CashPayment::class;
@@ -71,22 +75,60 @@ class CashPaymentResource extends ErpResource
             ]),
             Tabs::make('payment')->tabs([
                 Tab::make(__('Payment details'))->schema([
+                    Action::make('pullAccruals')
+                        ->label(__('Pull open accruals and payroll'))
+                        ->icon('heroicon-m-arrow-down-tray')
+                        ->color('gray')
+                        ->schema([
+                            CheckboxList::make('documents')
+                                ->label(__('Open documents'))
+                                ->options(fn () => AccrualFields::openFor()->map(fn (array $open) => $open['label'])->all())
+                                ->required()
+                                ->bulkToggleable(),
+                        ])
+                        ->action(function (Set $set, Get $get, array $data): void {
+                            $rows = array_filter((array) $get('lines'), fn ($line) => filled($line['account_id'] ?? null));
+                            $open = AccrualFields::openFor();
+                            foreach ($data['documents'] ?? [] as $key) {
+                                if (isset($open[$key])) {
+                                    $rows[(string) Str::uuid()] = self::settlingLine($key, $open[$key]);
+                                }
+                            }
+                            $set('lines', $rows);
+                            Notification::make()->title(__(':count open document(s) pulled', ['count' => count($data['documents'] ?? [])]))->success()->send();
+                        }),
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
                         ->orderColumn('sort')
                         ->table([
+                            TableColumn::make(__('Settles')),
                             TableColumn::make(__('Account')),
                             TableColumn::make(__('Amount'))->alignment(Alignment::End),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
+                            Select::make('payable_key')
+                                ->options(fn (Get $get) => AccrualFields::openFor($get('payable_key'))->map(fn (array $open) => $open['label'])->all())
+                                ->placeholder(__('Nothing: an expense'))
+                                ->searchable()->native(false)->live()
+                                ->afterStateUpdated(function (Set $set, ?string $state): void {
+                                    $open = $state ? AccrualFields::openFor($state)->get($state) : null;
+                                    if ($open !== null) {
+                                        $set('account_id', $open['account_id']);
+                                        $set('amount', $open['balance']);
+                                    }
+                                }),
+                            Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false)
+                                ->disabled(fn (Get $get) => filled($get('payable_key')))->dehydrated(),
                             PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->minItems(1)->defaultItems(1)->live()
-                        ->addActionLabel('Add line'),
+                        ->addActionLabel('Add line')
+                        ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => $data + ['payable_key' => AccrualFields::keyOf($data)])
+                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => AccrualFields::split($data))
+                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => AccrualFields::split($data)),
                 ]),
                 Tab::make(__('Other info'))->schema([
                     TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->helperText(__('Filling this registers a giro that clears or bounces later.')),
@@ -117,6 +159,14 @@ class CashPaymentResource extends ErpResource
                 SelectFilter::make('bank_account_id')->label(__('Cash / Bank'))->options(fn () => Account::options(AccountType::CashBank)),
             ])
             ->recordActions([EditAction::make(), ...GiroActions::forRecord(), self::memorizeAction(), PrintAction::make()]);
+    }
+
+    /** @param  array{label: string, balance: int, account_id: int}  $open */
+    public static function settlingLine(string $key, array $open): array
+    {
+        $doc = AccrualFields::resolve($key);
+
+        return ['payable_key' => $key, 'account_id' => $open['account_id'], 'amount' => $open['balance'], 'memo' => $doc?->number];
     }
 
     /** Saves the voucher's accounts and amounts as a memorized transaction, used again from the create page. */

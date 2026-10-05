@@ -20,6 +20,7 @@ use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\Months;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\PayAction;
 use App\Filament\Support\PricedDocumentForm;
 use App\Models\Company\Employee;
 use App\Models\Company\PayrollEntry;
@@ -174,7 +175,7 @@ class PayrollEntryResource extends ErpResource
                 SelectFilter::make('period_month')->label(__('Period month'))->options(Months::options()),
                 SelectFilter::make('payment_status')->label(__('Status'))->options(['unpaid' => __('Unpaid'), 'partial' => __('Partial'), 'paid' => __('Paid')]),
             ])
-            ->recordActions([EditAction::make()]);
+            ->recordActions([EditAction::make(), PayAction::make()]);
     }
 
     public static function getPages(): array
