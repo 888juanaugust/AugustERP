@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Shared\Enums;
 
+use App\Domain\Shared\Format;
 use Filament\Support\Contracts\HasLabel;
 
 enum ContactType: string implements HasLabel
@@ -15,6 +16,6 @@ enum ContactType: string implements HasLabel
 
     public function getLabel(): string
     {
-        return ucfirst($this->value);
+        return Format::code($this->value, 'contact');
     }
 }

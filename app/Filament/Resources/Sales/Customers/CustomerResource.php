@@ -106,7 +106,7 @@ class CustomerResource extends MasterResource
                                 TextInput::make('email')->email()->maxLength(150),
                                 TextInput::make('mobile_phone')->tel()->maxLength(30),
                             ])
-                            ->addActionLabel('Add contact')
+                            ->addActionLabel(__('Add contact'))
                             ->defaultItems(0),
                     ]),
                     Tab::make(__('Shipping'))->schema([
@@ -117,7 +117,7 @@ class CustomerResource extends MasterResource
                             ->relationship()
                             ->orderColumn('sort')
                             ->simple(Textarea::make('address')->rows(2)->required())
-                            ->addActionLabel('Add address')
+                            ->addActionLabel(__('Add address'))
                             ->defaultItems(0),
                     ]),
                     Tab::make(__('Sales'))->schema([

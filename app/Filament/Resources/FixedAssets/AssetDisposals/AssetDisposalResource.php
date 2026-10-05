@@ -65,7 +65,7 @@ class AssetDisposalResource extends ErpResource
                 Select::make('gain_loss_account_id')->label(__('Gain / loss account'))->options(fn () => Account::options(AccountType::OtherIncome, AccountType::OtherExpense))->searchable()->required()->native(false),
                 Select::make('location_id')->label(__('Asset location'))->options(fn () => AssetLocation::options())->native(false),
                 Toggle::make('selling_asset')->label(__('Sold'))->live()->inline(false),
-                PricedDocumentForm::money('proceeds', 'Proceeds')->visible(fn (Get $get) => (bool) $get('selling_asset')),
+                PricedDocumentForm::money('proceeds', __('Proceeds'))->visible(fn (Get $get) => (bool) $get('selling_asset')),
                 Select::make('proceeds_account_id')->label(__('Proceeds to'))->options(fn () => Account::options(AccountType::CashBank, AccountType::AccountsReceivable))->searchable()->native(false)
                     ->visible(fn (Get $get) => (bool) $get('selling_asset'))
                     ->required(fn (Get $get) => (bool) $get('selling_asset')),

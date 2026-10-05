@@ -26,6 +26,6 @@ final class Months
             return '';
         }
 
-        return CarbonImmutable::create(2000, (int) $month, 1)->format('F');
+        return CarbonImmutable::create(2000, (int) $month, 1)->translatedFormat('F');
     }
 }

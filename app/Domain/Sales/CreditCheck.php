@@ -104,10 +104,10 @@ final class CreditCheck
 
         $freeze = $this->freezeDays();
         if ($freeze > 0 && $age > $freeze) {
-            throw new RuntimeException("{$customer->name} is frozen: an invoice has been unpaid for {$age} days (the limit is {$freeze}). Settle it first.");
+            throw new RuntimeException(__(':name is frozen: an invoice has been unpaid for :age days (the limit is :freeze). Settle it first.', ['name' => $customer->name, 'age' => $age, 'freeze' => $freeze]));
         }
         if ($limitHolder->credit_limit_age_enabled && $age > $limitHolder->credit_limit_age_days) {
-            throw new RuntimeException("{$customer->name} has an invoice unpaid for {$age} days, over its {$limitHolder->credit_limit_age_days}-day limit.");
+            throw new RuntimeException(__(':name has an invoice unpaid for :age days, over its :credit_limit_age_days-day limit.', ['name' => $customer->name, 'age' => $age, 'credit_limit_age_days' => $limitHolder->credit_limit_age_days]));
         }
         if ($limitHolder->credit_limit_amount_enabled) {
             $would = $this->exposure($customer) + $this->openOrders($customer, $excludeOrderId) + $newAmount;

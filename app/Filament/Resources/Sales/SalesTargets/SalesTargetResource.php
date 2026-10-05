@@ -52,7 +52,7 @@ class SalesTargetResource extends ErpResource
 
     public static function form(Schema $schema): Schema
     {
-        $types = ['per_item' => 'Per item', 'per_category' => 'Per item category', 'per_salesman' => 'Per salesperson', 'per_month' => 'Per month'];
+        $types = ['per_item' => __('Per item'), 'per_category' => __('Per item category'), 'per_salesman' => __('Per salesperson'), 'per_month' => __('Per month')];
 
         return $schema->components([
             Section::make()->columns(3)->schema([
@@ -75,9 +75,9 @@ class SalesTargetResource extends ErpResource
                             Select::make('salesman_id')->options(fn () => Employee::query()->salesmen()->orderBy('name')->pluck('name', 'id'))->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_salesman'),
                             Select::make('month')->options(collect(range(1, 12))->mapWithKeys(fn (int $m) => [$m => date('F', mktime(0, 0, 0, $m, 1))])->all())->native(false)->visible(fn (Get $get) => $get('../../target_type') === 'per_month'),
                             TextInput::make('quantity')->numeric()->default(0),
-                            PricedDocumentForm::money('value', 'Value'),
+                            PricedDocumentForm::money('value', __('Value')),
                         ])
-                        ->minItems(1)->defaultItems(1)->addActionLabel('Add target'),
+                        ->minItems(1)->defaultItems(1)->addActionLabel(__('Add target')),
                 ]),
                 Tab::make(__('Progress'))
                     ->visible(fn (?SalesTarget $record) => $record !== null)
@@ -103,7 +103,7 @@ class SalesTargetResource extends ErpResource
                 TextColumn::make('year')->label(__('Year'))->state(fn (SalesTarget $r) => $r->to_date->year),
                 TextColumn::make('name')->label(__('Target name'))->searchable()->sortable()->weight('medium'),
                 TextColumn::make('branch.name')->label(__('fields.branch'))->placeholder(__('All')),
-                TextColumn::make('target_type')->label(__('Target type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
+                TextColumn::make('target_type')->label(__('Target type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => Format::code($state, 'target_type')),
             ])
             ->defaultSort('to_date', 'desc')
             ->filters([SelectFilter::make('target_type')->label(__('Target type'))->options(['per_item' => __('Per item'), 'per_category' => __('Per item category'), 'per_salesman' => __('Per salesperson'), 'per_month' => __('Per month')])])

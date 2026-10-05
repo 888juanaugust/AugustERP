@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\CashBank;
 
 use App\Domain\Audit\Auditor;
+use App\Domain\Shared\Format;
 use App\Models\CashBank\BankReconciliation;
 use App\Models\CashBank\BankReconciliationItem;
 use App\Models\CashBank\BankStatementLine;
@@ -30,7 +31,7 @@ final class Reconciler
         $start = CarbonImmutable::parse($start)->toDateString();
         $end = CarbonImmutable::parse($end)->toDateString();
         if ($end < $start) {
-            throw new RuntimeException('The period ends before it starts.');
+            throw new RuntimeException(__('The period ends before it starts.'));
         }
 
         $reconciliation = BankReconciliation::query()->firstOrCreate(
@@ -142,7 +143,7 @@ final class Reconciler
         $this->assertOpen($reconciliation);
         $summary = $this->summary($reconciliation);
         if ($summary['difference'] !== 0) {
-            throw new RuntimeException('The cleared balance differs from the statement by '.number_format(abs($summary['difference']), 0, ',', '.').'; clear or correct before closing.');
+            throw new RuntimeException(__('The cleared balance differs from the statement by :amount; clear or correct before closing.', ['amount' => Format::number(abs($summary['difference']))]));
         }
         $reconciliation->forceFill(['status' => BankReconciliation::CLOSED, 'closed_at' => now(), 'closed_by' => $userId ?? auth()->id()])->save();
         Auditor::log('bank_reconciled', $reconciliation, $reconciliation->bankAccount?->name, $summary, $reconciliation->end_date->toDateString());
@@ -158,7 +159,7 @@ final class Reconciler
     private function assertOpen(BankReconciliation $reconciliation): void
     {
         if ($reconciliation->isClosed()) {
-            throw new RuntimeException('This reconciliation is closed.');
+            throw new RuntimeException(__('This reconciliation is closed.'));
         }
     }
 }

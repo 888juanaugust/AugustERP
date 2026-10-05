@@ -55,7 +55,7 @@ class PostingLogResource extends ErpResource
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('journalEntry.number')->label(__('Number'))->fontFamily('mono')->placeholder('—'),
                 TextColumn::make('journalEntry.source_number')->label(__('Trans. No.'))->fontFamily('mono')->placeholder('—'),
-                TextColumn::make('document_type')->label(__('Transaction type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
+                TextColumn::make('document_type')->label(__('Transaction type'))->badge()->color('gray')->formatStateUsing(fn (string $state) => Format::documentType($state)),
                 TextColumn::make('revision')->label(__('Rev.'))->alignEnd(),
                 TextColumn::make('posted_at')->label(__('Posted'))->formatStateUsing(fn ($state) => Format::dateTime($state))->sortable(),
                 TextColumn::make('postedBy.name')->label(__('By'))->placeholder(__('System')),
@@ -66,7 +66,7 @@ class PostingLogResource extends ErpResource
             ->defaultSort('id', 'desc')
             ->filters([
                 SelectFilter::make('document_type')->label(__('Transaction type'))
-                    ->options(fn () => collect(array_keys(Relation::morphMap()))->mapWithKeys(fn (string $k) => [$k => ucfirst(str_replace('_', ' ', $k))])->sort()->all()),
+                    ->options(fn () => collect(array_keys(Relation::morphMap()))->mapWithKeys(fn (string $k) => [$k => Format::documentType($k)])->sort()->all()),
                 TernaryFilter::make('active')->label(__('Active'))->placeholder(__('All'))->trueLabel('Active only')->falseLabel('Superseded only')
                     ->queries(
                         true: fn ($query) => $query->whereNull('superseded_at'),

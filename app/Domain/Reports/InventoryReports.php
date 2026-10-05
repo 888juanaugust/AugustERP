@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Reports;
 
+use App\Domain\Shared\Format;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\ItemCost;
 use App\Models\Inventory\StockMovement;
@@ -74,10 +75,9 @@ final class InventoryReports
 
     private static function sourceLabel(StockMovement $m): string
     {
-        $type = str_replace('_', ' ', (string) ($m->posting?->document_type ?? $m->source_line_type));
         $number = $m->posting?->document?->getAttribute('number') ?? '';
 
-        return trim(ucfirst($type).' '.$number);
+        return trim(Format::documentType((string) ($m->posting?->document_type ?? $m->source_line_type)).' '.$number);
     }
 
     /** @return array<int, string> */

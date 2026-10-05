@@ -76,23 +76,23 @@ class DepreciationSchedule extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('number', 'Asset')->fontFamily('mono'),
-            static::text('name', 'Name'),
-            static::text('category', 'Category'),
-            static::date('usage_date', 'In use from'),
-            static::text('method', 'Method'),
-            static::text('life', 'Life (months)')->alignEnd(),
-            static::money('cost', 'Cost'),
-            static::money('period', 'This period'),
-            static::money('accumulated', 'Accumulated'),
-            static::money('book_value', 'Book value'),
-            static::text('status', 'Status'),
+            static::text('number', __('Asset'))->fontFamily('mono'),
+            static::text('name', __('Name')),
+            static::text('category', __('Category')),
+            static::date('usage_date', __('In use from')),
+            static::text('method', __('Method')),
+            static::text('life', __('Life (months)'))->alignEnd(),
+            static::money('cost', __('Cost')),
+            static::money('period', __('This period')),
+            static::money('accumulated', __('Accumulated')),
+            static::money('book_value', __('Book value')),
+            static::text('status', __('Status')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Asset', 'Name', 'Category', 'In use from', 'Method', 'Life (months)', 'Cost', 'This period', 'Accumulated', 'Book value', 'Status'];
+        return [__('Asset'), __('Name'), __('Category'), __('In use from'), __('Method'), __('Life (months)'), __('Cost'), __('This period'), __('Accumulated'), __('Book value'), __('Status')];
     }
 
     protected function exportRow(array $row): array

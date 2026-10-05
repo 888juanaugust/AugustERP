@@ -46,7 +46,7 @@ final class DownPaymentDeductions
                     ->rule(fn (): Closure => fn (string $attribute, mixed $value, Closure $fail) => CurrencyFields::isPositive($value) ? null : $fail(__('Enter an amount above zero.'))),
             ])
             ->defaultItems(0)
-            ->addActionLabel('Deduct a down payment')
+            ->addActionLabel(__('Deduct a down payment'))
             ->mutateRelationshipDataBeforeFillUsing(fn (array $data, Get $get) => CurrencyFields::fromForeign($data, $get('currency_id'), ['amount' => 'fc_amount']))
             ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => CurrencyFields::toForeign($data, $get('currency_id'), ['amount' => 'fc_amount']))
             ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => CurrencyFields::toForeign($data, $get('currency_id'), ['amount' => 'fc_amount']));

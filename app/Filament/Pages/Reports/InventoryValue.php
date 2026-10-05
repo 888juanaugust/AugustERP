@@ -77,19 +77,19 @@ class InventoryValue extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('number', 'Item No.')->fontFamily('mono'),
-            static::text('name', 'Item'),
-            static::text('category', 'Category'),
-            static::text('warehouse', 'Warehouse'),
-            static::quantity('quantity', 'On hand'),
-            static::quantity('avg_cost', 'Average cost'),
-            static::money('value', 'Value'),
+            static::text('number', __('Item No.'))->fontFamily('mono'),
+            static::text('name', __('Item')),
+            static::text('category', __('Category')),
+            static::text('warehouse', __('Warehouse')),
+            static::quantity('quantity', __('On hand')),
+            static::quantity('avg_cost', __('Average cost')),
+            static::money('value', __('Value')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Item No.', 'Item', 'Category', 'Warehouse', 'On hand', 'Average cost', 'Value'];
+        return [__('Item No.'), __('Item'), __('Category'), __('Warehouse'), __('On hand'), __('Average cost'), __('Value')];
     }
 
     protected function exportRow(array $row): array

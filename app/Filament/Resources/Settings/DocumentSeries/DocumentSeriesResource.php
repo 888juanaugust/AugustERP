@@ -81,14 +81,14 @@ class DocumentSeriesResource extends MasterResource
                                 ])
                                 ->default(NumberPattern::fromFormat('DOC-YYMM-####')->toArray())
                                 ->reorderable()
-                                ->addActionLabel('Add component')
+                                ->addActionLabel(__('Add component'))
                                 ->minItems(1)
                                 ->live()
                                 ->rule(fn () => function (string $attribute, $value, $fail) {
                                     try {
                                         NumberPattern::fromArray(array_values((array) $value));
                                     } catch (Throwable) {
-                                        $fail('A number format needs exactly one counter.');
+                                        $fail(__('A number format needs exactly one counter.'));
                                     }
                                 }),
                             Placeholder::make('example')

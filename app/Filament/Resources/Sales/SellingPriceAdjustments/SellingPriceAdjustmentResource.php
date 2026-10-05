@@ -79,7 +79,7 @@ class SellingPriceAdjustmentResource extends ErpResource
                             TextInput::make('value')->numeric()->required()->minValue(0)
                                 ->prefix(fn (Get $get) => $get('../../sales_adjustment_type') === 'discount' ? '%' : Format::symbol()),
                         ])
-                        ->minItems(1)->defaultItems(1)->addActionLabel('Add item'),
+                        ->minItems(1)->defaultItems(1)->addActionLabel(__('Add item')),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
                     Textarea::make('description')->label(__('fields.description'))->rows(3),

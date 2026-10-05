@@ -171,13 +171,13 @@ class PayrollEntryResource extends ErpResource
                             Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->native(false)->nullable()->placeholder(__('Basic salary account'))
                                 ->live()->afterStateUpdated(fn (Set $set, $state) => $state ? $set('fee_type', SalaryComponent::query()->find($state)?->fee_type) : null),
                             Select::make('fee_type')->options(fn () => SalaryComponent::feeTypes())->native(false)->placeholder(__('Salary')),
-                            PricedDocumentForm::money('gross_amount', 'Gross pay')->required()->live(onBlur: true)
+                            PricedDocumentForm::money('gross_amount', __('Gross pay'))->required()->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
-                            PricedDocumentForm::money('income_tax', 'Income tax')->live(onBlur: true)
+                            PricedDocumentForm::money('income_tax', __('Income tax'))->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
-                            PricedDocumentForm::money('contribution_amount', 'Contribution / deduction')->live(onBlur: true)
+                            PricedDocumentForm::money('contribution_amount', __('Contribution / deduction'))->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
-                            PricedDocumentForm::money('net_amount', 'Net pay')->required()->readOnly(),
+                            PricedDocumentForm::money('net_amount', __('Net pay'))->required()->readOnly(),
                             ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                             Hidden::make('tax_method'),
@@ -188,7 +188,7 @@ class PayrollEntryResource extends ErpResource
                         ->minItems(1)
                         ->defaultItems(1)
                         ->live()
-                        ->addActionLabel('Add employee')
+                        ->addActionLabel(__('Add employee'))
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => IncomeKinds::normalise($data))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => IncomeKinds::normalise($data)),
                 ]),
@@ -216,7 +216,7 @@ class PayrollEntryResource extends ErpResource
                 TextColumn::make('payment_type')->label(__('Payment type'))->badge()->color('gray')
                     ->formatStateUsing(fn ($state): string => $state === 'non_monthly' ? 'Non-monthly' : 'Monthly'),
                 TextColumn::make('payment_status')->label(__('Status'))->badge()
-                    ->formatStateUsing(fn ($state): string => ucfirst((string) $state))
+                    ->formatStateUsing(fn ($state): string => Format::code((string) $state, 'payment'))
                     ->color(fn ($state): string => match ($state) {
                         'paid' => 'success',
                         'partial' => 'info',

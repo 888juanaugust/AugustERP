@@ -9,6 +9,7 @@ use App\Domain\Currency\Currencies;
 use App\Domain\Documents\PaymentMethod;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Shared\Enums\AccountType;
+use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\CreatePurchasePayment;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\EditPurchasePayment;
 use App\Filament\Resources\Purchasing\PurchasePayments\Pages\ListPurchasePayments;
@@ -124,15 +125,15 @@ class PurchasePaymentResource extends ErpResource
                                     $set('discount', $proposal['discount']);
                                 }),
                             Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('payable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
-                            SettlementLineFields::amount('amount', 'Pay')->required()->live(onBlur: true)
+                            SettlementLineFields::amount('amount', __('Pay'))->required()->live(onBlur: true)
                                 ->rule(fn (Get $get) => SettlementLineFields::notNegativeUnlessCredit(fn () => ($key = $get('payable_key')) ? PayableFields::resolve($key) : null)),
-                            SettlementLineFields::amount('discount', 'Discount')->live(onBlur: true),
+                            SettlementLineFields::amount('discount', __('Discount'))->live(onBlur: true),
                             Select::make('discount_account_id')->options(fn () => Account::options(AccountType::CostOfSales, AccountType::OtherIncome, AccountType::OtherExpense))->native(false)->placeholder(__('Purchase Discounts')),
                             Hidden::make('payable_type'),
                             Hidden::make('payable_id'),
                         ])
                         ->minItems(1)->defaultItems(0)->live()
-                        ->addActionLabel('Add document')
+                        ->addActionLabel(__('Add document'))
                         ->mutateRelationshipDataBeforeFillUsing(fn (array $data, Get $get) => SettlementLineFields::fromForeign($data, $get('currency_id')) + ['payable_key' => ($data['payable_type'] ?? '').':'.($data['payable_id'] ?? '')])
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => SettlementLineFields::toForeign(self::splitKey($data), $get('currency_id')))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => SettlementLineFields::toForeign(self::splitKey($data), $get('currency_id'))),
@@ -169,7 +170,7 @@ class PurchasePaymentResource extends ErpResource
                 TextColumn::make('bankAccount.name')->label(__('Bank')),
                 TextColumn::make('payment_method')->label(__('Method'))->badge()->color('gray'),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
-                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
+                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => Format::code($state, 'giro'))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount paid')),
                 ...InCurrency::make('fc_amount'),
                 ApprovalActions::column(),

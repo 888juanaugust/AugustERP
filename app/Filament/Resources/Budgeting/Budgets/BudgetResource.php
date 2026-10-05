@@ -105,11 +105,11 @@ class BudgetResource extends ErpResource
                                 ->validationMessages(['distinct' => 'That account is already on the budget.']),
                             Placeholder::make('code')->hiddenLabel()
                                 ->content(fn (Get $get): string => $get('account_id') ? (string) (Account::query()->find($get('account_id'))?->no ?? '—') : '—'),
-                            PricedDocumentForm::money('amount', 'Budget')->required()->live(onBlur: true),
+                            PricedDocumentForm::money('amount', __('Budget'))->required()->live(onBlur: true),
                         ])
                         ->defaultItems(1)
                         ->live()
-                        ->addActionLabel('Add account'),
+                        ->addActionLabel(__('Add account')),
                     Placeholder::make('total')->label(__('Total budget'))->content(fn (Get $get): string => Format::rupiah(LineTotals::sum($get('lines'), 'amount'))),
                 ]),
                 Tab::make(__('Notes'))->schema([
@@ -127,7 +127,7 @@ class BudgetResource extends ErpResource
             ->columns([
                 TextColumn::make('year')->label(__('Year'))->sortable(),
                 TextColumn::make('month')->label(__('Month'))->formatStateUsing(fn ($state): string => Months::name($state))->sortable(),
-                TextColumn::make('scope')->label(__('Type'))->formatStateUsing(fn ($state): string => ucfirst((string) $state)),
+                TextColumn::make('scope')->label(__('Type'))->formatStateUsing(fn ($state): string => Format::code((string) $state, 'budget_scope')),
                 TextColumn::make('analyst_name')->label(__('Analyst'))->placeholder('—'),
                 TextColumn::make('notes')->label(__('Notes'))->limit(40)->placeholder('—'),
                 Rupiah::make('lines_sum_amount')->label(__('Total')),

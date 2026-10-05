@@ -127,7 +127,7 @@ class PurchaseReturnResource extends ErpResource
                 TextColumn::make('number')->label(__('Number'))->searchable()->sortable()->fontFamily('mono'),
                 Tanggal::make('trans_date')->label(__('fields.trans_date')),
                 TextColumn::make('vendor.name')->label(__('fields.vendor'))->searchable(),
-                TextColumn::make('return_type')->label(__('Return from'))->badge()->color('gray')->formatStateUsing(fn (string $state) => ucfirst(str_replace('_', ' ', $state))),
+                TextColumn::make('return_type')->label(__('Return from'))->badge()->color('gray')->formatStateUsing(fn (string $state) => Format::code($state, 'return_type')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
                 TextColumn::make('payment_status')->label(__('Credit used'))->badge()
                     ->formatStateUsing(fn (string $state) => match ($state) {

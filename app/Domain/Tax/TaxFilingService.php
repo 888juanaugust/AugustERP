@@ -30,7 +30,7 @@ final class TaxFilingService
     public function export(Collection $invoices, string $format, int $year, int $month, ?int $branchId = null, ?int $userId = null): TaxFiling
     {
         if ($invoices->isEmpty()) {
-            throw new RuntimeException('Pick at least one invoice to export.');
+            throw new RuntimeException(__('Pick at least one invoice to export.'));
         }
         $invoices = $invoices->sortBy([['trans_date', 'asc'], ['number', 'asc']])->values();
         $content = $format === TaxFiling::LEGACY ? $this->legacy->write($invoices) : $this->coretax->write($invoices);

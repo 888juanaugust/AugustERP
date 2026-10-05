@@ -46,11 +46,11 @@ final class PrintJob
      */
     public function data(string $alias, int $id, User $user, ?int $layoutId = null): array
     {
-        $meta = Printable::for($alias) ?? throw new RuntimeException("Nothing called {$alias} prints.");
+        $meta = Printable::for($alias) ?? throw new RuntimeException(__('Nothing called :alias prints.', ['alias' => $alias]));
         $document = $meta['model']::query()->findOrFail($id);
         $menu = $this->menus->menuKeyForModel($document::class);
         if ($menu !== null && ! $this->akses->allows($user, $menu, Hak::Print)) {
-            throw new RuntimeException('Printing this document takes the print right on its screen.');
+            throw new RuntimeException(__('Printing this document takes the print right on its screen.'));
         }
         app(ApprovalEngine::class)->assertApproved($document, __('is not approved; it cannot be printed yet.'));
         $layout = $this->layoutFor($meta['type']->value, $user, $layoutId);

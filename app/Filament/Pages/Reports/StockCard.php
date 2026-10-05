@@ -77,20 +77,20 @@ class StockCard extends ReportPage
     protected function columns(): array
     {
         return [
-            static::date('trans_date', 'Date'),
-            static::text('source', 'Source'),
-            static::text('warehouse', 'Warehouse'),
-            static::quantity('in', 'In'),
-            static::quantity('out', 'Out'),
-            static::quantity('unit_cost', 'Unit cost'),
-            static::quantity('balance_qty', 'Balance qty'),
-            static::money('balance_value', 'Balance value'),
+            static::date('trans_date', __('Date')),
+            static::text('source', __('Source')),
+            static::text('warehouse', __('Warehouse')),
+            static::quantity('in', __('In')),
+            static::quantity('out', __('Out')),
+            static::quantity('unit_cost', __('Unit cost')),
+            static::quantity('balance_qty', __('Balance qty')),
+            static::money('balance_value', __('Balance value')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Date', 'Source', 'Warehouse', 'In', 'Out', 'Unit cost', 'Balance qty', 'Balance value'];
+        return [__('Date'), __('Source'), __('Warehouse'), __('In'), __('Out'), __('Unit cost'), __('Balance qty'), __('Balance value')];
     }
 
     protected function exportRow(array $row): array

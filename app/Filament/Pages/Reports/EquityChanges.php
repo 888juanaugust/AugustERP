@@ -42,14 +42,14 @@ class EquityChanges extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('name', 'Item'),
-            static::money('amount', 'Amount'),
+            static::text('name', __('Item')),
+            static::money('amount', __('Amount')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Item', 'Amount'];
+        return [__('Item'), __('Amount')];
     }
 
     protected function exportRow(array $row): array

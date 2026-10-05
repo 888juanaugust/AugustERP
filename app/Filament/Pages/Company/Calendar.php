@@ -112,7 +112,7 @@ class Calendar extends ErpPage
         return match ($this->calendarView) {
             'week' => Format::date($this->weekStart).' – '.Format::date(CarbonImmutable::parse($this->weekStart)->addDays(6)),
             'agenda' => __('The next 30 days'),
-            default => $this->firstOfMonth()->format('F Y'),
+            default => $this->firstOfMonth()->translatedFormat('F Y'),
         };
     }
 

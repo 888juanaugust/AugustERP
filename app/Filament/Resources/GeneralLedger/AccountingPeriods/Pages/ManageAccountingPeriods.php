@@ -35,7 +35,7 @@ class ManageAccountingPeriods extends ManageRecords
                         ->default(fn () => $lock->nextToClose()->year)->required()->native(false),
                     Textarea::make('notes')->label(__('fields.memo'))->rows(2),
                 ])
-                ->modalDescription(fn () => __('Months close in order. The next month to close is :month. Nothing dated in a closed month can be added, changed or deleted.', ['month' => $lock->nextToClose()->format('F Y')]))
+                ->modalDescription(fn () => __('Months close in order. The next month to close is :month. Nothing dated in a closed month can be added, changed or deleted.', ['month' => $lock->nextToClose()->translatedFormat('F Y')]))
                 ->action(function (array $data) use ($lock): void {
                     try {
                         $period = $lock->close((int) $data['year'], (int) $data['month'], auth()->id(), $data['notes'] ?? null);

@@ -97,7 +97,7 @@ class VendorResource extends MasterResource
                                 TextInput::make('email')->email()->maxLength(150),
                                 TextInput::make('mobile_phone')->tel()->maxLength(30),
                             ])
-                            ->addActionLabel('Add contact')
+                            ->addActionLabel(__('Add contact'))
                             ->defaultItems(0),
                     ]),
                     Tab::make(__('Purchasing'))->schema([
@@ -123,7 +123,7 @@ class VendorResource extends MasterResource
                                 TextInput::make('bank_account_name')->maxLength(150),
                                 Select::make('bank_id')->relationship('bank', 'name')->native(false)->searchable()->preload(),
                             ])
-                            ->addActionLabel('Add bank account')
+                            ->addActionLabel(__('Add bank account'))
                             ->defaultItems(0),
                     ]),
                     Tab::make(__('Tax'))->schema([

@@ -13,6 +13,6 @@ class ListInvoiceExchanges extends ListDocuments
 
     protected function statuses(): array
     {
-        return ['pending' => 'Pending', 'processed' => 'Collected'];
+        return ['pending' => __('Pending'), 'processed' => __('Collected')];
     }
 }

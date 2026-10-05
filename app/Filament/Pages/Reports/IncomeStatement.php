@@ -47,15 +47,15 @@ class IncomeStatement extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('no', 'No.'),
-            static::text('name', 'Account')->extraCellAttributes(fn ($record) => ['style' => 'padding-left: '.((($record['level'] ?? 0) * 16) + 12).'px']),
-            static::money('amount', 'Amount'),
+            static::text('no', __('No.')),
+            static::text('name', __('Account'))->extraCellAttributes(fn ($record) => ['style' => 'padding-left: '.((($record['level'] ?? 0) * 16) + 12).'px']),
+            static::money('amount', __('Amount')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['No.', 'Account', 'Amount'];
+        return [__('No.'), __('Account'), __('Amount')];
     }
 
     protected function exportRow(array $row): array

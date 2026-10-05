@@ -85,12 +85,13 @@ abstract class ErpResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return static::$modelLabel ?? static::menuKey()->label();
+        // The English model label is a key of lang/<locale>.json (tools/i18n/extract-strings.mjs collects it).
+        return static::$modelLabel !== null ? __(static::$modelLabel) : static::menuKey()->label();
     }
 
     public static function getPluralModelLabel(): string
     {
-        return static::$pluralModelLabel ?? static::menuKey()->label();
+        return static::$pluralModelLabel !== null ? __(static::$pluralModelLabel) : static::menuKey()->label();
     }
 
     public static function getSlug(?Panel $panel = null): string

@@ -99,7 +99,7 @@ class OrderFulfilment extends ErpPage implements HasTable
                     'trans_date' => Format::date($order->trans_date),
                     'ship_date' => Format::date($order->ship_date),
                     'delivered' => Format::quantity((string) $processed).' / '.Format::quantity((string) $ordered),
-                    'deliverable' => Format::quantity((string) $deliverable).' of '.Format::quantity((string) $ordered->minus($processed)),
+                    'deliverable' => __(':part of :whole', ['part' => Format::quantity((string) $deliverable), 'whole' => Format::quantity((string) $ordered->minus($processed))]),
                     'need_to_order' => Format::quantity((string) $short),
                 ];
             })->values();

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Shared;
 
+use App\Domain\Access\MenuRegistry;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\Company\Currency;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Lang;
 use Throwable;
 
 /**
@@ -151,7 +154,7 @@ final class Format
 
     public static function date(DateTimeInterface|string|null $date): string
     {
-        return self::carbon($date)?->format(self::DATE_TABLE) ?? '';
+        return self::carbon($date)?->translatedFormat(self::DATE_TABLE) ?? '';
     }
 
     public static function dateInput(DateTimeInterface|string|null $date): string
@@ -161,7 +164,7 @@ final class Format
 
     public static function dateTime(DateTimeInterface|string|null $date): string
     {
-        return self::carbon($date)?->format('j M Y H:i') ?? '';
+        return self::carbon($date)?->translatedFormat('j M Y H:i') ?? '';
     }
 
     private static function carbon(DateTimeInterface|string|null $date): ?CarbonInterface
@@ -171,5 +174,28 @@ final class Format
         }
 
         return $date instanceof DateTimeInterface ? CarbonImmutable::instance($date) : CarbonImmutable::parse($date);
+    }
+
+    /** A stored code as the user reads it: lang/<locale>/status.php under the group, else the code itself made readable ("down_payment" → "Down payment"). */
+    public static function code(?string $value, string $group): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+        $key = "status.{$group}.{$value}";
+
+        return Lang::has($key) ? (string) __($key) : ucfirst(str_replace('_', ' ', $value));
+    }
+
+    /** A document type (morph alias) by its screen's name: "sales_receipt" → "Sales Receipts"; else the alias made readable. */
+    public static function documentType(?string $alias): string
+    {
+        if ($alias === null || $alias === '') {
+            return '';
+        }
+        $model = Relation::getMorphedModel($alias);
+        $key = $model !== null ? app(MenuRegistry::class)->menuKeyForModel($model) : null;
+
+        return $key?->label() ?? ucfirst(str_replace('_', ' ', $alias));
     }
 }

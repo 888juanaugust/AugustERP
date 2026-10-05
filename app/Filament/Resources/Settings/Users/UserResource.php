@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Settings\Users;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Access\UserDeactivation;
+use App\Domain\Shared\Format;
 use App\Filament\Resources\Settings\Users\Pages\CreateUser;
 use App\Filament\Resources\Settings\Users\Pages\EditUser;
 use App\Filament\Resources\Settings\Users\Pages\ListUsers;
@@ -106,7 +107,7 @@ class UserResource extends ErpResource
                 TextColumn::make('access_type')
                     ->label(__('Access type'))
                     ->badge()
-                    ->formatStateUsing(fn (string $state) => ucfirst($state))
+                    ->formatStateUsing(fn (string $state) => Format::code($state, 'access_type'))
                     ->color(fn (string $state) => $state === 'administrator' ? 'primary' : 'gray'),
                 IconColumn::make('is_active')->label(__('fields.is_active'))->boolean(),
             ])

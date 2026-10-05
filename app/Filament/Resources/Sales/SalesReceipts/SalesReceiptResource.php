@@ -132,14 +132,14 @@ class SalesReceiptResource extends ErpResource
                             Placeholder::make('invoice_date')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
                             Placeholder::make('invoice_total')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::total($doc), $doc->currency_id) : ''),
                             Placeholder::make('open')->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
-                            SettlementLineFields::amount('amount', 'Pay')->required()->live(onBlur: true),
-                            SettlementLineFields::amount('discount', 'Discount')->live(onBlur: true),
+                            SettlementLineFields::amount('amount', __('Pay'))->required()->live(onBlur: true),
+                            SettlementLineFields::amount('discount', __('Discount'))->live(onBlur: true),
                             Select::make('discount_account_id')->options(fn () => Account::options(AccountType::Revenue, AccountType::OtherExpense, AccountType::Expense))->native(false)->placeholder(__('Sales Discounts')),
                             Hidden::make('receivable_type'),
                             Hidden::make('receivable_id'),
                         ])
                         ->minItems(1)->defaultItems(0)->live()
-                        ->addActionLabel('Add document')
+                        ->addActionLabel(__('Add document'))
                         ->mutateRelationshipDataBeforeFillUsing(fn (array $data, Get $get) => SettlementLineFields::fromForeign($data, $get('currency_id')) + ['receivable_key' => ($data['receivable_type'] ?? '').':'.($data['receivable_id'] ?? '')])
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => SettlementLineFields::toForeign(self::splitKey($data), $get('currency_id')))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => SettlementLineFields::toForeign(self::splitKey($data), $get('currency_id'))),
@@ -176,7 +176,7 @@ class SalesReceiptResource extends ErpResource
                 TextColumn::make('bankAccount.name')->label(__('Bank')),
                 TextColumn::make('description')->label(__('fields.description'))->limit(40)->placeholder('—'),
                 IconColumn::make('use_credit')->label(__('Credit used'))->boolean(),
-                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
+                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => Format::code($state, 'giro'))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount received')),
                 ...InCurrency::make('fc_amount'),
             ])

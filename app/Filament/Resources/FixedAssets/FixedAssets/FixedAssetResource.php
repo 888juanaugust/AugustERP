@@ -99,7 +99,7 @@ class FixedAssetResource extends ErpResource
                     Select::make('depreciation_method')->label(__('Depreciation method'))->options(DepreciationMethod::class)->default(DepreciationMethod::StraightLine)->required()->native(false),
                     TextInput::make('quantity')->label(__('Quantity'))->numeric()->default(1)->required()->minValue(0.0001),
                     TextInput::make('useful_life_months')->label(__('Useful life (months)'))->numeric()->integer()->required()->default(48)->minValue(0),
-                    PricedDocumentForm::money('salvage_value', 'Salvage value'),
+                    PricedDocumentForm::money('salvage_value', __('Salvage value')),
                 ]),
             Tabs::make('asset')
                 ->persistTabInQueryString()
@@ -148,12 +148,12 @@ class FixedAssetResource extends ErpResource
                                 Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
                                 TextInput::make('description')->maxLength(255),
                                 DatePicker::make('trans_date')->native(false)->default(fn (Get $get) => $get('../../trans_date')),
-                                PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
+                                PricedDocumentForm::money('amount', __('Amount'))->required()->live(onBlur: true),
                             ])
                             ->minItems(1)
                             ->defaultItems(1)
                             ->live()
-                            ->addActionLabel('Add expenditure'),
+                            ->addActionLabel(__('Add expenditure')),
                         Placeholder::make('cost_preview')->label(__('Total cost'))->content(fn (Get $get) => Format::rupiah(LineTotals::sum($get('expenditures'), 'amount'))),
                     ]),
                 ]),

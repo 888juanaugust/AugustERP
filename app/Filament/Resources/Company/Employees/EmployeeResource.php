@@ -122,7 +122,7 @@ class EmployeeResource extends MasterResource
                                 MoneyInput::make('amount')->required()->default(0),
                             ])
                             ->defaultItems(0)
-                            ->addActionLabel('Add a component')
+                            ->addActionLabel(__('Add a component'))
                             ->helperText(__('"Calculate payroll" on a payroll entry pays these, adds BPJS and works out the income tax.')),
                         Grid::make(4)->schema([
                             Toggle::make('bpjs_health')->label(__('BPJS Health'))->default(true)->inline(false),

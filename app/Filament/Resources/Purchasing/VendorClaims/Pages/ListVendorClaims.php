@@ -13,6 +13,6 @@ class ListVendorClaims extends ListDocuments
 
     protected function statuses(): array
     {
-        return ['pending' => 'Pending', 'processed' => 'Settled'];
+        return ['pending' => __('Pending'), 'processed' => __('Settled')];
     }
 }

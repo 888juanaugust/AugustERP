@@ -127,13 +127,13 @@ class CashPaymentResource extends ErpResource
                                 }),
                             Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false)
                                 ->disabled(fn (Get $get) => filled($get('payable_key')))->dehydrated(),
-                            PricedDocumentForm::money('amount', 'Amount')->required()->live(onBlur: true),
+                            PricedDocumentForm::money('amount', __('Amount'))->required()->live(onBlur: true),
                             ...LineTaxFields::fields(fn (Get $get) => filled($get('payable_key'))),
                             ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->minItems(1)->defaultItems(1)->live()
-                        ->addActionLabel('Add line')
+                        ->addActionLabel(__('Add line'))
                         ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => $data + ['payable_key' => AccrualFields::keyOf($data)])
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => AccrualFields::split($data))
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => AccrualFields::split($data)),
@@ -161,7 +161,7 @@ class CashPaymentResource extends ErpResource
                 TextColumn::make('bankAccount.name')->label(__('Cash / Bank')),
                 TextColumn::make('cheque_no')->label(__('Cheque No.'))->placeholder('—'),
                 TextColumn::make('description')->label(__('Notes'))->limit(40)->placeholder('—'),
-                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => ucfirst($state))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
+                TextColumn::make('giro.status')->label(__('Giro'))->badge()->formatStateUsing(fn (string $state) => Format::code($state, 'giro'))->color(fn (string $state) => GiroActions::statusColor($state))->placeholder('—'),
                 Rupiah::make('amount')->label(__('Amount')),
                 ApprovalActions::column(),
             ])

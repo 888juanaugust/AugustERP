@@ -18,6 +18,9 @@
  *    blocks under app/Filament, and inside label(), getLabel(), help(), options(),
  *    description(), title(), heading() methods anywhere under app/, when the
  *    text has an uppercase letter or a space;
+ *  - the message of new RuntimeException('...'), shown to the user in notifications;
+ *  - the label of the column helpers (static::money('total', 'Total') and the like), the
+ *    texts of $fail('...') in validation rules, and the headers listed in exportHeaders();
  *  - in Blade views, text between tags (>Text<) and placeholder="Text" attributes.
  */
 import fs from 'node:fs';
@@ -30,9 +33,11 @@ const check = args.includes('--check');
 const targets = args.filter((a) => a !== '--check');
 const roots = targets.length ? targets.map((t) => path.resolve(root, t)) : [path.join(root, 'app'), path.join(root, 'resources/views')];
 
-export const METHODS = ['label', 'placeholder', 'helperText', 'hint', 'title', 'heading', 'description', 'modalHeading', 'modalDescription', 'modalSubmitActionLabel', 'modalCancelActionLabel', 'emptyStateHeading', 'emptyStateDescription', 'body', 'tooltip', 'successNotificationTitle', 'navigationLabel'];
+export const METHODS = ['label', 'placeholder', 'helperText', 'hint', 'title', 'heading', 'description', 'modalHeading', 'modalDescription', 'modalSubmitActionLabel', 'modalCancelActionLabel', 'emptyStateHeading', 'emptyStateDescription', 'body', 'tooltip', 'successNotificationTitle', 'navigationLabel', 'addActionLabel'];
 export const MAKES = ['Tab', 'Section', 'Fieldset', 'Stat', 'TableColumn', 'Step'];
-export const LABEL_METHODS = ['label', 'getLabel', 'help', 'options', 'description', 'title', 'heading'];
+export const LABEL_METHODS = ['label', 'getLabel', 'help', 'options', 'description', 'title', 'heading', 'statuses'];
+// Column helpers whose second argument is the column's label: static::money('total', 'Total').
+export const LABEL_HELPERS = String.raw`(?:static|self|PricedDocumentForm|SettlementLineFields)::(?:money|text|date|quantity|amount)`;
 
 const SQ = String.raw`'(?:[^'\\]|\\.)*'`; // a PHP single-quoted literal
 const DQ = String.raw`"(?:[^"\\]|\\.)*"`; // a PHP double-quoted literal
@@ -100,7 +105,26 @@ function rewritePhp(src, file) {
     }
     out = rewriteBlocks(out, new RegExp(String.raw`\bfunction\s+(?:${LABEL_METHODS.join('|')})\s*\(`, 'g'), '(', ')', true);
 
+    // 5. Messages the user reads: new RuntimeException('...') and $fail('...'), single- or double-quoted.
+    for (const opener of [String.raw`new\s+\\?RuntimeException\(\s*`, String.raw`\$fail\(\s*`]) {
+        out = out.replace(new RegExp(String.raw`(${opener})(${SQ})`, 'g'), (m, open, lit) => (isText(inner(lit)) ? `${open}__(${lit})` : m));
+        out = out.replace(new RegExp(String.raw`(${opener})(${DQ})`, 'g'), (m, open, lit) => {
+            const converted = convertDoubleQuoted(lit);
+            return converted === null ? m : `${open}${converted}`;
+        });
+    }
+
+    // 6. static::money('total', 'Total') and the other column helpers: the label.
+    out = out.replace(new RegExp(String.raw`(${LABEL_HELPERS}\(\s*${SQ}\s*,\s*)(${SQ})`, 'g'), (m, open, lit) => (isText(inner(lit)) ? `${open}__(${lit})` : m));
+
+    // 7. The spreadsheet headers listed in exportHeaders().
+    out = rewriteBlocks(out, /\bfunction\s+exportHeaders\s*\(/g, '(', ')', true, wrapListValues);
+
     return out;
+}
+
+function wrapListValues(block) {
+    return block.replace(new RegExp(String.raw`([\[,]\s*)(${SQ})(?=\s*[,\]])`, 'g'), (m, before, lit) => (isText(inner(lit)) ? `${before}__(${lit})` : m));
 }
 
 /** The content of a quoted literal, quotes stripped (escapes kept). */
@@ -113,7 +137,7 @@ function inner(lit) {
  * => 'Text' values inside. With `thenBraces`, the block is the {...} that follows
  * the matched parentheses (a match expression or a method body).
  */
-function rewriteBlocks(src, opener, open, close, thenBraces = false) {
+function rewriteBlocks(src, opener, open, close, thenBraces = false, wrap = wrapArrowValues) {
     let out = '';
     let last = 0;
     let m;
@@ -134,7 +158,7 @@ function rewriteBlocks(src, opener, open, close, thenBraces = false) {
             end = matchBracket(src, brace, '{', '}');
             if (end < 0) continue;
         }
-        out += src.slice(last, start) + wrapArrowValues(src.slice(start, end + 1));
+        out += src.slice(last, start) + wrap(src.slice(start, end + 1));
         last = end + 1;
         opener.lastIndex = last;
     }

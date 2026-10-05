@@ -66,7 +66,7 @@ class CurrencyResource extends MasterResource
                 ])
                 ->helperText(__('Base currency per one unit. A document takes the latest rate on or before its date; the tax rate is the Minister of Finance\'s weekly rate for VAT.'))
                 ->defaultItems(0)
-                ->addActionLabel('Add rate')
+                ->addActionLabel(__('Add rate'))
                 ->visible(fn (Get $get) => ! $get('is_base'))
                 ->columnSpanFull(),
         ])->columns(2);

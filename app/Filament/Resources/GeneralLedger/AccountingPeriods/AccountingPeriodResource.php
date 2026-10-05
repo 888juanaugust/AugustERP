@@ -57,7 +57,7 @@ class AccountingPeriodResource extends ErpResource
             ->columns([
                 TextColumn::make('label')->label(__('Month'))->state(fn (AccountingPeriod $r) => $r->label())->weight('medium'),
                 TextColumn::make('status')->label(__('fields.status'))->badge()
-                    ->formatStateUsing(fn (string $state) => ucfirst($state))
+                    ->formatStateUsing(fn (string $state) => Format::code($state, 'period'))
                     ->color(fn (string $state) => $state === AccountingPeriod::CLOSED ? 'success' : 'gray'),
                 TextColumn::make('closed_at')->label(__('Closed on'))->formatStateUsing(fn ($state) => Format::dateTime($state))->placeholder('—'),
                 TextColumn::make('closedBy.name')->label(__('By'))->placeholder('—'),

@@ -76,7 +76,7 @@ class VendorClaimResource extends ErpResource
                             TextInput::make('memo')->maxLength(255),
                             LineItemFields::baseQuantity(),
                         ])
-                        ->minItems(1)->defaultItems(1)->addActionLabel('Add line')
+                        ->minItems(1)->defaultItems(1)->addActionLabel(__('Add line'))
                         ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data])[0])
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => LineItemFields::fillBaseQuantities([$data])[0]),
                 ]),

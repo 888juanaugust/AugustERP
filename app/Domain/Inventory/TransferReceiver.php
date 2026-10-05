@@ -26,7 +26,7 @@ final class TransferReceiver
     public function receive(ItemTransfer $send, array $quantities, CarbonInterface $date, ?string $number = null, ?string $description = null): ItemTransfer
     {
         if (! $send->isSend()) {
-            throw new RuntimeException('Only a sent transfer can be received.');
+            throw new RuntimeException(__('Only a sent transfer can be received.'));
         }
 
         return DB::transaction(function () use ($send, $quantities, $date, $number, $description): ItemTransfer {
@@ -54,7 +54,7 @@ final class TransferReceiver
                 }
                 $remaining = BigDecimal::of((string) $line->base_quantity)->minus((string) $line->processed_quantity);
                 if ($qty->isGreaterThan($remaining)) {
-                    throw new RuntimeException("Line {$line->item->number}: only {$remaining} left to receive.");
+                    throw new RuntimeException(__('Line :number: only :remaining left to receive.', ['number' => $line->item->number, 'remaining' => $remaining]));
                 }
                 $receive->lines()->create([
                     'sort' => $sort++,
@@ -69,7 +69,7 @@ final class TransferReceiver
             }
 
             if ($receive->lines()->count() === 0) {
-                throw new RuntimeException('Nothing to receive.');
+                throw new RuntimeException(__('Nothing to receive.'));
             }
 
             $this->documents->created($receive);

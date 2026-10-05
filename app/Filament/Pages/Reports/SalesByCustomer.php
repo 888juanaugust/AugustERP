@@ -37,18 +37,18 @@ class SalesByCustomer extends ReportPage
     protected function columns(): array
     {
         return [
-            static::text('name', 'Customer'),
-            static::text('invoices', 'Invoices')->alignEnd(),
-            static::quantity('quantity', 'Quantity'),
-            static::money('amount', 'Amount'),
-            static::money('tax', 'VAT'),
-            static::money('total', 'Total'),
+            static::text('name', __('Customer')),
+            static::text('invoices', __('Invoices'))->alignEnd(),
+            static::quantity('quantity', __('Quantity')),
+            static::money('amount', __('Amount')),
+            static::money('tax', __('VAT')),
+            static::money('total', __('Total')),
         ];
     }
 
     protected function exportHeaders(): array
     {
-        return ['Customer', 'Invoices', 'Quantity', 'Amount', 'VAT', 'Total'];
+        return [__('Customer'), __('Invoices'), __('Quantity'), __('Amount'), __('VAT'), __('Total')];
     }
 
     protected function exportRow(array $row): array
