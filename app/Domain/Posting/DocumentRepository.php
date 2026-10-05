@@ -11,6 +11,7 @@ use App\Domain\CashBank\GiroService;
 use App\Domain\Fulfilment\FulfilmentService;
 use App\Domain\Posting\Contracts\AppliesEffects;
 use App\Domain\Posting\Contracts\Postable;
+use App\Domain\Shared\RecordInUse;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -97,7 +98,7 @@ final class DocumentRepository
 
     public function delete(Model $document): void
     {
-        DB::transaction(function () use ($document): void {
+        RecordInUse::guard($document, function () use ($document): void {
             $this->guard->assertBranchAllowed($this->branchOf($document));
             if ($document instanceof Postable) {
                 $this->guard->assertDeletable($document, $this->postings->activePosting($document) !== null);

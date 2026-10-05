@@ -71,7 +71,7 @@ class ProjectResource extends MasterResource
             ])
             ->defaultSort('code')
             ->filters([SelectFilter::make('status')->label(__('fields.status'))->options(self::statuses())])
-            ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()->hidden(fn (Project $record) => $record->isInUse())]);
+            ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);
     }
 
     public static function getPages(): array

@@ -55,7 +55,7 @@ class DepartmentResource extends MasterResource
             ])
             ->defaultSort('code')
             ->filters([self::activeFilter()])
-            ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()->hidden(fn (Department $record) => $record->isInUse())]);
+            ->recordActions([EditAction::make()->slideOver(), DeleteAction::make()]);
     }
 
     public static function getPages(): array

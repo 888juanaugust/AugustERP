@@ -4,7 +4,6 @@ namespace App\Models\Company;
 
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
-use App\Domain\Posting\Tags;
 use App\Models\Sales\Customer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,12 +32,6 @@ class Project extends Model implements HasAuditReference
     {
         return static::query()->whereIn('status', ['planned', 'active'])->orderBy('code')->get()
             ->mapWithKeys(fn (self $p) => [$p->id => "{$p->code} · {$p->name}"])->all();
-    }
-
-    /** A project tagged on any row cannot be deleted, only finished or cancelled. */
-    public function isInUse(): bool
-    {
-        return Tags::used('project_id', $this->id);
     }
 
     public function auditReference(): string

@@ -6,10 +6,12 @@ use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Shared\Format;
 use App\Filament\Pages\Workspace;
+use App\Filament\Support\SafeDelete;
 use App\Filament\Support\SideTabIcons;
 use App\Filament\Widgets\CompanyPulse;
 use App\Http\Controllers\PrintController;
 use App\Http\Middleware\EnforceAccessWindow;
+use Filament\Actions\DeleteAction;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Forms\Components\DatePicker;
@@ -27,6 +29,7 @@ use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
@@ -60,6 +63,10 @@ class AdminPanelProvider extends PanelProvider
         Tab::configureUsing(fn (Tab $tab) => $tab
             ->icon(fn (Tab $component) => SideTabIcons::for((string) $component->getLabel()))
             ->extraAttributes(fn (Tab $component): array => ['title' => (string) $component->getLabel()], merge: true));
+
+        // A record something else still uses is refused with where it is used, never a database error.
+        // (Documents set their own ->using(), through the document repository, which refuses the same way.)
+        DeleteAction::configureUsing(fn (DeleteAction $action) => $action->using(fn (Model $record): bool => SafeDelete::run($record)));
 
         // Every date field types and shows dates in the format Preferences choose.
         DatePicker::configureUsing(fn (DatePicker $picker) => $picker->displayFormat(fn (): string => Format::dateInputFormat()));

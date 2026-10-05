@@ -7,6 +7,7 @@ This is the functional standard of the template: what every module does, screen 
 - Money is stored as whole units of the base currency (BIGINT); tax base and tax are computed and stored per line; a document's totals are sums of its lines.
 - Postings (journal, stock movements, payment allocations) are derived from documents by one posting layer and are never written by hand; the audit log and document revisions only grow.
 - A recorded document may be edited or deleted, subject to access rights, the closed-period lock (on the old and the new date) and blockers: reconciled, settled, referenced by a later document.
+- Nothing still in use can be deleted: a customer, item, unit, account, tax code, department or any other record that a document, a ledger entry or another record points at is refused with the screens that use it ("used on Sales Invoices, the stock ledger"), and the advice to deactivate it where it can be deactivated. The refusal leaves everything as it was.
 - Branches are a tag inside one set of books: one ledger, one stock, one average cost.
 - Every transaction screen follows one pattern: a header (customer or vendor, date, a number drawn from a numbering series or typed by hand), a tab of lines, a tab of other information, a tab of other charges; the list opens with filters on date, status and printed state.
 - An invoice is paid only when the allocations of payment documents reach its total; a sales order is approved only under the approval rules when the Sales Order Approval rule is on.

@@ -4,7 +4,6 @@ namespace App\Models\Company;
 
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
-use App\Domain\Posting\Tags;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -64,12 +63,6 @@ class Department extends Model implements HasAuditReference
         $walk(null, 0);
 
         return $out;
-    }
-
-    /** A department with departments under it or tagged on any row cannot be deleted, only deactivated. */
-    public function isInUse(): bool
-    {
-        return $this->children()->exists() || Tags::used('department_id', $this->id);
     }
 
     public function auditReference(): string
