@@ -155,6 +155,7 @@ class CustomerResource extends MasterResource
                             TextInput::make('nitku')->label(__('Business location ID (NITKU)'))->maxLength(30),
                             TextInput::make('country_tax_code')->label(__('Country code'))->maxLength(5)->default('IDN'),
                             Select::make('document_code')->label(__('Transaction type'))->options(TaxDocumentCode::options(TaxDocumentCode::forCustomers()))->native(false),
+                            TextInput::make('tax_invoice_email')->label(__('Tax invoices go to'))->email()->maxLength(150)->placeholder(__('The customer\'s email')),
                         ]),
                         Toggle::make('tax_same_as_bill')->label(__('Tax address is the billing address'))->default(true)->live(),
                         AddressFields::make('tax', 'Tax address')->visible(fn (Get $get) => ! $get('tax_same_as_bill')),

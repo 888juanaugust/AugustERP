@@ -99,6 +99,6 @@ class ScreenRouteTest extends TestCase
             $this->assertContains($key->value, $built, $key->label().' is not built');
         }
 
-        $this->assertEqualsCanonicalizing([MenuKey::EmailTaxInvoice->value], $placeholders);
+        $this->assertSame([], $placeholders, 'every screen is built');
     }
 }

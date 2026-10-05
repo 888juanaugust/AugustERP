@@ -307,6 +307,7 @@ Menu key `customer__sales-invoice` · module `sales`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Tax invoice emails | `tax_invoice_mails` | computed |  |
 | Paid | `paid` | computed |  |
 
 **Actions:** Pull from deliveries · Pull from orders
@@ -581,6 +582,7 @@ Menu key `customer__customer` · module `sales`
 | Business location ID (NITKU) | `nitku` | text |  |
 | Country code | `country_tax_code` | text |  |
 | Transaction type | `document_code` | select |  |
+| Tax invoices go to | `tax_invoice_email` | text |  |
 | Tax address is the billing address | `tax_same_as_bill` | toggle |  |
 
 **Fieldset: Tax address**
