@@ -61,7 +61,9 @@ final class LineCalculator
         $taxTotal = 0;
         $k = 0;
         foreach ($out as $i => $line) {
-            $taxed = (int) $line['amount'] - ($shares[$k++] ?? 0);
+            $share = $shares[$k++] ?? 0;
+            $taxed = (int) $line['amount'] - $share;
+            $out[$i]['header_discount'] = $share;
             $code = $taxable && ! empty($line['tax_code_id']) ? ($taxCodes[$line['tax_code_id']] ?? null) : null;
             $result = TaxCalculator::forLine($taxed, $code, $inclusive);
             $out[$i]['dpp_amount'] = $result->dpp;

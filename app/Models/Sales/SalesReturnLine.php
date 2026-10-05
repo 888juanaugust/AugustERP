@@ -24,7 +24,7 @@ class SalesReturnLine extends Model
         return [
             'quantity' => 'decimal:4', 'base_quantity' => 'decimal:4', 'processed_quantity' => 'decimal:4',
             'unit_price' => 'decimal:4', 'discount_percent' => 'decimal:4',
-            'discount_amount' => 'integer', 'amount' => 'integer', 'dpp_amount' => 'integer', 'tax_amount' => 'integer',
+            'discount_amount' => 'integer', 'header_discount' => 'integer', 'amount' => 'integer', 'dpp_amount' => 'integer', 'tax_amount' => 'integer',
         ];
     }
 
@@ -63,9 +63,9 @@ class SalesReturnLine extends Model
         return $this->belongsTo(Employee::class, 'salesman_id');
     }
 
-    /** The line amount before tax: what the sale is worth to the books. */
+    /** The line amount after its share of the discount on the total, before tax: what it is worth to the books. */
     public function netAmount(): int
     {
-        return (int) $this->amount - ((bool) $this->salesReturn->inclusive_tax ? (int) $this->tax_amount : 0);
+        return (int) $this->amount - (int) $this->header_discount - ((bool) $this->salesReturn->inclusive_tax ? (int) $this->tax_amount : 0);
     }
 }

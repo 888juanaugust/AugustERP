@@ -2,6 +2,7 @@
 
 namespace App\Models\GeneralLedger;
 
+use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
@@ -40,8 +41,7 @@ class AccountOpeningBalance extends Model implements Postable
 
     public function buildPostings(PostingBuilder $builder): void
     {
-        $equity = Account::query()->where('no', '3300')->value('id')
-            ?? Account::query()->where('account_type', 'equity')->orderBy('no')->value('id');
+        $equity = Accounts::openingBalanceEquity();
 
         // The amount is entered with the account's normal sign.
         $signed = $this->account->account_type->isDebitNormal() ? $this->amount : -$this->amount;

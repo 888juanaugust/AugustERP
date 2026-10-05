@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Schedule;
-
-// The commands live in app/Console/Commands; this file only says when they run.
-Schedule::command('erp:depreciate')->lastDayOfMonth('23:30');
-Schedule::command('erp:recurring')->dailyAt('06:00');
+// Each module declares its own scheduled commands in its schedule() method
+// (app/Modules); AppServiceProvider registers them and runs each only while
+// its module is on. A client module does the same.

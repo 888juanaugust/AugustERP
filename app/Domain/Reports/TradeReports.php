@@ -6,16 +6,28 @@ namespace App\Domain\Reports;
 
 use App\Domain\Fulfilment\StatusDeriver;
 use App\Domain\Settlement\SettlementService;
+use App\Models\Company\OpeningBalance;
+use App\Models\Purchasing\PurchaseDownPayment;
 use App\Models\Purchasing\PurchaseInvoice;
 use App\Models\Purchasing\PurchaseInvoiceLine;
 use App\Models\Purchasing\PurchaseOrderLine;
+use App\Models\Purchasing\PurchasePayment;
+use App\Models\Purchasing\PurchaseReturn;
+use App\Models\Purchasing\Vendor;
+use App\Models\Sales\Customer;
+use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesInvoiceLine;
 use App\Models\Sales\SalesOrderLine;
+use App\Models\Sales\SalesReceipt;
+use App\Models\Sales\SalesReturn;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Sales (R-07, R-08, R-09) and purchasing (R-10, R-11, R-12) reports: what
@@ -55,9 +67,9 @@ final class TradeReports
             default => $query->join($partyTable, "{$partyTable}.id", '=', "{$docTable}.{$party}_id"),
         };
         $rows = $query
-            ->selectRaw("{$keyExpr} AS key_id, {$nameExpr} AS name, COUNT(DISTINCT {$docTable}.id) AS invoices, SUM({$doc}_lines.base_quantity) AS quantity, SUM({$doc}_lines.amount) AS amount, SUM({$doc}_lines.tax_amount) AS tax")
+            ->selectRaw("{$keyExpr} AS key_id, {$nameExpr} AS name, COUNT(DISTINCT {$docTable}.id) AS invoices, SUM({$doc}_lines.base_quantity) AS quantity, SUM({$doc}_lines.amount - {$doc}_lines.header_discount) AS amount, SUM({$doc}_lines.tax_amount) AS tax")
             ->groupByRaw("{$keyExpr}, {$nameExpr}")
-            ->orderByRaw('SUM('.$doc.'_lines.amount) DESC')
+            ->orderByRaw('SUM('.$doc.'_lines.amount - '.$doc.'_lines.header_discount) DESC')
             ->get();
 
         $out = [];
@@ -127,6 +139,97 @@ final class TradeReports
         return self::aging(PurchaseInvoice::query()->with('vendor'), 'vendor', $period, $basis ?? AgingBuckets::defaultBasis());
     }
 
+    /**
+     * A customer's or vendor's statement: the balance brought forward, then
+     * every invoice, down payment, opening balance, return and receipt or
+     * payment in the period with the running balance owed.
+     *
+     * @return list<array{id: string, trans_date: ?string, number: string, kind: string, charge: ?int, payment: ?int, balance: int, is_total?: bool}>
+     */
+    public static function statement(string $party, int $partyId, Period $period): array
+    {
+        $entries = self::statementEntries($party, $partyId, $period)->sortBy(fn (array $e) => $e['trans_date'].'|'.$e['order'].'|'.$e['number'])->values();
+        $from = $period->fromDate();
+        $balance = 0;
+        foreach ($entries as $entry) {
+            if ($entry['trans_date'] < $from) {
+                $balance += (int) $entry['charge'] - (int) $entry['payment'];
+            }
+        }
+        $rows = [['id' => 'b', 'trans_date' => $from, 'number' => '', 'kind' => __('Balance brought forward'), 'charge' => null, 'payment' => null, 'balance' => $balance]];
+        $charges = 0;
+        $payments = 0;
+        foreach ($entries->filter(fn (array $e) => $e['trans_date'] >= $from) as $entry) {
+            $balance += (int) $entry['charge'] - (int) $entry['payment'];
+            $charges += (int) $entry['charge'];
+            $payments += (int) $entry['payment'];
+            $rows[] = ['id' => $entry['id'], 'trans_date' => $entry['trans_date'], 'number' => $entry['number'], 'kind' => $entry['kind'], 'charge' => $entry['charge'], 'payment' => $entry['payment'], 'balance' => $balance];
+        }
+        $rows[] = ['id' => 'c', 'trans_date' => $period->untilDate(), 'number' => '', 'kind' => __('Balance owed'), 'charge' => $charges, 'payment' => $payments, 'balance' => $balance, 'is_total' => true];
+
+        return $rows;
+    }
+
+    /** @return Collection<int, array{id: string, trans_date: string, order: int, number: string, kind: string, charge: ?int, payment: ?int}> up to the period's end */
+    private static function statementEntries(string $party, int $partyId, Period $period): Collection
+    {
+        $customer = $party === 'customer';
+        $sources = $customer
+            ? [[SalesInvoice::class, __('Invoice'), 1], [SalesDownPayment::class, __('Down payment'), 1], [SalesReturn::class, __('Return'), -1], [SalesReceipt::class, __('Receipt'), -1]]
+            : [[PurchaseInvoice::class, __('Bill'), 1], [PurchaseDownPayment::class, __('Down payment'), 1], [PurchaseReturn::class, __('Return'), -1], [PurchasePayment::class, __('Payment'), -1]];
+        $column = $customer ? 'customer_id' : 'vendor_id';
+        $out = collect();
+        foreach ($sources as [$class, $kind, $sign]) {
+            $docs = $class::query()->where($column, $partyId)->where('trans_date', '<=', $period->untilDate())
+                ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))->get();
+            foreach ($docs as $doc) {
+                $amount = self::statementAmount($doc);
+                if ($amount === null) {
+                    continue;
+                }
+                $out->push(['id' => $doc->getMorphClass().':'.$doc->id, 'trans_date' => $doc->trans_date->toDateString(), 'order' => $sign > 0 ? 1 : 2, 'number' => (string) $doc->number, 'kind' => $kind,
+                    'charge' => $sign > 0 ? $amount : null, 'payment' => $sign < 0 ? $amount : null]);
+            }
+        }
+        $type = $customer ? (new Customer)->getMorphClass() : (new Vendor)->getMorphClass();
+        foreach (OpeningBalance::query()->where('party_type', $type)->where('party_id', $partyId)->where('trans_date', '<=', $period->untilDate())
+            ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))->get() as $opening) {
+            $out->push(['id' => 'opening_balance:'.$opening->id, 'trans_date' => $opening->trans_date->toDateString(), 'order' => 0, 'number' => $opening->postingNumber(), 'kind' => __('Opening balance'), 'charge' => (int) $opening->amount, 'payment' => null]);
+        }
+
+        return $out;
+    }
+
+    /** What a document adds to or takes from the balance owed; null when it counts for nothing (a bounced giro). */
+    private static function statementAmount(Model $doc): ?int
+    {
+        if ($doc instanceof SalesReceipt || $doc instanceof PurchasePayment) {
+            if ($doc->giro?->isBounced()) {
+                return null;
+            }
+
+            return (int) $doc->lines()->sum(DB::raw('amount + discount'));
+        }
+        if ($doc instanceof SalesInvoice || $doc instanceof PurchaseInvoice) {
+            return (int) $doc->total - (int) $doc->down_payment_total;
+        }
+
+        return (int) $doc->total;
+    }
+
+    /** @return Collection<int, OpeningBalance> the party kind's opening balances still open, posted by the period's end */
+    private static function openOpenings(string $party, Period $period): Collection
+    {
+        $type = $party === 'customer' ? (new Customer)->getMorphClass() : (new Vendor)->getMorphClass();
+
+        return OpeningBalance::query()->with('party')
+            ->where('party_type', $type)
+            ->where('trans_date', '<=', $period->untilDate())
+            ->where('payment_status', '!=', 'paid')
+            ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
+            ->get();
+    }
+
     /** Buckets (from Preferences) by days since the invoice (or its due) date, as at the period's end. */
     private static function aging(Builder $invoices, string $party, Period $period, string $basis): array
     {
@@ -136,7 +239,8 @@ final class TradeReports
             ->where('trans_date', '<=', $period->untilDate())
             ->where('payment_status', '!=', 'paid')
             ->when($period->branchId, fn (Builder $q) => $q->where('branch_id', $period->branchId))
-            ->get();
+            ->get()
+            ->concat(self::openOpenings($party, $period));
         $columns = AgingBuckets::all();
         $buckets = array_fill_keys(array_column($columns, 'key'), 0);
         $byParty = [];
@@ -145,11 +249,13 @@ final class TradeReports
             if ($balance <= 0) {
                 continue;
             }
-            $reference = CarbonImmutable::parse($basis === 'due_date' && $invoice->due_date ? $invoice->due_date : $invoice->trans_date);
+            $opening = $invoice instanceof OpeningBalance;
+            $issued = $opening ? $invoice->agingDate() : $invoice->trans_date;
+            $reference = CarbonImmutable::parse($basis === 'due_date' && $invoice->due_date ? $invoice->due_date : $issued);
             $days = (int) $reference->diffInDays($asOf, false);
             $bucket = AgingBuckets::keyFor($days, $columns);
-            $name = $invoice->{$party}?->name ?? '—';
-            $id = $invoice->{"{$party}_id"};
+            $name = ($opening ? $invoice->party?->name : $invoice->{$party}?->name) ?? '—';
+            $id = $opening ? $invoice->party_id : $invoice->{"{$party}_id"};
             $byParty[$id] ??= ['id' => $id, 'name' => $name, 'invoices' => 0] + $buckets + ['total' => 0, 'oldest_days' => 0];
             $byParty[$id]['invoices']++;
             $byParty[$id][$bucket] += $balance;

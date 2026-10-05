@@ -16,6 +16,7 @@ use App\Domain\Posting\PostingService;
 use App\Models\User;
 use App\Modules\ModuleContext;
 use App\Modules\ModuleRegistry;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
@@ -65,6 +66,22 @@ class AppServiceProvider extends ServiceProvider
         foreach ($registry->all() as $module) {
             $module::boot($context);
         }
+
+        // Each module's own console commands and schedule. Every module's are
+        // registered (the database may not exist yet when a command boots);
+        // a scheduled run happens only while its module is on.
+        if ($this->app->runningInConsole()) {
+            $this->commands(array_merge(...array_map(fn (string $module) => $module::commands(), $registry->all())));
+        }
+        $this->app->afterResolving(Schedule::class, function (Schedule $schedule) use ($registry): void {
+            foreach ($registry->all() as $module) {
+                $before = count($schedule->events());
+                $module::schedule($schedule);
+                foreach (array_slice($schedule->events(), $before) as $event) {
+                    $event->when(fn (): bool => $registry->isEnabled($module::key()));
+                }
+            }
+        });
 
         // Every ability on a model resolves through the access matrix: the
         // model's screen (MenuRegistry) and the right the ability maps to.

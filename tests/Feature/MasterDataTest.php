@@ -51,7 +51,7 @@ class MasterDataTest extends TestCase
                 'wp_number' => '01.234.567.8-901.000',
                 'wp_name' => 'Acme Trading Ltd',
                 'document_code' => 'tax_invoice',
-                'openingBalances' => [['trans_date' => '2026-09-30', 'amount' => 1500000, 'number' => 'INV-OLD-1', 'description' => 'carried in']],
+                'openingBalances' => [['document_date' => '2026-09-30', 'amount' => 1500000, 'number' => 'INV-OLD-1', 'description' => 'carried in']],
                 'credit_limit_mode' => 'per_customer',
                 'credit_limit_amount_enabled' => true,
                 'credit_limit_amount' => 25000000,
@@ -105,7 +105,7 @@ class MasterDataTest extends TestCase
                 'wp_number' => '02.000.000.0-000.000',
                 'document_code' => 'domestic',
                 'use_bill_number' => true,
-                'openingBalances' => [['trans_date' => '2026-09-30', 'amount' => 700000]],
+                'openingBalances' => [['document_date' => '2026-09-30', 'amount' => 700000]],
             ])
             ->call('create')
             ->assertHasNoFormErrors();

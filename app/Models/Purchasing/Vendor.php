@@ -6,6 +6,7 @@ use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Domain\Shared\Enums\TaxDocumentCode;
 use App\Domain\Shared\Enums\WpType;
+use App\Domain\Shared\RecordInUse;
 use App\Models\Company\Branch;
 use App\Models\Company\OpeningBalance;
 use App\Models\Company\PaymentTerm;
@@ -62,6 +63,16 @@ class Vendor extends Model implements HasAuditReference
     public function bankAccounts(): HasMany
     {
         return $this->hasMany(VendorBankAccount::class)->orderBy('sort');
+    }
+
+    /** Opening balances post to the books, so a party holding any stays; deactivate it instead. */
+    protected static function booted(): void
+    {
+        static::deleting(function (self $party): void {
+            if ($party->openingBalances()->exists()) {
+                throw new RecordInUse($party, [__('Opening balances')]);
+            }
+        });
     }
 
     public function openingBalances(): MorphMany

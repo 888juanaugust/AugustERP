@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\GeneralLedger\Accounts\Pages;
 
-use App\Domain\Posting\PostingService;
+use App\Domain\GeneralLedger\AccountOpenings;
 use App\Filament\Resources\GeneralLedger\Accounts\AccountResource;
 use App\Filament\Support\ManageMaster;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\AccountOpeningBalance;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -26,7 +27,7 @@ class ManageAccounts extends ManageMaster
         return [
             CreateAction::make()->label(__('New account'))->slideOver()
                 ->mutateDataUsing(fn (array $data) => self::liftOpening($data))
-                ->after(fn (Model $record, array $data) => self::saveOpening($record, $data)),
+                ->after(fn (Model $record, CreateAction $action) => self::saveOpening($record, $action)),
         ];
     }
 
@@ -42,7 +43,7 @@ class ManageAccounts extends ManageMaster
                     return $data;
                 })
                 ->mutateDataUsing(fn (array $data) => self::liftOpening($data))
-                ->after(fn (Model $record, array $data) => self::saveOpening($record, $data)),
+                ->after(fn (Model $record, EditAction $action) => self::saveOpening($record, $action)),
             DeleteAction::make()->hidden(fn (Account $r) => $r->is_system),
         ]);
     }
@@ -57,29 +58,14 @@ class ManageAccounts extends ManageMaster
         return $data;
     }
 
-    private static function saveOpening(Model $record, array $data): void
+    /** The opening balance is saved with the account; when it is refused, so is the account change. */
+    private static function saveOpening(Model $record, Action $action): void
     {
-        $amount = self::$opening['amount'] ?? null;
-        $date = self::$opening['date'] ?? null;
-        $existing = AccountOpeningBalance::query()->where('account_id', $record->id)->first();
-
-        if ($amount === null || $amount === '' || (int) $amount === 0) {
-            if ($existing !== null) {
-                app(PostingService::class)->unpost($existing);
-                $existing->delete();
-            }
-
-            return;
-        }
-
         try {
-            $opening = AccountOpeningBalance::query()->updateOrCreate(
-                ['account_id' => $record->id],
-                ['amount' => (int) $amount, 'trans_date' => $date ?: now()->startOfYear()->toDateString()],
-            );
-            app(PostingService::class)->post($opening->fresh()->load('account'));
+            app(AccountOpenings::class)->save($record, self::$opening['amount'] ?? null, self::$opening['date'] ?? null);
         } catch (\RuntimeException $e) {
-            Notification::make()->title(__('Opening balance not posted'))->body($e->getMessage())->danger()->persistent()->send();
+            Notification::make()->title(__('Opening balance not saved'))->body($e->getMessage())->danger()->persistent()->send();
+            $action->halt();
         }
     }
 }

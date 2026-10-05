@@ -9,6 +9,7 @@ Module group `reports`. 5 screens in the standard menu.
 - The VAT return summarises output and input tax per tax period, headed by the company's VAT identity (registered name, tax ID, VAT registration number and date, business type, KLU). The two Article 21 income-tax forms wait for the payroll module's completion.
 - The balance sheet shows the income of fiscal years before the current one as retained earnings and the current fiscal year's as "Net income this year"; the fiscal year starts in the month Preferences name. The income statement, statement of changes in equity and cash flow open on the fiscal year to date; the other reports on the current month.
 - Receivable and payable aging use the buckets Preferences set (an interval up to a range, then everything older: current, 1–30, 31–60, 61–90 and over 90 days to start) and age from the invoice date or the due date as Preferences say, which a report may change.
+- Aging and the customer and vendor statements include opening balances, aged from their own invoice date. A statement shows the balance brought forward, then every invoice or bill, down payment, opening balance, return and receipt or payment in the period, with the running balance owed; a bounced giro counts for nothing.
 
 ## Screens
 
@@ -66,6 +67,7 @@ Every figure is computed from the journal and the stock ledger when the report o
 
 | Report | Group | Needs | Filters | What it shows |
 |---|---|---|---|---|
+| Customer Statement | Sales | always on | From · Until · Branch · Customer | One customer's invoices, down payments, opening balances, returns and receipts in the period, with the balance brought forward and the running balance owed. |
 | Open Sales Orders | Sales | always on | From · Until · Branch | Order lines not yet fully delivered or invoiced, with what is left and its value. |
 | Receivable Aging | Sales | always on | From · Until · Branch · Age from | Open receivables per customer by age at the period's end, in the buckets Preferences set (current, 1–30, 31–60, 61–90 and over 90 days to start). |
 | Sales by Customer | Sales | always on | From · Until · Branch | Invoiced sales per customer in the period: invoices, quantity, amount, VAT and total. |
@@ -75,6 +77,7 @@ Every figure is computed from the journal and the stock ledger when the report o
 | Payable Aging | Purchasing | always on | From · Until · Branch · Age from | Open payables per vendor by age at the period's end, in the buckets Preferences set (current, 1–30, 31–60, 61–90 and over 90 days to start). |
 | Purchases by Item | Purchasing | always on | From · Until · Branch | Invoiced purchases per item in the period: invoices, quantity, amount, VAT and total. |
 | Purchases by Vendor | Purchasing | always on | From · Until · Branch | Invoiced purchases per vendor in the period: invoices, quantity, amount, VAT and total. |
+| Vendor Statement | Purchasing | always on | From · Until · Branch · Vendor | One vendor's bills, down payments, opening balances, returns and payments in the period, with the balance brought forward and the running balance owed. |
 | Inventory Value by Warehouse | Inventory | always on | Warehouse · Item category | Quantity on hand, average cost and value of every item per warehouse, from the stock ledger's cost cache. |
 | Stock Card | Inventory | always on | From · Until · Item · Warehouse | One item's movements in and out with the running quantity and value, per warehouse or across all. |
 | Cash & Bank Mutations | Cash & Bank | always on | From · Until · Branch | Opening balance, money in, money out and closing balance of every cash and bank account over the period. |
