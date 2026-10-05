@@ -6,6 +6,7 @@ namespace App\Filament\Resources\Sales\SalesTargets;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Company\FiscalYear;
+use App\Domain\Sales\SalesTargetProgress;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\SalesTargets\Pages\ManageSalesTargets;
 use App\Filament\Support\BranchFields;
@@ -17,6 +18,7 @@ use App\Models\Sales\SalesTarget;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
 use Filament\Forms\Components\Select;
@@ -32,6 +34,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 /** Sales Targets: quantities and values to reach per item, category, salesperson or month, for a period and branch. */
 class SalesTargetResource extends ErpResource
@@ -76,6 +79,12 @@ class SalesTargetResource extends ErpResource
                         ])
                         ->minItems(1)->defaultItems(1)->addActionLabel('Add target'),
                 ]),
+                Tab::make(__('Progress'))
+                    ->visible(fn (?SalesTarget $record) => $record !== null)
+                    ->schema([
+                        Placeholder::make('progress')->hiddenLabel()
+                            ->content(fn (?SalesTarget $record) => $record ? new HtmlString(view('filament.sales.target-progress', ['rows' => SalesTargetProgress::of($record)])->render()) : null),
+                    ]),
                 Tab::make(__('Notes'))->schema([
                     Textarea::make('notes')->label(__('fields.memo'))->rows(3),
                     TextInput::make('analyst_name')->label(__('Analyst'))->maxLength(100),
