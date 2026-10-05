@@ -7,6 +7,7 @@ Module group `general-ledger`. 9 screens in the standard menu.
 - The chart of accounts is a tree of accounts, each of one of sixteen types (cash and bank, accounts receivable, inventory, other current asset, fixed asset, accumulated depreciation, other asset, accounts payable, other current liability, long-term liability, equity, revenue, cost of goods sold, expense, other income, other expense) that decide where it appears on the statements; an account may carry an opening balance per start date and be deactivated.
 - The default accounts the posting layer uses (receivable, payable, down payments, inventory, cost of sales, goods delivered not yet invoiced, rounding, giros) are preferences, never constants.
 - Journal vouchers are manual multi-line entries that must balance; expense accruals book expenses to any account with tax and branch per line; payroll entries book salaries by employee and component when the payroll module is on.
+- With departments or projects on, journal vouchers, expense accruals, payroll entries, payments and receipts carry a department and a project on the header and on each line. A line's own wins; a line that names none, and every leg the document books for itself (the bank, the payable, the tax), takes the header's. Account history filters by them.
 - An expense accrual or a payroll entry is paid by a payment (Cash & Bank) whose line settles it: "Pay" on the list opens one, or "Pull open accruals and payroll" on the payment. The line debits the document's own payable account, never more than is open; the document's paid amount and status follow the allocations, and a paid one is locked until its payments are undone.
 - Budgets hold an amount per account per month; the monitor compares them with the books; transfers move budget between accounts and months.
 - Account history is the ledger of one account with a running balance; the journal activity log is the trail of changes to journals.
@@ -95,7 +96,7 @@ Menu key `general-ledger__expense-accrual` · module `general-ledger`
 
 #### Tab: Expense lines
 
-**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Memo
+**Line grid "Lines":** Account · Amount · Tax · Tax invoice No. · Branch · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -107,6 +108,8 @@ Menu key `general-ledger__expense-accrual` · module `general-ledger`
 |---|---|---|---|
 | Due date | `due_date` | date | yes |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Amounts include tax | `inclusive_tax` | toggle |  |
 | Notes | `description` | textarea |  |
 
@@ -138,7 +141,7 @@ Menu key `cash-bank__employee-payment` · module `payroll` · switched by Prefer
 
 #### Tab: Employees
 
-**Line grid "Lines":** Employee · Component · Gross pay · Income tax · Net pay
+**Line grid "Lines":** Employee · Component · Gross pay · Income tax · Net pay · Department · Project
 
 #### Tab: Other info
 
@@ -147,6 +150,8 @@ Menu key `cash-bank__employee-payment` · module `payroll` · switched by Prefer
 | Payable account | `expense_payable_account_id` | select | yes |
 | Income tax payable | `tax_payable_account_id` | select |  |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 | Notes | `description` | textarea |  |
 
 **Actions:** Pull every active employee
@@ -168,10 +173,12 @@ Menu key `general-ledger__journal-voucher` · module `general-ledger`
 | Number format | `series_id` | select |  |
 | Number | `number` | text |  |
 | Branch | `branch_id` | select |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 
 #### Tab: Journal lines
 
-**Line grid "Lines":** Account · Debit · Credit · Memo
+**Line grid "Lines":** Account · Debit · Credit · Department · Project · Memo
 
 | Field | Column | Type | Required |
 |---|---|---|---|
@@ -292,6 +299,8 @@ Menu key `general-ledger__account-history` · module `general-ledger`
 | Account | `account_id` | select |  |
 | From | `from` | date |  |
 | Until | `until` | date |  |
+| Department | `department_id` | select |  |
+| Project | `project_id` | select |  |
 
 ### List
 

@@ -10,6 +10,7 @@ use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Domain\Settlement\Contracts\PaidByPayment;
 use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Format;
@@ -95,9 +96,9 @@ class CashPayment extends Model implements GiroSource, Postable
                 $builder->allocate(['receivable_type' => $line->payable_type, 'receivable_id' => $line->payable_id, 'amount' => $amount, 'discount' => 0]);
             } else {
                 // The expense without its tax; the tax to the tax code's VAT-in account.
-                $builder->signed($line->account_id, LineTax::net($line, $inclusive), $line->memo, $line->branch_id);
+                $builder->signed($line->account_id, LineTax::net($line, $inclusive), $line->memo, $line->branch_id, Tags::of($line));
                 if ((int) $line->tax_amount !== 0) {
-                    $builder->signed(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, $line->tax_invoice_number ? "VAT in {$line->tax_invoice_number}" : 'VAT in', $line->branch_id);
+                    $builder->signed(Accounts::vatIn($line->taxCode), (int) $line->tax_amount, $line->tax_invoice_number ? "VAT in {$line->tax_invoice_number}" : 'VAT in', $line->branch_id, Tags::of($line));
                 }
                 $amount = LineTax::net($line, $inclusive) + (int) $line->tax_amount;
             }

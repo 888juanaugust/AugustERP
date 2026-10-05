@@ -3,6 +3,8 @@
 use App\Modules\Budgeting\BudgetsModule;
 use App\Modules\CashBank\CashBankModule;
 use App\Modules\Company\CompanyModule;
+use App\Modules\Company\DepartmentsModule;
+use App\Modules\Company\ProjectsModule;
 use App\Modules\FixedAssets\FixedAssetsModule;
 use App\Modules\GeneralLedger\GeneralLedgerModule;
 use App\Modules\Inventory\InventoryModule;
@@ -25,6 +27,8 @@ return [
         SettingsModule::class,
         ApprovalModule::class,
         CompanyModule::class,
+        DepartmentsModule::class,
+        ProjectsModule::class,
         GeneralLedgerModule::class,
         BudgetsModule::class,
         PayrollModule::class,

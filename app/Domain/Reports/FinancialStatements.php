@@ -47,7 +47,7 @@ final class FinancialStatements
                 // Income of the fiscal years before this one is retained earnings; this year's stands apart.
                 $income = Ledger::netIncome($net, $accounts);
                 $yearStart = FiscalYear::startOf($period->untilDate());
-                $retained = Ledger::netIncome(Ledger::closingNet(new Period($yearStart->subYears(100)->toDateString(), $yearStart->subDay()->toDateString(), $period->branchId)), $accounts);
+                $retained = Ledger::netIncome(Ledger::closingNet($period->withDates($yearStart->subYears(100), $yearStart->subDay())), $accounts);
                 if ($retained !== 0) {
                     $rows[] = ['id' => 'retained-earnings', 'section' => $section, 'no' => '', 'name' => 'Retained earnings', 'level' => 1, 'amount' => $retained, 'is_total' => false, 'is_heading' => false];
                 }
@@ -177,9 +177,8 @@ final class FinancialStatements
     {
         $accounts = Ledger::accounts();
         $cashIds = $accounts->filter(fn (Account $a) => $a->account_type === AccountType::CashBank)->keys()->all();
-        $lines = JournalLine::query()->active()
+        $lines = $period->applyTo(JournalLine::query()->active())
             ->whereBetween('journal_lines.trans_date', [$period->fromDate(), $period->untilDate()])
-            ->when($period->branchId, fn ($q) => $q->where('journal_lines.branch_id', $period->branchId))
             ->whereIn('journal_lines.posting_id', fn ($q) => $q->select('posting_id')->from('journal_lines')->whereIn('account_id', $cashIds))
             ->get(['posting_id', 'account_id', 'debit', 'credit']);
 

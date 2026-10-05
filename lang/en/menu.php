@@ -29,6 +29,8 @@ return [
         'company__capital-program' => 'Financing Program',
         'company__currency' => 'Currencies',
         'company__branch' => 'Branches',
+        'company__department' => 'Departments',
+        'company__project' => 'Projects',
         'company__tax' => 'Tax Codes',
         'company__payment-term' => 'Payment Terms',
         'company__shipment' => 'Shipping Methods',

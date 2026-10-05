@@ -1,11 +1,12 @@
 # Company
 
-Module group `company`. 14 screens in the standard menu.
+Module group `company`. 16 screens in the standard menu.
 
 ## Behaviours
 
 - The company's name, address, tax ID and phone are preferences printed on every document; the base currency's symbol prefixes every amount.
 - Branches tag documents and journal lines inside one set of books; every document carries a branch (the user's default branch to start) and reports filter by branch. One default branch always exists; the Branches screen shows when Multiple branches is on.
+- Departments and projects are optional (each its own switch under Preferences → Features, off to start). Departments form a tree, each inside a parent or at the top; a project names an optional customer, start and end dates and a status (planned, active, finished, cancelled). Both tag journal lines; a department or project in use cannot be deleted, only deactivated or finished. Switched off, the pickers and filters go and the tags already booked stay.
 - Tax codes carry a rate and the accounts for tax on sales and purchases; a code may compute its base as a fraction of the price (the 12 % VAT whose base is 11/12 of the price is the seeded default). Prices on a document are entered including or excluding tax, per document.
 - Payment terms name a due period in days, an early-payment discount and its window; chosen per customer or vendor and per document.
 - Shipping methods and FOB terms are masters chosen on orders and deliveries.
@@ -18,6 +19,8 @@ Module group `company`. 14 screens in the standard menu.
 
 - [Currencies](#currencies)
 - [Branches](#branches)
+- [Departments](#departments)
+- [Projects](#projects)
 - [Tax Codes](#tax-codes)
 - [Payment Terms](#payment-terms)
 - [Shipping Methods](#shipping-methods)
@@ -90,6 +93,51 @@ Menu key `company__branch` · module `company` · switched by Preferences → Fe
 |---|---|---|---|
 | Available to all users | `used_all_user` | toggle |  |
 | Users | `users` | checkbox list |  |
+
+## Departments
+
+Menu key `company__department` · module `departments` · switched by Preferences → Features → Departments
+
+### List
+
+**Columns:** Code · Name · Part of · Active
+
+**Filters:** Active
+
+**Actions:** Edit · Delete
+
+### Form
+
+| Field | Column | Type | Required |
+|---|---|---|---|
+| Code | `code` | text | yes |
+| Name | `name` | text | yes |
+| Part of | `parent_id` | select |  |
+| Active | `is_active` | toggle |  |
+
+## Projects
+
+Menu key `company__project` · module `projects` · switched by Preferences → Features → Projects
+
+### List
+
+**Columns:** Code · Name · Customer · Starts · Ends · Status
+
+**Filters:** Status
+
+**Actions:** Edit · Delete
+
+### Form
+
+| Field | Column | Type | Required |
+|---|---|---|---|
+| Code | `code` | text | yes |
+| Name | `name` | text | yes |
+| Customer | `customer_id` | select |  |
+| Starts | `start_date` | date |  |
+| Ends | `end_date` | date |  |
+| Status | `status` | select | yes |
+| Notes | `notes` | textarea |  |
 
 ## Tax Codes
 

@@ -13,7 +13,7 @@ use App\Domain\Posting\Exceptions\UnbalancedPostingException;
  */
 final class PostingBuilder
 {
-    /** @var list<array{account_id: int, debit: int, credit: int, memo: ?string, branch_id: ?int}> */
+    /** @var list<array{account_id: int, debit: int, credit: int, memo: ?string, branch_id: ?int, department_id: ?int, project_id: ?int}> */
     private array $journal = [];
 
     /** @var list<array<string, mixed>> */
@@ -22,31 +22,32 @@ final class PostingBuilder
     /** @var list<array<string, mixed>> */
     private array $allocations = [];
 
-    public function __construct(private readonly ?int $defaultBranchId = null) {}
+    /** @param  Tags|null  $defaultTags  the document's department and project, for lines that name none */
+    public function __construct(private readonly ?int $defaultBranchId = null, private readonly ?Tags $defaultTags = null) {}
 
-    public function debit(int $accountId, int $amount, ?string $memo = null, ?int $branchId = null): self
+    public function debit(int $accountId, int $amount, ?string $memo = null, ?int $branchId = null, ?Tags $tags = null): self
     {
-        return $this->line($accountId, $amount, 0, $memo, $branchId);
+        return $this->line($accountId, $amount, 0, $memo, $branchId, $tags);
     }
 
-    public function credit(int $accountId, int $amount, ?string $memo = null, ?int $branchId = null): self
+    public function credit(int $accountId, int $amount, ?string $memo = null, ?int $branchId = null, ?Tags $tags = null): self
     {
-        return $this->line($accountId, 0, $amount, $memo, $branchId);
+        return $this->line($accountId, 0, $amount, $memo, $branchId, $tags);
     }
 
     /** A signed amount: positive debits, negative credits; zero is dropped. */
-    public function signed(int $accountId, int $amount, ?string $memo = null, ?int $branchId = null): self
+    public function signed(int $accountId, int $amount, ?string $memo = null, ?int $branchId = null, ?Tags $tags = null): self
     {
-        return $amount >= 0 ? $this->debit($accountId, $amount, $memo, $branchId) : $this->credit($accountId, -$amount, $memo, $branchId);
+        return $amount >= 0 ? $this->debit($accountId, $amount, $memo, $branchId, $tags) : $this->credit($accountId, -$amount, $memo, $branchId, $tags);
     }
 
-    private function line(int $accountId, int $debit, int $credit, ?string $memo, ?int $branchId): self
+    private function line(int $accountId, int $debit, int $credit, ?string $memo, ?int $branchId, ?Tags $tags): self
     {
         if ($debit === 0 && $credit === 0) {
             return $this;
         }
         if ($debit < 0 || $credit < 0) {
-            return $this->line($accountId, max(0, -$credit), max(0, -$debit), $memo, $branchId);
+            return $this->line($accountId, max(0, -$credit), max(0, -$debit), $memo, $branchId, $tags);
         }
         $this->journal[] = [
             'account_id' => $accountId,
@@ -54,7 +55,7 @@ final class PostingBuilder
             'credit' => $credit,
             'memo' => $memo,
             'branch_id' => $branchId ?? $this->defaultBranchId,
-        ];
+        ] + ($tags ?? Tags::none())->orElse($this->defaultTags)->toArray();
 
         return $this;
     }
@@ -75,7 +76,7 @@ final class PostingBuilder
         return $this;
     }
 
-    /** @return list<array{account_id: int, debit: int, credit: int, memo: ?string, branch_id: ?int}> */
+    /** @return list<array{account_id: int, debit: int, credit: int, memo: ?string, branch_id: ?int, department_id: ?int, project_id: ?int}> */
     public function journalLines(): array
     {
         return $this->journal;

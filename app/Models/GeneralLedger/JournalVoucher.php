@@ -6,6 +6,7 @@ use App\Domain\Approval\RequiresApproval;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\Company\Branch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,8 +38,8 @@ class JournalVoucher extends Model implements Postable
     public function buildPostings(PostingBuilder $builder): void
     {
         foreach ($this->lines as $line) {
-            $builder->debit($line->account_id, (int) $line->debit, $line->memo, $line->branch_id);
-            $builder->credit($line->account_id, (int) $line->credit, $line->memo, $line->branch_id);
+            $builder->debit($line->account_id, (int) $line->debit, $line->memo, $line->branch_id, Tags::of($line));
+            $builder->credit($line->account_id, (int) $line->credit, $line->memo, $line->branch_id, Tags::of($line));
         }
     }
 

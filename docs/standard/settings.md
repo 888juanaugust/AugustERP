@@ -187,6 +187,8 @@ Menu key `company__access-privilege` · module `settings`
 |---|---|---|---|
 | Currencies | `rights.company__currency` | checkbox list |  |
 | Branches | `rights.company__branch` | checkbox list |  |
+| Departments | `rights.company__department` | checkbox list |  |
+| Projects | `rights.company__project` | checkbox list |  |
 | Tax Codes | `rights.company__tax` | checkbox list |  |
 | Payment Terms | `rights.company__payment-term` | checkbox list |  |
 | Shipping Methods | `rights.company__shipment` | checkbox list |  |

@@ -15,6 +15,7 @@ use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
+use App\Filament\Support\TagFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalVoucher;
 use Filament\Forms\Components\DatePicker;
@@ -63,6 +64,7 @@ class JournalVoucherResource extends ErpResource
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
                     NumberFields::make(TransactionType::JournalVoucher, 'Number'),
                     BranchFields::select(),
+                    ...TagFields::header(),
                 ]),
             Tabs::make('voucher')->tabs([
                 Tab::make(__('Journal lines'))->schema([
@@ -74,12 +76,14 @@ class JournalVoucherResource extends ErpResource
                             TableColumn::make(__('Account')),
                             TableColumn::make(__('Debit'))->alignment(Alignment::End),
                             TableColumn::make(__('Credit'))->alignment(Alignment::End),
+                            ...TagFields::columns(),
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('account_id')->options(fn () => Account::options())->searchable()->required()->native(false),
                             self::money('debit', 'Debit'),
                             self::money('credit', 'Credit'),
+                            ...TagFields::lineFields(),
                             TextInput::make('memo')->maxLength(255),
                         ])
                         ->live()

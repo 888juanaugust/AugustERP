@@ -3,15 +3,17 @@
 namespace Tests\Support;
 
 use App\Models\Company\Branch;
+use App\Models\Company\Department;
 use App\Models\Company\Employee;
 use App\Models\Company\PaymentTerm;
+use App\Models\Company\Project;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\Unit;
 use App\Models\Purchasing\Vendor;
 use App\Models\Sales\Customer;
 use App\Models\Sales\PriceCategory;
 
-/** The one customer, vendor, item and salesperson most tests need, on the seeded defaults; pass attributes to vary them. */
+/** The one customer, vendor, item, salesperson, department and project most tests need, on the seeded defaults; pass attributes to vary them. */
 trait Fixtures
 {
     /** @param  array<string, mixed>  $attributes */
@@ -54,6 +56,26 @@ trait Fixtures
             'number' => 'EMP-00001',
             'name' => 'Alex Doe',
             'is_salesman' => true,
+        ], $attributes));
+    }
+
+    /** @param  array<string, mixed>  $attributes */
+    protected function sampleDepartment(array $attributes = []): Department
+    {
+        return Department::query()->create(array_merge([
+            'code' => 'D-SALES',
+            'name' => 'Sales',
+        ], $attributes));
+    }
+
+    /** @param  array<string, mixed>  $attributes */
+    protected function sampleProject(array $attributes = []): Project
+    {
+        return Project::query()->create(array_merge([
+            'code' => 'P-001',
+            'name' => 'Warehouse fit-out',
+            'start_date' => '2026-11-01',
+            'status' => 'active',
         ], $attributes));
     }
 }

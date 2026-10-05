@@ -23,6 +23,7 @@ use App\Filament\Support\Months;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PayAction;
 use App\Filament\Support\PricedDocumentForm;
+use App\Filament\Support\TagFields;
 use App\Models\Company\Employee;
 use App\Models\Company\PayrollEntry;
 use App\Models\Company\SalaryComponent;
@@ -123,6 +124,7 @@ class PayrollEntryResource extends ErpResource
                             TableColumn::make(__('Gross pay'))->alignment(Alignment::End),
                             TableColumn::make(__('Income tax'))->alignment(Alignment::End),
                             TableColumn::make(__('Net pay'))->alignment(Alignment::End),
+                            ...TagFields::columns(),
                         ])
                         ->schema([
                             Select::make('employee_id')->options(fn () => Employee::query()->orderBy('name')->pluck('name', 'id')->all())->searchable()->required()->native(false),
@@ -132,6 +134,7 @@ class PayrollEntryResource extends ErpResource
                             PricedDocumentForm::money('income_tax', 'Income tax')->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
                             PricedDocumentForm::money('net_amount', 'Net pay')->required(),
+                            ...TagFields::lineFields(),
                         ])
                         ->minItems(1)
                         ->defaultItems(1)
@@ -144,6 +147,7 @@ class PayrollEntryResource extends ErpResource
                     Select::make('tax_payable_account_id')->label(__('Income tax payable'))->options(fn () => self::payableOptions())->searchable()->native(false)
                         ->default(fn () => Account::query()->where('no', '2220')->value('id')),
                     BranchFields::select(__('Branch'), defaulted: false),
+                    ...TagFields::header(),
                     Textarea::make('description')->label(__('Notes'))->rows(2)->maxLength(255),
                 ])->columns(2),
             ]),

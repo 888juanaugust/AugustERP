@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Filament\Pages\GeneralLedger;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Reports\Period;
 use App\Domain\Shared\Format;
 use App\Filament\Support\ErpPage;
+use App\Filament\Support\TagFields;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalLine;
 use Filament\Forms\Components\DatePicker;
@@ -45,6 +47,8 @@ class AccountHistory extends ErpPage implements HasTable
             'account_id' => null,
             'from' => today()->startOfMonth()->toDateString(),
             'until' => today()->toDateString(),
+            'department_id' => null,
+            'project_id' => null,
         ]);
     }
 
@@ -56,6 +60,7 @@ class AccountHistory extends ErpPage implements HasTable
                     Select::make('account_id')->label(__('Account'))->options(fn () => Account::options())->searchable()->native(false)->live(),
                     DatePicker::make('from')->label(__('From'))->native(false)->live(),
                     DatePicker::make('until')->label(__('Until'))->native(false)->live(),
+                    ...TagFields::filters(),
                 ]),
             ])
             ->statePath('filters');
@@ -95,8 +100,11 @@ class AccountHistory extends ErpPage implements HasTable
         $debitNormal = $account?->account_type->isDebitNormal() ?? true;
         $from = $this->filters['from'] ?? null;
         $until = $this->filters['until'] ?? null;
+        $tags = new Period($from ?? today()->toDateString(), $until ?? today()->toDateString(), null,
+            TagFields::picked($this->filters['department_id'] ?? null, 'departments'),
+            TagFields::picked($this->filters['project_id'] ?? null, 'projects'));
 
-        $opening = (int) JournalLine::query()->active()
+        $opening = (int) $tags->applyTo(JournalLine::query()->active())
             ->where('account_id', $accountId)
             ->when($from, fn ($q) => $q->where('trans_date', '<', $from))
             ->selectRaw('COALESCE(SUM(debit - credit), 0) AS net')
@@ -114,7 +122,7 @@ class AccountHistory extends ErpPage implements HasTable
             'balance' => Format::number($balance),
         ]];
 
-        $lines = JournalLine::query()->active()
+        $lines = $tags->applyTo(JournalLine::query()->active())
             ->with('entry')
             ->where('account_id', $accountId)
             ->when($from, fn ($q) => $q->where('trans_date', '>=', $from))

@@ -14,6 +14,11 @@ class IncomeStatement extends ReportPage
         return true;
     }
 
+    protected function usesTags(): bool
+    {
+        return true;
+    }
+
     public static function reportKey(): string
     {
         return 'income-statement';

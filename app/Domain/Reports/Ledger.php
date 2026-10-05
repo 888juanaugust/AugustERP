@@ -93,8 +93,7 @@ final class Ledger
 
     private static function lines(Period $period): Builder
     {
-        return JournalLine::query()->active()
-            ->when($period->branchId, fn (Builder $q) => $q->where('journal_lines.branch_id', $period->branchId));
+        return $period->applyTo(JournalLine::query()->active());
     }
 
     /** @return array<int, int> */

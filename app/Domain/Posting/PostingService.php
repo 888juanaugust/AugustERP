@@ -47,7 +47,7 @@ final class PostingService
 
             $previous = $this->supersede($document->postingKey(), $userId);
 
-            $builder = new PostingBuilder($document->postingBranchId());
+            $builder = new PostingBuilder($document->postingBranchId(), Tags::of($document));
             $document->buildPostings($builder);
             $builder->assertBalanced();
 

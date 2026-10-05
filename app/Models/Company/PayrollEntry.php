@@ -5,6 +5,7 @@ namespace App\Models\Company;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Domain\Settlement\Contracts\PaidByPayment;
 use App\Domain\Settlement\SettlementService;
 use App\Models\GeneralLedger\Account;
@@ -77,7 +78,7 @@ class PayrollEntry extends Model implements PaidByPayment, Postable
         $net = 0;
         foreach ($this->lines()->with(['employee', 'component'])->get() as $line) {
             $expense = $line->component?->expense_account_id ?? $fallbackExpense;
-            $builder->debit($expense, (int) $line->gross_amount, $line->employee?->name);
+            $builder->debit($expense, (int) $line->gross_amount, $line->employee?->name, null, Tags::of($line));
             $tax += (int) $line->income_tax;
             $net += (int) $line->net_amount;
         }

@@ -29,6 +29,8 @@ return [
         'company__capital-program' => 'Financing program (vendor service)',
         'company__currency' => 'Mata Uang',
         'company__branch' => 'Cabang',
+        'company__department' => 'Departemen',
+        'company__project' => 'Proyek',
         'company__tax' => 'Pajak',
         'company__payment-term' => 'Syarat Pembayaran',
         'company__shipment' => 'Pengiriman',
