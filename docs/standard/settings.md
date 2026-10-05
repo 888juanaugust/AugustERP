@@ -118,6 +118,8 @@ Menu key `company__preferences` · module `settings`
 | Rounding differences | `accounts__rounding` | select |  |
 | Giros receivable (cheques received, not yet cleared) | `accounts__giro_receivable` | select |  |
 | Giros payable (cheques issued, not yet cleared) | `accounts__giro_payable` | select |  |
+| Realised exchange gains | `accounts__exchange_gain` | select |  |
+| Realised exchange losses | `accounts__exchange_loss` | select |  |
 
 #### Tab: Other
 

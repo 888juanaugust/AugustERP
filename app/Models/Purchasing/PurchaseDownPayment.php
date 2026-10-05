@@ -2,6 +2,8 @@
 
 namespace App\Models\Purchasing;
 
+use App\Domain\Currency\Currencies;
+use App\Domain\Currency\ForeignTotals;
 use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
@@ -52,6 +54,12 @@ class PurchaseDownPayment extends Model implements Postable
 
     public function refreshTotal(): void
     {
+        if (Currencies::isForeign($this->currency_id)) {
+            ForeignTotals::refreshDownPayment($this);
+            $this->forceFill(['due_date' => $this->due_date ?? ($this->payment_term_id ? PaymentTerm::query()->find($this->payment_term_id)?->dueDate($this->trans_date) : $this->trans_date)])->saveQuietly();
+
+            return;
+        }
         $code = $this->taxable ? $this->taxCode : null;
         $result = TaxCalculator::forLine((int) $this->amount, $code, (bool) $this->inclusive_tax);
         $this->forceFill([
@@ -68,7 +76,11 @@ class PurchaseDownPayment extends Model implements Postable
     public function refreshStatus(): void
     {
         $used = (int) PurchaseInvoiceDownPayment::query()->where('purchase_down_payment_id', $this->id)->sum('amount');
-        $this->forceFill(['used_amount' => $used, 'status' => $used >= $this->total && $this->total > 0 ? 'processed' : ($used > 0 ? 'partial' : 'pending')])->saveQuietly();
+        // A foreign down payment is used up by its own currency's amount.
+        $foreign = Currencies::isForeign($this->currency_id);
+        $usedFc = $foreign ? (int) PurchaseInvoiceDownPayment::query()->where('purchase_down_payment_id', $this->id)->sum('fc_amount') : null;
+        [$of, $by] = $foreign ? [(int) $this->fc_total, $usedFc] : [(int) $this->total, $used];
+        $this->forceFill(['used_amount' => $used, 'fc_used_amount' => $usedFc, 'status' => $by >= $of && $of > 0 ? 'processed' : ($by > 0 ? 'partial' : 'pending')])->saveQuietly();
     }
 
     public function remaining(): int

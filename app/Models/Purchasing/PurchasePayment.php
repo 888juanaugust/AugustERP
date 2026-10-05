@@ -5,6 +5,9 @@ namespace App\Models\Purchasing;
 use App\Domain\Approval\RequiresApproval;
 use App\Domain\CashBank\Contracts\GiroSource;
 use App\Domain\CashBank\GiroDetails;
+use App\Domain\Currency\Currencies;
+use App\Domain\Currency\ForeignAmount;
+use App\Domain\Currency\ForeignPayments;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PaymentMethod;
 use App\Domain\Posting\Contracts\Postable;
@@ -17,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use RuntimeException;
 
 /**
  * Purchase Payment: money out of a bank account against one vendor's
@@ -57,6 +61,12 @@ class PurchasePayment extends Model implements GiroSource, Postable
 
     public function refreshTotal(): void
     {
+        if (Currencies::isForeign($this->currency_id)) {
+            $paid = app(ForeignPayments::class)->prepare($this, 'payable');
+            $this->forceFill(['amount' => $paid, 'fc_amount' => (int) $this->lines()->sum('fc_amount')])->saveQuietly();
+
+            return;
+        }
         $this->forceFill(['amount' => (int) $this->lines()->sum('amount')])->saveQuietly();
     }
 
@@ -79,9 +89,17 @@ class PurchasePayment extends Model implements GiroSource, Postable
         if ($this->giro?->isBounced()) {
             return; // a bounced giro paid nothing: the bills are open again
         }
+        $foreignPayments = app(ForeignPayments::class);
+        $foreign = Currencies::isForeign($this->currency_id);
+        $bankCurrency = $foreignPayments->assertBank($this, (int) $this->bank_account_id);
+        if ($foreign && $this->payment_method?->isCheque()) {
+            throw new RuntimeException(__('A giro in a foreign currency is not supported; record the payment when the money leaves.'));
+        }
+        $amounts = $foreign ? $foreignPayments->amounts($this, false, $bankCurrency, (int) $this->bank_account_id, $this->postingDate()) : null;
         $payable = Accounts::payable($this->vendor);
         $paid = 0;
         foreach ($this->lines()->with('payable')->get() as $line) {
+            $foreignPayments->assertSameCurrency($this, $line->payable);
             $amount = (int) $line->amount;
             $discount = (int) $line->discount;
             $builder->signed($payable, $amount + $discount, $line->payable?->number);
@@ -94,10 +112,17 @@ class PurchasePayment extends Model implements GiroSource, Postable
                 'amount' => $amount,
                 'discount' => $discount,
                 'discount_account_id' => $line->discount_account_id,
-            ]);
+            ] + ($foreign ? ['fc_amount' => (int) $line->fc_amount, 'fc_discount' => (int) $line->fc_discount, 'fx_difference' => $amounts['differences'][$line->id] ?? 0] : []));
             $paid += $amount;
         }
         $credit = $this->giro?->isOutstanding() ? Accounts::giroPayable() : $this->bank_account_id;
-        $builder->credit($credit, $paid, $this->description ?? "Payment to {$this->vendor->name}");
+        $memo = $this->description ?? "Payment to {$this->vendor->name}";
+        if ($amounts === null) {
+            $builder->credit($credit, $paid, $memo);
+
+            return;
+        }
+        $builder->credit($credit, $amounts['base'], $memo, foreign: $bankCurrency !== null ? new ForeignAmount($bankCurrency, -$amounts['foreign']) : null);
+        $foreignPayments->postDifference($builder, array_sum($amounts['differences']), __('Exchange difference'));
     }
 }

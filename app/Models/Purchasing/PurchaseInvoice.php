@@ -3,6 +3,7 @@
 namespace App\Models\Purchasing;
 
 use App\Domain\Approval\RequiresApproval;
+use App\Domain\Currency\Currencies;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Posting\Contracts\Postable;
@@ -73,8 +74,17 @@ class PurchaseInvoice extends Model implements Postable
     public function refreshTotal(): void
     {
         $this->refreshPricedTotal();
+        $foreign = Currencies::isForeign($this->currency_id);
+        if ($foreign) {
+            // A down payment is deducted in the invoice's currency, at the down payment's own carrying value.
+            foreach ($this->downPayments()->with('downPayment')->get() as $use) {
+                $dpDoc = $use->downPayment;
+                $use->forceFill(['amount' => (int) $dpDoc->fc_total !== 0 ? Money::mulDiv((int) $use->fc_amount, (int) $dpDoc->total, (int) $dpDoc->fc_total) : 0])->saveQuietly();
+            }
+        }
         $dp = (int) $this->downPayments()->sum('amount');
         $this->forceFill([
+            'fc_down_payment_total' => $foreign ? (int) $this->downPayments()->sum('fc_amount') : null,
             'down_payment_total' => $dp,
             'due_date' => $this->due_date ?? ($this->payment_term_id ? PaymentTerm::query()->find($this->payment_term_id)?->dueDate($this->trans_date) : $this->trans_date),
         ])->saveQuietly();

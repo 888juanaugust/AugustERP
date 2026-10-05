@@ -34,6 +34,9 @@ final class AllocationLedger
                 'amount' => (int) $a['amount'],
                 'discount' => (int) ($a['discount'] ?? 0),
                 'discount_account_id' => $a['discount_account_id'] ?? null,
+                'fc_amount' => $a['fc_amount'] ?? null,
+                'fc_discount' => $a['fc_discount'] ?? null,
+                'fx_difference' => (int) ($a['fx_difference'] ?? 0),
                 'trans_date' => $posting->trans_date->toDateString(),
             ]);
             $touched["{$a['receivable_type']}:{$a['receivable_id']}"] = [$a['receivable_type'], (int) $a['receivable_id']];
