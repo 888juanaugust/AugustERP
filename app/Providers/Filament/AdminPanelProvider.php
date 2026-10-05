@@ -8,6 +8,7 @@ use App\Filament\Pages\Workspace;
 use App\Filament\Support\SideTabIcons;
 use App\Filament\Widgets\CompanyPulse;
 use App\Http\Controllers\PrintController;
+use App\Http\Middleware\EnforceAccessWindow;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
@@ -116,6 +117,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+                EnforceAccessWindow::class,
+            ], isPersistent: true);
     }
 }

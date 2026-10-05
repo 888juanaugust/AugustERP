@@ -35,6 +35,8 @@ final class DocumentRepository
     {
         DB::transaction(function () use ($document): void {
             $document->refresh();
+            $this->guard->assertDateAllowed(null, $this->dateOf($document));
+            $this->guard->assertBranchAllowed($this->branchOf($document));
             $this->syncGiro($document);
             if ($document instanceof Postable) {
                 $this->postings->post($document);
@@ -48,9 +50,17 @@ final class DocumentRepository
         });
     }
 
-    /** Before an existing document is changed: the snapshot to compare against, or an exception. */
-    public function beforeUpdate(Model $document, ?CarbonInterface $newDate = null): array
+    /**
+     * Before an existing document is changed: the snapshot to compare against, or an exception.
+     * The new branch is checked only when the edit names one ($branchGiven).
+     */
+    public function beforeUpdate(Model $document, ?CarbonInterface $newDate = null, ?int $newBranchId = null, bool $branchGiven = false): array
     {
+        $this->guard->assertBranchAllowed($this->branchOf($document));
+        if ($branchGiven) {
+            $this->guard->assertBranchAllowed($newBranchId);
+        }
+        $this->guard->assertDateAllowed($this->dateOf($document), $newDate);
         if ($document instanceof Postable) {
             $this->guard->assertMutable($document, $newDate);
         }
@@ -81,7 +91,9 @@ final class DocumentRepository
     public function delete(Model $document): void
     {
         DB::transaction(function () use ($document): void {
+            $this->guard->assertBranchAllowed($this->branchOf($document));
             if ($document instanceof Postable) {
+                $this->guard->assertDeletable($document, $this->postings->activePosting($document) !== null);
                 $this->guard->assertMutable($document);
             } else {
                 (new Blockers\ReferencedBlocker)->blocks($document) && throw new Exceptions\DocumentLockedException("{$this->number($document)} cannot be deleted: another document has been made from it.");
@@ -132,6 +144,20 @@ final class DocumentRepository
     private function number(Model $document): string
     {
         return $document instanceof Postable ? $document->postingNumber() : (string) $document->getAttribute('number');
+    }
+
+    private function dateOf(Model $document): ?CarbonInterface
+    {
+        $date = $document->getAttribute('trans_date');
+
+        return $date ? Carbon::parse($date) : null;
+    }
+
+    private function branchOf(Model $document): ?int
+    {
+        $branchId = $document->getAttribute('branch_id');
+
+        return $branchId === null ? null : (int) $branchId;
     }
 
     private function date(Model $document): ?string

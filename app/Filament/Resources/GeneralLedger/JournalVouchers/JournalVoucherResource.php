@@ -10,10 +10,10 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\Pages\CreateJournalVoucher;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\Pages\EditJournalVoucher;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\Pages\ListJournalVouchers;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
-use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalVoucher;
 use Filament\Forms\Components\DatePicker;
@@ -62,8 +62,7 @@ class JournalVoucherResource extends ErpResource
                 ->schema([
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                     NumberFields::make(TransactionType::JournalVoucher, 'Number'),
-                    Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false)
-                        ->default(fn () => Branch::default()?->id),
+                    BranchFields::select(),
                 ]),
             Tabs::make('voucher')->tabs([
                 Tab::make(__('Journal lines'))->schema([

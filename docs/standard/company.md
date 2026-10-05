@@ -5,7 +5,7 @@ Module group `company`. 14 screens in the standard menu.
 ## Behaviours
 
 - The company's name, address, tax ID and phone are preferences printed on every document; the base currency's symbol prefixes every amount.
-- Branches tag documents and journal lines inside one set of books; reports filter by branch. One default branch always exists; the Branches screen shows when Multiple branches is on.
+- Branches tag documents and journal lines inside one set of books; every document carries a branch (the user's default branch to start) and reports filter by branch. One default branch always exists; the Branches screen shows when Multiple branches is on.
 - Tax codes carry a rate and the accounts for tax on sales and purchases; a code may compute its base as a fraction of the price (the 12 % VAT whose base is 11/12 of the price is the seeded default). Prices on a document are entered including or excluding tax, per document.
 - Payment terms name a due period in days, an early-payment discount and its window; chosen per customer or vendor and per document.
 - Shipping methods and FOB terms are masters chosen on orders and deliveries.

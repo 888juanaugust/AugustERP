@@ -10,6 +10,7 @@ use App\Filament\Resources\Sales\Deliveries\Pages\CreateDelivery;
 use App\Filament\Resources\Sales\Deliveries\Pages\EditDelivery;
 use App\Filament\Resources\Sales\Deliveries\Pages\ListDeliveries;
 use App\Filament\Resources\Sales\SalesInvoices\SalesInvoiceResource;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
 use App\Filament\Support\DocumentListFilters;
@@ -67,6 +68,7 @@ class DeliveryResource extends ErpResource
                     processed: true,
                 ),
                 Tab::make(__('fields.other_info'))->columns(2)->schema([
+                    BranchFields::select(),
                     TextInput::make('po_number')->label(__('fields.po_number'))->maxLength(60),
                     Select::make('fob_id')->label(__('fields.fob'))->relationship('fob', 'name')->preload()->native(false),
                     Textarea::make('to_address')->label(__('Address'))->rows(2),

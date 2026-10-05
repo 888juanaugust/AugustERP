@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\Sales\SalesOrders;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Sales\OrderApproval;
@@ -78,7 +80,9 @@ class SalesOrderResource extends ErpResource
             ->icon('heroicon-m-check-badge')
             ->color('success')
             ->requiresConfirmation()
-            ->modalDescription(fn (SalesOrder $record) => 'Credit check: '.CustomerFields::exposureSummary($record->customer).'. Approving lets the order ship.')
+            ->modalDescription(fn (SalesOrder $record) => HakAkses::canSpecial(HakKhusus::SeeCreditData)
+                ? 'Credit check: '.CustomerFields::exposureSummary($record->customer).'. Approving lets the order ship.'
+                : __('Approving lets the order ship.'))
             ->visible(fn (SalesOrder $record) => $record->approval_status === SalesOrder::AWAITING && app(OrderApproval::class)->canApprove($record, auth()->user()))
             ->action(function (SalesOrder $record): void {
                 try {

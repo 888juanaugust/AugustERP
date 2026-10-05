@@ -16,6 +16,7 @@ use App\Filament\Pages\Inventory\StockByWarehouse;
 use App\Filament\Resources\Inventory\Items\Pages\CreateItem;
 use App\Filament\Resources\Inventory\Items\Pages\EditItem;
 use App\Filament\Resources\Inventory\Items\Pages\ListItems;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\NumberFields;
@@ -200,7 +201,7 @@ class ItemResource extends MasterResource
                         ]),
                     ]),
                     Tab::make(__('Other'))->schema([
-                        Select::make('branch_id')->label(__('Used in branch'))->relationship('branch', 'name')->preload()->native(false),
+                        BranchFields::select(__('Used in branch'), defaulted: false),
                         Textarea::make('notes')->label(__('fields.memo'))->rows(2),
                         Grid::make(4)->schema([
                             TextInput::make('length_cm')->label(__('Length (cm)'))->numeric()->minValue(0),

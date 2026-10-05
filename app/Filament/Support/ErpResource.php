@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuKey;
@@ -11,6 +12,7 @@ use App\Modules\ModuleRegistry;
 use Filament\Panel;
 use Filament\Resources\Resource;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -18,7 +20,8 @@ use UnitEnum;
  * Every resource of the product: it is one screen of the standard's
  * menu (its MenuKey), sits in that screen's module at that screen's position,
  * and is named in English from lang/en/menu.php. Access is decided by the
- * access matrix, not by per-model policies.
+ * access matrix, not by per-model policies; a user limited to some branches
+ * sees only their branches' records (and those of no branch).
  */
 abstract class ErpResource extends Resource
 {
@@ -41,6 +44,11 @@ abstract class ErpResource extends Resource
         return app(HakAkses::class)->allows(auth()->user(), static::menuKey(), $hak)
             ? Response::allow()
             : Response::deny();
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return BranchLimit::apply(parent::getEloquentQuery(), auth()->user());
     }
 
     public static function canPrint(): bool

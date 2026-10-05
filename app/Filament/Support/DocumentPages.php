@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Access\HakAkses;
+use App\Domain\Access\HakKhusus;
+use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\DocumentRepository;
 use Carbon\CarbonImmutable;
 use Filament\Actions\DeleteAction;
@@ -34,9 +37,11 @@ final class DocumentPages
     public static function beforeUpdate(Model $record, array $data): array
     {
         $newDate = isset($data['trans_date']) ? CarbonImmutable::parse($data['trans_date']) : null;
+        $branchGiven = array_key_exists('branch_id', $data);
+        $newBranch = $branchGiven && $data['branch_id'] !== null && $data['branch_id'] !== '' ? (int) $data['branch_id'] : null;
 
         try {
-            return app(DocumentRepository::class)->beforeUpdate($record, $newDate);
+            return app(DocumentRepository::class)->beforeUpdate($record, $newDate, $newBranch, $branchGiven);
         } catch (RuntimeException $e) {
             Notification::make()->title(__('Cannot save'))->body($e->getMessage())->danger()->persistent()->send();
             throw new Halt;
@@ -70,6 +75,7 @@ final class DocumentPages
     public static function deleteAction(): DeleteAction
     {
         return DeleteAction::make()
+            ->visible(fn (Model $record): bool => ! $record instanceof Postable || HakAkses::canSpecial(HakKhusus::DeletePostedTransactions))
             ->using(function (Model $record): bool {
                 try {
                     app(DocumentRepository::class)->delete($record);

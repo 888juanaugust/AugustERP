@@ -12,6 +12,7 @@ use App\Domain\Shared\Money;
 use App\Filament\Resources\GeneralLedger\PayrollEntries\Pages\CreatePayrollEntry;
 use App\Filament\Resources\GeneralLedger\PayrollEntries\Pages\EditPayrollEntry;
 use App\Filament\Resources\GeneralLedger\PayrollEntries\Pages\ListPayrollEntries;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -142,7 +143,7 @@ class PayrollEntryResource extends ErpResource
                         ->default(fn () => Account::query()->where('no', '2230')->value('id')),
                     Select::make('tax_payable_account_id')->label(__('Income tax payable'))->options(fn () => self::payableOptions())->searchable()->native(false)
                         ->default(fn () => Account::query()->where('no', '2220')->value('id')),
-                    Select::make('branch_id')->label(__('Branch'))->relationship('branch', 'name')->preload()->native(false),
+                    BranchFields::select(__('Branch'), defaulted: false),
                     Textarea::make('description')->label(__('Notes'))->rows(2)->maxLength(255),
                 ])->columns(2),
             ]),

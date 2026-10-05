@@ -60,6 +60,7 @@ Menu key `vendor__purchase-order` · module `purchasing`
 |---|---|---|---|
 | Payment term | `payment_term_id` | select |  |
 | Vendor bank account | `vendor_bank_account_id` | select |  |
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -106,6 +107,7 @@ Menu key `vendor__receive-item` · module `purchasing`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -153,6 +155,7 @@ Menu key `vendor__purchase-downpayment` · module `purchasing`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Vendor bank account | `vendor_bank_account_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
@@ -196,6 +199,7 @@ Menu key `vendor__purchase-invoice` · module `purchasing`
 | Vendor bank account | `vendor_bank_account_id` | select |  |
 | Due date | `due_date` | date |  |
 | Tax invoice No. (vendor) | `tax_invoice_number` | text |  |
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -250,6 +254,7 @@ Menu key `vendor__purchase-payment` · module `purchasing`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Notes | `description` | textarea |  |
 
 **Actions:** Pull every open document
@@ -290,6 +295,7 @@ Menu key `vendor__purchase-return` · module `purchasing`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |

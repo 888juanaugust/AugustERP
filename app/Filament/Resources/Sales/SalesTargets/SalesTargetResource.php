@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Sales\SalesTargets;
 use App\Domain\Access\MenuKey;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\SalesTargets\Pages\ManageSalesTargets;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\PricedDocumentForm;
@@ -53,7 +54,7 @@ class SalesTargetResource extends ErpResource
             Section::make()->columns(3)->schema([
                 TextInput::make('name')->label(__('Target name'))->required()->maxLength(100),
                 Select::make('target_type')->label(__('Target type'))->options($types)->default('per_salesman')->required()->native(false)->live(),
-                Select::make('branch_id')->label(__('Branch sales'))->relationship('branch', 'name')->preload()->native(false),
+                BranchFields::select(__('Branch sales'), defaulted: false),
                 DatePicker::make('from_date')->label(__('From'))->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->startOfYear()),
                 DatePicker::make('to_date')->label(__('Until'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(fn () => today()->endOfYear()),
             ]),

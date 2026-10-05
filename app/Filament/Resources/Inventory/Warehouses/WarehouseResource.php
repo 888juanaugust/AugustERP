@@ -6,11 +6,11 @@ namespace App\Filament\Resources\Inventory\Warehouses;
 
 use App\Domain\Access\MenuKey;
 use App\Filament\Resources\Inventory\Warehouses\Pages\ManageWarehouses;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\MasterResource;
 use App\Models\Inventory\Warehouse;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -43,7 +43,7 @@ class WarehouseResource extends MasterResource
                     TextInput::make('name')->label(__('fields.name'))->required()->maxLength(100)->unique(ignoreRecord: true),
                     Textarea::make('description')->label(__('Description'))->rows(2),
                     TextInput::make('pic')->label(__('Person in charge'))->maxLength(100),
-                    Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->native(false)->preload(),
+                    BranchFields::select(defaulted: false),
                     Toggle::make('scrap_warehouse')->label(__('Use as the warehouse for damaged goods'))->inline(false),
                     Toggle::make('is_default')->label(__('Default warehouse'))->inline(false),
                     self::activeToggle()->inline(false),

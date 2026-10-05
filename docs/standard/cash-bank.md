@@ -54,6 +54,7 @@ Menu key `cash-bank__other-payment` · module `cash-bank`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Giro due date | `cheque_date` | date |  |
 | Payee | `payee` | textarea |  |
@@ -92,6 +93,7 @@ Menu key `cash-bank__other-deposit` · module `cash-bank`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Cheque / giro No. | `cheque_no` | text |  |
 | Giro due date | `cheque_date` | date |  |
 | Payer | `payer` | textarea |  |

@@ -12,6 +12,7 @@ use App\Filament\Resources\CashBank\CashPayments\Pages\CreateCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\EditCashPayment;
 use App\Filament\Resources\CashBank\CashPayments\Pages\ListCashPayments;
 use App\Filament\Support\AccrualFields;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -131,6 +132,7 @@ class CashPaymentResource extends ErpResource
                         ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => AccrualFields::split($data)),
                 ]),
                 Tab::make(__('Other info'))->schema([
+                    BranchFields::select(),
                     TextInput::make('cheque_no')->label(__('Cheque / giro No.'))->maxLength(40)->helperText(__('Filling this registers a giro that clears or bounces later.')),
                     DatePicker::make('cheque_date')->label(__('Giro due date'))->native(false)->displayFormat(Format::DATE_INPUT),
                     Textarea::make('payee')->label(__('Payee'))->rows(2),

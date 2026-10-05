@@ -6,6 +6,7 @@ namespace App\Domain\Tax;
 
 use App\Domain\Audit\Auditor;
 use App\Models\Purchasing\PurchaseInvoice;
+use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
 use Carbon\CarbonImmutable;
@@ -99,5 +100,16 @@ final class TaxFilingService
         }
 
         return ['stored' => $stored, 'unknown' => $unknown];
+    }
+
+    /** Takes a recorded serial off a sales invoice or down payment so it can be corrected; audited with the serial it had. */
+    public function clearSerial(SalesInvoice|SalesDownPayment $document): void
+    {
+        $serial = $document->nsfp;
+        if (blank($serial)) {
+            return;
+        }
+        $document->forceFill(['nsfp' => null] + ($document instanceof SalesInvoice ? ['nsfp_filed_at' => null] : []))->saveQuietly();
+        Auditor::log('tax_serial_cleared', $document, $document->number, ['serial' => $serial], (string) $document->trans_date?->toDateString());
     }
 }

@@ -8,9 +8,9 @@ use App\Domain\Access\MenuKey;
 use App\Domain\Shared\Format;
 use App\Domain\Tax\FilingDocuments;
 use App\Domain\Tax\TaxFilingService;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\ErpPage;
-use App\Models\Company\Branch;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
 use Carbon\CarbonImmutable;
@@ -64,7 +64,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
             'year' => (int) today()->format('Y'),
             'day_from' => 1,
             'day_to' => 31,
-            'branch_id' => null,
+            'branch_id' => BranchFields::reportBranch(null),
             'search' => null,
         ]);
     }
@@ -87,9 +87,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                         ->default($year)->native(false)->selectablePlaceholder(false)->live(),
                     Select::make('day_from')->label(__('From day'))->options($days)->default(1)->native(false)->selectablePlaceholder(false)->live(),
                     Select::make('day_to')->label(__('To day'))->options($days)->default(31)->native(false)->selectablePlaceholder(false)->live(),
-                    Select::make('branch_id')->label(__('Branch'))
-                        ->options(fn () => Branch::query()->orderBy('name')->pluck('name', 'id')->all())
-                        ->nullable()->placeholder(__('All branches'))->native(false)->live(),
+                    BranchFields::filter(),
                     TextInput::make('search')->label(__('Search'))->placeholder(__('Number, serial or name'))->live(onBlur: true),
                 ]),
             ])
@@ -124,6 +122,20 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
                     }),
                 TextColumn::make('party_tax_id')->label(__('Tax ID'))->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_number)->placeholder('—'),
                 TextColumn::make('party_name')->label(__('Name'))->state(fn ($record) => ($record->customer ?? $record->vendor)?->wp_name ?: ($record->customer ?? $record->vendor)?->name),
+            ])
+            ->recordActions([
+                Action::make('clearSerial')
+                    ->label(__('Clear serial'))
+                    ->icon('heroicon-m-x-circle')
+                    ->color('danger')
+                    ->visible(fn ($record) => $record instanceof SalesInvoice && filled($record->nsfp) && static::canUpdate())
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (SalesInvoice $record) => __('The invoice is locked while its serial :serial is recorded. Clearing it unlocks the invoice; the old serial stays in the activity log.', ['serial' => $record->nsfp]))
+                    ->action(function (SalesInvoice $record): void {
+                        app(TaxFilingService::class)->clearSerial($record);
+                        Notification::make()->title(__('Serial cleared from :number', ['number' => $record->number]))->success()->send();
+                        $this->resetTable();
+                    }),
             ])
             ->selectable()
             ->bulkActions([
@@ -220,9 +232,7 @@ class ETaxInvoiceExport extends ErpPage implements HasTable
 
     protected function branchId(): ?int
     {
-        $branchId = $this->filters['branch_id'] ?? null;
-
-        return $branchId === null || $branchId === '' ? null : (int) $branchId;
+        return BranchFields::reportBranch($this->filters['branch_id'] ?? null);
     }
 
     /** The first day of the chosen month. */

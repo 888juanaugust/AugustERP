@@ -11,6 +11,7 @@ use App\Filament\Resources\Sales\SalesDownPayments\Pages\CreateSalesDownPayment;
 use App\Filament\Resources\Sales\SalesDownPayments\Pages\EditSalesDownPayment;
 use App\Filament\Resources\Sales\SalesDownPayments\Pages\ListSalesDownPayments;
 use App\Filament\Resources\Sales\SalesReceipts\SalesReceiptResource;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -70,6 +71,7 @@ class SalesDownPaymentResource extends ErpResource
                     Toggle::make('inclusive_tax')->label(__('fields.inclusive_tax'))->default(false),
                 ]),
                 Tab::make(__('fields.other_info'))->schema([
+                    BranchFields::select(),
                     CustomerFields::paymentTerm(),
                     Textarea::make('to_address')->label(__('Address'))->rows(2),
                     Textarea::make('description')->label(__('fields.description'))->rows(2),

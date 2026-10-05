@@ -65,6 +65,7 @@ Menu key `customer__sales-quotation` · module `sales`
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Payment term | `payment_term_id` | select |  |
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -111,6 +112,7 @@ Menu key `customer__sales-order` · module `sales`
 |---|---|---|---|
 | Payment term | `payment_term_id` | select |  |
 | PO number | `po_number` | text |  |
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -157,6 +159,7 @@ Menu key `customer__delivery-order` · module `sales`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | PO number | `po_number` | text |  |
 | FOB | `fob_id` | select |  |
 | Address | `to_address` | textarea |  |
@@ -200,6 +203,7 @@ Menu key `customer__sales-downpayment` · module `sales`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Payment term | `payment_term_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
@@ -249,6 +253,7 @@ Menu key `customer__sales-invoice` · module `sales`
 | PO number | `po_number` | text |  |
 | Due date | `due_date` | date |  |
 | Tax invoice serial (NSFP) | `nsfp` | text |  |
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |
@@ -310,6 +315,7 @@ Menu key `customer__sales-receipt` · module `sales`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Notes | `description` | textarea |  |
 
 **Actions:** Pull every open document
@@ -350,6 +356,7 @@ Menu key `customer__sales-return` · module `sales`
 
 | Field | Column | Type | Required |
 |---|---|---|---|
+| Branch | `branch_id` | select |  |
 | Address | `to_address` | textarea |  |
 | Notes | `description` | textarea |  |
 | Taxable | `taxable` | toggle |  |

@@ -6,9 +6,11 @@ namespace App\Modules\Tax;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Pengaturan\PreferensiKey;
+use App\Domain\Tax\TaxInvoiceBlocker;
 use App\Models\Tax\TaxFiling;
 use App\Models\Tax\TaxFilingDocument;
 use App\Modules\BaseModule;
+use App\Modules\ModuleContext;
 
 /** Tax filings: the VAT export files and the VAT return. Switched by the Tax feature. */
 final class TaxModule extends BaseModule
@@ -31,5 +33,11 @@ final class TaxModule extends BaseModule
     public static function morphMap(): array
     {
         return ['tax_filing' => TaxFiling::class, 'tax_filing_document' => TaxFilingDocument::class];
+    }
+
+    public static function boot(ModuleContext $context): void
+    {
+        // A document whose tax invoice serial is recorded stays as it was reported.
+        $context->guard->addBlocker(new TaxInvoiceBlocker);
     }
 }

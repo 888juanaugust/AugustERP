@@ -14,9 +14,9 @@ use App\Filament\Resources\Purchasing\Vendors\Pages\CreateVendor;
 use App\Filament\Resources\Purchasing\Vendors\Pages\EditVendor;
 use App\Filament\Resources\Purchasing\Vendors\Pages\ListVendors;
 use App\Filament\Support\AddressFields;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\NumberFields;
-use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\Purchasing\Vendor;
 use App\Models\Purchasing\VendorCategory;
@@ -66,8 +66,7 @@ class VendorResource extends MasterResource
                     Select::make('category_id')->label(__('Category'))->relationship('category', 'name')->preload()->searchable()->native(false)
                         ->default(fn () => VendorCategory::query()->where('is_default', true)->value('id')),
                     Select::make('vendor_type_id')->label(__('Vendor type'))->relationship('vendorType', 'name')->preload()->native(false),
-                    Select::make('branch_id')->label(__('Used in branch'))->relationship('branch', 'name')->preload()->native(false)->required()
-                        ->default(fn () => Branch::default()?->id),
+                    BranchFields::select(__('Used in branch'))->required(),
                     TextInput::make('work_phone')->label(__('Work phone'))->tel()->maxLength(30),
                     TextInput::make('mobile_phone')->label(__('Mobile'))->tel()->maxLength(30),
                     TextInput::make('whatsapp')->label(__('WhatsApp'))->tel()->maxLength(30),

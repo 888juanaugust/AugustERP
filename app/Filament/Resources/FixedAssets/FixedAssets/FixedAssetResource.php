@@ -12,13 +12,13 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\FixedAssets\FixedAssets\Pages\CreateFixedAsset;
 use App\Filament\Resources\FixedAssets\FixedAssets\Pages\EditFixedAsset;
 use App\Filament\Resources\FixedAssets\FixedAssets\Pages\ListFixedAssets;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineTotals;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PricedDocumentForm;
-use App\Models\Company\Branch;
 use App\Models\FixedAssets\AssetCategory;
 use App\Models\FixedAssets\AssetLocation;
 use App\Models\FixedAssets\FiscalAssetCategory;
@@ -121,7 +121,7 @@ class FixedAssetResource extends ErpResource
                             ->options(fn () => FiscalAssetCategory::query()->orderBy('name')->pluck('name', 'id'))
                             ->native(false)
                             ->visible(fn (Get $get): bool => (bool) $get('fiscal')),
-                        Select::make('branch_id')->label(__('Branch'))->relationship('branch', 'name')->native(false)->default(fn () => Branch::default()?->id),
+                        BranchFields::select(__('Branch')),
                     ]),
                     Tab::make(__('Expenditure accounts'))->schema([
                         Repeater::make('expenditures')

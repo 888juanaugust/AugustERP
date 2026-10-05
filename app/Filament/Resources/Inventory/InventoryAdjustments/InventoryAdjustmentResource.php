@@ -13,13 +13,13 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\CreateInventoryAdjustment;
 use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\EditInventoryAdjustment;
 use App\Filament\Resources\Inventory\InventoryAdjustments\Pages\ListInventoryAdjustments;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PrintAction;
-use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Warehouse;
@@ -67,8 +67,7 @@ class InventoryAdjustmentResource extends ErpResource
                 ->schema([
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                     NumberFields::make(TransactionType::InventoryAdjustment, 'Adjustment No.'),
-                    Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false)
-                        ->default(fn () => Branch::default()?->id),
+                    BranchFields::select(),
                 ]),
             Tabs::make('adjustment')->tabs([
                 Tab::make(__('fields.lines'))->schema([

@@ -11,13 +11,13 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Inventory\ItemTransfers\Pages\CreateItemTransfer;
 use App\Filament\Resources\Inventory\ItemTransfers\Pages\EditItemTransfer;
 use App\Filament\Resources\Inventory\ItemTransfers\Pages\ListItemTransfers;
+use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\LineItemFields;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\PrintAction;
-use App\Models\Company\Branch;
 use App\Models\Inventory\ItemTransfer;
 use App\Models\Inventory\Warehouse;
 use Brick\Math\BigDecimal;
@@ -71,8 +71,7 @@ class ItemTransferResource extends ErpResource
                     Select::make('reference_warehouse_id')->label(__('To warehouse'))->options($warehouses)->required()->native(false)->different('warehouse_id'),
                     DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->displayFormat(Format::DATE_INPUT)->default(today()),
                     NumberFields::make(TransactionType::ItemTransfer, 'Transfer No.'),
-                    Select::make('branch_id')->label(__('fields.branch'))->relationship('branch', 'name')->preload()->native(false)
-                        ->default(fn () => Branch::default()?->id),
+                    BranchFields::select(),
                 ]),
             Tabs::make('transfer')->tabs([
                 Tab::make(__('fields.lines'))->schema([
