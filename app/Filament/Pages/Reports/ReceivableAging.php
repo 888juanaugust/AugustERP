@@ -33,7 +33,7 @@ class ReceivableAging extends ReportPage
 
     protected function defaultFilters(): array
     {
-        return parent::defaultFilters() + ['basis' => AgingBuckets::defaultBasis()];
+        return parent::defaultFilters() + ['basis' => AgingBuckets::defaultBasis(), 'currency_id' => null];
     }
 
     protected function extraFilters(): array
@@ -45,12 +45,13 @@ class ReceivableAging extends ReportPage
                 ->default(fn () => AgingBuckets::defaultBasis())
                 ->native(false)
                 ->live(),
+            static::currencyFilter(),
         ];
     }
 
     protected function rows(): array
     {
-        return TradeReports::receivableAging($this->period(), $this->filters['basis'] ?? AgingBuckets::defaultBasis());
+        return TradeReports::receivableAging($this->period(), $this->filters['basis'] ?? AgingBuckets::defaultBasis(), $this->reportCurrency());
     }
 
     protected function columns(): array
@@ -71,6 +72,6 @@ class ReceivableAging extends ReportPage
 
     protected function exportRow(array $row): array
     {
-        return [$row['name'], $row['invoices'], ...array_map(fn (array $bucket) => $row[$bucket['key']], AgingBuckets::all()), $row['total'], $row['oldest_days']];
+        return [$row['name'], $row['invoices'], ...array_map(fn (array $bucket) => $this->exportMoney($row[$bucket['key']]), AgingBuckets::all()), $this->exportMoney($row['total']), $row['oldest_days']];
     }
 }

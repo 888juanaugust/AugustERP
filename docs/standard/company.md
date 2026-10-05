@@ -14,6 +14,7 @@ Module group `company`. 16 screens in the standard menu.
 - Recurring transactions make their document (journal voucher, payment or receipt) on schedule; memorized transactions are templates filled in by hand. The calendar shows what falls due: receivables, payables, maturing giros, recurring runs, notes and month end, by month, by week, or as an agenda of the next 30 days.
 - Month-end process closes months in order; a closed month refuses any addition, change or deletion dated in it, on the old and the new date of an edit; reopening takes a special right and is audited.
 - The activity log is the append-only record of who did what, with the document's revisions before and after each change.
+- Currencies carry their decimals (none for the rupiah, two for the dollar) and a table of rates, each from a date: rupiah per one unit, and the Minister of Finance's weekly rate for VAT when it differs. A document takes the latest rate on or before its date. Foreign currencies are offered on documents only while Multiple currencies is on and a foreign currency is active; without one, nothing on any screen changes.
 
 ## Screens
 
@@ -40,7 +41,7 @@ Menu key `company__currency` · module `company` · switched by Preferences → 
 
 ### List
 
-**Columns:** Symbol · Code · Country / Name · Base · Active
+**Columns:** Symbol · Code · Country / Name · Base · Decimals · Rate today · Active
 
 **Filters:** Active
 
@@ -54,8 +55,11 @@ Menu key `company__currency` · module `company` · switched by Preferences → 
 | Symbol | `symbol` | text | yes |
 | Name | `name` | text | yes |
 | Country | `country` | text |  |
+| Decimals | `decimals` | number | yes |
 | Base currency | `is_base` | toggle |  |
 | Active | `is_active` | toggle |  |
+
+**Line grid "Exchange rates":** From · Rate · Tax rate (KMK)
 
 ## Branches
 

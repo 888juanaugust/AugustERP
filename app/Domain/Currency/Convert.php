@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Currency;
 
+use App\Domain\Shared\Format;
+use App\Domain\Shared\Money;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 
@@ -15,17 +17,21 @@ final class Convert
         return BigDecimal::of($minor)->multipliedBy((string) $rate)->dividedBy(BigDecimal::ten()->power($decimals), 0, RoundingMode::HalfUp)->toInt();
     }
 
-    /** A typed amount ("1,000.50" is not accepted: the form sends plain decimals) in minor units. */
+    /** A typed amount ("1.000,50" under the Indonesian convention, "1,000.50" under the English one, or a plain "1000.50") in minor units. */
     public static function minor(string|int|float|null $major, int $decimals): int
     {
-        $major = $major === null || $major === '' ? '0' : str_replace([' ', ','], ['', ''], (string) $major);
-
-        return BigDecimal::of($major)->multipliedBy(BigDecimal::ten()->power($decimals))->toScale(0, RoundingMode::HalfUp)->toInt();
+        return Money::parseMinor($major, $decimals);
     }
 
     public static function major(?int $minor, int $decimals): string
     {
         return (string) BigDecimal::ofUnscaledValue($minor ?? 0, $decimals);
+    }
+
+    /** Minor units as a form shows them for typing: the decimals after the convention's decimal separator, no grouping ("1000,50"). */
+    public static function typed(?int $minor, int $decimals): string
+    {
+        return str_replace('.', Format::decimalSeparator(), self::major($minor, $decimals));
     }
 
     /** A unit price in the currency (major units) times the rate: the base unit price, to four places. */

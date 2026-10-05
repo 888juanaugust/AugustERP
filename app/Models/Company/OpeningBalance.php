@@ -34,6 +34,9 @@ class OpeningBalance extends Model implements Postable
             'due_date' => 'date',
             'amount' => 'integer',
             'paid_amount' => 'integer',
+            'exchange_rate' => 'decimal:8',
+            'fc_amount' => 'integer',
+            'fc_paid_amount' => 'integer',
         ];
     }
 

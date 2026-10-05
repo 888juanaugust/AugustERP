@@ -22,9 +22,13 @@ final class VendorFields
             ->required()
             ->native(false)
             ->live()
-            ->afterStateUpdated(function (Set $set, $state) use ($fillsTerms): void {
+            ->afterStateUpdated(function (Set $set, Get $get, $state) use ($fillsTerms): void {
                 $vendor = $state ? Vendor::query()->find($state) : null;
-                if ($vendor === null || ! $fillsTerms) {
+                if ($vendor === null) {
+                    return;
+                }
+                CurrencyFields::forParty($set, $get, $vendor->currency_id);
+                if (! $fillsTerms) {
                     return;
                 }
                 $set('payment_term_id', $vendor->payment_term_id);

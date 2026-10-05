@@ -342,7 +342,8 @@ final class StandardWriter
     {
         $base = class_basename($c);
         if ($c instanceof TextInput) {
-            return rescue(fn () => $c->isNumeric(), false, false) ? 'number' : 'text';
+            // A masked amount (MoneyInput) is a number even when it takes decimals in the convention's separator.
+            return rescue(fn () => $c->isNumeric() || (fn () => $this->mask !== null)->call($c), false, false) ? 'number' : 'text';
         }
 
         return match ($base) {

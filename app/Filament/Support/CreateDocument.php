@@ -11,9 +11,18 @@ abstract class CreateDocument extends CreateRecord
 {
     use CreatesNumberedRecord;
 
+    /** @return array<string, string> header amounts typed in the document's currency → their fc_* columns */
+    protected function foreignFields(): array
+    {
+        return [];
+    }
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = auth()->id();
+        if ($this->foreignFields() !== []) {
+            $data = CurrencyFields::toForeign($data, $data['currency_id'] ?? null, $this->foreignFields());
+        }
 
         return $this->assignNumber($data);
     }

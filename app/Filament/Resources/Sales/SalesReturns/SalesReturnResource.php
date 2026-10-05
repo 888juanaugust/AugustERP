@@ -11,6 +11,7 @@ use App\Filament\Resources\Sales\SalesReturns\Pages\CreateSalesReturn;
 use App\Filament\Resources\Sales\SalesReturns\Pages\EditSalesReturn;
 use App\Filament\Resources\Sales\SalesReturns\Pages\ListSalesReturns;
 use App\Filament\Support\ApprovalActions;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -126,6 +127,7 @@ class SalesReturnResource extends ErpResource
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
                 ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')

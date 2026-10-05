@@ -10,9 +10,11 @@ use App\Domain\Posting\AccountBalances;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\Accounts\Pages\ManageAccounts;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\MoneyInput;
 use App\Models\GeneralLedger\Account;
+use App\Models\GeneralLedger\JournalLine;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -71,6 +73,8 @@ class AccountResource extends MasterResource
                         Select::make('bank_id')->label(__('Bank'))->relationship('bank', 'name')->preload()->searchable()->native(false),
                         TextInput::make('bank_account')->label(__('Account number'))->maxLength(50),
                         TextInput::make('bank_account_name')->label(__('Account holder'))->maxLength(150),
+                        CurrencyFields::select(__('An account in a foreign currency holds that currency: it receives and pays only in it, and its balance is kept in both.'))
+                            ->disabled(fn (?Account $record) => $record !== null && JournalLine::query()->where('account_id', $record->getKey())->exists()),
                     ]),
                 Tab::make(__('Opening balance'))->schema([
                     MoneyInput::make('opening_amount')->label(__('Balance'))->prefix(Format::symbol())

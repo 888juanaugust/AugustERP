@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Support;
 
 use App\Domain\Approval\ApprovalEngine;
+use App\Domain\Currency\Currencies;
 use App\Domain\Shared\Format;
 use Closure;
 use Filament\Actions\Action;
@@ -12,12 +13,14 @@ use Filament\Forms\Components\CheckboxList;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
  * The standard's "Ambil": pick open upstream documents of the chosen
  * party and append their remaining lines to the grid, each line pointing at
- * its source so fulfilment follows. Documents waiting for approval are not offered.
+ * its source so fulfilment follows. Documents waiting for approval, or in
+ * another currency, are not offered.
  */
 final class PullAction
 {
@@ -35,7 +38,7 @@ final class PullAction
             ->schema(fn (Get $get) => [
                 CheckboxList::make('sources')
                     ->label(__('Open documents'))
-                    ->options(collect($documents($get))->filter(fn ($doc) => app(ApprovalEngine::class)->isApproved($doc))->mapWithKeys(fn ($doc) => [$doc->id => $doc->number.' · '.Format::date($doc->trans_date).($doc->description ? " · {$doc->description}" : '')])->all())
+                    ->options(collect($documents($get))->filter(fn ($doc) => app(ApprovalEngine::class)->isApproved($doc) && self::sameCurrency($doc, $get('currency_id')))->mapWithKeys(fn ($doc) => [$doc->id => $doc->number.' · '.Format::date($doc->trans_date).($doc->description ? " · {$doc->description}" : '')])->all())
                     ->required()
                     ->bulkToggleable(),
             ])
@@ -51,5 +54,11 @@ final class PullAction
                 $set('lines', $existing);
                 Notification::make()->title($added ? __(':count line(s) pulled', ['count' => $added]) : __('Nothing left to pull'))->success()->send();
             });
+    }
+
+    /** Lines are pulled only from documents in the form's currency (a document without one, such as a requisition, is priced in neither). */
+    private static function sameCurrency(Model $document, mixed $currencyId): bool
+    {
+        return ! array_key_exists('currency_id', $document->getAttributes()) || Currencies::same($document->getAttribute('currency_id'), $currencyId);
     }
 }

@@ -53,6 +53,7 @@ class SalesDownPayment extends Model implements Postable
         if (Currencies::isForeign($this->currency_id)) {
             ForeignTotals::refreshDownPayment($this);
             $this->forceFill(['due_date' => $this->due_date ?? ($this->payment_term_id ? PaymentTerm::query()->find($this->payment_term_id)?->dueDate($this->trans_date) : $this->trans_date)])->saveQuietly();
+            $this->refreshStatus();
 
             return;
         }
@@ -63,6 +64,8 @@ class SalesDownPayment extends Model implements Postable
             'tax_total' => $result->tax,
             'total' => $result->gross,
             'due_date' => $this->due_date ?? ($this->payment_term_id ? PaymentTerm::query()->find($this->payment_term_id)?->dueDate($this->trans_date) : $this->trans_date),
+            // in the base currency: no foreign amounts (a down payment moved back from a foreign currency loses them)
+            'exchange_rate' => 1, 'tax_exchange_rate' => null, 'fc_amount' => null, 'fc_subtotal' => null, 'fc_tax_total' => null, 'fc_total' => null,
         ])->saveQuietly();
         $this->refreshStatus();
     }

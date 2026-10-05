@@ -5,22 +5,26 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Purchasing\PurchaseDownPayments;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Currency\Currencies;
 use App\Domain\Numbering\TransactionType;
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\CreatePurchaseDownPayment;
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\EditPurchaseDownPayment;
 use App\Filament\Resources\Purchasing\PurchaseDownPayments\Pages\ListPurchaseDownPayments;
 use App\Filament\Resources\Purchasing\PurchasePayments\PurchasePaymentResource;
 use App\Filament\Support\BranchFields;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
+use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
-use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\TagFields;
 use App\Filament\Support\VendorFields;
 use App\Models\Company\TaxCode;
 use App\Models\Purchasing\PurchaseDownPayment;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -30,6 +34,8 @@ use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -57,14 +63,18 @@ class PurchaseDownPaymentResource extends ErpResource
         return $schema->components([
             Section::make()->columns(3)->schema([
                 VendorFields::select(),
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today()),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today())->live(onBlur: true)
+                    ->afterStateUpdated(fn (Set $set, Get $get) => Currencies::isForeign($get('currency_id')) ? CurrencyFields::fillRates($set, $get, $get('currency_id')) : null),
                 NumberFields::make(TransactionType::PurchaseInvoice, 'Form No.'),
+                ...CurrencyFields::header(),
             ]),
             Tabs::make('down-payment')->tabs([
                 Tab::make(__('Down payment'))->columns(2)->schema([
-                    PricedDocumentForm::money('amount', 'Down payment')->required()->minValue(1),
+                    MoneyInput::inCurrency('amount', fn (Get $get) => CurrencyFields::decimals($get('currency_id')))->label(__('Down payment'))->default(0)->required()
+                        ->rule(fn (): Closure => fn (string $attribute, mixed $value, Closure $fail) => CurrencyFields::isPositive($value) ? null : $fail(__('Enter an amount above zero.')))
+                        ->prefix(fn (Get $get) => CurrencyFields::symbol($get('currency_id'))),
                     Select::make('tax_code_id')->label(__('fields.tax_code'))->options(fn () => TaxCode::query()->where('is_active', true)->pluck('description', 'id'))->default(fn () => TaxCode::default()?->id)->native(false),
-                    Toggle::make('taxable')->label(__('fields.taxable'))->default(true),
+                    Toggle::make('taxable')->label(__('fields.taxable'))->default(true)->live(),
                     Toggle::make('inclusive_tax')->label(__('fields.inclusive_tax'))->default(false),
                     VendorFields::paymentTerm(),
                 ]),
@@ -95,6 +105,7 @@ class PurchaseDownPaymentResource extends ErpResource
                     }),
                 TextColumn::make('age')->label(__('Age (days)'))->state(fn (PurchaseDownPayment $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
             ])
             ->defaultSort('trans_date', 'desc')
             ->filters([DocumentListFilters::dateRange(), SelectFilter::make('vendor_id')->label(__('fields.vendor'))->relationship('vendor', 'name')->searchable(), SelectFilter::make('payment_status')->label(__('Payment'))->options(['unpaid' => __('Unpaid'), 'partial' => __('Partially paid'), 'paid' => __('Paid')])])

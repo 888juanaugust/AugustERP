@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * The standard's "Proses": a create page opened with ?source=ID starts
- * from that upstream document, lines pulled and pointing back at it.
+ * from that upstream document, lines pulled and pointing back at it, in
+ * the source's currency.
  */
 trait PrefillsFromSource
 {
@@ -34,7 +35,8 @@ trait PrefillsFromSource
                 $data = $this->dataFromSource($source);
                 $lines = $data['lines'] ?? null;
                 unset($data['lines']);
-                $this->form->fill(array_merge($this->form->getRawState(), $data));
+                $state = $this->form->getRawState();
+                $this->form->fill(array_merge($state, CurrencyFields::fromSource($source, $state['trans_date'] ?? null), $data));
                 if ($lines !== null) {
                     $this->data['lines'] = DocumentPages::keyedRows($lines);
                 }

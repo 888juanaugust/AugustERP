@@ -16,4 +16,9 @@ class CreateSalesDownPayment extends CreateDocument
     {
         return TransactionType::SalesInvoice;
     }
+
+    protected function foreignFields(): array
+    {
+        return ['amount' => 'fc_amount'];
+    }
 }

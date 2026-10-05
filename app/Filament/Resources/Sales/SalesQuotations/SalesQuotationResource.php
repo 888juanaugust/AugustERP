@@ -11,6 +11,7 @@ use App\Filament\Resources\Sales\SalesQuotations\Pages\CreateSalesQuotation;
 use App\Filament\Resources\Sales\SalesQuotations\Pages\EditSalesQuotation;
 use App\Filament\Resources\Sales\SalesQuotations\Pages\ListSalesQuotations;
 use App\Filament\Support\ApprovalActions;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\CustomerFields;
@@ -72,6 +73,7 @@ class SalesQuotationResource extends ErpResource
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
                 ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')

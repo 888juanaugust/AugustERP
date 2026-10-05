@@ -6,3 +6,4 @@
 - Bank transfers move money between cash and bank accounts, with a fee.
 - Bank statements are imported from CSV or Excel (the column headers are recognised in English and Indonesian); reconciliation matches statement lines to the book per account and period, and a reconciled line blocks changes to its document.
 - The bank book is the mutation list of one account with a running balance.
+- A cash or bank account may hold a foreign currency (chosen before its first posting): it then receives and pays only in that currency, and its journal lines keep the currency amount beside the rupiah one. There is no month-end revaluation: differences are realised when money moves.

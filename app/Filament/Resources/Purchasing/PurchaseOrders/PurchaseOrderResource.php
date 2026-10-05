@@ -12,6 +12,7 @@ use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\CreatePurchaseOrder;
 use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\EditPurchaseOrder;
 use App\Filament\Resources\Purchasing\PurchaseOrders\Pages\ListPurchaseOrders;
 use App\Filament\Support\ApprovalActions;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -83,6 +84,7 @@ class PurchaseOrderResource extends ErpResource
                         'processed' => 'success', 'partial' => 'warning', 'closed' => 'gray', default => 'info'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
                 ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Shared;
 
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use InvalidArgumentException;
 
 /**
@@ -134,5 +136,36 @@ final class Money
         }
 
         return $negative ? -$whole : $whole;
+    }
+
+    /**
+     * An amount typed with decimals, in minor units of a currency with that many decimals: "1.000,50" (English
+     * "1,000.50") or a plain "1000.50" → 100050 at two decimals; more decimals than the currency has round half-up.
+     */
+    public static function parseMinor(string|int|float|null $text, int $decimals): int
+    {
+        if ($text === null || $text === '') {
+            return 0;
+        }
+        if (is_int($text)) {
+            return $text * (10 ** $decimals);
+        }
+        $clean = preg_replace('/[^\d,.\-]/', '', (string) $text) ?? '';
+        $negative = str_starts_with($clean, '-');
+        $clean = ltrim($clean, '-');
+        $group = preg_quote(Format::thousandsSeparator(), '/');
+        $point = preg_quote(Format::decimalSeparator(), '/');
+        if (preg_match('/^(\d{1,3}(?:'.$group.'\d{3})*|\d+)(?:'.$point.'(\d+))?$/', $clean, $m)) {
+            $whole = str_replace(Format::thousandsSeparator(), '', $m[1]);
+            $fraction = $m[2] ?? '';
+        } elseif (preg_match('/^(\d+)(?:\.(\d+))?$/', $clean, $m)) {
+            $whole = $m[1];
+            $fraction = $m[2] ?? '';
+        } else {
+            throw new InvalidArgumentException("Not an amount: {$text}");
+        }
+        $minor = BigDecimal::of($whole.($fraction !== '' ? '.'.$fraction : ''))->toScale($decimals, RoundingMode::HalfUp)->getUnscaledValue()->toInt();
+
+        return $negative ? -$minor : $minor;
     }
 }

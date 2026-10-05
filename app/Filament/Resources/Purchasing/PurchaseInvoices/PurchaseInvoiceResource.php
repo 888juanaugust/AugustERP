@@ -6,15 +6,16 @@ namespace App\Filament\Resources\Purchasing\PurchaseInvoices;
 
 use App\Domain\Access\MenuKey;
 use App\Domain\Numbering\TransactionType;
-use App\Domain\Shared\Format;
 use App\Filament\Resources\Purchasing\PurchaseInvoices\Pages\CreatePurchaseInvoice;
 use App\Filament\Resources\Purchasing\PurchaseInvoices\Pages\EditPurchaseInvoice;
 use App\Filament\Resources\Purchasing\PurchaseInvoices\Pages\ListPurchaseInvoices;
 use App\Filament\Resources\Purchasing\PurchasePayments\PurchasePaymentResource;
 use App\Filament\Support\ApprovalActions;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
+use App\Filament\Support\DownPaymentDeductions;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\PricedDocumentForm;
 use App\Filament\Support\PrintAction;
@@ -29,16 +30,11 @@ use App\Models\Purchasing\VendorPrice;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Repeater\TableColumn;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\Alignment;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -90,20 +86,7 @@ class PurchaseInvoiceResource extends ErpResource
                 ]),
                 PricedDocumentForm::chargesTab(allocateToCost: true),
                 Tab::make(__('Down payments'))->schema([
-                    Repeater::make('downPayments')
-                        ->hiddenLabel()
-                        ->relationship()
-                        ->table([TableColumn::make(__('Down payment')), TableColumn::make(__('Amount deducted'))->alignment(Alignment::End)])
-                        ->schema([
-                            Select::make('purchase_down_payment_id')
-                                ->options(fn (Get $get) => PurchaseDownPayment::query()->where('vendor_id', $get('../../vendor_id'))->whereIn('status', ['pending', 'partial'])->get()
-                                    ->mapWithKeys(fn ($dp) => [$dp->id => "{$dp->number} · ".Format::date($dp->trans_date).' · open '.Format::rupiah($dp->remaining())]))
-                                ->required()->native(false)->live()
-                                ->afterStateUpdated(fn (Set $set, $state) => $set('amount', $state ? (string) PurchaseDownPayment::query()->find($state)?->remaining() : 0)),
-                            PricedDocumentForm::money('amount', 'Amount')->required()->minValue(1),
-                        ])
-                        ->defaultItems(0)
-                        ->addActionLabel('Deduct a down payment'),
+                    DownPaymentDeductions::repeater(PurchaseDownPayment::class, 'purchase_down_payment_id', 'vendor_id'),
                 ]),
             ]),
         ])->columns(1);
@@ -126,6 +109,7 @@ class PurchaseInvoiceResource extends ErpResource
                     }),
                 TextColumn::make('age')->label(__('Age (days)'))->state(fn (PurchaseInvoice $r) => $r->payment_status === 'paid' ? '' : (string) $r->trans_date->diffInDays(today()))->alignEnd(),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
                 IconColumn::make('is_printed')->label(__('fields.is_printed'))->boolean()->toggleable(isToggledHiddenByDefault: true),
                 ApprovalActions::column(),
             ])

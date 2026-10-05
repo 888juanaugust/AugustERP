@@ -11,6 +11,7 @@ use App\Filament\Resources\Purchasing\PurchaseReturns\Pages\CreatePurchaseReturn
 use App\Filament\Resources\Purchasing\PurchaseReturns\Pages\EditPurchaseReturn;
 use App\Filament\Resources\Purchasing\PurchaseReturns\Pages\ListPurchaseReturns;
 use App\Filament\Support\ApprovalActions;
+use App\Filament\Support\Columns\InCurrency;
 use App\Filament\Support\Columns\Rupiah;
 use App\Filament\Support\Columns\Tanggal;
 use App\Filament\Support\DocumentListFilters;
@@ -136,6 +137,7 @@ class PurchaseReturnResource extends ErpResource
                         'paid' => 'success', 'partial' => 'warning', default => 'gray'
                     }),
                 Rupiah::make('total')->label(__('fields.total')),
+                ...InCurrency::make('fc_total'),
                 ApprovalActions::column(),
             ])
             ->defaultSort('trans_date', 'desc')

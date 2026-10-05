@@ -6,6 +6,8 @@ namespace App\Filament\Support;
 
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
+use App\Domain\Currency\Convert;
+use App\Domain\Currency\Currencies;
 use App\Domain\Documents\LineCalculator;
 use App\Domain\Inventory\Units\UnitConverter;
 use App\Domain\Numbering\TransactionType;
@@ -51,9 +53,11 @@ final class PricedDocumentForm
             ->columns(3)
             ->schema([
                 $party->columnSpan(1),
-                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today())->live(onBlur: true),
+                DatePicker::make('trans_date')->label(__('fields.trans_date'))->required()->native(false)->default(today())->live(onBlur: true)
+                    ->afterStateUpdated(fn (Set $set, Get $get) => Currencies::isForeign($get('currency_id')) ? CurrencyFields::fillRates($set, $get, $get('currency_id')) : null),
                 NumberFields::make($type, $numberLabel),
                 ...$extra,
+                ...CurrencyFields::header(),
             ]);
     }
 
@@ -95,7 +99,7 @@ final class PricedDocumentForm
                 $item = $state ? Item::query()->find($state) : null;
                 $set('unit_id', $item?->unit1_id);
                 if ($item && ! $get('source_line_id')) {
-                    $set('unit_price', $priceResolver ? $priceResolver($item, $get) : (string) $item->purchase_price);
+                    $set('unit_price', self::inDocumentCurrency($priceResolver ? $priceResolver($item, $get) : (string) $item->purchase_price, $get));
                     $set('tax_code_id', $item->tax1_id ?? TaxCode::default()?->id);
                 }
                 LineItemFields::syncBase($set, $get);
@@ -106,9 +110,9 @@ final class PricedDocumentForm
         ];
         $pricesEditable ??= ! $salesman || app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::ChangeSellingPrice);
         if ($prices) {
-            $fields[] = TextInput::make('unit_price')->numeric()->default(0)->live(onBlur: true)->prefix(Format::symbol())->readOnly(! $pricesEditable);
+            $fields[] = TextInput::make('unit_price')->numeric()->default(0)->live(onBlur: true)->prefix(fn (Get $get) => CurrencyFields::symbol($get('../../currency_id')))->readOnly(! $pricesEditable);
             $fields[] = TextInput::make('discount_percent')->numeric()->default(0)->minValue(0)->maxValue(100)->live(onBlur: true);
-            $fields[] = Placeholder::make('amount_preview')->hiddenLabel()->content(fn (Get $get) => Format::number(self::lineAmount($get)));
+            $fields[] = Placeholder::make('amount_preview')->hiddenLabel()->content(fn (Get $get) => CurrencyFields::number(self::lineAmount($get), $get('../../currency_id')));
             $fields[] = Select::make('tax_code_id')->options(fn () => TaxCode::query()->where('is_active', true)->orderBy('description')->pluck('description', 'id'))->native(false)->live();
         }
         if (! $prices) {
@@ -147,13 +151,13 @@ final class PricedDocumentForm
                 ->defaultItems(1)
                 ->live()
                 ->addActionLabel('Add line')
-                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => self::normaliseLine($data))
-                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => self::normaliseLine($data)),
+                ->mutateRelationshipDataBeforeFillUsing(fn (array $data) => self::fillLine($data))
+                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => self::normaliseLine($data, $get('currency_id'), $get('exchange_rate')))
+                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => self::normaliseLine($data, $get('currency_id'), $get('exchange_rate'))),
             ...($prices ? [self::totals()] : []),
         ]);
     }
 
-    /** Every money column present and numeric, the base quantity in step, before a line is saved. */
     /** An item sold at wholesale prices is priced again when its quantity or unit changes (a pulled line keeps its price). */
     private static function reprice(Set $set, Get $get, ?Closure $priceResolver): void
     {
@@ -162,7 +166,7 @@ final class PricedDocumentForm
         }
         $item = Item::query()->find($get('item_id'));
         if ($item?->use_wholesale_price) {
-            $set('unit_price', $priceResolver($item, $get));
+            $set('unit_price', self::inDocumentCurrency($priceResolver($item, $get), $get));
         }
     }
 
@@ -181,13 +185,42 @@ final class PricedDocumentForm
         };
     }
 
-    public static function normaliseLine(array $data): array
+    /** A price list or item price (base currency) in the document's currency, at the document's rate. */
+    private static function inDocumentCurrency(string|int|float|null $basePrice, Get $get): string
+    {
+        $currencyId = $get('../../currency_id');
+
+        return Currencies::isForeign($currencyId) ? Convert::priceFromBase($basePrice, $get('../../exchange_rate') ?: 1) : (string) ($basePrice ?? 0);
+    }
+
+    /** A saved line as the grid shows it: a foreign document's prices in its own currency. */
+    public static function fillLine(array $data): array
+    {
+        if (($data['fc_unit_price'] ?? null) !== null) {
+            $data['unit_price'] = $data['fc_unit_price'];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Every money column present and numeric, the base quantity in step, before a line is saved. In a foreign
+     * document the typed price is in the document's currency: it is kept as fc_unit_price and the base columns
+     * follow from it when the document's totals are refreshed.
+     */
+    public static function normaliseLine(array $data, mixed $currencyId = null, mixed $rate = null): array
     {
         $data = LineItemFields::fillBaseQuantities([$data])[0];
         foreach (['unit_price', 'discount_percent', 'discount_amount', 'amount', 'dpp_amount', 'tax_amount'] as $column) {
             if (! isset($data[$column]) || $data[$column] === '') {
                 $data[$column] = 0;
             }
+        }
+        if (Currencies::isForeign($currencyId)) {
+            $data['fc_unit_price'] = (string) $data['unit_price'];
+            $data['unit_price'] = Convert::priceToBase($data['unit_price'], $rate ?: 1);
+        } else {
+            $data['fc_unit_price'] = null;
         }
         foreach (['source_line_type', 'source_line_id', 'tax_code_id', 'warehouse_id', 'unit_id', 'department_id', 'project_id'] as $column) {
             if (isset($data[$column]) && $data[$column] === '') {
@@ -198,11 +231,13 @@ final class PricedDocumentForm
         return $data;
     }
 
+    /** The line's amount in the document currency's minor units. */
     private static function lineAmount(Get $get): int
     {
+        $scale = BigDecimal::ten()->power(CurrencyFields::decimals($get('../../currency_id')));
         $result = LineCalculator::compute([[
-            'quantity' => $get('quantity') ?: 0,
-            'unit_price' => $get('unit_price') ?: 0,
+            'quantity' => is_numeric($get('quantity')) ? $get('quantity') : 0,
+            'unit_price' => (string) BigDecimal::of(is_numeric($get('unit_price')) ? (string) $get('unit_price') : '0')->multipliedBy($scale),
             'discount_percent' => $get('discount_percent') ?: 0,
             'discount_amount' => 0,
             'tax_code_id' => null,
@@ -216,13 +251,24 @@ final class PricedDocumentForm
         return Placeholder::make('totals')
             ->hiddenLabel()
             ->content(function (Get $get): HtmlString {
+                $currencyId = $get('currency_id');
+                $foreign = Currencies::isForeign($currencyId);
+                $decimals = CurrencyFields::decimals($currencyId);
+                $scale = BigDecimal::ten()->power($decimals);
+                $lines = array_values((array) $get('lines'));
+                $charges = array_values((array) $get('charges'));
+                if ($foreign) {
+                    // In the document's currency, worked in its minor units.
+                    $lines = array_map(fn ($l) => ['unit_price' => (string) BigDecimal::of(is_numeric($l['unit_price'] ?? null) ? (string) $l['unit_price'] : '0')->multipliedBy($scale)] + (array) $l, $lines);
+                    $charges = array_map(fn ($c) => ['amount' => self::typedMinor($c['amount'] ?? 0, $decimals)], $charges);
+                }
                 $result = LineCalculator::compute(
-                    array_values((array) $get('lines')),
+                    $lines,
                     (bool) $get('taxable'),
                     (bool) $get('inclusive_tax'),
                     (string) ($get('discount_percent') ?: 0),
                     0,
-                    array_values((array) $get('charges')),
+                    $charges,
                 );
                 $rows = [
                     [__('fields.subtotal'), $result['subtotal']],
@@ -236,12 +282,30 @@ final class PricedDocumentForm
                     if ($value === 0 && ! in_array($label, [__('fields.subtotal'), __('fields.tax_total')], true)) {
                         continue;
                     }
-                    $html .= '<div class="ae-totals-row"><span>'.e($label).'</span><span class="ae-money">'.e(Format::number($value)).'</span></div>';
+                    $html .= '<div class="ae-totals-row"><span>'.e($label).'</span><span class="ae-money">'.e(CurrencyFields::number($value, $currencyId)).'</span></div>';
                 }
-                $html .= '<div class="ae-totals-row ae-totals-grand"><span>'.e(__('fields.total')).'</span><span class="ae-money">'.e(Format::rupiah($result['total'])).'</span></div></div>';
+                $html .= '<div class="ae-totals-row ae-totals-grand"><span>'.e(__('fields.total')).'</span><span class="ae-money">'.e(CurrencyFields::format($result['total'], $currencyId)).'</span></div>';
+                if ($foreign) {
+                    $rate = is_numeric($get('exchange_rate')) ? (string) $get('exchange_rate') : '1';
+                    $taxRate = is_numeric($get('tax_exchange_rate')) ? (string) $get('tax_exchange_rate') : $rate;
+                    $html .= '<div class="ae-totals-row"><span>'.e(__('In :currency at :rate', ['currency' => Format::symbol(), 'rate' => Format::quantity($rate, 8)])).'</span><span class="ae-money">≈ '.e(Format::rupiah(Convert::toBase($result['total'], $rate, $decimals))).'</span></div>';
+                    if ($result['tax_total'] !== 0) {
+                        $html .= '<div class="ae-totals-row"><span>'.e(__('VAT in :currency at the tax rate :rate', ['currency' => Format::symbol(), 'rate' => Format::quantity($taxRate, 8)])).'</span><span class="ae-money">≈ '.e(Format::rupiah(Convert::toBase($result['tax_total'], $taxRate, $decimals))).'</span></div>';
+                    }
+                }
 
-                return new HtmlString($html);
+                return new HtmlString($html.'</div>');
             });
+    }
+
+    /** A typed amount (masked or plain) in minor units; anything unreadable counts as nothing. */
+    private static function typedMinor(mixed $typed, int $decimals): int
+    {
+        try {
+            return Convert::minor(is_scalar($typed) ? $typed : 0, $decimals);
+        } catch (\InvalidArgumentException) {
+            return 0;
+        }
     }
 
     /** @param  list<Component>  $extra */
@@ -269,7 +333,7 @@ final class PricedDocumentForm
         $columns = [TableColumn::make(__('Charge')), TableColumn::make(__('Amount'))->alignment(Alignment::End), ...TagFields::columns(), TableColumn::make(__('Description'))];
         $fields = [
             Select::make('account_id')->options(fn () => Account::options(AccountType::Expense, AccountType::OtherExpense, AccountType::CostOfSales, AccountType::OtherCurrentAsset, AccountType::OtherIncome))->searchable()->required()->native(false),
-            self::money('amount', 'Amount')->live(onBlur: true),
+            MoneyInput::inCurrency('amount', fn (Get $get) => CurrencyFields::decimals($get('../../currency_id')))->label(__('Amount'))->default(0)->live(onBlur: true),
             ...TagFields::lineFields(),
             TextInput::make('description')->maxLength(255),
         ];
@@ -287,7 +351,10 @@ final class PricedDocumentForm
                 ->schema($fields)
                 ->defaultItems(0)
                 ->live()
-                ->addActionLabel('Add charge'),
+                ->addActionLabel('Add charge')
+                ->mutateRelationshipDataBeforeFillUsing(fn (array $data, Get $get) => CurrencyFields::fromForeign($data, $get('currency_id'), ['amount' => 'fc_amount']))
+                ->mutateRelationshipDataBeforeCreateUsing(fn (array $data, Get $get) => CurrencyFields::toForeign($data, $get('currency_id'), ['amount' => 'fc_amount']))
+                ->mutateRelationshipDataBeforeSaveUsing(fn (array $data, Get $get) => CurrencyFields::toForeign($data, $get('currency_id'), ['amount' => 'fc_amount'])),
         ]);
     }
 
@@ -317,7 +384,7 @@ final class PricedDocumentForm
                 $row['salesman_id'] = $line->salesman_id;
             }
             if ($withPrices) {
-                $row['unit_price'] = (string) ($line->unit_price ?? 0);
+                $row['unit_price'] = (string) ($line->fc_unit_price ?? $line->unit_price ?? 0); // pulled only from documents in the same currency
                 $row['discount_percent'] = (string) ($line->discount_percent ?? 0);
                 $row['tax_code_id'] = $line->tax_code_id ?? null;
             }

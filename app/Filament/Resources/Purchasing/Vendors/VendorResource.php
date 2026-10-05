@@ -15,6 +15,7 @@ use App\Filament\Resources\Purchasing\Vendors\Pages\EditVendor;
 use App\Filament\Resources\Purchasing\Vendors\Pages\ListVendors;
 use App\Filament\Support\AddressFields;
 use App\Filament\Support\BranchFields;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\NumberFields;
 use App\Filament\Support\OpeningBalanceFields;
@@ -103,6 +104,7 @@ class VendorResource extends MasterResource
                         Grid::make(2)->schema([
                             TextInput::make('default_purchase_disc')->label(__('Default discount (%)'))->numeric()->minValue(0)->maxValue(100)->default(0),
                             Select::make('payment_term_id')->label(__('fields.payment_term'))->relationship('paymentTerm', 'name', fn ($query) => $query->where('is_active', true))->preload()->native(false),
+                            CurrencyFields::select(__('New purchase documents open in this currency.')),
                             Textarea::make('default_invoice_desc')->label(__('Default invoice description'))->rows(2)->columnSpanFull(),
                             Select::make('payable_account_id')->label(__('Payable account'))->options(fn () => Account::options(AccountType::AccountsPayable))->searchable()->native(false),
                             Select::make('down_payment_account_id')->label(__('Down payment account'))->options(fn () => Account::options(AccountType::OtherCurrentAsset))->searchable()->native(false),

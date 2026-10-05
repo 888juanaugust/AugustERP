@@ -20,6 +20,7 @@ use App\Filament\Resources\Sales\Customers\Pages\ListCustomers;
 use App\Filament\Support\AddressFields;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\Columns\Rupiah;
+use App\Filament\Support\CurrencyFields;
 use App\Filament\Support\MasterResource;
 use App\Filament\Support\MoneyInput;
 use App\Filament\Support\NumberFields;
@@ -129,6 +130,7 @@ class CustomerResource extends MasterResource
                             Select::make('payment_term_id')->label(__('fields.payment_term'))->relationship('paymentTerm', 'name', fn ($query) => $query->where('is_active', true))->preload()->native(false)
                                 ->default(fn () => PaymentTerm::default()?->id),
                             TextInput::make('default_sales_disc')->label(__('Default discount (%)'))->numeric()->minValue(0)->maxValue(100)->default(0),
+                            CurrencyFields::select(__('New sales documents open in this currency.')),
                             TextInput::make('default_invoice_desc')->label(__('Default invoice description'))->maxLength(255),
                         ]),
                         Fieldset::make(__('Accounts'))
