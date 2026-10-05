@@ -9,6 +9,7 @@ use App\Domain\Shared\Format;
 use App\Filament\Resources\Sales\SalesmanCommissions\Pages\CommissionStatement;
 use App\Filament\Resources\Sales\SalesmanCommissions\Pages\ManageSalesmanCommissions;
 use App\Filament\Support\MasterResource;
+use App\Filament\Support\MoneyInput;
 use App\Models\Sales\SalesmanCommission;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -72,7 +73,8 @@ class SalesmanCommissionResource extends MasterResource
                     ]),
                     Fieldset::make(__('Gain'))->columns(3)->schema([
                         Select::make('gain_type')->label(__('Commission is'))->options(['percent' => __('A percentage'), 'fixed' => __('A fixed amount')])->default('percent')->required()->native(false)->live(),
-                        TextInput::make('gain_value')->label(fn (Get $get) => $get('gain_type') === 'fixed' ? __('Amount (:symbol)', ['symbol' => Format::symbol()]) : __('Percent'))->numeric()->required()->default(0),
+                        TextInput::make('gain_value')->label(__('Percent'))->numeric()->required()->default(0)->visible(fn (Get $get) => $get('gain_type') !== 'fixed'),
+                        MoneyInput::make('gain_amount')->label(__('Amount (:symbol)', ['symbol' => Format::symbol()]))->required()->default(0)->visible(fn (Get $get) => $get('gain_type') === 'fixed'),
                         Select::make('gain_basis')->label(__('% of'))->options(['sales_value' => __('Sales value'), 'gross_profit' => __('Gross profit')])->default('sales_value')->native(false)->visible(fn (Get $get) => $get('gain_type') !== 'fixed'),
                     ]),
                 ]),
@@ -91,7 +93,7 @@ class SalesmanCommissionResource extends MasterResource
                 TextColumn::make('notes')->label(__('fields.memo'))->limit(40)->placeholder('—'),
                 TextColumn::make('name')->label(__('Rule name'))->searchable()->sortable()->weight('medium'),
                 TextColumn::make('period')->label(__('In force'))->state(fn (SalesmanCommission $r) => $r->periodLabel()),
-                TextColumn::make('gain')->label(__('Gain'))->state(fn (SalesmanCommission $r) => $r->gain_type === 'fixed' ? Format::rupiah((int) round((float) $r->gain_value)) : __(':part of :whole', ['part' => Format::percent($r->gain_value), 'whole' => Format::code($r->gain_basis, 'commission_basis')])),
+                TextColumn::make('gain')->label(__('Gain'))->state(fn (SalesmanCommission $r) => $r->gain_type === 'fixed' ? Format::rupiah((int) $r->gain_amount) : __(':part of :whole', ['part' => Format::percent($r->gain_value), 'whole' => Format::code($r->gain_basis, 'commission_basis')])),
                 self::activeColumn(),
             ])
             ->defaultSort('name')

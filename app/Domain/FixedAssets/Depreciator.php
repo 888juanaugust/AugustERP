@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\FixedAssets;
 
+use App\Domain\Shared\Money;
+
 /**
  * One month's depreciation, as a pure function of what is left to depreciate.
  * Working from the remaining amounts rather than the original schedule means
@@ -27,20 +29,16 @@ final class Depreciator
             return $depreciableRemaining;
         }
 
+        // Whole rupiah on integers only, rounded half up (no float on the way).
         $amount = match ($method) {
-            DepreciationMethod::StraightLine => self::roundHalfUp($depreciableRemaining / $monthsRemaining),
+            DepreciationMethod::StraightLine => Money::mulDiv($depreciableRemaining, 1, $monthsRemaining),
             // double declining: twice the straight-line rate on the book value
-            DepreciationMethod::DecliningBalance => self::roundHalfUp($bookValue * 2 / max(1, $lifeMonths)),
+            DepreciationMethod::DecliningBalance => Money::mulDiv($bookValue, 2, max(1, $lifeMonths)),
             // remaining digits: R/(R(R+1)/2) = 2/(R+1) of what is left
-            DepreciationMethod::SumOfYears => self::roundHalfUp($depreciableRemaining * 2 / ($monthsRemaining + 1)),
+            DepreciationMethod::SumOfYears => Money::mulDiv($depreciableRemaining, 2, $monthsRemaining + 1),
             DepreciationMethod::None => 0,
         };
 
         return max(0, min($amount, $depreciableRemaining));
-    }
-
-    private static function roundHalfUp(float $value): int
-    {
-        return (int) floor($value + 0.5);
     }
 }

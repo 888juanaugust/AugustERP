@@ -4,16 +4,23 @@ declare(strict_types=1);
 
 namespace App\Domain\Tax;
 
+use App\Models\Purchasing\PurchaseDownPayment;
 use App\Models\Purchasing\PurchaseInvoice;
+use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
 use App\Models\Tax\TaxFilingDocument;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * Which documents a VAT period holds: taxable sales invoices for VAT out,
- * taxable purchase invoices for VAT in, within the dates, per branch.
+ * taxable purchase invoices for VAT in, within the dates, per branch. The
+ * VAT return also counts taxable down payments, each in its own period, and
+ * an invoice net of the down payments it deducts (their VAT was due when
+ * they were invoiced).
  */
 final class FilingDocuments
 {
@@ -35,6 +42,50 @@ final class FilingDocuments
                 ->orWhere($kind === TaxFiling::IN ? 'tax_invoice_number' : 'nsfp', 'ilike', "%{$search}%")
                 ->orWhereHas($kind === TaxFiling::IN ? 'vendor' : 'customer', fn (Builder $p) => $p->where('name', 'ilike', "%{$search}%"))))
             ->orderBy('trans_date')->orderBy('number');
+    }
+
+    /**
+     * The VAT return's documents of one kind: invoices with their DPP and VAT less what they deduct of down payments,
+     * then the period's taxable down payments. The screen and the saved return both read this, so they agree.
+     *
+     * @return Collection<int, array{document: Model, party: ?Model, serial: ?string, dpp: int, tax: int, down_payment: bool}>
+     */
+    public static function vatDocuments(string $kind, CarbonImmutable|string $from, CarbonImmutable|string $until, ?int $branchId = null, ?string $search = null): Collection
+    {
+        $in = $kind === TaxFiling::IN;
+        $rows = collect();
+        foreach (self::query($kind, $from, $until, $branchId, $search)->with('downPayments')->get() as $invoice) {
+            $rows->push([
+                'document' => $invoice,
+                'party' => $in ? $invoice->vendor : $invoice->customer,
+                'serial' => $in ? $invoice->tax_invoice_number : $invoice->nsfp,
+                'dpp' => (int) $invoice->dpp_total - (int) $invoice->downPayments->sum('dpp_amount'),
+                'tax' => (int) $invoice->tax_total - (int) $invoice->downPayments->sum('tax_amount'),
+                'down_payment' => false,
+            ]);
+        }
+        $party = $in ? 'vendor' : 'customer';
+        $downPayments = ($in ? PurchaseDownPayment::query() : SalesDownPayment::query())->with($party)
+            ->where('taxable', true)->where('tax_total', '>', 0)
+            ->whereBetween('trans_date', [CarbonImmutable::parse($from)->toDateString(), CarbonImmutable::parse($until)->toDateString()])
+            ->when($branchId, fn (Builder $q) => $q->where('branch_id', $branchId))
+            ->when($search, fn (Builder $q) => $q->where(fn (Builder $w) => $w
+                ->where('number', 'ilike', "%{$search}%")
+                ->when(! $in, fn (Builder $w) => $w->orWhere('nsfp', 'ilike', "%{$search}%"))
+                ->orWhereHas($party, fn (Builder $p) => $p->where('name', 'ilike', "%{$search}%"))))
+            ->orderBy('trans_date')->orderBy('number')->get();
+        foreach ($downPayments as $downPayment) {
+            $rows->push([
+                'document' => $downPayment,
+                'party' => $downPayment->{$party},
+                'serial' => $in ? null : $downPayment->nsfp,
+                'dpp' => (int) $downPayment->dpp_total,
+                'tax' => (int) $downPayment->tax_total,
+                'down_payment' => true,
+            ]);
+        }
+
+        return $rows;
     }
 
     /**
@@ -75,6 +126,9 @@ final class FilingDocuments
         $uncoded = $document->lines->filter(fn ($line) => blank($line->item?->item_tax_code))->map(fn ($line) => $line->item?->name)->filter()->unique();
         if ($uncoded->isNotEmpty()) {
             $notes[] = __('Default goods code for :items.', ['items' => $uncoded->join(', ')]);
+        }
+        if ($document->loadMissing('downPayments')->downPayments->sum('tax_amount') > 0) {
+            $notes[] = __('Deducts down payments: in Coretax, mark it as their settlement.');
         }
 
         return $notes;

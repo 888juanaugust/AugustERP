@@ -77,6 +77,6 @@ final class FixedAssetsModule extends BaseModule
 
     public static function schedule(Schedule $schedule): void
     {
-        $schedule->command('erp:depreciate')->lastDayOfMonth('23:30');
+        $schedule->command('erp:depreciate')->lastDayOfMonth('23:30')->withoutOverlapping()->onOneServer();
     }
 }

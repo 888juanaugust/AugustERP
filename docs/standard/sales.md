@@ -692,7 +692,8 @@ Menu key `company__salesman-commission` · module `sales-extras` · switched by 
 | Field | Column | Type | Required |
 |---|---|---|---|
 | Commission is | `gain_type` | select | yes |
-| — | `gain_value` | number | yes |
+| Percent | `gain_value` | number | yes |
+| Amount (Rp) | `gain_amount` | number | yes |
 | % of | `gain_basis` | select |  |
 
 #### Tab: Other

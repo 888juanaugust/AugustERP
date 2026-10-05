@@ -3,7 +3,6 @@
 namespace App\Models\Sales;
 
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use App\Models\Company\Employee;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,8 +10,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** Check-in: a salesperson's visit to a customer, where and when, and the order it led to. */
 class CheckIn extends Model implements HasAuditReference
 {
-    use RecordsActivity;
-
     protected $guarded = [];
 
     protected function casts(): array

@@ -3,7 +3,6 @@
 namespace App\Models\Purchasing;
 
 use App\Domain\Audit\HasAuditReference;
-use App\Domain\Audit\RecordsActivity;
 use App\Domain\Documents\PaymentMethod;
 use App\Models\GeneralLedger\Account;
 use Illuminate\Database\Eloquent\Model;
@@ -13,8 +12,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /** Payment Order: a batch of vendor invoices to pay by a date; Vendor Transfers turns it into payments. Not posted. */
 class PaymentOrder extends Model implements HasAuditReference
 {
-    use RecordsActivity;
-
     protected $guarded = [];
 
     protected function casts(): array

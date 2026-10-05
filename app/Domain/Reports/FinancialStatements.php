@@ -6,6 +6,7 @@ namespace App\Domain\Reports;
 
 use App\Domain\Company\FiscalYear;
 use App\Domain\Shared\Enums\AccountType;
+use App\Domain\Shared\Money;
 use App\Models\GeneralLedger\Account;
 use App\Models\GeneralLedger\JournalLine;
 
@@ -198,7 +199,8 @@ final class FinancialStatements
             if ($cashNet === 0 || $counter === []) {
                 continue; // a transfer between cash accounts, or nothing against cash
             }
-            $weight = array_sum(array_map('abs', $counter)) ?: 1;
+            // The cash is split over the other accounts by their size, in whole rupiah that add back up to it.
+            $shares = array_sum(array_map('abs', $counter)) > 0 ? Money::allocate($cashNet, array_map('abs', $counter)) : [];
             foreach ($counter as $accountId => $net) {
                 $account = $accounts[$accountId] ?? null;
                 $section = match ($account?->account_type) {
@@ -206,7 +208,7 @@ final class FinancialStatements
                     AccountType::LongTermLiability, AccountType::Equity => 'financing',
                     default => 'operating',
                 };
-                $share = (int) round($cashNet * abs($net) / $weight);
+                $share = $shares[$accountId] ?? 0;
                 $name = $account ? "{$account->no} {$account->name}" : __('Other');
                 $buckets[$section][$name] = ($buckets[$section][$name] ?? 0) + $share;
             }
@@ -222,7 +224,7 @@ final class FinancialStatements
                 $rows[] = ['id' => "{$section}-".md5($name), 'name' => $name, 'amount' => $amount, 'is_total' => false, 'is_heading' => false];
                 $sum += $amount;
             }
-            $rows[] = ['id' => "t-{$section}", 'name' => "Net cash from {$label}", 'amount' => $sum, 'is_total' => true, 'is_heading' => false];
+            $rows[] = ['id' => "t-{$section}", 'name' => __('Net cash from :section', ['section' => mb_strtolower($label)]), 'amount' => $sum, 'is_total' => true, 'is_heading' => false];
             $total += $sum;
         }
         $openingCash = 0;

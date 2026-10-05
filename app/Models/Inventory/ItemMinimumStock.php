@@ -2,12 +2,15 @@
 
 namespace App\Models\Inventory;
 
+use App\Domain\Audit\RecordsChildActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** An item's minimum stock in one warehouse. */
 class ItemMinimumStock extends Model
 {
+    use RecordsChildActivity;
+
     public $timestamps = false;
 
     protected $guarded = [];
@@ -25,5 +28,10 @@ class ItemMinimumStock extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function auditParent(): ?Model
+    {
+        return Item::query()->find($this->getAttribute('item_id'));
     }
 }

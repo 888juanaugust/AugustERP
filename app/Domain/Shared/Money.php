@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Shared;
 
 use Brick\Math\BigDecimal;
+use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
 use InvalidArgumentException;
 
@@ -21,12 +22,8 @@ final class Money
             throw new InvalidArgumentException('Division by zero.');
         }
 
-        $product = $amount * $numerator;
-        $sign = ($product < 0) !== ($denominator < 0) ? -1 : 1;
-        $product = abs($product);
-        $denominator = abs($denominator);
-
-        return $sign * intdiv($product * 2 + $denominator, $denominator * 2);
+        // Two amounts multiplied can pass 64 bits (a billion rupiah times a billion), so the product is a BigDecimal.
+        return BigDecimal::of($amount)->multipliedBy($numerator)->dividedBy($denominator, 0, RoundingMode::HalfUp)->toInt();
     }
 
     /** A percentage given with up to four decimals ("11.5", "12", "0.25") of an amount, half-up. */
@@ -69,26 +66,29 @@ final class Money
             throw new InvalidArgumentException('Weights must add up to more than zero.');
         }
 
+        // On the magnitude, so a negative amount rounds the same way a positive one does; the product of an amount
+        // and a weight can pass 64 bits, so it is a BigInteger.
+        $sign = $amount < 0 ? -1 : 1;
+        $magnitude = abs($amount);
         $parts = [];
         $remainders = [];
         $allocated = 0;
         foreach ($weights as $key => $weight) {
-            $exact = $amount * $weight;
-            $part = intdiv($exact, $total);
+            $exact = BigInteger::of($magnitude)->multipliedBy($weight);
+            $part = $exact->quotient($total)->toInt();
             $parts[$key] = $part;
-            $remainders[$key] = $exact - $part * $total;
+            $remainders[$key] = $exact->remainder($total)->toInt();
             $allocated += $part;
         }
 
-        $left = $amount - $allocated;
+        $left = $magnitude - $allocated;
         $order = array_keys($remainders);
         usort($order, fn ($a, $b) => $remainders[$b] <=> $remainders[$a] ?: array_search($a, array_keys($weights), true) <=> array_search($b, array_keys($weights), true));
-        $step = $left < 0 ? -1 : 1;
-        for ($i = 0; $i < abs($left); $i++) {
-            $parts[$order[$i % count($order)]] += $step;
+        for ($i = 0; $i < $left; $i++) {
+            $parts[$order[$i % count($order)]]++;
         }
 
-        return $parts;
+        return array_map(fn (int $part) => $sign * $part, $parts);
     }
 
     /** 18450000 → "18.450.000" (or "18,450,000" under the English convention in Preferences), no decimals. */

@@ -118,6 +118,7 @@ class AccrualSettlementTest extends TestCase
         $this->assertSame('paid', $accrual->fresh()->payment_status, 'a giro paid the accrual while it is outstanding');
         $this->assertSame(1_000_000, $this->balance('2105'), 'and waits in giros payable');
 
+        $this->actingAsAdmin();
         app(GiroService::class)->bounce($payment->giro, '2026-11-21', 'Insufficient funds');
         $this->assertSame('unpaid', $accrual->fresh()->payment_status);
         $this->assertSame(1_000_000, $this->balance('2230'));

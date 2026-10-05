@@ -10,6 +10,8 @@ use App\Domain\Tax\TaxFilingService;
 use App\Models\Company\TaxCode;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Warehouse;
+use App\Models\Purchasing\PurchaseDownPayment;
+use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
 use Carbon\CarbonImmutable;
@@ -102,6 +104,46 @@ class TaxFilingTest extends TestCase
         $this->assertStringStartsWith('LT,098765432109000,"Acme Trading Ltd"', $lines[4]);
         $this->assertSame('OF,270111,Widget,150000,10,1500000,0,1375000,165000,0,0', $lines[5]);
         $this->assertStringEndsWith('.csv', $filing->file_name);
+    }
+
+    public function test_down_payments_are_taxed_in_their_own_period_and_the_settling_invoice_reports_the_rest(): void
+    {
+        $docs = app(DocumentRepository::class);
+        $customer = $this->invoice->customer;
+        $dp = SalesDownPayment::query()->create(['number' => 'DP-2610-0001', 'trans_date' => '2026-10-20', 'customer_id' => $customer->id, 'amount' => 300_000, 'taxable' => true, 'inclusive_tax' => false, 'tax_code_id' => TaxCode::default()->id, 'created_by' => auth()->id()]);
+        $dp->refreshTotal();
+        $docs->created($dp);
+        $this->assertSame([275_000, 33_000, 333_000], [$dp->dpp_total, $dp->tax_total, $dp->total]);
+
+        $settling = SalesInvoice::query()->create(['number' => 'INV-2611-0002', 'trans_date' => '2026-11-10', 'customer_id' => $customer->id, 'taxable' => true, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $settling->lines()->create(['sort' => 0, 'item_id' => $this->invoice->lines()->value('item_id'), 'quantity' => 10, 'unit_id' => $this->invoice->lines()->value('unit_id'), 'base_quantity' => 10, 'unit_price' => 150_000, 'tax_code_id' => TaxCode::default()->id, 'warehouse_id' => Warehouse::default()->id]);
+        $settling->downPayments()->create(['sales_down_payment_id' => $dp->id, 'amount' => 333_000]);
+        $settling->refreshTotal();
+        $docs->created($settling);
+        $use = $settling->downPayments()->sole();
+        $this->assertSame([300_000, 275_000, 33_000], [$use->net_amount, $use->dpp_amount, $use->tax_amount], 'the deduction is stored split like the down payment');
+
+        // The down payment's VAT is October's; the invoice reports November what is left after it.
+        $october = FilingDocuments::vatDocuments(TaxFiling::OUT, '2026-10-01', '2026-10-31');
+        $this->assertSame([['DP-2610-0001', 275_000, 33_000]], $october->map(fn ($r) => [$r['document']->number, $r['dpp'], $r['tax']])->all());
+        $november = FilingDocuments::vatDocuments(TaxFiling::OUT, '2026-11-01', '2026-11-30');
+        $this->assertSame([['INV-2611-0001', 1_375_000, 165_000], ['INV-2611-0002', 1_100_000, 132_000]], $november->map(fn ($r) => [$r['document']->number, $r['dpp'], $r['tax']])->all());
+
+        // A purchase down payment is VAT in of its own period.
+        $bill = PurchaseDownPayment::query()->create(['number' => 'PDP-1', 'trans_date' => '2026-11-12', 'vendor_id' => $this->sampleVendor()->id, 'amount' => 100_000, 'taxable' => true, 'inclusive_tax' => false, 'tax_code_id' => TaxCode::default()->id, 'created_by' => auth()->id()]);
+        $bill->refreshTotal();
+        $docs->created($bill);
+
+        $return = app(TaxFilingService::class)->saveReturn('2026-11-01', '2026-11-30');
+        $this->assertSame(165_000 + 132_000, $return->vat_out);
+        $this->assertSame(11_000, $return->vat_in);
+        $this->assertSame(297_000 - 11_000, $return->payable);
+        $this->assertSame(165_000 + 165_000 - 33_000, $return->vat_out, 'what the ledger holds as VAT out for the month');
+
+        // The e-Faktur CSV flags the invoice as the down payment's settlement.
+        $filing = app(TaxFilingService::class)->export(SalesInvoice::query()->whereKey($settling->id)->get(), TaxFiling::LEGACY, 2026, 11);
+        $this->assertStringContainsString('1100000,132000,0,,2,275000,33000,0,INV-2611-0002', Storage::disk('local')->get($filing->file_path));
+        $this->assertContains('Deducts down payments: in Coretax, mark it as their settlement.', FilingDocuments::info($settling->fresh()));
     }
 
     public function test_an_empty_selection_is_refused(): void

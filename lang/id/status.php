@@ -41,6 +41,10 @@ return [
         'period_closed' => 'Periode ditutup', 'period_reopened' => 'Periode dibuka kembali', 'preference_changed' => 'Preferensi diubah', 'recurring_run' => 'Transaksi berulang dijalankan',
         'tax_filing_exported' => 'Berkas pajak diekspor', 'tax_invoice_emailed' => 'Faktur pajak dikirim lewat email', 'tax_serial_cleared' => 'Nomor seri pajak dihapus',
         'tax_serial_stored' => 'Nomor seri pajak disimpan', 'vat_return_saved' => 'SPT Masa PPN disimpan',
+        'approval_given' => 'Persetujuan diberikan', 'line_added' => 'Baris ditambahkan', 'line_changed' => 'Baris diubah', 'line_removed' => 'Baris dihapus',
+        'rights_changed' => 'Hak akses diubah', 'special_rights_changed' => 'Hak khusus diubah', 'memberships_changed' => 'Grup atau cabang diubah',
+        'bank_reconciliation_opened' => 'Rekonsiliasi bank dibuka', 'bank_statement_balance_changed' => 'Saldo rekening koran diubah',
+        'bank_lines_cleared' => 'Baris bank dikliring', 'bank_lines_matched' => 'Baris bank dicocokkan',
     ],
     'document' => [
         'draft' => 'Draf',

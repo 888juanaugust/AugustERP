@@ -110,7 +110,7 @@ final class CommissionCalculator
         }
 
         if ($rule->gain_type === 'fixed') {
-            return BigDecimal::of((string) $rule->gain_value)->multipliedBy($blocks)->toScale(0, RoundingMode::HalfUp)->toInt();
+            return (int) $rule->gain_amount * $blocks;
         }
         $base = $rule->gain_basis === 'gross_profit' ? $f['profit'] : $sales;
 

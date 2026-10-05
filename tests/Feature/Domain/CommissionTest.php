@@ -64,8 +64,8 @@ class CommissionTest extends TestCase
 
         $rule = fn (array $a) => SalesmanCommission::query()->create($a + ['active_period' => 'forever', 'salesman_scope' => 'all', 'requirement' => 'none', 'gain_type' => 'percent', 'gain_basis' => 'sales_value', 'is_active' => true]);
         $rule(['name' => 'Five percent', 'gain_value' => 5]);
-        $rule(['name' => 'Ana bonus', 'salesman_scope' => 'specific', 'requirement' => 'sales_value', 'requirement_from' => 400_000, 'requirement_to' => 0, 'gain_type' => 'fixed', 'gain_value' => 50_000])->salesmen()->attach($this->ana);
-        $rule(['name' => 'Per pair', 'requirement' => 'per_qty', 'requirement_qty' => 2, 'gain_type' => 'fixed', 'gain_value' => 10_000]);
+        $rule(['name' => 'Ana bonus', 'salesman_scope' => 'specific', 'requirement' => 'sales_value', 'requirement_from' => 400_000, 'requirement_to' => 0, 'gain_type' => 'fixed', 'gain_amount' => 50_000])->salesmen()->attach($this->ana);
+        $rule(['name' => 'Per pair', 'requirement' => 'per_qty', 'requirement_qty' => 2, 'gain_type' => 'fixed', 'gain_amount' => 10_000]);
         $rule(['name' => 'Off', 'gain_value' => 50, 'is_active' => false]);
         $rule(['name' => 'October only', 'gain_value' => 50, 'active_period' => 'period', 'from_date' => '2026-10-01', 'to_date' => '2026-10-31']);
     }

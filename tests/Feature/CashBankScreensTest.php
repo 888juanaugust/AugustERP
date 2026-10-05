@@ -74,6 +74,8 @@ class CashBankScreensTest extends TestCase
         $this->assertSame(5_000_000, $this->balance('2105'), 'paid by giro: giros payable until it clears');
         $this->assertSame(20_000_000, $this->balance('1102'));
 
+        Livewire::test(ListCashPayments::class)->assertTableActionHidden('giroCleared', $payment); // not for whoever entered it
+        $this->actingAsAdmin();
         Livewire::test(ListCashPayments::class)
             ->assertTableActionVisible('giroCleared', $payment)
             ->callTableAction('giroCleared', $payment, ['on' => '2026-11-15'])

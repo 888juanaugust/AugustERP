@@ -7,6 +7,8 @@ namespace App\Domain\Tax;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\Sales\SalesInvoice;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use XMLWriter;
@@ -95,8 +97,7 @@ final class CoretaxXmlWriter
 
     private function decimal(string|int|float|null $value): string
     {
-        $text = rtrim(rtrim(number_format((float) $value, 4, '.', ''), '0'), '.');
-
-        return $text === '' ? '0' : $text;
+        // On the decimal string, never a float: a unit price keeps every digit it was stored with.
+        return (string) BigDecimal::of(trim((string) ($value ?? '')) === '' ? '0' : (string) $value)->toScale(4, RoundingMode::HalfUp)->strippedOfTrailingZeros();
     }
 }

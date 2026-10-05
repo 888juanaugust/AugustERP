@@ -19,7 +19,7 @@ final class NumberPattern
     {
         $counters = count(array_filter($parts, fn (array $p) => $p['token'] === PatternToken::Counter->value));
         if ($counters !== 1) {
-            throw new InvalidArgumentException('A number format needs exactly one counter.');
+            throw new InvalidArgumentException(__('A number format needs exactly one counter.'));
         }
     }
 

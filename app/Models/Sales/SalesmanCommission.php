@@ -18,7 +18,7 @@ class SalesmanCommission extends Model implements HasAuditReference
 
     protected function casts(): array
     {
-        return ['from_date' => 'date', 'to_date' => 'date', 'levels' => 'array', 'requirement_from' => 'integer', 'requirement_to' => 'integer', 'requirement_qty' => 'decimal:4', 'gain_value' => 'decimal:4', 'is_active' => 'boolean'];
+        return ['from_date' => 'date', 'to_date' => 'date', 'levels' => 'array', 'requirement_from' => 'integer', 'requirement_to' => 'integer', 'requirement_qty' => 'decimal:4', 'gain_value' => 'decimal:4', 'gain_amount' => 'integer', 'is_active' => 'boolean'];
     }
 
     public function salesmen(): BelongsToMany

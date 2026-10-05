@@ -13,8 +13,17 @@ class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
 
+    /** @var array{groups: list<string>, branches: list<string>} */
+    private array $membershipsBefore = ['groups' => [], 'branches' => []];
+
+    protected function beforeSave(): void
+    {
+        $this->membershipsBefore = $this->getRecord()->memberships();
+    }
+
     protected function afterSave(): void
     {
+        $this->getRecord()->logMembershipChange($this->membershipsBefore);
         app(HakAkses::class)->forget();
     }
 

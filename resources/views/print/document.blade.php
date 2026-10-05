@@ -1,5 +1,11 @@
 @php
     use App\Domain\Shared\Format;
+    // The print's colour tokens (DESIGN.md, print-safe); the accent follows a client's primary colour when it is a hex.
+    $primary = config('client.theme.colors.primary');
+    $tone = [
+        'ink' => '#111827', 'text' => '#374151', 'muted' => '#6b7280', 'rule' => '#e5e7eb', 'paper' => '#fff',
+        'accent' => is_string($primary) && preg_match('/^#[0-9a-f]{3,8}$/i', $primary) ? $primary : '#2f5bea',
+    ];
     $s = $layout;
     $shape = $meta['shape'];
     $party = $meta['party'] ? $document->{$meta['party']} : null;
@@ -26,32 +32,32 @@
     <style>
         @page { size: {{ $paper === 'Continuous 9.5"' ? '241mm 279mm' : $paper }} {{ $landscape ? 'landscape' : 'portrait' }}; margin: 14mm; }
         * { box-sizing: border-box; }
-        body { font-family: "Geist Variable", Geist, "Helvetica Neue", Arial, sans-serif; font-size: 11pt; color: #111827; margin: 0; }
+        body { font-family: "Geist Variable", Geist, "Helvetica Neue", Arial, sans-serif; font-size: 11pt; color: {{ $tone['ink'] }}; margin: 0; }
         .sheet { max-width: {{ $landscape ? '277mm' : '190mm' }}; margin: 0 auto; padding: 10mm 0; }
-        header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 8px; margin-bottom: 14px; }
+        header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid {{ $tone['ink'] }}; padding-bottom: 8px; margin-bottom: 14px; }
         .company h1 { font-size: 16pt; margin: 0 0 2px; }
-        .company p, .meta p { margin: 0; font-size: 9.5pt; color: #374151; }
-        .logo { width: 44px; height: 44px; border-radius: 10px; background: #2f5bea; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 10px; float: left; }
+        .company p, .meta p { margin: 0; font-size: 9.5pt; color: {{ $tone['text'] }}; }
+        .logo { width: 44px; height: 44px; border-radius: 10px; background: {{ $tone['accent'] }}; color: {{ $tone['paper'] }}; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 10px; float: left; }
         .doc-title { font-size: 18pt; font-weight: 700; letter-spacing: -0.01em; text-align: right; margin: 0; }
         .meta { text-align: right; }
         .parties { display: flex; gap: 24px; margin-bottom: 14px; }
         .parties > div { flex: 1; }
-        .label { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; margin-bottom: 2px; }
+        .label { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.06em; color: {{ $tone['muted'] }}; margin-bottom: 2px; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-        th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; text-align: left; border-bottom: 1px solid #111827; padding: 6px 6px; }
-        td { padding: 6px 6px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+        th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.04em; color: {{ $tone['muted'] }}; text-align: left; border-bottom: 1px solid {{ $tone['ink'] }}; padding: 6px 6px; }
+        td { padding: 6px 6px; border-bottom: 1px solid {{ $tone['rule'] }}; vertical-align: top; }
         .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
         .mono { font-family: "Geist Mono Variable", ui-monospace, monospace; font-size: 9.5pt; }
         .totals { margin-left: auto; width: 60%; }
         .totals td { border: 0; padding: 3px 6px; }
-        .totals tr.grand td { border-top: 2px solid #111827; font-weight: 700; font-size: 12pt; }
-        .notes { font-size: 9.5pt; color: #374151; white-space: pre-line; }
+        .totals tr.grand td { border-top: 2px solid {{ $tone['ink'] }}; font-weight: 700; font-size: 12pt; }
+        .notes { font-size: 9.5pt; color: {{ $tone['text'] }}; white-space: pre-line; }
         .signatures { display: flex; gap: 24px; margin-top: 36px; }
-        .signatures > div { flex: 1; text-align: center; font-size: 9.5pt; color: #374151; }
-        .signatures .line { border-top: 1px solid #111827; margin-top: 48px; padding-top: 4px; }
-        footer { margin-top: 18px; font-size: 8.5pt; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 6px; }
+        .signatures > div { flex: 1; text-align: center; font-size: 9.5pt; color: {{ $tone['text'] }}; }
+        .signatures .line { border-top: 1px solid {{ $tone['ink'] }}; margin-top: 48px; padding-top: 4px; }
+        footer { margin-top: 18px; font-size: 8.5pt; color: {{ $tone['muted'] }}; border-top: 1px solid {{ $tone['rule'] }}; padding-top: 6px; }
         .toolbar { position: fixed; top: 10px; right: 10px; }
-        .toolbar button { font: inherit; padding: 8px 14px; border-radius: 10px; border: 0; background: #2f5bea; color: #fff; cursor: pointer; }
+        .toolbar button { font: inherit; padding: 8px 14px; border-radius: 10px; border: 0; background: {{ $tone['accent'] }}; color: {{ $tone['paper'] }}; cursor: pointer; }
         @media print { .toolbar { display: none; } .sheet { padding: 0; } }
         @if ($pdf ?? false)
         /* The PDF engine lays out blocks and tables, not flex boxes. */

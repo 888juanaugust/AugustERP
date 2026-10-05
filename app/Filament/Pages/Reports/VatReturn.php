@@ -15,7 +15,6 @@ use App\Domain\Tax\FilingDocuments;
 use App\Domain\Tax\TaxFilingService;
 use App\Filament\Support\BranchFields;
 use App\Filament\Support\ErpPage;
-use App\Models\Sales\SalesInvoice;
 use App\Models\Tax\TaxFiling;
 use App\Models\Tax\VatReturnRecord;
 use Filament\Actions\Action;
@@ -33,7 +32,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-/** VAT Return: the period's VAT out and VAT in, invoice by invoice, totalled for the return. */
+/** VAT Return: the period's VAT out and VAT in, document by document (down payments included), totalled for the return. */
 class VatReturn extends ErpPage implements HasTable
 {
     use InteractsWithTable;
@@ -164,27 +163,27 @@ class VatReturn extends ErpPage implements HasTable
         $totals = [];
         foreach ($kinds as $k) {
             $totals[$k] = ['dpp' => 0, 'tax' => 0];
-            foreach (FilingDocuments::query($k, $this->from(), $this->until(), BranchFields::reportBranch(null), $search ?: null)->get() as $document) {
-                $party = $document instanceof SalesInvoice ? $document->customer : $document->vendor;
-                $code = $party?->document_code;
+            foreach (FilingDocuments::vatDocuments($k, $this->from(), $this->until(), BranchFields::reportBranch(null), $search ?: null) as $entry) {
+                $document = $entry['document'];
+                $code = $entry['party']?->document_code;
                 $code = $code instanceof TaxDocumentCode ? $code : TaxDocumentCode::tryFrom((string) $code);
                 if ($documentCode && $code?->value !== $documentCode) {
                     continue;
                 }
                 $rows[] = [
-                    'id' => "{$k}-{$document->id}",
-                    'kind' => $k === TaxFiling::IN ? 'VAT in' : 'VAT out',
-                    'serial' => $document instanceof SalesInvoice ? $document->nsfp : $document->tax_invoice_number,
+                    'id' => $k.'-'.$document->getMorphClass().'-'.$document->id,
+                    'kind' => $k === TaxFiling::IN ? __('VAT in') : __('VAT out'),
+                    'serial' => $entry['serial'],
                     'number' => $document->number,
                     'trans_date' => $document->trans_date,
-                    'document' => $code?->getLabel(),
+                    'document' => $entry['down_payment'] ? __('Down payment') : $code?->getLabel(),
                     'description' => $document->description,
-                    'dpp' => (int) $document->dpp_total,
-                    'tax' => (int) $document->tax_total,
-                    'party' => $party?->name,
+                    'dpp' => $entry['dpp'],
+                    'tax' => $entry['tax'],
+                    'party' => $entry['party']?->name,
                 ];
-                $totals[$k]['dpp'] += (int) $document->dpp_total;
-                $totals[$k]['tax'] += (int) $document->tax_total;
+                $totals[$k]['dpp'] += $entry['dpp'];
+                $totals[$k]['tax'] += $entry['tax'];
             }
         }
 
