@@ -8,6 +8,12 @@ return [
         'processed' => 'Processed',
         'closed' => 'Closed',
     ],
+    'mail' => [
+        'queued' => 'Queued',
+        'sent' => 'Sent',
+        'failed' => 'Failed',
+        'skipped' => 'Skipped (already sent)',
+    ],
     'payment' => [
         'unpaid' => 'Unpaid',
         'partially_paid' => 'Partially paid',

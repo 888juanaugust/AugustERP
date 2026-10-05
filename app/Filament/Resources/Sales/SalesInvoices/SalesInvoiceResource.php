@@ -46,6 +46,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 /** Sales Invoices: the bill to the customer, from deliveries, from orders or direct; charges; down payments deducted; the tax invoice serial. */
 class SalesInvoiceResource extends ErpResource
@@ -91,6 +92,11 @@ class SalesInvoiceResource extends ErpResource
                     DownPaymentDeductions::repeater(SalesDownPayment::class, 'sales_down_payment_id', 'customer_id'),
                 ]),
                 Tab::make(__('Payment info'))->schema([
+                    Placeholder::make('tax_invoice_mails')->label(__('Tax invoice emails'))
+                        ->visible(fn (?SalesInvoice $record) => $record !== null && $record->taxInvoiceMails()->exists())
+                        ->content(fn (?SalesInvoice $record) => new HtmlString($record?->taxInvoiceMails()->where('status', '!=', 'queued')->get()
+                            ->map(fn ($mail) => e(Format::dateTime($mail->created_at).' · '.__('status.mail.'.$mail->status).' · '.$mail->recipient.' · '.$mail->serial.($mail->error ? ' · '.$mail->error : '')))
+                            ->join('<br>') ?: e(__('Queued')))),
                     Placeholder::make('paid')->label(__('Paid'))->content(fn (?SalesInvoice $record) => $record ? CurrencyFields::documentAmount($record, 'paid_amount').' of '.CurrencyFields::format(SettlementLineFields::total($record), $record->currency_id).' · open '.CurrencyFields::format(SettlementLineFields::open($record), $record->currency_id) : '—'),
                 ]),
             ]),

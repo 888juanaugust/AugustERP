@@ -28,6 +28,24 @@ final class PrintJob
     /** @return array{document: Model, meta: array, layout: array, company: array, title: string} */
     public function prepare(string $alias, int $id, User $user, ?int $layoutId = null): array
     {
+        $print = $this->data($alias, $id, $user, $layoutId);
+        $document = $print['document'];
+        if (! $document->getAttribute('is_printed') && $document->getConnection()->getSchemaBuilder()->hasColumn($document->getTable(), 'is_printed')) {
+            $document->forceFill(['is_printed' => true])->saveQuietly();
+        }
+        Auditor::log('printed', $document, (string) $document->getAttribute('number'), ['layout' => $print['layout']['name'] ?? 'Standard']);
+
+        return $print;
+    }
+
+    /**
+     * What a print of the document shows, with the right checked, but the document not marked printed (a PDF
+     * attached to an email, say).
+     *
+     * @return array{document: Model, meta: array, layout: array, company: array, title: string}
+     */
+    public function data(string $alias, int $id, User $user, ?int $layoutId = null): array
+    {
         $meta = Printable::for($alias) ?? throw new RuntimeException("Nothing called {$alias} prints.");
         $document = $meta['model']::query()->findOrFail($id);
         $menu = $this->menus->menuKeyForModel($document::class);
@@ -35,13 +53,7 @@ final class PrintJob
             throw new RuntimeException('Printing this document takes the print right on its screen.');
         }
         app(ApprovalEngine::class)->assertApproved($document, __('is not approved; it cannot be printed yet.'));
-
         $layout = $this->layoutFor($meta['type']->value, $user, $layoutId);
-
-        if (! $document->getAttribute('is_printed') && $document->getConnection()->getSchemaBuilder()->hasColumn($document->getTable(), 'is_printed')) {
-            $document->forceFill(['is_printed' => true])->saveQuietly();
-        }
-        Auditor::log('printed', $document, (string) $document->getAttribute('number'), ['layout' => $layout['name'] ?? 'Standard']);
 
         return [
             'document' => $document,

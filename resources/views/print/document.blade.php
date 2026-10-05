@@ -51,6 +51,19 @@
         .toolbar { position: fixed; top: 10px; right: 10px; }
         .toolbar button { font: inherit; padding: 8px 14px; border-radius: 10px; border: 0; background: #2f5bea; color: #fff; cursor: pointer; }
         @media print { .toolbar { display: none; } .sheet { padding: 0; } }
+        @if ($pdf ?? false)
+        /* The PDF engine lays out blocks and tables, not flex boxes. */
+        body { font-family: "DejaVu Sans", sans-serif; font-size: 9.5pt; }
+        .toolbar { display: none; }
+        .sheet { padding: 0; max-width: none; }
+        header, .parties, .signatures { display: block; }
+        header::after, .parties::after { content: ""; display: block; clear: both; }
+        .company { float: left; width: 60%; }
+        .meta { float: right; width: 38%; }
+        .logo { display: none; }
+        .parties > div { display: inline-block; width: 48%; vertical-align: top; }
+        .signatures > div { display: inline-block; width: 31%; vertical-align: top; }
+        @endif
     </style>
 </head>
 <body>

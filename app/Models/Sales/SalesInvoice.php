@@ -17,6 +17,7 @@ use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
 use App\Models\Inventory\Item;
 use App\Models\Inventory\StockMovement;
+use App\Models\Tax\TaxInvoiceMail;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Database\Eloquent\Model;
@@ -56,6 +57,12 @@ class SalesInvoice extends Model implements Postable
     public function downPayments(): HasMany
     {
         return $this->hasMany(SalesInvoiceDownPayment::class);
+    }
+
+    /** The tax invoice mail log: each send asked for, and its outcome. */
+    public function taxInvoiceMails(): HasMany
+    {
+        return $this->hasMany(TaxInvoiceMail::class)->orderBy('id');
     }
 
     public function customer(): BelongsTo
