@@ -7,7 +7,8 @@ Module group `inventory`. 13 screens in the standard menu.
 - Stock is per warehouse; cost is a moving average per item per warehouse. Every movement carries its document's date; a back-dated or edited document recosts what came after it, never before the first open period.
 - Items are of four types (inventory, non-inventory, service, group) with any number of units and conversion ratios, a selling price per price category, a purchase price, default accounts, a tax code, a minimum stock and an opening stock per warehouse. A group item (bundle) keeps no stock of its own: selling, delivering or taking back a group moves its stocked components (quantity per group unit, in each component's unit), each at its own cost and on its own inventory and cost of sales accounts. Groups are sold, never bought, received or counted.
 - Adjustments change quantity and/or value per warehouse against an adjustment account, and record opening stock. Transfers move goods between warehouses with an in-transit stage. Stock opname orders a count per warehouse; the result is compared with the system and its variance posted as an adjustment, approved by someone other than the counter.
-- Order fulfilment shows what is ordered and not yet delivered, per item; stock by warehouse the quantity and value per item per warehouse; minimum stock the items below their minimum.
+- Order fulfilment shows what is ordered and not yet delivered, and what stock on hand and open purchase orders cannot cover ("need to order", the earliest orders served first); stock by warehouse the quantity and value per item per warehouse.
+- Minimum stock lists the items at or below their minimum: the warehouse's own minimum when one is set on the item, else the item's overall minimum. Beside stock on hand it shows what approved, open purchase orders still bring (on order) and what approved, open requisitions still ask for (requested), and the quantity to order to get back to the minimum. Selected items open a purchase order (their preferred vendor, when they share one) or a requisition with those lines.
 
 ## Screens
 
@@ -238,6 +239,8 @@ Menu key `inventory__item` · module `inventory`
 | Minimum purchase quantity | `min_purchase_qty` | number |  |
 | Minimum stock | `min_stock` | number |  |
 
+**Line grid "Minimum stock per warehouse":** Warehouse · Minimum
+
 **Fieldset: Tax**
 
 | Field | Column | Type | Required |
@@ -398,7 +401,7 @@ Menu key `inventory__backorder-inquiry` · module `inventory`
 
 ### List
 
-**Columns:** Customer · Order No. · Date · Ship date · Delivered · Can ship now
+**Columns:** Customer · Order No. · Date · Ship date · Delivered · Can ship now · Need to order
 
 **Actions:** Deliver
 
@@ -430,5 +433,7 @@ Menu key `inventory__minimum-stock-item` · module `inventory`
 
 ### List
 
-**Columns:** Vendor · Item name · Item code · Unit · Available · On order · Requested · Minimum
+**Columns:** Vendor · Item name · Item code · Unit · Available · On order · Requested · Minimum · To order
+
+**Actions:** Order · Request
 
