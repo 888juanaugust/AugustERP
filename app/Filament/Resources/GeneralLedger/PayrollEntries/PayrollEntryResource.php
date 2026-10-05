@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Filament\Resources\GeneralLedger\PayrollEntries;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Documents\Accounts;
 use App\Domain\Numbering\TransactionType;
+use App\Domain\Payroll\IncomeKinds;
+use App\Domain\Payroll\PayrollRun;
+use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Shared\Enums\AccountType;
 use App\Domain\Shared\Format;
 use App\Domain\Shared\Money;
@@ -31,6 +35,7 @@ use App\Models\GeneralLedger\Account;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
@@ -52,8 +57,9 @@ use Filament\Tables\Table;
 
 /**
  * Payroll Entries: the journal of one pay period, employee by employee; gross
- * pay to expense, tax withheld to the tax office, net to the employees until
- * paid. Payroll itself is outside the system.
+ * pay to expense, tax withheld to the tax office, BPJS and deductions to
+ * their accounts, net to the employees until paid. "Calculate payroll" fills
+ * the lines from each employee's pay setup with BPJS and Art. 21.
  */
 class PayrollEntryResource extends ErpResource
 {
@@ -75,10 +81,26 @@ class PayrollEntryResource extends ErpResource
         return Account::options(AccountType::OtherCurrentLiability, AccountType::AccountsPayable);
     }
 
-    /** Net pay follows gross pay and the tax withheld as either is typed. */
+    /** Net pay follows gross pay, the tax withheld and the contribution or deduction as any is typed. */
     private static function recomputeNet(Set $set, Get $get): void
     {
-        $set('net_amount', max(0, Money::parse($get('gross_amount')) - Money::parse($get('income_tax'))));
+        $set('net_amount', Money::parse($get('gross_amount')) - Money::parse($get('income_tax')) - Money::parse($get('contribution_amount')));
+    }
+
+    /** Replaces the grid with what payroll works out for the period, or with the tax worked out again. */
+    private static function fillLines(Set $set, Get $get, ?PayrollEntry $record, bool $taxOnly): void
+    {
+        $year = (int) $get('period_year');
+        $month = (int) $get('period_month');
+        if ($year < 2000 || $month < 1) {
+            Notification::make()->title(__('Pick the period first.'))->warning()->send();
+
+            return;
+        }
+        $run = app(PayrollRun::class);
+        $rows = $taxOnly ? $run->recalculateTax((array) $get('lines'), $year, $month, $record?->id) : $run->calculate($year, $month, $record?->id);
+        $set('lines', DocumentPages::keyedRows(array_map(fn (array $row) => $row + ['memo' => null], $rows)));
+        Notification::make()->title($rows === [] ? __('No employee with a pay setup works in this period.') : __(':count line(s) worked out', ['count' => count($rows)]))->success()->send();
     }
 
     public static function form(Schema $schema): Schema
@@ -107,6 +129,7 @@ class PayrollEntryResource extends ErpResource
                                     'salary_component_id' => null,
                                     'gross_amount' => 0,
                                     'income_tax' => 0,
+                                    'contribution_amount' => 0,
                                     'net_amount' => 0,
                                     'memo' => null,
                                 ])
@@ -114,6 +137,20 @@ class PayrollEntryResource extends ErpResource
                             $set('lines', DocumentPages::keyedRows($rows));
                             Notification::make()->title(__(':count employee(s) pulled', ['count' => count($rows)]))->success()->send();
                         }),
+                    Action::make('calculatePayroll')
+                        ->label(__('Calculate payroll'))
+                        ->icon('heroicon-m-calculator')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalDescription(__('Every active employee\'s pay setup, BPJS and income tax for the period replace the lines below; they stay editable.'))
+                        ->visible(fn (Get $get): bool => $get('payment_type') === 'monthly')
+                        ->action(fn (Set $set, Get $get, ?PayrollEntry $record) => self::fillLines($set, $get, $record, false)),
+                    Action::make('recalculateTax')
+                        ->label(__('Work out the tax again'))
+                        ->icon('heroicon-m-arrow-path')
+                        ->color('gray')
+                        ->visible(fn (Get $get): bool => array_filter((array) $get('lines'), fn ($line) => ! empty($line['employee_id'])) !== [])
+                        ->action(fn (Set $set, Get $get, ?PayrollEntry $record) => self::fillLines($set, $get, $record, true)),
                     Repeater::make('lines')
                         ->hiddenLabel()
                         ->relationship()
@@ -121,31 +158,45 @@ class PayrollEntryResource extends ErpResource
                         ->table([
                             TableColumn::make(__('Employee')),
                             TableColumn::make(__('Component')),
+                            TableColumn::make(__('Kind')),
                             TableColumn::make(__('Gross pay'))->alignment(Alignment::End),
                             TableColumn::make(__('Income tax'))->alignment(Alignment::End),
+                            TableColumn::make(__('Contribution / deduction'))->alignment(Alignment::End),
                             TableColumn::make(__('Net pay'))->alignment(Alignment::End),
                             ...TagFields::columns(),
+                            TableColumn::make(__('Memo')),
                         ])
                         ->schema([
                             Select::make('employee_id')->options(fn () => Employee::query()->orderBy('name')->pluck('name', 'id')->all())->searchable()->required()->native(false),
-                            Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->native(false)->nullable()->placeholder(__('Basic salary account')),
+                            Select::make('salary_component_id')->options(fn () => SalaryComponent::query()->active()->orderBy('name')->pluck('name', 'id')->all())->native(false)->nullable()->placeholder(__('Basic salary account'))
+                                ->live()->afterStateUpdated(fn (Set $set, $state) => $state ? $set('fee_type', SalaryComponent::query()->find($state)?->fee_type) : null),
+                            Select::make('fee_type')->options(fn () => SalaryComponent::feeTypes())->native(false)->placeholder(__('Salary')),
                             PricedDocumentForm::money('gross_amount', 'Gross pay')->required()->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
                             PricedDocumentForm::money('income_tax', 'Income tax')->live(onBlur: true)
                                 ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
-                            PricedDocumentForm::money('net_amount', 'Net pay')->required(),
+                            PricedDocumentForm::money('contribution_amount', 'Contribution / deduction')->live(onBlur: true)
+                                ->afterStateUpdated(fn (Set $set, Get $get) => self::recomputeNet($set, $get)),
+                            PricedDocumentForm::money('net_amount', 'Net pay')->required()->readOnly(),
                             ...TagFields::lineFields(),
+                            TextInput::make('memo')->maxLength(255),
+                            Hidden::make('tax_method'),
+                            Hidden::make('ter_category'),
+                            Hidden::make('ter_rate'),
+                            Hidden::make('taxable_gross'),
                         ])
                         ->minItems(1)
                         ->defaultItems(1)
                         ->live()
-                        ->addActionLabel('Add employee'),
+                        ->addActionLabel('Add employee')
+                        ->mutateRelationshipDataBeforeCreateUsing(fn (array $data) => IncomeKinds::normalise($data))
+                        ->mutateRelationshipDataBeforeSaveUsing(fn (array $data) => IncomeKinds::normalise($data)),
                 ]),
                 Tab::make(__('Other info'))->schema([
                     Select::make('expense_payable_account_id')->label(__('Payable account'))->options(fn () => self::payableOptions())->searchable()->required()->native(false)
-                        ->default(fn () => Account::query()->where('no', '2230')->value('id')),
+                        ->default(fn () => Accounts::payroll(PreferensiKey::SalaryPayableAccount)),
                     Select::make('tax_payable_account_id')->label(__('Income tax payable'))->options(fn () => self::payableOptions())->searchable()->native(false)
-                        ->default(fn () => Account::query()->where('no', '2220')->value('id')),
+                        ->default(fn () => Accounts::payroll(PreferensiKey::Pph21PayableAccount)),
                     BranchFields::select(__('Branch'), defaulted: false),
                     ...TagFields::header(),
                     Textarea::make('description')->label(__('Notes'))->rows(2)->maxLength(255),

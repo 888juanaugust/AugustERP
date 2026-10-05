@@ -74,6 +74,25 @@ final class Accounts
         return $id;
     }
 
+    /** A payroll account from Preferences, else the seeded number. */
+    public static function payroll(PreferensiKey $key): int
+    {
+        $fallback = match ($key) {
+            PreferensiKey::SalaryExpenseAccount => '6100',
+            PreferensiKey::SalaryPayableAccount => '2230',
+            PreferensiKey::Pph21PayableAccount => '2220',
+            PreferensiKey::BpjsPayableAccount => '2240',
+            PreferensiKey::BpjsExpenseAccount => '6110',
+            default => throw new \InvalidArgumentException("Not a payroll account: {$key->value}"),
+        };
+        $id = (int) (app(Preferensi::class)->get($key) ?: Account::query()->where('no', $fallback)->value('id'));
+        if ($id === 0) {
+            throw new \RuntimeException(__('Set the account for :what under Preferences → Accounts first.', ['what' => $key->label()]));
+        }
+
+        return $id;
+    }
+
     public static function giroReceivable(): int
     {
         return (int) app(Preferensi::class)->get(PreferensiKey::GiroReceivableAccount);

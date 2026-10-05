@@ -39,6 +39,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['2210', 'Customer Down Payments', AccountType::OtherCurrentLiability, true],
             ['2220', 'Withholding Tax Payable', AccountType::OtherCurrentLiability, true],
             ['2230', 'Accrued Expenses', AccountType::OtherCurrentLiability, false],
+            ['2240', 'BPJS Payable', AccountType::OtherCurrentLiability, false],
             ['2300', 'Bank Loans', AccountType::LongTermLiability, false],
             ['3100', 'Share Capital', AccountType::Equity, false],
             ['3200', 'Retained Earnings', AccountType::Equity, true],
@@ -50,6 +51,7 @@ class ChartOfAccountsSeeder extends Seeder
             ['5200', 'Inventory Adjustments', AccountType::CostOfSales, true],
             ['5300', 'Purchase Discounts', AccountType::CostOfSales, true],
             ['6100', 'Salaries & Wages', AccountType::Expense, false],
+            ['6110', 'Employee Benefits (BPJS)', AccountType::Expense, false],
             ['6200', 'Rent', AccountType::Expense, false],
             ['6300', 'Freight Out', AccountType::Expense, false],
             ['6400', 'Depreciation Expense', AccountType::Expense, false],
@@ -89,6 +91,11 @@ class ChartOfAccountsSeeder extends Seeder
             PreferensiKey::GiroReceivableAccount->value => $id('1105'),
             PreferensiKey::GiroPayableAccount->value => $id('2105'),
             PreferensiKey::TemporaryPaymentAccount->value => $id('1103'),
+            PreferensiKey::SalaryExpenseAccount->value => $id('6100'),
+            PreferensiKey::SalaryPayableAccount->value => $id('2230'),
+            PreferensiKey::Pph21PayableAccount->value => $id('2220'),
+            PreferensiKey::BpjsPayableAccount->value => $id('2240'),
+            PreferensiKey::BpjsExpenseAccount->value => $id('6110'),
         ]);
     }
 }

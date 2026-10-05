@@ -49,6 +49,7 @@ final class SideTabIcons
         'Shipping' => Heroicon::OutlinedTruck,
         'Accounts' => Heroicon::OutlinedBookOpen,
         'Salary account' => Heroicon::OutlinedBookOpen,
+        'Pay' => Heroicon::OutlinedBanknotes,
         'Expenditure accounts' => Heroicon::OutlinedBookOpen,
         'Users' => Heroicon::OutlinedUsers,
         'Employees' => Heroicon::OutlinedUsers,
