@@ -127,6 +127,7 @@ class ApprovalEngineTest extends TestCase
 
         // Segregation of duties: named, but entered it.
         $this->rule('purchase_order', 0, TransactionApprover::ANY_ONE, ['Dee'])->update(['min_amount' => 5_000_000]);
+        auth()->forgetUser(); // promoted by the system: only an administrator makes an administrator
         $this->people['Dee']->forceFill(['access_type' => 'administrator'])->save();
         $this->clerk = $this->people['Dee'];
         $own = $this->order(6_000_000);

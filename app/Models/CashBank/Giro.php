@@ -6,7 +6,10 @@ use App\Domain\Documents\Accounts;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Posting\Tags;
 use App\Models\GeneralLedger\Account;
+use App\Models\GeneralLedger\Posting;
+use App\Models\Settlement\PaymentAllocation;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -92,8 +95,13 @@ class Giro extends Model implements Postable
 
     public function buildPostings(PostingBuilder $builder): void
     {
+        if ($this->isBounced()) {
+            $this->buildBounce($builder);
+
+            return;
+        }
         if (! $this->isCleared()) {
-            return; // outstanding and bounced giros hold no journal of their own
+            return; // an outstanding giro holds no journal of its own
         }
         $memo = "Giro {$this->number} cleared";
         if ($this->isIncoming()) {
@@ -102,6 +110,32 @@ class Giro extends Model implements Postable
         } else {
             $builder->debit(Accounts::giroPayable(), (int) $this->amount, $memo);
             $builder->credit($this->bank_account_id, (int) $this->amount, $memo);
+        }
+    }
+
+    /**
+     * The bank refused the giro: what its receipt or payment posted is reversed on the bounce date (the original
+     * stays in its own period), and its settlements are taken back so what it settled is open again from that day.
+     */
+    private function buildBounce(PostingBuilder $builder): void
+    {
+        $source = $this->source;
+        $posting = $source instanceof Postable ? Posting::active()->where('posting_key', $source->postingKey())->with('journalLines')->first() : null;
+        if ($posting === null) {
+            return;
+        }
+        $memo = "Giro {$this->number} bounced";
+        foreach ($posting->journalLines as $line) {
+            $builder->signed((int) $line->account_id, (int) $line->credit - (int) $line->debit, $memo, $line->branch_id, new Tags($line->department_id, $line->project_id));
+        }
+        foreach (PaymentAllocation::query()->where('posting_id', $posting->id)->orderBy('sort')->get() as $allocation) {
+            $builder->allocate([
+                'receivable_type' => $allocation->receivable_type,
+                'receivable_id' => $allocation->receivable_id,
+                'amount' => -(int) $allocation->amount,
+                'discount' => -(int) $allocation->discount,
+                'discount_account_id' => $allocation->discount_account_id,
+            ]);
         }
     }
 }

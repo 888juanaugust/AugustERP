@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Sales\SellingPriceGuard;
 use Filament\Resources\Pages\EditRecord;
 
 /** A document's edit page: guarded before, re-posted and revisioned after; Approve and Reject when it waits for approval. */
@@ -39,6 +40,7 @@ abstract class EditDocument extends EditRecord
         if (method_exists($this->record, 'refreshTotal')) {
             $this->record->refreshTotal();
         }
+        app(SellingPriceGuard::class)->check($this->record);
         DocumentPages::afterUpdated($this->record, $this->snapshot);
     }
 

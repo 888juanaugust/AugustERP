@@ -185,6 +185,20 @@ class SalesChainTest extends TestCase
         $this->assertSame(0, $this->balance('2210'));
         $this->assertSame(165_000, $this->balance('2200'), 'VAT out not counted twice');
         $this->assertSame('processed', $dp->fresh()->status);
+        $this->assertSame('unpaid', $invoice->payment_status);
+
+        // An invoice the down payment covers in full owes nothing: it is paid without any receipt.
+        $dp2 = SalesDownPayment::query()->create(['number' => 'INV-DP-2', 'trans_date' => '2026-11-01', 'customer_id' => $this->customer->id, 'amount' => 150_000, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $dp2->refreshTotal();
+        $this->docs->created($dp2);
+        $covered = SalesInvoice::query()->create(['number' => 'INV-4', 'trans_date' => '2026-11-07', 'customer_id' => $this->customer->id, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $covered->lines()->create(['sort' => 0, 'item_id' => $this->item->id, 'quantity' => 1, 'unit_id' => $this->item->unit1_id, 'base_quantity' => 1, 'unit_price' => 150_000, 'warehouse_id' => $this->warehouse->id]);
+        $covered->downPayments()->create(['sales_down_payment_id' => $dp2->id, 'amount' => 150_000]);
+        $covered->refreshTotal();
+        $this->docs->created($covered);
+        $this->assertSame(0, $covered->fresh()->balance());
+        $this->assertSame('paid', $covered->fresh()->payment_status);
+        $this->assertSame('processed', $covered->fresh()->status);
     }
 
     public function test_the_price_resolver_prefers_the_adjustment_then_the_category_price_then_the_item(): void

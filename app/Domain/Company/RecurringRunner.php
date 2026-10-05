@@ -8,6 +8,7 @@ use App\Domain\Audit\Auditor;
 use App\Domain\Numbering\NumberGenerator;
 use App\Domain\Numbering\TransactionType;
 use App\Domain\Posting\DocumentRepository;
+use App\Domain\Shared\Format;
 use App\Models\CashBank\CashPayment;
 use App\Models\CashBank\CashReceipt;
 use App\Models\Company\RecurringTransaction;
@@ -17,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
+use Throwable;
 
 /**
  * Turns a recurring transaction into its document, dated the run date,
@@ -28,20 +30,30 @@ final class RecurringRunner
 {
     public function __construct(private readonly DocumentRepository $docs, private readonly NumberGenerator $numbers) {}
 
-    /** Every active schedule due on or before the date. @return list<string> what was made */
+    /**
+     * Every active schedule due on or before the date. A schedule that fails is reported and the others still run.
+     *
+     * @return array{made: list<string>, failed: list<string>}
+     */
     public function runDue(\DateTimeInterface|string|null $on = null, ?int $userId = null): array
     {
         $on = CarbonImmutable::parse($on ?? today());
         $made = [];
+        $failed = [];
         foreach (RecurringTransaction::query()->due($on)->orderBy('next_run_on')->get() as $recurring) {
-            while ($recurring->status === 'active' && $recurring->next_run_on->lte($on)) {
-                $document = $this->run($recurring, $recurring->next_run_on, $userId);
-                $made[] = "{$recurring->name} → {$document->number}";
-                $recurring->refresh();
+            try {
+                while ($recurring->status === 'active' && $recurring->next_run_on->lte($on)) {
+                    $document = $this->run($recurring, $recurring->next_run_on, $userId);
+                    $made[] = "{$recurring->name} → {$document->number}";
+                    $recurring->refresh();
+                }
+            } catch (Throwable $e) {
+                report($e);
+                $failed[] = "{$recurring->name}: {$e->getMessage()}";
             }
         }
 
-        return $made;
+        return ['made' => $made, 'failed' => $failed];
     }
 
     /** One run of one schedule on a date; the schedule advances by its frequency. */
@@ -51,9 +63,15 @@ final class RecurringRunner
             throw new RuntimeException(__(':name is :status.', ['name' => $recurring->name, 'status' => $recurring->status]));
         }
         $on = CarbonImmutable::parse($on ?? $recurring->next_run_on);
-        $userId ??= auth()->id();
+        $userId ??= auth()->id() ?? $recurring->created_by; // the scheduled run makes it as the schedule's author
 
         return DB::transaction(function () use ($recurring, $on, $userId): Model {
+            // Two runs at once (the morning schedule and "Run everything due") make one document per date.
+            $locked = RecurringTransaction::query()->whereKey($recurring->getKey())->lockForUpdate()->firstOrFail();
+            if ($locked->status !== 'active' || ($locked->last_run_on !== null && $locked->last_run_on->gte($on))) {
+                throw new RuntimeException(__(':name has already run for :date.', ['name' => $recurring->name, 'date' => Format::date($on)]));
+            }
+            $recurring->setRawAttributes($locked->getAttributes(), true);
             $document = $this->make($recurring, $on, $userId);
             $this->docs->created($document);
 

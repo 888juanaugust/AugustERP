@@ -28,6 +28,9 @@ final class TaxInvoiceMailer
 {
     public const PDF_FOLDER = 'tax-invoices/coretax';
 
+    /** Where the upload fields put new PDFs; nothing outside it is ever taken as an upload. */
+    public const UPLOAD_FOLDER = 'tax-invoices/uploads';
+
     public function __construct(private readonly PdfRenderer $pdf) {}
 
     public function recipient(SalesInvoice $invoice): ?string
@@ -130,6 +133,7 @@ final class TaxInvoiceMailer
         $matched = [];
         $unmatched = [];
         foreach ($files as $name => $path) {
+            self::assertUpload($path);
             $invoice = $this->match($name, (string) Storage::disk('local')->get($path), $bySerial->all());
             if ($invoice === null) {
                 $unmatched[] = $name;
@@ -147,6 +151,7 @@ final class TaxInvoiceMailer
     /** Keeps an uploaded PDF as the invoice's Coretax PDF (moved into the invoices' folder). */
     public function attach(SalesInvoice $invoice, string $uploadedPath): void
     {
+        self::assertUpload($uploadedPath);
         $target = self::PDF_FOLDER.'/'.$invoice->id.'-'.self::digits((string) $invoice->nsfp).'.pdf';
         if ($uploadedPath !== $target) {
             Storage::disk('local')->delete($target);
@@ -169,6 +174,13 @@ final class TaxInvoiceMailer
         }
 
         return null;
+    }
+
+    private static function assertUpload(string $path): void
+    {
+        if (! str_starts_with($path, self::UPLOAD_FOLDER.'/') || str_contains($path, '..')) {
+            throw new RuntimeException(__('Only a PDF uploaded here can be attached.'));
+        }
     }
 
     private static function digits(string $text): string

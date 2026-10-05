@@ -18,12 +18,15 @@ class RecurringCommand extends Command
     public function handle(RecurringRunner $runner): int
     {
         $on = $this->argument('on');
-        $made = $runner->runDue($on ? CarbonImmutable::parse($on) : null);
+        ['made' => $made, 'failed' => $failed] = $runner->runDue($on ? CarbonImmutable::parse($on) : null);
         $this->info(count($made).' document(s) made from recurring transactions.');
         foreach ($made as $line) {
             $this->line("  {$line}");
         }
+        foreach ($failed as $line) {
+            $this->error("  Not run: {$line}");
+        }
 
-        return self::SUCCESS;
+        return $failed === [] ? self::SUCCESS : self::FAILURE;
     }
 }

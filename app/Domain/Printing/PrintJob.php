@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Printing;
 
+use App\Domain\Access\BranchLimit;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\MenuRegistry;
@@ -13,7 +14,9 @@ use App\Domain\Company\CompanyIdentity;
 use App\Domain\Pengaturan\Preferensi;
 use App\Models\Company\PrintLayout;
 use App\Models\User;
+use App\Modules\ModuleRegistry;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\URL;
 use RuntimeException;
 
 /**
@@ -47,9 +50,11 @@ final class PrintJob
     public function data(string $alias, int $id, User $user, ?int $layoutId = null): array
     {
         $meta = Printable::for($alias) ?? throw new RuntimeException(__('Nothing called :alias prints.', ['alias' => $alias]));
-        $document = $meta['model']::query()->findOrFail($id);
+        // Only what the user's branches let them see, on a screen whose module is on, with view and print rights there.
+        $document = BranchLimit::apply($meta['model']::query(), $user)->findOrFail($id);
         $menu = $this->menus->menuKeyForModel($document::class);
-        if ($menu !== null && ! $this->akses->allows($user, $menu, Hak::Print)) {
+        if ($menu !== null && (! app(ModuleRegistry::class)->menuKeyEnabled($menu)
+            || ! $this->akses->allows($user, $menu, Hak::View) || ! $this->akses->allows($user, $menu, Hak::Print))) {
             throw new RuntimeException(__('Printing this document takes the print right on its screen.'));
         }
         app(ApprovalEngine::class)->assertApproved($document, __('is not approved; it cannot be printed yet.'));
@@ -62,6 +67,17 @@ final class PrintJob
             'company' => app(CompanyIdentity::class)->letterhead(),
             'title' => (string) (($layout['title'] ?? null) ?: $meta['title']),
         ];
+    }
+
+    /**
+     * The printable page's address: signed and short-lived, so only a Print button of this application opens it
+     * (opening it marks the document printed, which a page elsewhere must not be able to do).
+     */
+    public static function url(Model $document, ?int $layoutId = null): ?string
+    {
+        $alias = Printable::aliasOf($document);
+
+        return $alias === null ? null : URL::temporarySignedRoute('filament.admin.print', now()->addMinutes(30), array_filter(['alias' => $alias, 'id' => $document->getKey(), 'layout' => $layoutId]));
     }
 
     /** @return array<string, mixed> the layout's settings plus its name */

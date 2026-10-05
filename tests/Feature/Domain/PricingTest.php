@@ -93,6 +93,18 @@ class PricingTest extends TestCase
             ->assertHasFormErrors(['lines.a.quantity']);
     }
 
+    public function test_the_invoice_grid_takes_the_discount_in_force(): void
+    {
+        $this->adjustment($this->retail, SellingPriceAdjustment::DISCOUNT, [[0, 5]]);
+
+        $page = Livewire::test(CreateSalesInvoice::class)
+            ->fillForm(['customer_id' => $this->customer->id, 'trans_date' => '2026-11-16'])
+            ->set('data.lines', ['a' => ['item_id' => null, 'quantity' => 1, 'unit_id' => null, 'unit_price' => 0, 'discount_percent' => 0, 'tax_code_id' => TaxCode::default()->id, 'warehouse_id' => Warehouse::default()->id]])
+            ->set('data.lines.a.item_id', $this->item->id);
+        $this->assertEquals(5, (float) $page->get('data.lines.a.discount_percent'), 'a discount-type price adjustment reaches the line');
+        $this->assertEquals(150_000, (float) $page->get('data.lines.a.unit_price'));
+    }
+
     public function test_paying_within_the_terms_discount_days_proposes_the_early_payment_discount(): void
     {
         $term = PaymentTerm::query()->create(['name' => 'Early payment 2%', 'discount_percent' => 2, 'discount_days' => 10, 'due_days' => 30]);

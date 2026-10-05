@@ -25,7 +25,13 @@ class DepreciateCommand extends Command
             return self::SUCCESS;
         }
         $until = $this->argument('until');
-        $month = $until ? CarbonImmutable::createFromFormat('Y-m', $until) : CarbonImmutable::today();
+        // "!" starts from the 1st: a bare 'Y-m' takes today's day, and on the 31st November becomes December.
+        $month = $until ? CarbonImmutable::createFromFormat('!Y-m', $until) : CarbonImmutable::today();
+        if ($month === false || ($until && $month->format('Y-m') !== $until)) {
+            $this->error("Give the month as YYYY-MM, e.g. 2026-11 (got \"{$until}\").");
+
+            return self::FAILURE;
+        }
         $result = $run->upTo($month);
         $this->info("Depreciation posted: {$result['posted']} month(s), ".Format::number($result['amount']).' in all.');
         foreach ($result['skipped'] as $note) {

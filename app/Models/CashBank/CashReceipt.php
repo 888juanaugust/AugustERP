@@ -71,9 +71,6 @@ class CashReceipt extends Model implements GiroSource, Postable
 
     public function buildPostings(PostingBuilder $builder): void
     {
-        if ($this->giro?->isBounced()) {
-            return;
-        }
         $total = 0;
         $inclusive = (bool) $this->inclusive_tax;
         foreach ($this->lines()->with('taxCode')->get() as $line) {
@@ -85,7 +82,7 @@ class CashReceipt extends Model implements GiroSource, Postable
             }
             $total += $net + (int) $line->tax_amount;
         }
-        $debit = $this->giro?->isOutstanding() ? Accounts::giroReceivable() : $this->bank_account_id;
+        $debit = $this->giroDetails() !== null ? Accounts::giroReceivable() : $this->bank_account_id;
         $builder->debit($debit, $total, $this->description ?: ($this->payer ? "Receipt from {$this->payer}" : null));
     }
 }

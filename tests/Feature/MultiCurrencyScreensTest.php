@@ -39,6 +39,7 @@ use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesReceipt;
 use App\Models\Settlement\PaymentAllocation;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -101,7 +102,7 @@ class MultiCurrencyScreensTest extends TestCase
             ->assertSet('data.lines.record-'.$line->id.'.unit_price', '250.0000')
             ->assertSet('data.charges.record-'.$invoice->charges()->first()->id.'.amount', '10,50');
 
-        $this->get(route('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))
+        $this->get(URL::signedRoute('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))
             ->assertOk()
             ->assertSee('USD 1.010,50')
             ->assertSee('Rate 15.800 per USD.');

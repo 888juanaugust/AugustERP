@@ -20,7 +20,7 @@ final class AllocationLedger
         $touched = [];
         foreach ($builder->allocations() as $i => $a) {
             // A document still waiting for approval, or rejected, cannot be settled.
-            $class = Relation::getMorphedModel($a['receivable_type']) ?? $a['receivable_type'];
+            $class = Relation::getMorphedModel((string) $a['receivable_type']) ?? throw new \RuntimeException(__('Only a document can be settled.'));
             if (($settled = $class::query()->find($a['receivable_id'])) !== null) {
                 $this->approvals->assertApproved($settled, __('is not approved; it cannot be settled yet.'));
             }
@@ -56,8 +56,8 @@ final class AllocationLedger
     private function refresh(array $touched): void
     {
         foreach ($touched as [$type, $id]) {
-            $class = Relation::getMorphedModel($type) ?? $type;
-            $doc = $class::query()->find($id);
+            $class = Relation::getMorphedModel((string) $type);
+            $doc = $class !== null ? $class::query()->find($id) : null;
             if ($doc !== null) {
                 $this->settlement->refresh($doc);
             }

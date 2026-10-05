@@ -6,6 +6,8 @@
     $landscape = ($s['orientation'] ?? 'portrait') === 'landscape';
     $paper = $s['paper'] ?? 'A4';
     $lines = method_exists($document, 'lines') ? $document->lines()->get() : collect();
+    // What the rows show of each line, loaded at once (lazy loading is refused).
+    $lines->load(array_values(array_filter(['item', 'unit', 'warehouse', 'account'], fn (string $relation) => $lines->isNotEmpty() && method_exists($lines->first(), $relation))));
     // A document in a foreign currency prints its own currency's amounts (the fc_* columns), with the rate and VAT in the base currency.
     $currencyId = $document->getAttribute('currency_id');
     $foreign = \App\Domain\Currency\Currencies::isForeign($currencyId);

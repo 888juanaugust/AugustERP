@@ -102,9 +102,9 @@ final class Recoster
 
     public static function resolve(string $type, int $id): ?Model
     {
-        $class = Relation::getMorphedModel($type) ?? $type;
+        $class = Relation::getMorphedModel($type);
 
-        return class_exists($class) ? $class::query()->find($id) : null;
+        return $class !== null ? $class::query()->find($id) : null;
     }
 
     public function isRunning(): bool

@@ -30,6 +30,7 @@ use App\Models\Sales\Customer;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesReturn;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -124,7 +125,7 @@ class PreferenceEffectsTest extends TestCase
         $this->assertSame('021-555-0101', app(CompanyIdentity::class)->letterhead()['fax']);
         $this->stock(5, 100_000);
         $invoice = $this->invoice(1);
-        $this->get(route('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))->assertOk()->assertSee('Fax 021-555-0101');
+        $this->get(URL::signedRoute('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))->assertOk()->assertSee('Fax 021-555-0101');
 
         Livewire::test(VatReturn::class)
             ->assertSee('PEM-00123/WPJ.07/2020')

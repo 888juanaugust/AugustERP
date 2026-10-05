@@ -30,7 +30,7 @@ final class SalesLinesTab
                 $item->loadMissing('units');
                 $baseQuantity = is_numeric($get('quantity')) ? UnitConverter::toBase($item, (string) $get('quantity'), $unitId ?? $item->unit1_id) : null;
 
-                return PriceResolver::resolve($customer, $item, $unitId, $get('../../trans_date') ?: today(), $baseQuantity)['price'];
+                return PriceResolver::resolve($customer, $item, $unitId, $get('../../trans_date') ?: today(), $baseQuantity);
             },
             salesman: true,
             groupItems: true,

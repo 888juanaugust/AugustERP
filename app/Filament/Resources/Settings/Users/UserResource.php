@@ -57,6 +57,7 @@ class UserResource extends ErpResource
                         ->password()
                         ->revealable()
                         ->required(fn (string $operation) => $operation === 'create')
+                        ->disabled(fn (?User $record): bool => ($record?->isAdministrator() ?? false) && ! self::actorIsAdministrator())
                         ->dehydrated(fn ($state) => filled($state))
                         ->minLength(8)
                         ->helperText(fn (string $operation) => $operation === 'edit' ? __('Leave blank to keep the current password.') : null),
@@ -67,7 +68,9 @@ class UserResource extends ErpResource
                             'administrator' => __('Administrator: every screen, every right'),
                         ])
                         ->default('operator')
-                        ->required(),
+                        ->required()
+                        ->disabled(fn (): bool => ! self::actorIsAdministrator())
+                        ->helperText(fn (): ?string => self::actorIsAdministrator() ? null : __('Only an administrator changes the access type.')),
                     Toggle::make('is_active')->label(__('fields.is_active'))->default(true)->inline(false)
                         ->disabled(fn (?User $record): bool => $record?->is(auth()->user()) ?? false)
                         ->helperText(__('Users are never deleted: switching this off ends their access and keeps their name on everything they did.'))
@@ -83,6 +86,7 @@ class UserResource extends ErpResource
                     CheckboxList::make('accessGroups')
                         ->label(__('Groups'))
                         ->relationship('accessGroups', 'name', fn ($query) => $query->orderBy('name'))
+                        ->disabled(fn (): bool => ! self::actorIsAdministrator())
                         ->columns(3),
                 ]),
                 Tab::make(__('Branches'))->schema([
@@ -90,6 +94,7 @@ class UserResource extends ErpResource
                         ->label(__('May work in these branches'))
                         ->helperText(__('A branch open to all users needs no entry here.'))
                         ->relationship('branches', 'name', fn ($query) => $query->where('is_active', true)->orderBy('name'))
+                        ->disabled(fn (?User $record): bool => ($record?->is(auth()->user()) ?? false) && ! self::actorIsAdministrator())
                         ->columns(3),
                 ]),
             ]),
@@ -130,5 +135,11 @@ class UserResource extends ErpResource
             'create' => CreateUser::route('/create'),
             'edit' => EditUser::route('/{record}/edit'),
         ];
+    }
+
+    /** Groups, the access type and administrators' accounts are an administrator's to change. */
+    private static function actorIsAdministrator(): bool
+    {
+        return auth()->user()?->getOriginal('access_type') === 'administrator';
     }
 }

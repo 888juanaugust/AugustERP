@@ -42,6 +42,7 @@ abstract class TestCase extends BaseTestCase
     /** Log in as an administrator, who passes every access check. */
     protected function actingAsAdmin(): User
     {
+        auth()->forgetUser(); // made by the system: an operator signed in before may not make an administrator
         $user = User::factory()->create([
             'access_type' => 'administrator',
             'is_active' => true,

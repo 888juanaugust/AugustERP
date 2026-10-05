@@ -53,7 +53,7 @@ class EmailTaxInvoice extends ErpPage implements HasTable
     private static function upload(string $name, bool $multiple): FileUpload
     {
         return FileUpload::make($name)->label($multiple ? __('Coretax PDFs') : __('Coretax PDF'))
-            ->disk('local')->directory('tax-invoices/uploads')->visibility('private')
+            ->disk('local')->directory(TaxInvoiceMailer::UPLOAD_FOLDER)->visibility('private')
             ->acceptedFileTypes(['application/pdf'])->maxSize(10240)
             ->multiple($multiple)->maxFiles($multiple ? 200 : 1)
             ->storeFileNamesIn($name.'_names')

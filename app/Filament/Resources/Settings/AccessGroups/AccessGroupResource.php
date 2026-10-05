@@ -32,6 +32,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 /** The Access Groups screen: name, users, the rights matrix per screen, special rights. */
 class AccessGroupResource extends ErpResource
@@ -89,6 +90,28 @@ class AccessGroupResource extends ErpResource
                     ]),
                 ]),
         ])->columns(1);
+    }
+
+    // What a group may do is an administrator's to decide: someone who may edit groups could otherwise give
+    // themselves every right.
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->getOriginal('access_type') === 'administrator' && parent::canCreate();
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()?->getOriginal('access_type') === 'administrator' && parent::canEdit($record);
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()?->getOriginal('access_type') === 'administrator' && parent::canDelete($record);
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return auth()->user()?->getOriginal('access_type') === 'administrator' && parent::canDeleteAny();
     }
 
     /** One collapsible section per module, one row of five checkboxes per screen. */

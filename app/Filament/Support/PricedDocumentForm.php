@@ -99,7 +99,7 @@ final class PricedDocumentForm
                 $item = $state ? Item::query()->find($state) : null;
                 $set('unit_id', $item?->unit1_id);
                 if ($item && ! $get('source_line_id')) {
-                    $set('unit_price', self::inDocumentCurrency($priceResolver ? $priceResolver($item, $get) : (string) $item->purchase_price, $get));
+                    self::setPrice($set, $get, $priceResolver ? $priceResolver($item, $get) : (string) $item->purchase_price);
                     $set('tax_code_id', $item->tax1_id ?? TaxCode::default()?->id);
                 }
                 LineItemFields::syncBase($set, $get);
@@ -166,8 +166,23 @@ final class PricedDocumentForm
         }
         $item = Item::query()->find($get('item_id'));
         if ($item?->use_wholesale_price) {
-            $set('unit_price', self::inDocumentCurrency($priceResolver($item, $get), $get));
+            self::setPrice($set, $get, $priceResolver($item, $get));
         }
+    }
+
+    /**
+     * Puts a resolved price on the line: a bare price, or the sales resolver's price with the discount in force
+     * (a discount-type price adjustment, the customer's default discount).
+     *
+     * @param  string|int|float|array{price: string, discount_percent?: string}|null  $resolved
+     */
+    private static function setPrice(Set $set, Get $get, string|int|float|array|null $resolved): void
+    {
+        if (is_array($resolved)) {
+            $set('discount_percent', (string) ($resolved['discount_percent'] ?? 0));
+            $resolved = $resolved['price'];
+        }
+        $set('unit_price', self::inDocumentCurrency($resolved, $get));
     }
 
     /** An item with a minimum sale quantity is not sold below it (compared in base units). */

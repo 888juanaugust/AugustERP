@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use SensitiveParameter;
 
@@ -48,6 +49,25 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     /** A user is deactivated, never deleted: the guard refuses what an approval still needs. */
     protected static function booted(): void
     {
+        // Only an administrator makes an administrator, or touches one; the last one is never demoted.
+        static::saving(function (User $user): void {
+            $actor = auth()->user();
+            $wasAdministrator = $user->exists && $user->getOriginal('access_type') === 'administrator';
+            if ($wasAdministrator && $user->isDirty('access_type') && ! $user->isAdministrator()
+                && ! User::query()->where('access_type', 'administrator')->where('is_active', true)->whereKeyNot($user->id)->exists()) {
+                throw ValidationException::withMessages(['data.access_type' => __(':name is the only active administrator.', ['name' => $user->name])]);
+            }
+            // The actor's stored access type: when they edit themselves, the change is not yet theirs.
+            if (! $actor instanceof User || $actor->getOriginal('access_type') === 'administrator') {
+                return; // the console, or an administrator
+            }
+            if ($user->isAdministrator() && (! $user->exists || $user->isDirty('access_type'))) {
+                throw ValidationException::withMessages(['data.access_type' => __('Only an administrator makes another user an administrator.')]);
+            }
+            if ($wasAdministrator && $user->isDirty()) {
+                throw ValidationException::withMessages(['data.name' => __('Only an administrator changes an administrator\'s account.')]);
+            }
+        });
         static::updating(function (User $user): void {
             if ($user->isDirty('is_active') && ! $user->is_active && (bool) $user->getOriginal('is_active')) {
                 $actor = auth()->user();

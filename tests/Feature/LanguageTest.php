@@ -39,6 +39,7 @@ class LanguageTest extends TestCase
             ->call('save')
             ->assertHasNoFormErrors();
         $this->assertSame('id', auth()->user()->fresh()->locale);
-        $this->get(EditProfile::getUrl())->assertOk()->assertSee('lang="id"', false)->assertSee('Profil');
+        $this->get(EditProfile::getUrl())->assertOk()->assertSee('lang="id"', false)->assertSee('Profil')
+            ->assertSeeLivewire(EditProfile::class)->assertSee('Bahasa', false);
     }
 }

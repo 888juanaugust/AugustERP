@@ -28,7 +28,7 @@ final class GiroActions
                 ->label(__('Giro cleared'))
                 ->icon('heroicon-m-check-circle')
                 ->color('success')
-                ->visible(fn (Model $record) => $record->giro?->isOutstanding() ?? false)
+                ->visible(fn (Model $record) => ($record->giro?->isOutstanding() ?? false) && app(GiroService::class)->allows($record->giro))
                 ->schema([
                     DatePicker::make('on')->label(__('Cleared on'))->required()->native(false)->default(today()),
                 ])
@@ -46,13 +46,13 @@ final class GiroActions
                 ->label(__('Giro bounced'))
                 ->icon('heroicon-m-x-circle')
                 ->color('danger')
-                ->visible(fn (Model $record) => $record->giro?->isOutstanding() ?? false)
+                ->visible(fn (Model $record) => ($record->giro?->isOutstanding() ?? false) && app(GiroService::class)->allows($record->giro))
                 ->schema([
                     DatePicker::make('on')->label(__('Bounced on'))->required()->native(false)->default(today()),
                     Textarea::make('reason')->label(__('Reason'))->rows(2),
                 ])
                 ->requiresConfirmation()
-                ->modalDescription(__('The receipt or payment is withdrawn: what it settled is open again.'))
+                ->modalDescription(__('What the receipt or payment did is reversed on that day: what it settled is open again.'))
                 ->action(function (Model $record, array $data): void {
                     try {
                         app(GiroService::class)->bounce($record->giro, $data['on'], $data['reason'] ?? null);

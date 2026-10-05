@@ -134,8 +134,8 @@ final class DocumentRepository
     {
         $checked = [];
         foreach ($sources as [$type, $id]) {
-            $class = Relation::getMorphedModel($type) ?? $type;
-            $line = $class::query()->find($id);
+            $class = Relation::getMorphedModel((string) $type); // a mapped alias only, never a class name from a form
+            $line = $class !== null ? $class::query()->find($id) : null;
             $parent = $line !== null && method_exists($line, 'document') ? $line->document() : null;
             if ($parent === null || isset($checked[$parent::class.':'.$parent->getKey()])) {
                 continue;
