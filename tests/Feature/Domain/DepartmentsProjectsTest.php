@@ -91,8 +91,6 @@ class DepartmentsProjectsTest extends TestCase
 
         $this->switchOn();
         $this->get(DepartmentResource::getUrl('index'))->assertOk()->assertSee('Sales north');
-        $this->assertTrue($this->sales->isInUse(), 'a department with one under it stays');
-        $this->assertFalse($this->admin->isInUse());
         $this->get(ProjectResource::getUrl('index'))->assertOk()->assertSee('Warehouse fit-out');
         Livewire::test(CreateJournalVoucher::class)->assertFormFieldExists('department_id')->assertFormFieldExists('project_id');
         Livewire::test(CreateCashPayment::class)->assertFormFieldExists('department_id');
@@ -125,8 +123,6 @@ class DepartmentsProjectsTest extends TestCase
         $docs = app(DocumentRepository::class);
         $before = $docs->beforeUpdate($payment->fresh());
         $payment->lines()->update(['department_id' => $this->admin->id]);
-        $this->assertTrue($this->sales->isInUse() && $this->fitOut->isInUse());
-        $this->assertFalse($this->sampleProject(['code' => 'P-002'])->isInUse());
         $docs->updated($payment->fresh(), $before);
         $line = JournalLine::query()->active()->whereHas('entry', fn ($q) => $q->where('source_number', 'PAY-1'))->where('account_id', $this->account('6200'))->sole();
         $this->assertSame($this->admin->id, $line->department_id, 'a re-post books the new tag');

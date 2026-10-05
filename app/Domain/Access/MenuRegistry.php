@@ -20,15 +20,32 @@ final class MenuRegistry
     /** @var array<class-string, MenuKey> */
     private array $explicit = [];
 
+    /** @var array<string, MenuKey>|null */
+    private ?array $tables = null;
+
     public function register(string $modelClass, MenuKey $key): void
     {
         $this->explicit[$modelClass] = $key;
         $this->map = null;
+        $this->tables = null;
     }
 
     public function menuKeyForModel(string $modelClass): ?MenuKey
     {
         return $this->map()[$modelClass] ?? null;
+    }
+
+    /** The screen whose records live in the table, if any. */
+    public function menuKeyForTable(string $table): ?MenuKey
+    {
+        if ($this->tables === null) {
+            $this->tables = [];
+            foreach ($this->map() as $model => $key) {
+                $this->tables[(new $model)->getTable()] ??= $key;
+            }
+        }
+
+        return $this->tables[$table] ?? null;
     }
 
     /** @return array<class-string, MenuKey> */
