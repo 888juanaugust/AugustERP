@@ -13,21 +13,27 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait RecordsActivity
 {
+    /** Columns whose changes are not worth an entry. */
+    private const QUIET = ['updated_at', 'created_at', 'remember_token', 'password'];
+
     public static function bootRecordsActivity(): void
     {
         static::created(fn (Model $model) => Auditor::log('created', $model));
 
         static::updated(function (Model $model): void {
-            $changes = collect($model->getChanges())->except(['updated_at', 'created_at', 'remember_token', 'password']);
+            $changes = collect($model->getChanges())->except(self::QUIET);
             if ($changes->isEmpty()) {
                 return;
             }
+            // A hidden column (a two-factor secret, say) is logged as changed, never its value: the log cannot be edited later.
+            $hidden = $changes->only($model->getHidden())->map(fn () => __('(changed, not shown)'));
+            $changes = $changes->except($model->getHidden());
             $before = collect($model->getOriginal())->only($changes->keys());
 
-            Auditor::log('updated', $model, null, ['before' => $before->all(), 'after' => $changes->all()]);
+            Auditor::log('updated', $model, null, ['before' => $before->all(), 'after' => $changes->merge($hidden)->all()]);
         });
 
-        static::deleted(fn (Model $model) => Auditor::log('deleted', $model, null, ['before' => collect($model->getOriginal())->except(['password', 'remember_token'])->all()]));
+        static::deleted(fn (Model $model) => Auditor::log('deleted', $model, null, ['before' => collect($model->getOriginal())->except([...self::QUIET, ...$model->getHidden()])->all()]));
     }
 
     public function auditReference(): string

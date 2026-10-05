@@ -10,6 +10,7 @@ use App\Filament\Support\SafeDelete;
 use App\Filament\Support\SideTabIcons;
 use App\Filament\Widgets\CompanyPulse;
 use App\Http\Controllers\PrintController;
+use App\Http\Middleware\EndInactiveSessions;
 use App\Http\Middleware\EnforceAccessWindow;
 use Filament\Actions\DeleteAction;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
@@ -127,6 +128,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->middleware([EndInactiveSessions::class], isPersistent: true)
             ->authMiddleware([
                 Authenticate::class,
                 EnforceAccessWindow::class,

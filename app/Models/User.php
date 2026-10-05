@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domain\Access\UserDeactivation;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\Company\Branch;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use RuntimeException;
 use SensitiveParameter;
 
 /**
@@ -41,6 +43,18 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'app_authentication_secret' => 'encrypted',
             'app_authentication_recovery_codes' => 'encrypted:array',
         ];
+    }
+
+    /** A user is deactivated, never deleted: the guard refuses what an approval still needs. */
+    protected static function booted(): void
+    {
+        static::updating(function (User $user): void {
+            if ($user->isDirty('is_active') && ! $user->is_active && (bool) $user->getOriginal('is_active')) {
+                $actor = auth()->user();
+                UserDeactivation::assertAllowed($user, $actor instanceof User ? $actor : null);
+            }
+        });
+        static::deleting(fn () => throw new RuntimeException(__('Users are never deleted; deactivate them instead.')));
     }
 
     public function isAdministrator(): bool

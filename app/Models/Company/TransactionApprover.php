@@ -3,6 +3,8 @@
 namespace App\Models\Company;
 
 use App\Domain\Audit\RecordsActivity;
+use App\Domain\Numbering\TransactionType;
+use App\Domain\Shared\Format;
 use App\Models\Settings\AccessGroup;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -65,6 +67,15 @@ class TransactionApprover extends Model
     public function approvers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'transaction_approver_users')->withPivot('sort');
+    }
+
+    /** "Purchase Orders from Rp 10.000.000", for messages that name the rule. */
+    public function label(): string
+    {
+        return __(':document from :amount', [
+            'document' => TransactionType::tryFrom((string) $this->transaction_type)?->getLabel() ?? (string) $this->transaction_type,
+            'amount' => Format::money((int) $this->min_amount),
+        ]);
     }
 
     /** Whether this user may approve under this rule: named, or in a named group. */
