@@ -7,10 +7,12 @@
 *.php diff=php
 
 # A client's repository keeps its own copy of these when it merges a template
-# update: run `git config merge.ours.driver true` once in the clone.
+# update: run `git config merge.ours.driver true` once in the clone (see
+# docs/CLIENTS.md). The generated pages of the standard are regenerated after
+# the merge (php artisan erp:standard); a client's strings live in app/Client/lang.
 /app/Client/** merge=ours
 /config/client.php merge=ours
-/lang/*.json merge=ours
+/docs/standard/*.md merge=ours
 /.env.example merge=ours
 
 /.github export-ignore

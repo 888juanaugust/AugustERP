@@ -6,7 +6,7 @@ namespace App\Filament\Support;
 
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakAkses;
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
 use App\Modules\ModuleRegistry;
 use Filament\Pages\Page;
 use Filament\Panel;
@@ -15,7 +15,7 @@ use UnitEnum;
 /** A standalone screen (settings, inquiry, report): placed, named and guarded like a resource. */
 abstract class ErpPage extends Page
 {
-    abstract public static function menuKey(): MenuKey;
+    abstract public static function menuKey(): ScreenKey;
 
     public static function canAccess(): bool
     {

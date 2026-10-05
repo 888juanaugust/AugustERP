@@ -7,6 +7,8 @@ namespace App\Filament\Resources\Settings\AccessGroups;
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakKhusus;
 use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
+use App\Domain\Access\Screens;
 use App\Filament\Modul;
 use App\Filament\Resources\Settings\AccessGroups\Pages\CreateAccessGroup;
 use App\Filament\Resources\Settings\AccessGroups\Pages\EditAccessGroup;
@@ -97,8 +99,7 @@ class AccessGroupResource extends ErpResource
         $modules = app(ModuleRegistry::class);
 
         return array_values(array_filter(array_map(function (Modul $modul) use ($options, $modules) {
-            $screens = array_filter(MenuKey::cases(), fn (MenuKey $k) => $k->modul() === $modul && $k->isReplicated() && $modules->menuKeyEnabled($k));
-            usort($screens, fn (MenuKey $a, MenuKey $b) => $a->sort() <=> $b->sort());
+            $screens = array_filter(Screens::of($modul), fn (ScreenKey $k) => $k->isReplicated() && $modules->menuKeyEnabled($k));
             if ($screens === []) {
                 return null;
             }
@@ -107,7 +108,7 @@ class AccessGroupResource extends ErpResource
                 ->collapsible()
                 ->collapsed()
                 ->schema(array_map(
-                    fn (MenuKey $key) => CheckboxList::make("rights.{$key->value}")
+                    fn (ScreenKey $key) => CheckboxList::make("rights.{$key->value}")
                         ->label($key->label())
                         ->options($options)
                         ->columns(5)

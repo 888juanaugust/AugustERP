@@ -11,7 +11,7 @@ repository, never here, unless they are right for every client.
 | 2 | Email tax invoice (done 2026-10) | Sending a customer its tax invoice by email once the serial number is back, with the mail log on the invoice | The placeholder screen is real; a test sends through the mail fake |
 | 3 | Indonesian UI | `lang/id.json` ships with the template, covering every string the panels show (number and date formats already follow Preferences) | Switching the locale to Indonesian leaves no English on any screen |
 | 4 | Multiple currencies (done 2026-10) | Documents in a foreign currency with a rate per document and realised differences on settlement, behind the Multiple currencies switch | A sales invoice in USD settles in IDR with the difference posted |
-| 5 | Client extensions guide | A worked example of a client module under `app/Client` (resources, migrations, seeders, notes), merged from a template update without conflict | The example lives in a demo client repository and its merge is tested in CI |
+| 5 | Client extensions guide (done 2026-10) | A worked example of a client module under `app/Client` (resources, migrations, seeders, notes), merged from a template update without conflict | The example lives in `examples/client` and its merge into a client made from the previous commit is tested in CI |
 
 Not planned: a payment gateway, bank integrations, marketplace links, an app store, financing
 programs, AI analysis. Those were vendor services of the original product and are not part of

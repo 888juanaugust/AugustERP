@@ -105,6 +105,9 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            // A client's own screens (docs/CLIENTS.md).
+            ->discoverResources(in: app_path('Client/Filament/Resources'), for: 'App\Client\Filament\Resources')
+            ->discoverPages(in: app_path('Client/Filament/Pages'), for: 'App\Client\Filament\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 CompanyPulse::class,

@@ -4,7 +4,7 @@ namespace App\Models\Settings;
 
 use App\Domain\Access\Hak;
 use App\Domain\Access\HakKhusus;
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\Screens;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
 use App\Models\User;
@@ -46,7 +46,7 @@ class AccessGroup extends Model implements HasAuditReference
 
         $rows = [];
         foreach ($matrix as $menuKey => $granted) {
-            if (MenuKey::tryFrom($menuKey) === null || $granted === []) {
+            if (Screens::find((string) $menuKey) === null || $granted === []) {
                 continue;
             }
             $row = ['menu_key' => $menuKey];

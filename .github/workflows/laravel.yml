@@ -83,3 +83,47 @@ jobs:
       - run: vendor/bin/pint --test
       - run: composer audit
       - run: bash -n .claude/hooks/session-start.sh
+
+  client-merge:
+    runs-on: ubuntu-latest
+    name: Client merge
+    # A client repository made from the previous commit, with the worked example
+    # installed, merges this commit without a conflict and its tests pass (docs/CLIENTS.md).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: erp
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: erp_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U erp"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_pgsql, gd, intl, bcmath
+          coverage: none
+      - run: composer install --prefer-dist --no-interaction --no-progress
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build assets
+        run: |
+          npm ci
+          npm run build
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+      - name: Merge the template into a client
+        run: tools/client/merge-check.sh HEAD~1

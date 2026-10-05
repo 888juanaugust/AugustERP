@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules;
 
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
 use App\Domain\Pengaturan\PreferensiKey;
 use Illuminate\Console\Scheduling\Schedule;
 
@@ -16,7 +16,7 @@ abstract class BaseModule implements Module
         return null;
     }
 
-    public static function featureForKey(MenuKey $key): ?PreferensiKey
+    public static function featureForKey(ScreenKey $key): ?PreferensiKey
     {
         return static::feature();
     }

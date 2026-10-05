@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules;
 
-use App\Domain\Access\MenuKey;
+use App\Domain\Access\ScreenKey;
 use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\User;
@@ -72,13 +72,13 @@ final class ModuleRegistry
         return $class !== null && $this->isEnabledClass($class);
     }
 
-    public function ownerOf(MenuKey $key): ?string
+    public function ownerOf(ScreenKey $key): ?string
     {
         return $this->owners()[$key->value] ?? null;
     }
 
     /** A screen nobody owns stays reachable; an owned one follows its module's (or its own) switch. */
-    public function menuKeyEnabled(MenuKey $key): bool
+    public function menuKeyEnabled(ScreenKey $key): bool
     {
         $owner = $this->ownerOf($key);
         if ($owner === null) {

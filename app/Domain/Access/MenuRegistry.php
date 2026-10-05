@@ -14,29 +14,29 @@ use Filament\Facades\Filament;
  */
 final class MenuRegistry
 {
-    /** @var array<class-string, MenuKey>|null */
+    /** @var array<class-string, ScreenKey>|null */
     private ?array $map = null;
 
-    /** @var array<class-string, MenuKey> */
+    /** @var array<class-string, ScreenKey> */
     private array $explicit = [];
 
-    /** @var array<string, MenuKey>|null */
+    /** @var array<string, ScreenKey>|null */
     private ?array $tables = null;
 
-    public function register(string $modelClass, MenuKey $key): void
+    public function register(string $modelClass, ScreenKey $key): void
     {
         $this->explicit[$modelClass] = $key;
         $this->map = null;
         $this->tables = null;
     }
 
-    public function menuKeyForModel(string $modelClass): ?MenuKey
+    public function menuKeyForModel(string $modelClass): ?ScreenKey
     {
         return $this->map()[$modelClass] ?? null;
     }
 
     /** The screen whose records live in the table, if any. */
-    public function menuKeyForTable(string $table): ?MenuKey
+    public function menuKeyForTable(string $table): ?ScreenKey
     {
         if ($this->tables === null) {
             $this->tables = [];
@@ -48,7 +48,7 @@ final class MenuRegistry
         return $this->tables[$table] ?? null;
     }
 
-    /** @return array<class-string, MenuKey> */
+    /** @return array<class-string, ScreenKey> */
     private function map(): array
     {
         if ($this->map !== null) {

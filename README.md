@@ -50,12 +50,14 @@ what the next releases add is in [docs/ROADMAP.md](docs/ROADMAP.md); the visual 
    ```
 
 3. Put the client's own code in `app/Client` and its settings in `config/client.php`
-   (extra modules, starting features, panel colours). The template never touches either.
+   (extra modules and screens, migrations, strings, starting features, panel colours). The
+   template never touches either; `docs/CLIENTS.md` explains the layer, and `examples/client`
+   is a worked module to start from.
 4. Keep the template as a remote and merge its updates:
 
    ```bash
    git remote add template https://github.com/888juanaugust/augusterp.git
-   git config merge.ours.driver true          # once: keeps app/Client, config/client.php, lang/*.json, .env.example
+   git config merge.ours.driver true          # once: keeps app/Client, config/client.php, the generated docs/standard pages, .env.example
    git fetch template && git merge template/main
    ```
 
