@@ -31,7 +31,8 @@ class PanelBootTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['is_active' => false]));
 
-        $this->get('/admin')->assertForbidden();
+        $this->get('/admin')->assertRedirect('/admin/login');
+        $this->assertGuest();
     }
 
     public function test_the_rail_holds_the_ten_module_groups_in_order(): void

@@ -218,6 +218,29 @@ final class ApprovalEngine
         });
     }
 
+    /**
+     * The documents still waiting for this user that cannot be approved
+     * without them. A request nobody has decided yet first re-reads the
+     * rules, so one the user was taken off no longer counts.
+     *
+     * @return list<Model>
+     */
+    public function waitingOn(User $user): array
+    {
+        $out = [];
+        $requests = ApprovalRequest::query()->where('status', ApprovalRequest::AWAITING)->whereNull('superseded_at')->get()
+            ->filter(fn (ApprovalRequest $r) => collect((array) $r->slots)->contains(fn (array $slot) => $this->fits($slot, $user)));
+        foreach ($requests as $request) {
+            $document = $request->approvable;
+            $request = $document !== null ? $this->pending($document) : null;
+            if ($request !== null && $this->needs($request, $user)) {
+                $out[] = $document;
+            }
+        }
+
+        return $out;
+    }
+
     /** Who has approved so far, and who is still to, for the approval panel. @return array{done: list<string>, waiting: list<string>} */
     public function progress(Model $document): array
     {
@@ -380,6 +403,39 @@ final class ApprovalEngine
         $i = $this->nextSlotIndex($request);
 
         return $i === null ? null : ((array) $request->slots)[$i];
+    }
+
+    /** Whether the request cannot complete without this user's approval. */
+    private function needs(ApprovalRequest $request, User $user): bool
+    {
+        if ($this->hasDecided($request, $user)) {
+            return false;
+        }
+        $slots = (array) $request->slots;
+        $filled = $this->approvalsOf($request)->pluck('slot')->filter(fn ($s) => $s !== null)->map(fn ($s) => (int) $s)->all();
+        $excluded = $request->decisions()->pluck('user_id')->map(fn ($id) => (int) $id)->push($user->id);
+        if (BusinessRule::SegregationOfDuties->isOn() && $request->requested_by !== null) {
+            $excluded->push((int) $request->requested_by);
+        }
+        $others = fn (array $slot) => $slot['kind'] === 'user'
+            ? DB::table('users')->where('id', $slot['id'])->where('is_active', true)->whereNotIn('id', $excluded)->pluck('id')
+            : DB::table('access_group_users')->join('users', 'users.id', '=', 'access_group_users.user_id')
+                ->where('access_group_id', $slot['id'])->where('users.is_active', true)->whereNotIn('users.id', $excluded)->pluck('users.id');
+
+        if (in_array($request->rule, [TransactionApprover::IN_ORDER, TransactionApprover::ANY_ORDER], true)) {
+            // Every slot must be filled: one of theirs still open that nobody else can fill.
+            foreach ($slots as $i => $slot) {
+                if (! in_array($i, $filled, true) && $this->fits($slot, $user) && $others($slot)->isEmpty()) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        // Any one, at least two: enough other people left to give the approvals still missing?
+        $people = collect($slots)->flatMap(fn (array $slot) => $others($slot))->unique();
+
+        return $people->count() < $request->required_count - $this->approvalsOf($request)->count();
     }
 
     /** A user slot is that user; a group slot is any current member of the group. */

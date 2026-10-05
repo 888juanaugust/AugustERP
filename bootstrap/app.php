@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EndInactiveSessions;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // A deactivated user is signed out before the panel's own check would only refuse them.
+        $middleware->prependToPriorityList(AuthenticatesRequests::class, EndInactiveSessions::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

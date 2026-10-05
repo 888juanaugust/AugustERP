@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Filament\Resources\Settings\Users;
 
 use App\Domain\Access\MenuKey;
+use App\Domain\Access\UserDeactivation;
 use App\Filament\Resources\Settings\Users\Pages\CreateUser;
 use App\Filament\Resources\Settings\Users\Pages\EditUser;
 use App\Filament\Resources\Settings\Users\Pages\ListUsers;
 use App\Filament\Support\ErpResource;
 use App\Models\User;
-use Filament\Actions\DeleteAction;
+use Closure;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Radio;
@@ -66,7 +67,15 @@ class UserResource extends ErpResource
                         ])
                         ->default('operator')
                         ->required(),
-                    Toggle::make('is_active')->label(__('fields.is_active'))->default(true)->inline(false),
+                    Toggle::make('is_active')->label(__('fields.is_active'))->default(true)->inline(false)
+                        ->disabled(fn (?User $record): bool => $record?->is(auth()->user()) ?? false)
+                        ->helperText(__('Users are never deleted: switching this off ends their access and keeps their name on everything they did.'))
+                        ->rule(fn (?User $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record): void {
+                            $reasons = $record !== null && $record->is_active && ! $value ? UserDeactivation::reasons($record, auth()->user()) : [];
+                            if ($reasons !== []) {
+                                $fail(implode(' ', $reasons));
+                            }
+                        }),
                 ]),
             Tabs::make('access')->tabs([
                 Tab::make(__('Access groups'))->schema([
@@ -108,7 +117,8 @@ class UserResource extends ErpResource
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make()->hidden(fn (User $record) => $record->is(auth()->user())),
+                UserActions::deactivate(),
+                UserActions::reactivate(),
             ]);
     }
 
