@@ -70,7 +70,7 @@ class VendorPriceResource extends ErpResource
                         ->orderColumn('sort')
                         ->table([TableColumn::make(__('Item')), TableColumn::make(__('Unit')), TableColumn::make(__('New price'))->alignment(Alignment::End)])
                         ->schema([
-                            LineItemFields::item(),
+                            LineItemFields::item(groups: false),
                             LineItemFields::unit(),
                             TextInput::make('price')->numeric()->required()->prefix(Format::symbol()),
                         ])

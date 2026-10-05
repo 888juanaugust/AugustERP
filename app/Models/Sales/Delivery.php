@@ -5,6 +5,7 @@ namespace App\Models\Sales;
 use App\Domain\Documents\Accounts;
 use App\Domain\Documents\PricedDocument;
 use App\Domain\Inventory\Costing\CostEngine;
+use App\Domain\Inventory\GroupItems;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
@@ -51,14 +52,14 @@ class Delivery extends Model implements Postable
         $engine = app(CostEngine::class);
         $transit = Accounts::goodsDeliveredNotInvoiced();
         foreach ($this->lines()->with('item.category')->get() as $line) {
-            if (! $line->item->item_type->isStocked()) {
-                continue;
+            // A group item ships its components: one movement each, sourced to this line.
+            foreach (GroupItems::explode($line->item, (string) $line->base_quantity) as $piece) {
+                $cost = $engine->issueCost($piece['item']->id, $line->warehouse_id, $this->trans_date, $piece['base_quantity']);
+                $builder->stock(['item_id' => $piece['item']->id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => $piece['base_quantity'],
+                    'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'delivery_line', 'source_line_id' => $line->id]);
+                $builder->debit($transit, $cost['total_cost'], $line->memo);
+                $builder->credit(Accounts::inventory($piece['item']), $cost['total_cost'], $line->memo);
             }
-            $cost = $engine->issueCost($line->item_id, $line->warehouse_id, $this->trans_date, (string) $line->base_quantity);
-            $builder->stock(['item_id' => $line->item_id, 'warehouse_id' => $line->warehouse_id, 'direction' => StockMovement::OUT, 'base_quantity' => (string) $line->base_quantity,
-                'unit_cost' => $cost['unit_cost'], 'total_cost' => $cost['total_cost'], 'source_line_type' => 'delivery_line', 'source_line_id' => $line->id]);
-            $builder->debit($transit, $cost['total_cost'], $line->memo);
-            $builder->credit(Accounts::inventory($line->item), $cost['total_cost'], $line->memo);
         }
     }
 }

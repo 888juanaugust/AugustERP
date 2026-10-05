@@ -64,8 +64,9 @@ final class PricedDocumentForm
 
     /**
      * @param  list<Component>  $before  components shown above the grid (a Pull action, say)
+     * @param  bool  $groupItems  offer group items (selling documents only; a group is never bought)
      */
-    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?\Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null): Tab
+    public static function linesTab(array $before = [], bool $prices = true, bool $warehouse = true, bool $processed = false, ?\Closure $priceResolver = null, bool $salesman = false, ?bool $pricesEditable = null, bool $groupItems = false): Tab
     {
         $seesCost = app(HakAkses::class)->allowsSpecial(auth()->user(), HakKhusus::SeeCost);
         $columns = [TableColumn::make(__('Item'))];
@@ -89,7 +90,7 @@ final class PricedDocumentForm
         $columns[] = TableColumn::make(__('Memo'));
 
         $fields = [
-            LineItemFields::item()->afterStateUpdated(function (Set $set, Get $get, $state) use ($priceResolver): void {
+            LineItemFields::item(groups: $groupItems)->afterStateUpdated(function (Set $set, Get $get, $state) use ($priceResolver): void {
                 $item = $state ? Item::query()->find($state) : null;
                 $set('unit_id', $item?->unit1_id);
                 if ($item && ! $get('source_line_id')) {

@@ -68,7 +68,7 @@ class VendorClaimResource extends ErpResource
                         ->orderColumn('sort')
                         ->table([TableColumn::make(__('Item')), TableColumn::make(__('Quantity'))->alignment(Alignment::End), TableColumn::make(__('Unit')), TableColumn::make(__('Memo'))])
                         ->schema([
-                            LineItemFields::item(),
+                            LineItemFields::item(groups: false),
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
                             TextInput::make('memo')->maxLength(255),

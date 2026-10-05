@@ -75,7 +75,7 @@ class PurchaseRequisitionResource extends ErpResource
                             TableColumn::make(__('Memo')),
                         ])
                         ->schema([
-                            LineItemFields::item(),
+                            LineItemFields::item(groups: false),
                             LineItemFields::quantity()->minValue(0.0001),
                             LineItemFields::unit(),
                             DatePicker::make('requested_date')->native(false)->displayFormat(Format::DATE_INPUT),
