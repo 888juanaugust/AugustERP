@@ -30,7 +30,7 @@ class RecurringTransaction extends Model
 
     protected function casts(): array
     {
-        return ['template' => 'array', 'next_run_on' => 'date', 'last_run_on' => 'date', 'end_on' => 'date', 'run_count' => 'integer'];
+        return ['template' => 'array', 'next_run_on' => 'date', 'last_run_on' => 'date', 'end_on' => 'date', 'run_count' => 'integer', 'run_day' => 'integer'];
     }
 
     public function scopeDue(Builder $query, \DateTimeInterface|string|null $on = null): Builder
@@ -43,12 +43,24 @@ class RecurringTransaction extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    protected static function booted(): void
+    {
+        // The day a monthly or yearly schedule runs on is the day its next run was set to.
+        static::saving(function (self $recurring): void {
+            if ($recurring->next_run_on !== null && ($recurring->run_day === null || $recurring->isDirty('next_run_on'))) {
+                $recurring->run_day = $recurring->next_run_on->day;
+            }
+        });
+    }
+
     public function nextAfter(CarbonImmutable $date): CarbonImmutable
     {
-        return match ($this->frequency) {
-            'weekly' => $date->addWeek(),
-            'yearly' => $date->addYear(),
-            default => $date->addMonthNoOverflow(),
-        };
+        if ($this->frequency === 'weekly') {
+            return $date->addWeek();
+        }
+        $next = $this->frequency === 'yearly' ? $date->addYearNoOverflow() : $date->addMonthNoOverflow();
+        $day = $this->run_day ?: $date->day;
+
+        return $next->setDay(min($day, $next->daysInMonth)); // the 31st is month-end in every month
     }
 }

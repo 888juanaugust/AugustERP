@@ -53,6 +53,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /** Purchase Payments: money out of a bank account against a vendor's open invoices, down payments and credit notes, with discounts taken. */
 class PurchasePaymentResource extends ErpResource
@@ -115,7 +116,7 @@ class PurchasePaymentResource extends ErpResource
                         ->schema([
                             Select::make('payable_key')->label(__('Document'))
                                 ->options(fn (Get $get) => PayableFields::openFor((int) $get('../../vendor_id'), $get('../../currency_id'))->map(fn ($o) => $o['label'])->all())
-                                ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
+                                ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : null)
                                 ->required()->native(false)->live()
                                 ->afterStateUpdated(function (Set $set, Get $get, $state): void {
                                     // Paid within the term's discount days, the early-payment discount is proposed.
@@ -150,6 +151,9 @@ class PurchasePaymentResource extends ErpResource
     private static function splitKey(array $data): array
     {
         [$type, $id] = array_pad(explode(':', (string) ($data['payable_key'] ?? ''), 2), 2, null);
+        if (! in_array($type, PayableFields::TYPES, true) || ! ctype_digit((string) $id)) {
+            throw ValidationException::withMessages(['data.lines' => __('Pick the document each line settles.')]);
+        }
         $data['payable_type'] = $type;
         $data['payable_id'] = (int) $id;
         unset($data['payable_key']);

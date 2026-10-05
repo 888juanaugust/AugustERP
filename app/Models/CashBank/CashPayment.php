@@ -77,9 +77,6 @@ class CashPayment extends Model implements GiroSource, Postable
 
     public function buildPostings(PostingBuilder $builder): void
     {
-        if ($this->giro?->isBounced()) {
-            return; // a bounced giro paid nothing
-        }
         $settlement = app(SettlementService::class);
         $total = 0;
         $inclusive = (bool) $this->inclusive_tax;
@@ -104,7 +101,7 @@ class CashPayment extends Model implements GiroSource, Postable
             }
             $total += $amount;
         }
-        $credit = $this->giro?->isOutstanding() ? Accounts::giroPayable() : $this->bank_account_id;
+        $credit = $this->giroDetails() !== null ? Accounts::giroPayable() : $this->bank_account_id;
         $builder->credit($credit, $total, $this->description ?: ($this->payee ? "Payment to {$this->payee}" : null));
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Sales\SalesDownPayment;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesReturn;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
 /** The open documents of a customer a receipt can settle: invoices, down payments, opening balances and (with "use credit") credit notes. */
@@ -46,5 +47,16 @@ final class ReceivableFields
         }
 
         return $out;
+    }
+
+    /** The documents a receipt settles; a key naming anything else resolves to nothing. */
+    public const TYPES = ['sales_invoice', 'sales_down_payment', 'sales_return', 'opening_balance'];
+
+    public static function resolve(string $key): ?Model
+    {
+        [$type, $id] = array_pad(explode(':', $key, 2), 2, null);
+        $class = in_array($type, self::TYPES, true) ? Relation::getMorphedModel($type) : null;
+
+        return $class && ctype_digit((string) $id) ? $class::query()->find((int) $id) : null;
     }
 }

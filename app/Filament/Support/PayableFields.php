@@ -45,11 +45,14 @@ final class PayableFields
         return $out;
     }
 
+    /** The documents a payment settles; a key naming anything else resolves to nothing. */
+    public const TYPES = ['purchase_invoice', 'purchase_down_payment', 'purchase_return', 'opening_balance'];
+
     public static function resolve(string $key): ?Model
     {
         [$type, $id] = array_pad(explode(':', $key, 2), 2, null);
-        $class = Relation::getMorphedModel($type) ?? null;
+        $class = in_array($type, self::TYPES, true) ? Relation::getMorphedModel($type) : null;
 
-        return $class && $id ? $class::query()->find((int) $id) : null;
+        return $class && ctype_digit((string) $id) ? $class::query()->find((int) $id) : null;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\GeneralLedger\JournalVouchers\Pages;
 
 use App\Domain\Printing\Printable;
+use App\Domain\Printing\PrintJob;
 use App\Domain\Shared\Format;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\JournalVoucherResource;
 use App\Filament\Support\Columns\Rupiah;
@@ -126,7 +127,7 @@ class ListJournalVouchers extends ListRecords
                     ->label(__('Print'))
                     ->icon('heroicon-m-printer')
                     ->color('gray')
-                    ->url(fn (JournalEntry $record): ?string => $record->posting?->document && ($alias = Printable::aliasOf($record->posting->document)) ? route('filament.admin.print', ['alias' => $alias, 'id' => $record->posting->document->getKey()]) : null, shouldOpenInNewTab: true)
+                    ->url(fn (JournalEntry $record): ?string => $record->posting?->document ? PrintJob::url($record->posting->document) : null, shouldOpenInNewTab: true)
                     ->visible(fn (JournalEntry $record): bool => $record->posting?->document !== null && Printable::aliasOf($record->posting->document) !== null),
             ]);
     }

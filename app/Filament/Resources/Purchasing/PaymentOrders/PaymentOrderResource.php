@@ -42,6 +42,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Validation\ValidationException;
 
 /** Payment Orders: a batch of vendor invoices to pay by a date; Vendor Transfers turns it into payments. */
 class PaymentOrderResource extends ErpResource
@@ -87,7 +88,7 @@ class PaymentOrderResource extends ErpResource
                             Select::make('payable_key')->label(__('Invoice'))
                                 ->options(fn () => PurchaseInvoice::query()->where('payment_status', '!=', 'paid')->with('vendor')->orderBy('due_date')->limit(200)->get()
                                     ->mapWithKeys(fn ($i) => ['purchase_invoice:'.$i->id => $i->number.' · '.$i->vendor->name.' · '.__('due :date', ['date' => Format::date($i->due_date)]).' · '.__('open').' '.Format::rupiah(app(SettlementService::class)->balance($i))]))
-                                ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
+                                ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : null)
                                 ->searchable()->required()->native(false)->live()
                                 ->afterStateUpdated(function (Set $set, $state): void {
                                     $doc = $state ? PayableFields::resolve($state) : null;
@@ -121,6 +122,9 @@ class PaymentOrderResource extends ErpResource
     private static function splitKey(array $data): array
     {
         [$type, $id] = array_pad(explode(':', (string) ($data['payable_key'] ?? ''), 2), 2, null);
+        if (! in_array($type, PayableFields::TYPES, true) || ! ctype_digit((string) $id)) {
+            throw ValidationException::withMessages(['data.lines' => __('Pick the document each line settles.')]);
+        }
         $data['payable_type'] = $type;
         $data['payable_id'] = (int) $id;
         $data['vendor_id'] = $data['vendor_id'] ?: PayableFields::resolve((string) ($data['payable_key'] ?? ''))?->vendor_id;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Domain\Sales\SellingPriceGuard;
 use Filament\Resources\Pages\CreateRecord;
 
 /** A document's create page: numbered from its series, posted once its lines are saved. */
@@ -30,6 +31,7 @@ abstract class CreateDocument extends CreateRecord
     protected function afterCreate(): void
     {
         $this->refreshTotals();
+        app(SellingPriceGuard::class)->check($this->record);
         DocumentPages::afterCreated($this->record);
     }
 

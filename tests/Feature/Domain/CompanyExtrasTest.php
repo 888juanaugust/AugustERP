@@ -103,6 +103,30 @@ class CompanyExtrasTest extends TestCase
         $this->assertSame(8_750_000, $this->balance('2230'));
     }
 
+    public function test_a_month_end_schedule_stays_at_month_end_and_one_failure_stops_no_other(): void
+    {
+        $lines = [
+            ['account_id' => $this->account('6200'), 'debit' => 1_000_000, 'credit' => 0],
+            ['account_id' => $this->account('2230'), 'debit' => 0, 'credit' => 1_000_000],
+        ];
+        $monthEnd = RecurringTransaction::query()->create(['name' => 'Month-end accrual', 'transaction_type' => 'journal_voucher', 'frequency' => 'monthly',
+            'next_run_on' => '2026-01-31', 'status' => 'active', 'created_by' => auth()->id(), 'template' => ['lines' => $lines]]);
+        $broken = RecurringTransaction::query()->create(['name' => 'Unbalanced', 'transaction_type' => 'journal_voucher', 'frequency' => 'monthly',
+            'next_run_on' => '2026-01-15', 'status' => 'active', 'created_by' => auth()->id(),
+            'template' => ['lines' => [['account_id' => $this->account('6200'), 'debit' => 1, 'credit' => 0]]]]);
+
+        $result = app(RecurringRunner::class)->runDue('2026-04-30');
+
+        $this->assertSame(['2026-01-31', '2026-02-28', '2026-03-31', '2026-04-30'], JournalVoucher::query()->orderBy('trans_date')->get()->map(fn ($v) => $v->trans_date->toDateString())->all(),
+            'February is the 28th; March is the 31st again');
+        $this->assertSame('2026-05-31', $monthEnd->fresh()->next_run_on->toDateString());
+        $this->assertCount(1, $result['failed'], 'the broken schedule is reported');
+        $this->assertStringStartsWith('Unbalanced:', $result['failed'][0]);
+        $this->assertSame('2026-01-15', $broken->fresh()->next_run_on->toDateString(), 'and left as it was');
+
+        $this->artisan('erp:recurring', ['on' => '2026-04-30'])->assertFailed();
+    }
+
     public function test_a_recurring_journal_runs_on_its_dates_and_never_twice_for_one_date(): void
     {
         $recurring = RecurringTransaction::query()->create([
@@ -114,7 +138,7 @@ class CompanyExtrasTest extends TestCase
             ]],
         ]);
 
-        $made = app(RecurringRunner::class)->runDue('2026-11-15');
+        $made = app(RecurringRunner::class)->runDue('2026-11-15')['made'];
         $this->assertCount(3, $made, 'September, October and November');
         $this->assertSame(3, JournalVoucher::query()->count());
         $this->assertSame(['2026-09-01', '2026-10-01', '2026-11-01'], JournalVoucher::query()->orderBy('trans_date')->get()->map(fn ($v) => $v->trans_date->toDateString())->all());
@@ -123,7 +147,7 @@ class CompanyExtrasTest extends TestCase
         $this->assertSame('done', $recurring->fresh()->status, 'past its end date');
         $this->assertSame(3, $recurring->fresh()->run_count);
 
-        $this->assertCount(0, app(RecurringRunner::class)->runDue('2026-11-15'), 'nothing runs twice');
+        $this->assertCount(0, app(RecurringRunner::class)->runDue('2026-11-15')['made'], 'nothing runs twice');
         $this->artisan('erp:recurring', ['on' => '2026-12-01'])->assertSuccessful();
         $this->assertSame(3, JournalVoucher::query()->count());
 

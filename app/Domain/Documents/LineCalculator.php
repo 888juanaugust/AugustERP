@@ -34,11 +34,12 @@ final class LineCalculator
             $price = BigDecimal::of((string) ($line['unit_price'] ?? 0));
             $gross = $qty->multipliedBy($price)->toScale(0, RoundingMode::HalfUp)->toInt();
 
-            $discount = Money::parse((string) ($line['discount_amount'] ?? 0));
+            // As on the header, the percentage decides; a fixed amount counts only where no percentage is
+            // given (the stored amount comes back from the form, and would otherwise freeze the first one).
             $percent = (string) ($line['discount_percent'] ?? 0);
-            if ($discount === 0 && BigDecimal::of($percent === '' ? '0' : $percent)->isPositive()) {
-                $discount = BigDecimal::of($gross)->multipliedBy($percent)->dividedBy(100, 0, RoundingMode::HalfUp)->toInt();
-            }
+            $discount = BigDecimal::of($percent === '' ? '0' : $percent)->isPositive()
+                ? BigDecimal::of($gross)->multipliedBy($percent)->dividedBy(100, 0, RoundingMode::HalfUp)->toInt()
+                : Money::parse((string) ($line['discount_amount'] ?? 0));
             $amount = $gross - $discount;
             $subtotal += $amount;
 

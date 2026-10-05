@@ -23,7 +23,6 @@ use App\Filament\Support\DocumentListFilters;
 use App\Filament\Support\ErpResource;
 use App\Filament\Support\GiroActions;
 use App\Filament\Support\NumberFields;
-use App\Filament\Support\PayableFields;
 use App\Filament\Support\PrintAction;
 use App\Filament\Support\ReceivableFields;
 use App\Filament\Support\SettlementLineFields;
@@ -55,6 +54,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /** Sales Receipts: money in from a customer against open invoices and down payments, credit notes with "use credit", a discount or write-off per line. */
 class SalesReceiptResource extends ErpResource
@@ -120,19 +120,20 @@ class SalesReceiptResource extends ErpResource
                         ->schema([
                             Select::make('receivable_key')
                                 ->options(fn (Get $get) => ReceivableFields::openFor((int) $get('../../customer_id'), (bool) $get('../../use_credit'), $get('../../currency_id'))->map(fn ($o) => $o['label'])->all())
-                                ->getOptionLabelUsing(fn ($value) => $value && ($doc = PayableFields::resolve($value)) ? $doc->number : $value)
+                                ->getOptionLabelUsing(fn ($value) => $value && ($doc = ReceivableFields::resolve($value)) ? $doc->number : null)
                                 ->required()->native(false)->live()
                                 ->afterStateUpdated(function (Set $set, Get $get, $state): void {
                                     // Paid within the term's discount days, the early-payment discount is proposed.
-                                    $doc = $state ? PayableFields::resolve($state) : null;
+                                    $doc = $state ? ReceivableFields::resolve($state) : null;
                                     $proposal = $doc ? SettlementLineFields::proposal($doc, $get('../../trans_date')) : ['amount' => 0, 'discount' => 0];
                                     $set('amount', $proposal['amount']);
                                     $set('discount', $proposal['discount']);
                                 }),
-                            Placeholder::make('invoice_date')->label(__('Invoice date'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
-                            Placeholder::make('invoice_total')->label(__('Invoice total'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::total($doc), $doc->currency_id) : ''),
-                            Placeholder::make('open')->label(__('Open balance'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = PayableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
-                            SettlementLineFields::amount('amount', __('Pay'))->required()->live(onBlur: true),
+                            Placeholder::make('invoice_date')->label(__('Invoice date'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = ReceivableFields::resolve($key)) ? Format::date($doc->trans_date) : ''),
+                            Placeholder::make('invoice_total')->label(__('Invoice total'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = ReceivableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::total($doc), $doc->currency_id) : ''),
+                            Placeholder::make('open')->label(__('Open balance'))->hiddenLabel()->content(fn (Get $get) => ($key = $get('receivable_key')) && ($doc = ReceivableFields::resolve($key)) ? CurrencyFields::number(SettlementLineFields::open($doc), $doc->currency_id) : ''),
+                            SettlementLineFields::amount('amount', __('Pay'))->required()->live(onBlur: true)
+                                ->rule(fn (Get $get) => SettlementLineFields::notNegativeUnlessCredit(fn () => ($key = $get('receivable_key')) ? ReceivableFields::resolve($key) : null)),
                             SettlementLineFields::amount('discount', __('Discount'))->live(onBlur: true),
                             Select::make('discount_account_id')->options(fn () => Account::options(AccountType::Revenue, AccountType::OtherExpense, AccountType::Expense))->native(false)->placeholder(__('Sales Discounts')),
                             Hidden::make('receivable_type'),
@@ -156,6 +157,9 @@ class SalesReceiptResource extends ErpResource
     private static function splitKey(array $data): array
     {
         [$type, $id] = array_pad(explode(':', (string) ($data['receivable_key'] ?? ''), 2), 2, null);
+        if (! in_array($type, ReceivableFields::TYPES, true) || ! ctype_digit((string) $id)) {
+            throw ValidationException::withMessages(['data.lines' => __('Pick the document each line settles.')]);
+        }
         $data['receivable_type'] = $type;
         $data['receivable_id'] = (int) $id;
         unset($data['receivable_key']);

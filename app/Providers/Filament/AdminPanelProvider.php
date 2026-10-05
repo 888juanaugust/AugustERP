@@ -19,6 +19,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -74,6 +75,10 @@ class AdminPanelProvider extends PanelProvider
 
         // Every date field types and shows dates in the format Preferences choose.
         DatePicker::configureUsing(fn (DatePicker $picker) => $picker->displayFormat(fn (): string => Format::dateInputFormat()));
+
+        // An upload field takes only a file uploaded through it: a path typed into its state (another file on the
+        // private disk) is refused, never read, moved, signed for download or deleted.
+        FileUpload::configureUsing(fn (FileUpload $upload) => $upload->preventFilePathTampering());
     }
 
     public function panel(Panel $panel): Panel
@@ -84,7 +89,6 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->profile(EditProfile::class, isSimple: false)
-            ->profile()
             ->multiFactorAuthentication([
                 AppAuthentication::make()->recoverable(),
             ])
@@ -116,8 +120,11 @@ class AdminPanelProvider extends PanelProvider
                 CompanyPulse::class,
                 AccountWidget::class,
             ])
-            ->routes(fn () => Route::get('/print/{alias}/{id}', PrintController::class)->name('print'))
-            ->authenticatedRoutes(fn () => Route::get('/payroll/a1/{employee}/{year}', A1SlipController::class)->whereNumber(['employee', 'year'])->name('a1'))
+            ->authenticatedRoutes(function (): void {
+                // Behind sign-in and the access window, like every screen; the print page opens only from a signed link.
+                Route::get('/print/{alias}/{id}', PrintController::class)->whereNumber('id')->middleware('signed')->name('print');
+                Route::get('/payroll/a1/{employee}/{year}', A1SlipController::class)->whereNumber(['employee', 'year'])->name('a1');
+            })
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): View => view('filament.shell.head'))
             ->renderHook(
                 PanelsRenderHook::LAYOUT_START,

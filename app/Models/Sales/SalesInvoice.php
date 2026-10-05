@@ -12,6 +12,7 @@ use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
 use App\Domain\Posting\Tags;
+use App\Domain\Settlement\SettlementService;
 use App\Domain\Shared\Money;
 use App\Models\Company\Branch;
 use App\Models\Company\PaymentTerm;
@@ -100,6 +101,8 @@ class SalesInvoice extends Model implements Postable
         foreach ($this->downPayments()->with('downPayment')->get() as $use) {
             $use->downPayment?->refreshStatus();
         }
+        // Down payments (or a zero total) can leave nothing to pay: the payment status follows the totals too.
+        app(SettlementService::class)->refresh($this);
         $this->forceFill(['status' => $this->payment_status === 'paid' ? 'processed' : 'pending'])->saveQuietly();
     }
 

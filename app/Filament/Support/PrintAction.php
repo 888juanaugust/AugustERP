@@ -6,6 +6,7 @@ namespace App\Filament\Support;
 
 use App\Domain\Approval\ApprovalEngine;
 use App\Domain\Printing\Printable;
+use App\Domain\Printing\PrintJob;
 use Filament\Actions\Action;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Livewire;
@@ -19,7 +20,7 @@ final class PrintAction
             ->label(__('Print'))
             ->icon('heroicon-m-printer')
             ->color('gray')
-            ->url(fn (Model $record): ?string => ($alias = Printable::aliasOf($record)) ? route('filament.admin.print', ['alias' => $alias, 'id' => $record->getKey()]) : null, shouldOpenInNewTab: true)
+            ->url(fn (Model $record): ?string => PrintJob::url($record), shouldOpenInNewTab: true)
             ->visible(fn (Model $record): bool => Printable::aliasOf($record) !== null && self::allowed() && app(ApprovalEngine::class)->isApproved($record));
     }
 

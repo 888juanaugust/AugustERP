@@ -12,6 +12,7 @@ use App\Domain\Documents\PaymentMethod;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Settlement\SettlementLimit;
 use App\Models\CashBank\Giro;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
@@ -85,9 +86,6 @@ class SalesReceipt extends Model implements GiroSource, Postable
 
     public function buildPostings(PostingBuilder $builder): void
     {
-        if ($this->giro?->isBounced()) {
-            return; // a bounced giro paid nothing: the invoices are open again
-        }
         $foreignPayments = app(ForeignPayments::class);
         $foreign = Currencies::isForeign($this->currency_id);
         $bankCurrency = $foreignPayments->assertBank($this, (int) $this->bank_account_id);
@@ -101,6 +99,10 @@ class SalesReceipt extends Model implements GiroSource, Postable
             $foreignPayments->assertSameCurrency($this, $line->receivable);
             $amount = (int) $line->amount;
             $discount = (int) $line->discount;
+            if ($line->receivable !== null) {
+                app(SettlementLimit::class)->assertParty($line->receivable, $this->customer);
+                app(SettlementLimit::class)->assertLine($line->receivable, $amount, $discount, $foreign ? (int) $line->fc_amount : null, $foreign ? (int) $line->fc_discount : null);
+            }
             $builder->signed($receivable, -($amount + $discount), $line->receivable?->number);
             if ($discount !== 0) {
                 $builder->signed($line->discount_account_id ?? Accounts::salesDiscount($this->customer), $discount, 'Settlement discount');
@@ -114,7 +116,7 @@ class SalesReceipt extends Model implements GiroSource, Postable
             ] + ($foreign ? ['fc_amount' => (int) $line->fc_amount, 'fc_discount' => (int) $line->fc_discount, 'fx_difference' => $amounts['differences'][$line->id] ?? 0] : []));
             $received += $amount;
         }
-        $debit = $this->giro?->isOutstanding() ? Accounts::giroReceivable() : $this->bank_account_id;
+        $debit = $this->giroDetails() !== null ? Accounts::giroReceivable() : $this->bank_account_id;
         $memo = $this->description ?? "Receipt from {$this->customer->name}";
         if ($amounts === null) {
             $builder->debit($debit, $received, $memo);

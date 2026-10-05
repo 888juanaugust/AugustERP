@@ -125,4 +125,22 @@ class TaxInvoiceMailTest extends TestCase
         Mail::assertSent(TaxInvoiceMessage::class);
         Livewire::test(EmailTaxInvoice::class)->assertTableActionHidden('send', $this->invoice)->assertTableActionVisible('sendAgain', $this->invoice);
     }
+
+    public function test_a_path_typed_into_an_upload_field_is_refused(): void
+    {
+        Storage::disk('local')->put('tax-filings/annual-2026.xml', '<secret/>');
+
+        // Through the screen: the upload field refuses a path it did not upload.
+        Livewire::test(EmailTaxInvoice::class)
+            ->mountTableAction('attachPdf', $this->invoice)
+            ->setTableActionData(['file' => ['x' => 'tax-filings/annual-2026.xml']])
+            ->callMountedTableAction();
+        $this->assertTrue(Storage::disk('local')->exists('tax-filings/annual-2026.xml'), 'not moved');
+        $this->assertNull($this->invoice->fresh()->coretax_pdf_path);
+
+        // And the mailer takes nothing from outside its own upload folder.
+        $this->assertThrows(fn () => $this->mailer()->attach($this->invoice, 'tax-filings/annual-2026.xml'), RuntimeException::class, 'Only a PDF uploaded here');
+        $this->assertThrows(fn () => $this->mailer()->attachMany(['a.pdf' => 'tax-filings/annual-2026.xml']), RuntimeException::class);
+        $this->assertTrue(Storage::disk('local')->exists('tax-filings/annual-2026.xml'), 'not deleted');
+    }
 }

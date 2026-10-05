@@ -13,6 +13,7 @@ use App\Domain\Documents\PaymentMethod;
 use App\Domain\Posting\Contracts\Postable;
 use App\Domain\Posting\PostingBuilder;
 use App\Domain\Posting\PostsToLedger;
+use App\Domain\Settlement\SettlementLimit;
 use App\Models\CashBank\Giro;
 use App\Models\Company\Branch;
 use App\Models\GeneralLedger\Account;
@@ -86,9 +87,6 @@ class PurchasePayment extends Model implements GiroSource, Postable
 
     public function buildPostings(PostingBuilder $builder): void
     {
-        if ($this->giro?->isBounced()) {
-            return; // a bounced giro paid nothing: the bills are open again
-        }
         $foreignPayments = app(ForeignPayments::class);
         $foreign = Currencies::isForeign($this->currency_id);
         $bankCurrency = $foreignPayments->assertBank($this, (int) $this->bank_account_id);
@@ -102,6 +100,10 @@ class PurchasePayment extends Model implements GiroSource, Postable
             $foreignPayments->assertSameCurrency($this, $line->payable);
             $amount = (int) $line->amount;
             $discount = (int) $line->discount;
+            if ($line->payable !== null) {
+                app(SettlementLimit::class)->assertParty($line->payable, $this->vendor);
+                app(SettlementLimit::class)->assertLine($line->payable, $amount, $discount, $foreign ? (int) $line->fc_amount : null, $foreign ? (int) $line->fc_discount : null);
+            }
             $builder->signed($payable, $amount + $discount, $line->payable?->number);
             if ($discount !== 0) {
                 $builder->signed($line->discount_account_id ?? Accounts::purchaseDiscounts(), -$discount, 'Payment discount');
@@ -115,7 +117,7 @@ class PurchasePayment extends Model implements GiroSource, Postable
             ] + ($foreign ? ['fc_amount' => (int) $line->fc_amount, 'fc_discount' => (int) $line->fc_discount, 'fx_difference' => $amounts['differences'][$line->id] ?? 0] : []));
             $paid += $amount;
         }
-        $credit = $this->giro?->isOutstanding() ? Accounts::giroPayable() : $this->bank_account_id;
+        $credit = $this->giroDetails() !== null ? Accounts::giroPayable() : $this->bank_account_id;
         $memo = $this->description ?? "Payment to {$this->vendor->name}";
         if ($amounts === null) {
             $builder->credit($credit, $paid, $memo);

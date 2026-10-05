@@ -9,17 +9,19 @@ use App\Domain\Documents\PaymentMethod;
 use App\Domain\Posting\AccountBalances;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Posting\Exceptions\DocumentLockedException;
+use App\Domain\Posting\PeriodLock;
 use App\Models\CashBank\BankTransfer;
 use App\Models\CashBank\CashPayment;
 use App\Models\CashBank\CashReceipt;
 use App\Models\CashBank\Giro;
 use App\Models\GeneralLedger\Account;
-use App\Models\GeneralLedger\JournalLine;
 use App\Models\GeneralLedger\Posting;
 use App\Models\Inventory\InventoryAdjustment;
 use App\Models\Inventory\Warehouse;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Sales\SalesReceipt;
+use App\Models\Settings\AccessGroup;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -213,12 +215,27 @@ class CashBankTest extends TestCase
         $this->assertSame('paid', $inv2->fresh()->payment_status);
         $this->assertSame(150_000, $this->balance('1105'));
 
-        $giros->bounce($r2->giro, '2026-11-25', 'Insufficient funds');
+        // Someone who may only look at receipts cannot record the bank's answer.
+        $admin = auth()->user();
+        $viewer = User::factory()->create();
+        AccessGroup::query()->where('name', 'Sales')->firstOrFail()->users()->attach($viewer);
+        $this->actingAs($viewer);
+        $this->assertFalse($giros->allows($r2->giro));
+        $this->assertThrows(fn () => $giros->bounce($r2->giro, '2026-11-25'), \RuntimeException::class, 'update right');
+        $this->actingAs($admin);
+
+        // November is closed before the giro bounces in December: the bounce is booked in December.
+        $this->travelTo(Carbon::parse('2026-12-05 10:00:00'));
+        app(PeriodLock::class)->close(2026, 11);
+        $receivableBefore = $this->balance('1200');
+        $giros->bounce($r2->giro, '2026-12-03', 'Insufficient funds');
         $this->assertSame(Giro::BOUNCED, $r2->giro->fresh()->status);
         $this->assertSame('unpaid', $inv2->fresh()->payment_status, 'a bounced giro paid nothing: the invoice is open again');
         $this->assertSame(0, $this->balance('1105'));
-        $this->assertSame(0, Posting::active()->where('posting_key', $r2->postingKey())->count(), 'the receipt no longer posts');
-        $this->assertSame(0, JournalLine::query()->active()->where('account_id', $this->account('1200'))->where('credit', '>', 0)->where('posting_id', '!=', $r1->posting->id)->count());
+        $this->assertSame(150_000, $this->balance('1105', '2026-11-30'), 'November as reported stays as it was');
+        $this->assertSame($receivableBefore + 150_000, $this->balance('1200'), 'owed again from the day it bounced');
+        $this->assertSame(1, Posting::active()->where('posting_key', $r2->postingKey())->count(), 'the receipt keeps its own posting');
+        $this->assertSame('2026-12-03', Posting::active()->where('posting_key', $r2->giro->postingKey())->sole()->trans_date->toDateString());
     }
 
     public function test_a_payment_by_giro_waits_in_giros_payable_until_it_clears(): void

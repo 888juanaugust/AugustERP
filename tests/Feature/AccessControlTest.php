@@ -10,10 +10,13 @@ use App\Domain\Pengaturan\Preferensi;
 use App\Domain\Pengaturan\PreferensiKey;
 use App\Domain\Posting\DocumentRepository;
 use App\Domain\Posting\Exceptions\DocumentLockedException;
+use App\Domain\Printing\PrintJob;
 use App\Domain\Tax\TaxFilingService;
 use App\Filament\Pages\Reports\TrialBalance;
 use App\Filament\Resources\GeneralLedger\JournalVouchers\JournalVoucherResource;
 use App\Filament\Resources\Sales\Customers\Pages\EditCustomer;
+use App\Filament\Resources\Settings\AccessGroups\AccessGroupResource;
+use App\Filament\Resources\Settings\Users\Pages\EditUser;
 use App\Filament\Support\BranchFields;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
@@ -23,7 +26,9 @@ use App\Models\Inventory\Warehouse;
 use App\Models\Sales\SalesInvoice;
 use App\Models\Settings\AccessGroup;
 use App\Models\User;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -132,6 +137,62 @@ class AccessControlTest extends TestCase
         $readers->syncSpecialRights([HakKhusus::ExportData->value]);
         $this->freshRequest();
         Livewire::test(TrialBalance::class)->assertActionVisible('export');
+    }
+
+    public function test_only_an_administrator_grants_administrator_or_changes_groups(): void
+    {
+        $admin = $this->actingAsAdmin();
+        $managers = AccessGroup::query()->create(['name' => 'User managers']);
+        $managers->syncRights([MenuKey::Users->value => ['view', 'create', 'update'], MenuKey::AccessGroups->value => ['view', 'create', 'update', 'delete']]);
+        $manager = $this->operator('User managers');
+
+        $refused = function (callable $change, string $message): void {
+            try {
+                $change();
+                $this->fail("refused: {$message}");
+            } catch (ValidationException $e) {
+                $this->assertStringContainsString($message, implode(' ', Arr::flatten($e->errors())));
+            }
+        };
+        $refused(fn () => $manager->forceFill(['access_type' => 'administrator'])->save(), 'Only an administrator makes');
+        $refused(fn () => User::factory()->create(['access_type' => 'administrator']), 'Only an administrator makes');
+        $refused(fn () => $admin->forceFill(['password' => 'taken-over-123'])->save(), 'Only an administrator changes');
+        $this->assertFalse($manager->fresh()->isAdministrator());
+
+        // Through the screen the access type and groups are locked, and a changed value is not saved.
+        Livewire::test(EditUser::class, ['record' => $manager->getRouteKey()])
+            ->assertFormFieldIsDisabled('access_type')
+            ->assertFormFieldIsDisabled('accessGroups')
+            ->set('data.access_type', 'administrator')
+            ->call('save');
+        $this->assertFalse($manager->fresh()->isAdministrator());
+        $this->assertFalse(AccessGroupResource::canEdit($managers));
+        $this->assertFalse(AccessGroupResource::canCreate());
+
+        // The last administrator is never demoted, even by themselves.
+        $this->actingAs($admin);
+        User::query()->where('access_type', 'administrator')->whereKeyNot($admin->id)->update(['access_type' => 'operator']);
+        $refused(fn () => $admin->forceFill(['access_type' => 'operator'])->save(), 'only active administrator');
+    }
+
+    public function test_the_print_page_needs_sign_in_a_signed_link_and_the_branch(): void
+    {
+        $head = Branch::default();
+        $east = Branch::query()->create(['name' => 'East', 'used_all_user' => false]);
+        $this->actingAsAdmin();
+        $mine = $this->voucher('2026-11-16', $head->id, 'JV-HEAD');
+        $this->docs->created($mine);
+        $theirs = $this->voucher('2026-11-16', $east->id, 'JV-EAST');
+        $this->docs->created($theirs);
+
+        $this->operator('Accounting');
+        $this->get(PrintJob::url($mine))->assertOk()->assertSee('JV-HEAD');
+        $this->get(PrintJob::url($theirs))->assertNotFound();
+        $this->get(route('filament.admin.print', ['alias' => 'journal_voucher', 'id' => $mine->id]))->assertForbidden();
+
+        auth()->logout();
+        $this->freshRequest();
+        $this->get(PrintJob::url($mine))->assertRedirect();
     }
 
     public function test_a_user_limited_to_some_branches_sees_and_books_only_those(): void

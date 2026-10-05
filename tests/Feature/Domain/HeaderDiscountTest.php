@@ -85,4 +85,26 @@ class HeaderDiscountTest extends TestCase
         app(DocumentRepository::class)->created($bill);
         $this->assertSame(2_250_000, $bill->fresh()->total);
     }
+
+    public function test_a_changed_line_percent_reprices_the_line(): void
+    {
+        $invoice = SalesInvoice::query()->create(['number' => 'INV-9', 'trans_date' => '2026-11-10', 'customer_id' => $this->sampleCustomer()->id, 'taxable' => false, 'inclusive_tax' => false, 'created_by' => auth()->id()]);
+        $line = $invoice->lines()->create($this->lines()[0] + ['discount_percent' => 10]);
+        $invoice->refreshTotal();
+        $this->assertSame(100_000, (int) $line->fresh()->discount_amount);
+
+        // The form sends the stored amount back with the new quantity and percent: the percent decides.
+        $line->update(['quantity' => 2, 'base_quantity' => 2, 'discount_percent' => 5, 'discount_amount' => 100_000]);
+        $invoice->refreshTotal();
+        $this->assertSame(100_000, (int) $line->fresh()->discount_amount, '5 % of 2,000,000');
+        $line->update(['discount_percent' => 20]);
+        $invoice->refreshTotal();
+        $this->assertSame(400_000, (int) $line->fresh()->discount_amount);
+        $this->assertSame(1_600_000, $invoice->fresh()->total);
+
+        // Without a percent, a fixed amount stands.
+        $line->update(['discount_percent' => 0, 'discount_amount' => 50_000]);
+        $invoice->refreshTotal();
+        $this->assertSame(1_950_000, $invoice->fresh()->total);
+    }
 }

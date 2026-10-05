@@ -10,7 +10,6 @@ use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
-use RuntimeException;
 
 class ListRecurringTransactions extends ListRecords
 {
@@ -27,16 +26,16 @@ class ListRecurringTransactions extends ListRecords
                 ->requiresConfirmation()
                 ->modalDescription(__('Makes and posts a document for every active schedule whose next run is today or earlier.'))
                 ->action(function (): void {
-                    try {
-                        $made = app(RecurringRunner::class)->runDue();
-                    } catch (RuntimeException $e) {
-                        Notification::make()->title(__('Cannot run'))->body($e->getMessage())->danger()->persistent()->send();
+                    ['made' => $made, 'failed' => $failed] = app(RecurringRunner::class)->runDue();
+                    if ($failed !== []) {
+                        Notification::make()->title(__(':count schedule(s) not run', ['count' => count($failed)]))->body(implode("\n", $failed))->danger()->persistent()->send();
+                    }
+                    if ($made === [] && $failed === []) {
+                        Notification::make()->title(__('Nothing was due'))->info()->send();
 
                         return;
                     }
                     if ($made === []) {
-                        Notification::make()->title(__('Nothing was due'))->info()->send();
-
                         return;
                     }
                     Notification::make()->title(__(':count document(s) made', ['count' => count($made)]))->body(implode("\n", $made))->success()->send();

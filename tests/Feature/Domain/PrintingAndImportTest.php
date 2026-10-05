@@ -20,6 +20,7 @@ use App\Models\Sales\SalesInvoice;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class PrintingAndImportTest extends TestCase
@@ -48,7 +49,7 @@ class PrintingAndImportTest extends TestCase
         $docs->created($invoice);
         $this->assertFalse($invoice->fresh()->is_printed);
 
-        $this->get(route('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))
+        $this->get(URL::signedRoute('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))
             ->assertOk()
             ->assertSee('Example Co')->assertSee('Jl. Industri 9')
             ->assertSee('Invoice')->assertSee('INV-2611-0001')->assertSee('Acme Trading')->assertSee('Jl. Raya 1')
@@ -59,15 +60,15 @@ class PrintingAndImportTest extends TestCase
 
         // The layout decides what prints: no item codes, no signatures, a custom heading and footer.
         PrintLayout::query()->where('transaction_type', 'sales_invoice')->update(['settings' => ['show_item_code' => false, 'show_signature' => false, 'title' => 'TAX INVOICE / FAKTUR', 'footer' => 'Goods sold are not returnable.']]);
-        $this->get(route('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))
+        $this->get(URL::signedRoute('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))
             ->assertOk()->assertSee('TAX INVOICE / FAKTUR')->assertSee('Goods sold are not returnable.')->assertDontSee('Prepared by')
             ->assertDontSee('<td class="mono">ITM-00001</td>', false);
 
-        $this->get(route('filament.admin.print', ['alias' => 'sales_invoice', 'id' => 999]))->assertNotFound();
-        $this->get(route('filament.admin.print', ['alias' => 'nothing', 'id' => $invoice->id]))->assertForbidden();
+        $this->get(URL::signedRoute('filament.admin.print', ['alias' => 'sales_invoice', 'id' => 999]))->assertNotFound();
+        $this->get(URL::signedRoute('filament.admin.print', ['alias' => 'nothing', 'id' => $invoice->id]))->assertForbidden();
 
         $this->actingAs(User::factory()->create());
-        $this->get(route('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))->assertForbidden();
+        $this->get(URL::signedRoute('filament.admin.print', ['alias' => 'sales_invoice', 'id' => $invoice->id]))->assertForbidden();
     }
 
     public function test_customers_and_items_import_from_the_template_and_bad_rows_are_reported_not_imported(): void
