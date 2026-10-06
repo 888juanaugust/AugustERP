@@ -40,8 +40,8 @@ hide the screens of a module that is off; the morph map stays complete so ledger
 holding an off module's rows still read.
 
 Sidebar groups are the `Modul` enum (ten groups); a module may own screens across groups.
-Optional modules: fixed assets, tax, approval rules, budgets (on by default); payroll and
-sales extras (check-ins, commissions, targets; off by default). Branches and currencies
+Optional modules: fixed assets, tax, approval rules, budgets (on by default); payroll,
+sales extras (check-ins, commissions, targets), departments and projects (off by default). Branches and currencies
 screens follow the Multiple branches / Multiple currencies preferences.
 
 **Adding a module:** the class, its entry in `config/modules.php` (or the client's
@@ -136,9 +136,22 @@ Access Groups screen.
 Business rules are preferences on the Business Rules tab, read through
 `App\Domain\Pengaturan\BusinessRule` and `CreditCheck`, never hard-coded: Sales Order
 Approval (off; who approves comes from Transaction Approvers, else the approve right),
-Segregation of Duties (on; whoever enters never approves or verifies, switching it off is
+Segregation of Duties (on; whoever enters or last changed a document never approves or
+rejects it, records its giro's clearing or clears its bank lines; switching it off is
 audited), Allow Negative Stock (off), credit notice and freeze days (0 = off). A new rule
 defaults to today's behaviour, so the suite stays green.
+
+What the browser sends is never trusted for money: selling prices, discounts, tax terms,
+the exchange rate and charges are checked on the server (`SellingPriceGuard`), a pulled
+line must come from its upstream kind with the same item and unit (`SourceLineGuard`), a
+receipt's price is set on the server, and cost and credit data never reach a page without
+the right. A create page opened from another document (`?source=`) takes it only when the
+user may see it (`SourceDocument`).
+
+Personal data (see `docs/PRIVACY.md`): a person's national ID, tax ID and bank account
+number are `encrypted` casts; the activity log never holds an encrypted or hidden value.
+A new personal field of that kind gets the same cast and joins the export in
+`App\Domain\Privacy\PersonalData`.
 
 ## Seeds
 
@@ -167,14 +180,16 @@ template's defaults; `--currency` and the Tax switch cover other markets.
 ## Conventions
 
 - Migrations are additive. Never edit a shipped migration.
-- Every money-affecting action writes to the audit log.
+- Every money-affecting action writes to the audit log, rows a master holds included
+  (`RecordsChildActivity`); a bulk change (rights, memberships) logs what changed.
 - Queue jobs are idempotent; assume they run twice.
 - Tests required for: posting (journal balance, stock, allocations), tax per line, cost
   recalculation, period lock and blockers, access rights, module switches. These are where
   bugs cost money.
 - Before committing: `php artisan test`, `vendor/bin/pint --test`, and `php artisan
   erp:standard` when a screen changed. CI is `.github/workflows/laravel.yml` (PHP 8.4,
-  PostgreSQL 16, Pint, `composer audit`). The cloud session hook
+  PostgreSQL 16, Pint, `composer audit`, `npm audit`). Production setup is
+  `docs/DEPLOY.md`. The cloud session hook
   `.claude/hooks/session-start.sh` brings up Postgres and Redis, installs dependencies and
   runs `erp:install --demo` on a first session.
 - Commit messages say what changed for the product, never which tool or model wrote them.

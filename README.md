@@ -20,7 +20,7 @@ installer, switch off what the client does not need, and keep merging template u
 | Inventory | Stock per warehouse at moving average, adjustments, transfers, stock opname, order fulfilment, stock inquiries, items, units, categories, brands | always on |
 | Fixed Assets | Assets, categories, fiscal groups, monthly depreciation, changes, disposals, transfers, assets by location | on by default |
 | Tax | Tax invoice export (bulk-import XML and the legacy CSV), serial numbers pasted back, VAT return | on by default |
-| Reports | A catalogue of sixteen reports computed from the ledgers, with Excel export | always on |
+| Reports | A catalogue of reports computed from the ledgers (financial statements, ledgers, aging, statements, stock, tax), with Excel export | always on |
 
 The functional standard, screen by screen, is in [docs/standard](docs/standard/README.md);
 it is generated from the code (`php artisan erp:standard`), with hand-written notes on
