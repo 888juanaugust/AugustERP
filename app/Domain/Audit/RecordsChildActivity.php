@@ -21,9 +21,11 @@ trait RecordsChildActivity
         static::created(fn (Model $row) => $row->logOnParent('line_added', ['after' => $row->auditValues($row->getAttributes())]));
 
         static::updated(function (Model $row): void {
-            $changes = collect($row->getChanges())->except(['created_at', 'updated_at', ...$row->getHidden()]);
+            $changes = collect($row->getChanges())->except(['created_at', 'updated_at']);
             if ($changes->isNotEmpty()) {
-                $row->logOnParent('line_changed', ['before' => collect($row->getOriginal())->only($changes->keys())->all(), 'after' => $changes->all()]);
+                $secret = Auditor::secretColumns($row);
+                $masked = fn (array $values) => collect($values)->map(fn ($v, $k) => in_array($k, $secret, true) ? __('(changed, not shown)') : $v)->all();
+                $row->logOnParent('line_changed', ['before' => $masked(collect($row->getOriginal())->only($changes->keys())->all()), 'after' => $masked($changes->all())]);
             }
         });
 
@@ -33,7 +35,9 @@ trait RecordsChildActivity
     /** @param  array<string, mixed>  $values */
     private function auditValues(array $values): array
     {
-        return collect($values)->except(['created_at', 'updated_at', ...$this->getHidden()])->all();
+        $secret = Auditor::secretColumns($this);
+
+        return collect($values)->except(['created_at', 'updated_at'])->map(fn ($v, $k) => in_array($k, $secret, true) ? __('(not shown)') : $v)->all();
     }
 
     /** @param  array<string, mixed>  $meta */

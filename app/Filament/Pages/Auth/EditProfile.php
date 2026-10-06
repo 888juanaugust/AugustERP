@@ -8,6 +8,7 @@ use App\Domain\Shared\Locales;
 use App\Filament\Pages\Workspace;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 
 /** The user's own profile: name, email, password, and the language of their screens. */
@@ -16,6 +17,8 @@ class EditProfile extends BaseEditProfile
     public function form(Schema $schema): Schema
     {
         return $schema->components([
+            Text::make(__('Administrators sign in with a second factor: set up an authenticator app below before anything else.'))
+                ->color('danger')->visible(fn (): bool => $this->getUser()->profileFirst() === 'two_factor'),
             $this->getNameFormComponent(),
             $this->getEmailFormComponent(),
             Select::make('locale')->label(__('Language'))

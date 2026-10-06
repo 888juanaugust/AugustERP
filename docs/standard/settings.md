@@ -103,6 +103,7 @@ Menu key `company__preferences` · module `settings`
 | Access restriction | `restrictions__mode` | select |  |
 | Access allowed from | `restrictions__from` | time |  |
 | Access allowed until | `restrictions__until` | time |  |
+| Administrators sign in with a second factor | `restrictions__administrator_two_factor` | toggle |  |
 
 #### Tab: Default Accounts
 

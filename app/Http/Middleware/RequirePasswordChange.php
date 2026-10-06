@@ -10,13 +10,16 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-/** A user who must change their password sees only the profile page until they have. */
+/**
+ * A user who must change their password, or an administrator who must set up a second factor (Preferences →
+ * Restrictions), sees only the profile page until they have.
+ */
 class RequirePasswordChange
 {
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        if (! $user instanceof User || ! $user->password_change_required) {
+        if (! $user instanceof User || $user->profileFirst() === null) {
             return $next($request);
         }
         // The profile page itself and signing out stay open. A Livewire request runs this middleware again against the

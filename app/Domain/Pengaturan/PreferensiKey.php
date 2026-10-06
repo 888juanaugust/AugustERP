@@ -62,6 +62,7 @@ enum PreferensiKey: string
     case AccessRestriction = 'restrictions.mode';
     case AccessFrom = 'restrictions.from';
     case AccessUntil = 'restrictions.until';
+    case AdministratorTwoFactor = 'restrictions.administrator_two_factor';
 
     // Attachments
     case AttachSalesQuotation = 'attachments.sales_quotation';
@@ -148,6 +149,7 @@ enum PreferensiKey: string
             self::GoodsInTransitAccount, self::RoundingAccount, self::GiroReceivableAccount, self::GiroPayableAccount, self::ExchangeGainAccount, self::ExchangeLossAccount,
             self::SalaryExpenseAccount, self::SalaryPayableAccount, self::Pph21PayableAccount, self::BpjsPayableAccount, self::BpjsExpenseAccount => PreferensiType::Account,
             self::AgingRangeDays, self::AgingIntervalDays, self::CreditNoticeDays, self::CreditFreezeDays => PreferensiType::Int,
+            self::AdministratorTwoFactor => PreferensiType::Bool,
             self::TransactionExtraColumns, self::ItemExtraColumns, self::ExtraDateColumns => PreferensiType::TextList,
             default => match ($this->tab()) {
                 PreferensiTab::Features, PreferensiTab::Attachments, PreferensiTab::Rules => PreferensiType::Bool,
@@ -183,6 +185,7 @@ enum PreferensiKey: string
             self::AgingIntervalDays => 30,
             self::CommissionBasis => 'payment',
             self::SegregationOfDuties => true,
+            self::AdministratorTwoFactor => false,
             self::SalesOrderApproval, self::AllowNegativeStock => false,
             self::CreditNoticeDays, self::CreditFreezeDays => 0,
             default => match ($this->type()) {
@@ -248,6 +251,7 @@ enum PreferensiKey: string
             self::LastPriceCutoffDate => __('Only for invoices dated from'),
             self::TemporaryPaymentAccount => __('Temporary cash account for pending payments'),
             self::AccessRestriction => __('Access restriction'),
+            self::AdministratorTwoFactor => __('Administrators sign in with a second factor'),
             self::AccessFrom => __('Access allowed from'),
             self::AccessUntil => __('Access allowed until'),
             self::AttachSalesQuotation => __('Sales quotations'),
@@ -302,6 +306,7 @@ enum PreferensiKey: string
         return match ($this) {
             self::CogsSource => __('The cost a returned item comes back at: the cost it left with on the invoice, or its last purchase price.'),
             self::AccessRestriction => __('Applies to every access group that follows these preferences.'),
+            self::AdministratorTwoFactor => __('An administrator without an authenticator app set up sees only their profile page until they set one up.'),
             self::AgingRangeDays => __('Receivables older than this are reported as the last bucket.'),
             self::AllowNegativeStock => __('When off, a delivery or adjustment that would take stock below zero is refused.'),
             self::SegregationOfDuties => __('Turning this off is written to the activity log.'),

@@ -45,6 +45,7 @@ return [
         'rights_changed' => 'Hak akses diubah', 'special_rights_changed' => 'Hak khusus diubah', 'memberships_changed' => 'Grup atau cabang diubah',
         'bank_reconciliation_opened' => 'Rekonsiliasi bank dibuka', 'bank_statement_balance_changed' => 'Saldo rekening koran diubah',
         'bank_lines_cleared' => 'Baris bank dikliring', 'bank_lines_matched' => 'Baris bank dicocokkan',
+        'personal_data_exported' => 'Data pribadi diekspor',
     ],
     'document' => [
         'draft' => 'Draf',

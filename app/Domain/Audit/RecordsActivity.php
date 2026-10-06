@@ -25,15 +25,17 @@ trait RecordsActivity
             if ($changes->isEmpty()) {
                 return;
             }
-            // A hidden column (a two-factor secret, say) is logged as changed, never its value: the log cannot be edited later.
-            $hidden = $changes->only($model->getHidden())->map(fn () => __('(changed, not shown)'));
-            $changes = $changes->except($model->getHidden());
+            // A hidden or encrypted column (a two-factor secret, a national ID) is logged as changed, never its value:
+            // the log cannot be edited later.
+            $secret = Auditor::secretColumns($model);
+            $hidden = $changes->only($secret)->map(fn () => __('(changed, not shown)'));
+            $changes = $changes->except($secret);
             $before = collect($model->getOriginal())->only($changes->keys());
 
             Auditor::log('updated', $model, null, ['before' => $before->all(), 'after' => $changes->merge($hidden)->all()]);
         });
 
-        static::deleted(fn (Model $model) => Auditor::log('deleted', $model, null, ['before' => collect($model->getOriginal())->except([...self::QUIET, ...$model->getHidden()])->all()]));
+        static::deleted(fn (Model $model) => Auditor::log('deleted', $model, null, ['before' => collect($model->getOriginal())->except([...self::QUIET, ...Auditor::secretColumns($model)])->all()]));
     }
 
     public function auditReference(): string

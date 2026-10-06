@@ -45,6 +45,7 @@ return [
         'rights_changed' => 'Rights changed', 'special_rights_changed' => 'Special rights changed', 'memberships_changed' => 'Groups or branches changed',
         'bank_reconciliation_opened' => 'Bank reconciliation opened', 'bank_statement_balance_changed' => 'Statement balance changed',
         'bank_lines_cleared' => 'Bank lines cleared', 'bank_lines_matched' => 'Bank lines matched',
+        'personal_data_exported' => 'Personal data exported',
     ],
     'document' => [
         'draft' => 'Draft',

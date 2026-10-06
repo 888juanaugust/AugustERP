@@ -118,6 +118,8 @@ class BankStatements extends ErpPage implements HasTable
                         Notification::make()->title(__('Cannot import'))->body($e->getMessage())->danger()->persistent()->send();
 
                         return;
+                    } finally {
+                        Storage::disk('local')->delete((string) $data['file']); // the lines are kept; the bank's file is not
                     }
                     Notification::make()->title(__(':line_count lines imported from :source_file_name', ['line_count' => $statement->line_count, 'source_file_name' => $statement->source_file_name]))->success()->send();
                     $this->filters['bank_account_id'] = $statement->bank_account_id;

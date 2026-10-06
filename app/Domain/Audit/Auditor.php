@@ -13,6 +13,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class Auditor
 {
+    /** @return list<string> the columns whose values never go into the log: hidden ones and encrypted ones */
+    public static function secretColumns(Model $model): array
+    {
+        $encrypted = array_keys(array_filter($model->getCasts(), fn ($cast) => is_string($cast) && str_starts_with($cast, 'encrypted')));
+
+        return [...$model->getHidden(), ...$encrypted];
+    }
+
     /** @param  array<string, mixed>  $meta */
     public static function log(
         string $action,

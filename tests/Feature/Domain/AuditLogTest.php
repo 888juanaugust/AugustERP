@@ -10,6 +10,7 @@ use App\Domain\Posting\PeriodLock;
 use App\Filament\Resources\Settings\Users\Pages\EditUser;
 use App\Models\Company\AuditLog;
 use App\Models\Company\Branch;
+use App\Models\Company\Employee;
 use App\Models\Company\Fob;
 use App\Models\Inventory\Unit;
 use App\Models\Purchasing\VendorBankAccount;
@@ -57,7 +58,28 @@ class AuditLogTest extends TestCase
         $this->assertSame('item_units', $logs[1]->meta['part']);
         $this->assertSame(['ratio' => '12.000000'], $logs[1]->meta['before']);
         $this->assertSame($item->auditReference(), $logs[0]->reference);
-        $this->assertSame('123-456', AuditLog::query()->where('document_type', $vendor->getMorphClass())->where('document_id', $vendor->id)->where('action', 'line_added')->sole()->meta['after']['bank_account']);
+        // A bank account number is encrypted where it is kept, and never written into the log.
+        $added = AuditLog::query()->where('document_type', $vendor->getMorphClass())->where('document_id', $vendor->id)->where('action', 'line_added')->sole();
+        $this->assertStringNotContainsString('123-456', json_encode($added->meta));
+        $this->assertNotSame('123-456', DB::table('vendor_bank_accounts')->where('vendor_id', $vendor->id)->value('bank_account'));
+        $this->assertSame('123-456', VendorBankAccount::query()->where('vendor_id', $vendor->id)->value('bank_account'));
+    }
+
+    public function test_a_persons_national_and_tax_ids_are_encrypted_and_never_logged(): void
+    {
+        $this->seed();
+        $this->actingAsAdmin();
+        $employee = Employee::query()->create(['number' => 'EMP-1', 'name' => 'Rina', 'nik_no' => '3201010190000021', 'npwp_no' => '09.876.543.2-109.000']);
+        $employee->update(['nik_no' => '3201010190000099']);
+
+        $raw = DB::table('employees')->where('id', $employee->id)->first(['nik_no', 'npwp_no']);
+        $this->assertStringNotContainsString('3201010190000099', (string) $raw->nik_no, 'encrypted where it is kept');
+        $this->assertStringNotContainsString('109.000', (string) $raw->npwp_no);
+        $this->assertSame('3201010190000099', $employee->fresh()->nik_no, 'and read back as it was typed');
+
+        $log = AuditLog::query()->where('document_type', $employee->getMorphClass())->where('document_id', $employee->id)->where('action', 'updated')->sole();
+        $this->assertStringNotContainsString('32010101900000', json_encode($log->meta), 'the log says it changed, not what it was');
+        $this->assertArrayHasKey('nik_no', $log->meta['after']);
     }
 
     public function test_rights_and_memberships_are_logged_with_what_changed(): void

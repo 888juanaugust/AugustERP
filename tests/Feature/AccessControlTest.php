@@ -210,6 +210,23 @@ class AccessControlTest extends TestCase
         $this->assertFalse($admin->fresh()->password_change_required, 'changed: the screens open again');
     }
 
+    public function test_administrators_can_be_held_to_a_second_factor(): void
+    {
+        $admin = $this->actingAsAdmin();
+        app(Preferensi::class)->set(PreferensiKey::AdministratorTwoFactor, true);
+        $this->freshRequest();
+
+        $this->get(CustomerResource::getUrl())->assertRedirect(EditProfile::getUrl());
+        $this->get(EditProfile::getUrl())->assertOk()->assertSee(__('Administrators sign in with a second factor: set up an authenticator app below before anything else.'));
+
+        $admin->forceFill(['app_authentication_secret' => 'JBSWY3DPEHPK3PXP'])->save(); // an authenticator app set up
+        $this->freshRequest();
+        $this->get(CustomerResource::getUrl())->assertOk();
+
+        $this->operator('Sales'); // operators are not held to it
+        $this->get(CustomerResource::getUrl())->assertOk();
+    }
+
     public function test_cost_and_credit_data_never_reach_someone_without_the_right(): void
     {
         $this->actingAsAdmin();

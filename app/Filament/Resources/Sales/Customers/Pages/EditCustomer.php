@@ -7,6 +7,7 @@ namespace App\Filament\Resources\Sales\Customers\Pages;
 use App\Domain\Access\HakAkses;
 use App\Domain\Access\HakKhusus;
 use App\Filament\Resources\Sales\Customers\CustomerResource;
+use App\Filament\Support\PersonalDataAction;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -26,6 +27,6 @@ class EditCustomer extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [DeleteAction::make()];
+        return [PersonalDataAction::make(), DeleteAction::make()];
     }
 }

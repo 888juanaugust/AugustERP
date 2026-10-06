@@ -32,6 +32,10 @@ class Employee extends Model implements HasAuditReference
             'previous_income' => 'integer',
             'previous_tax' => 'integer',
             'is_active' => 'boolean',
+            // Personal numbers, encrypted with the application key (UU PDP 27/2022).
+            'nik_no' => 'encrypted',
+            'npwp_no' => 'encrypted',
+            'bank_account' => 'encrypted',
         ];
     }
 

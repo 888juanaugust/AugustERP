@@ -6,6 +6,8 @@ use App\Domain\Access\UserDeactivation;
 use App\Domain\Audit\Auditor;
 use App\Domain\Audit\HasAuditReference;
 use App\Domain\Audit\RecordsActivity;
+use App\Domain\Pengaturan\Preferensi;
+use App\Domain\Pengaturan\PreferensiKey;
 use App\Models\Company\Branch;
 use App\Models\Settings\AccessGroup;
 use App\Models\Settings\UserRightOverride;
@@ -86,6 +88,19 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function isAdministrator(): bool
     {
         return $this->access_type === 'administrator';
+    }
+
+    /** What keeps the user on their profile page before anything else: a password to change, or a second factor to set up. */
+    public function profileFirst(): ?string
+    {
+        if ($this->password_change_required) {
+            return 'password';
+        }
+        if ($this->isAdministrator() && ! $this->hasTwoFactor() && (bool) app(Preferensi::class)->get(PreferensiKey::AdministratorTwoFactor)) {
+            return 'two_factor';
+        }
+
+        return null;
     }
 
     /** Only active accounts may open the panel; the access matrix decides what they see inside. */

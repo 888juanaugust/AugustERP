@@ -63,7 +63,10 @@ what the next releases add is in [docs/ROADMAP.md](docs/ROADMAP.md); the visual 
 
 Requirements: PHP 8.3 or 8.4 with `pdo_pgsql`, `intl`, `bcmath`; PostgreSQL 16; Redis;
 Node 22. The schedule needs `php artisan schedule:run` every minute (depreciation on the
-month's last day, recurring transactions daily) and a queue worker.
+month's last day, recurring transactions daily) and a queue worker. Putting an
+installation into production (the `.env`, Caddy, the worker, backups and restore tests) is
+in [docs/DEPLOY.md](docs/DEPLOY.md); the personal data it holds, for how long, and how a
+person's request is answered, in [docs/PRIVACY.md](docs/PRIVACY.md).
 
 ## Running the tests
 
