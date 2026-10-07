@@ -66,6 +66,7 @@
     --ae-rail-hover: rgb(255 255 255 / 0.12);
     --ae-topbar-height: 56px;
     --ae-tabstrip-height: 38px;
+    --ae-tabstrip-line: #cbd2e0;
     --ae-side-tabs-width: 48px;
 
     /* Tiles of the module menu, by what the screen is for */
@@ -961,14 +962,18 @@
     }
 }
 
+/*
+ * Underline tabs: no boxes. The strip's line is drawn inside it (an inset shadow,
+ * so the scrolling strip never overflows), and the active tab's 2px accent sits on it.
+ */
 .ae-tabstrip {
     display: flex;
-    align-items: flex-end;
+    align-items: stretch;
     gap: 4px;
     height: var(--ae-tabstrip-height);
     padding-inline: 12px;
     overflow-x: auto;
-    border-bottom: 1px solid var(--ae-line);
+    box-shadow: inset 0 -1px 0 var(--ae-tabstrip-line);
 }
 
 .ae-tab {
@@ -976,19 +981,19 @@
     align-items: center;
     gap: 6px;
     max-width: 220px;
-    height: 32px;
-    padding-inline: 12px 6px;
-    border: 1px solid transparent;
-    border-bottom: 0;
-    border-radius: var(--ae-radius-sm) var(--ae-radius-sm) 0 0;
+    padding-inline: 10px 4px;
     color: var(--ae-muted);
     font-size: 13px;
     white-space: nowrap;
     cursor: pointer;
+    transition-property: color, box-shadow;
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-out);
 }
 
 .ae-tab:hover {
     color: var(--ae-ink);
+    box-shadow: inset 0 -2px 0 var(--ae-tabstrip-line);
 }
 
 .ae-tab:focus-visible {
@@ -997,15 +1002,13 @@
 }
 
 .ae-tab.is-active {
-    background: var(--ae-surface);
-    border-color: var(--ae-card-edge);
-    box-shadow: inset 0 2px 0 var(--ae-accent);
+    box-shadow: inset 0 -2px 0 var(--ae-accent);
     color: var(--ae-ink);
     font-weight: 500;
 }
 
 .ae-tab.is-pinned {
-    padding-inline-end: 12px;
+    padding-inline-end: 10px;
 }
 
 .ae-tab-title {

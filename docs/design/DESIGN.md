@@ -64,6 +64,7 @@ Trend text: up `#15803d`, down `#b42318`.
 | `--ae-rail-hover` | `rgb(255 255 255 / .12)` | Rail button background when open or hovered |
 | `--ae-topbar-height` | `56px` | Topbar of the workspace |
 | `--ae-tabstrip-height` | `38px` | Strip of open screens under the topbar |
+| `--ae-tabstrip-line` | `#cbd2e0` | The strip's bottom line; the active tab's 2px accent underline sits on it |
 | `--ae-side-tabs-width` | `48px` | Column of icon tabs at the left of a form |
 
 Tiles in a module menu are coloured by what the screen is for (`MenuKey::kind()`):
@@ -180,7 +181,8 @@ motion does, never by the nearest number. Closing is quicker than opening; nothi
   module name over an accent rule, then a grid of tiles (about 120px, two-line labels, the screen's own
   icon at 34px), coloured by kind. Escape or a click elsewhere closes it; arrow keys move between tiles.
 - **Tabs.** Every screen opens as a tab in the strip under the topbar; the dashboard is the first,
-  pinned tab. Each tab is a live frame: switching tabs keeps what was typed. Up to 10 tabs; the list of
+  pinned tab. Tabs are text, not boxes: the active one is ink with a 2px accent underline on the strip's
+  line, the others muted. Each tab is a live frame: switching tabs keeps what was typed. Up to 10 tabs; the list of
   tabs (not their typing) comes back after a reload. Closing a tab with unsaved changes asks first. A link
   to another screen opens a new tab; list → record → back stays inside its tab. A page opened on its own
   (bookmark, email link) opens as a tab of the workspace.
