@@ -137,24 +137,25 @@
     --ae-line: #262c3a;
     --ae-card-edge: #232937;
     --ae-input-edge: #343b4d;
-    --ae-accent: #7d9bff;
-    --ae-accent-fill: #3b63e6;
-    --ae-accent-soft: #1f2a4d;
-    --ae-focus-ring: #2a3a70;
+    --ae-accent: #97afee;
+    --ae-accent-fill: #435fa7;
+    --ae-accent-soft: #21293e;
+    --ae-focus-ring: #2f3c5d;
     --ae-backdrop: rgb(0 0 0 / 0.55);
 
-    --ae-success-bg: #10291a;
-    --ae-success-fg: #86efac;
-    --ae-warning-bg: #33260a;
-    --ae-warning-fg: #fcd34d;
-    --ae-danger-bg: #3a1518;
-    --ae-danger-fg: #fca5a5;
+    --ae-success-bg: #18291c;
+    --ae-success-fg: #94cea3;
+    --ae-warning-bg: #302414;
+    --ae-warning-fg: #e5c287;
+    --ae-danger-bg: #331d1c;
+    --ae-danger-fg: #e9a29f;
+    --ae-danger-fill: #8d3936;
     --ae-neutral-bg: #232937;
     --ae-neutral-fg: #c0c7d4;
-    --ae-info-bg: #1f2a4d;
-    --ae-info-fg: #a5b8ff;
-    --ae-trend-up: #4ade80;
-    --ae-trend-down: #f87171;
+    --ae-info-bg: #1f2638;
+    --ae-info-fg: #a6b9ec;
+    --ae-trend-up: #82c393;
+    --ae-trend-down: #df8a84;
 
     --ae-shadow-card: 0 1px 1px rgb(0 0 0 / 0.3), 0 12px 28px -8px rgb(0 0 0 / 0.5);
     --ae-shadow-pop: 0 4px 8px rgb(0 0 0 / 0.35), 0 24px 48px -12px rgb(0 0 0 / 0.6);
@@ -163,15 +164,16 @@
     --ae-rail-bg: #0b0e14;
     --ae-tabstrip-line: #2a3142;
 
-    --ae-tile-setup-bg: #18224a;
-    --ae-tile-setup-edge: #2c3d7a;
-    --ae-tile-setup-fg: #a5b8ff;
-    --ae-tile-work-bg: #102619;
-    --ae-tile-work-edge: #1f4a30;
-    --ae-tile-work-fg: #86efac;
-    --ae-tile-tool-bg: #221a3d;
-    --ae-tile-tool-edge: #3d2f6b;
-    --ae-tile-tool-fg: #c4b5fd;
+    /* Tiles keep their kind as a tint and an icon colour, not a full colour block. */
+    --ae-tile-setup-bg: #1a1e29;
+    --ae-tile-setup-edge: #2c3242;
+    --ae-tile-setup-fg: #a3b6e8;
+    --ae-tile-work-bg: #172119;
+    --ae-tile-work-edge: #28372c;
+    --ae-tile-work-fg: #94c6a0;
+    --ae-tile-tool-bg: #1f1c28;
+    --ae-tile-tool-edge: #343041;
+    --ae-tile-tool-fg: #baafe0;
 
     /*
      * Filament paints its own dark surfaces (table repeaters, tab panels, toasts,
@@ -181,6 +183,37 @@
     --gray-950: #0f1219;
     --gray-900: #171b25;
     --gray-800: #1d2230;
+
+    /*
+     * Filament's own coloured text, links, row actions and buttons use these
+     * shades in dark mode: same hues and lightness steps, about 60% of the
+     * chroma, so nothing glows on the dark canvas (Impeccable, quieter).
+     */
+    --primary-300: oklch(0.82 0.07 268);
+    --primary-400: oklch(0.76 0.095 268);
+    --primary-500: oklch(0.58 0.115 266);
+    --primary-600: oklch(0.5 0.12 266);
+    --primary-700: oklch(0.44 0.11 266);
+    --info-300: oklch(0.82 0.07 268);
+    --info-400: oklch(0.76 0.095 268);
+    --info-500: oklch(0.58 0.115 266);
+    --info-600: oklch(0.5 0.12 266);
+    --info-700: oklch(0.44 0.11 266);
+    --success-300: oklch(0.82 0.07 152);
+    --success-400: oklch(0.76 0.095 152);
+    --success-500: oklch(0.56 0.095 152);
+    --success-600: oklch(0.48 0.09 152);
+    --success-700: oklch(0.42 0.085 152);
+    --warning-300: oklch(0.85 0.07 80);
+    --warning-400: oklch(0.8 0.095 80);
+    --warning-500: oklch(0.66 0.1 75);
+    --warning-600: oklch(0.56 0.095 70);
+    --warning-700: oklch(0.48 0.085 68);
+    --danger-300: oklch(0.8 0.07 24);
+    --danger-400: oklch(0.72 0.105 24);
+    --danger-500: oklch(0.56 0.115 25);
+    --danger-600: oklch(0.48 0.115 25);
+    --danger-700: oklch(0.42 0.105 25);
 }
 
 /* ---------- Canvas and type ---------- */
@@ -345,6 +378,14 @@
 
 .fi-ta-pagination {
     border-color: var(--ae-line);
+}
+
+/*
+ * Dark mode: a row's actions name themselves in ink and keep their meaning in the
+ * icon's colour, so four coloured labels per row don't compete with the data.
+ */
+.dark .fi-ta-actions .fi-link.fi-color > .fi-link-label {
+    color: var(--ae-ink);
 }
 
 /* ---------- Badges: pills with a status dot ---------- */

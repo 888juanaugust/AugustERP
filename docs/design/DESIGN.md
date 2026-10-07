@@ -79,7 +79,10 @@ Tiles in a module menu are coloured by what the screen is for (`MenuKey::kind()`
 
 Light is the default. Each user picks Light, Dark or System in the user menu (Filament's theme switcher);
 the choice is kept in the browser and every open workspace tab follows at once. Printed documents stay
-white. Every text and badge pair below meets WCAG AA (4.5:1 or better).
+white. Every text and badge pair below meets WCAG AA (6:1 or better).
+
+Dark is quiet on purpose: neutrals do the work, and colour keeps its roles (action, selection, status, kind)
+at about 60% of the light theme's chroma, so nothing glows on the dark canvas. Same hues, never neon.
 
 | Token | Value | Note |
 |---|---|---|
@@ -90,18 +93,22 @@ white. Every text and badge pair below meets WCAG AA (4.5:1 or better).
 | `--ae-muted` | `#9aa3b5` | 6.3:1 or better on every surface |
 | `--ae-placeholder` | `#8a93a6` | |
 | `--ae-line` / `--ae-card-edge` / `--ae-input-edge` | `#262c3a` / `#232937` / `#343b4d` | |
-| `--ae-accent` | `#7d9bff` | Text, links, active tab and focus |
-| `--ae-accent-fill` | `#3b63e6` | Primary button fill (white text 5.1:1); in light it is the accent |
-| `--ae-accent-soft` / `--ae-focus-ring` | `#1f2a4d` / `#2a3a70` | |
+| `--ae-accent` | `#97afee` | Text, links, active tab and focus |
+| `--ae-accent-fill` | `#435fa7` | Primary button fill (white text 6.1:1); in light it is the accent |
+| `--ae-accent-soft` / `--ae-focus-ring` | `#21293e` / `#2f3c5d` | |
+| `--ae-danger-fill` | `#8d3936` | Danger buttons (light: `#a11d1d`) |
 | `--ae-rail-bg` | `#0b0e14` | The rail stays dark in both themes (light: `#1d2433`) |
 | `--ae-tabstrip-line` | `#2a3142` | |
 
-Status badges (background / text): success `#10291a` / `#86efac`, warning `#33260a` / `#fcd34d`, danger
-`#3a1518` / `#fca5a5`, neutral `#232937` / `#c0c7d4`, info `#1f2a4d` / `#a5b8ff`. Danger buttons keep the
-`#a11d1d` fill (`--ae-danger-fill`). Tiles: setup `#18224a` / `#2c3d7a` / `#a5b8ff`, work `#102619` /
-`#1f4a30` / `#86efac`, tool `#221a3d` / `#3d2f6b` / `#c4b5fd`. Shadows are black-based. Filament's own dark
-surfaces come from its gray palette, so `--gray-950`, `--gray-900` and `--gray-800` point at the canvas,
-surface and sunken tokens.
+Status badges (background / text): success `#18291c` / `#94cea3`, warning `#302414` / `#e5c287`, danger
+`#331d1c` / `#e9a29f`, neutral `#232937` / `#c0c7d4`, info `#1f2638` / `#a6b9ec`. Tiles keep their kind as a
+tint and an icon colour, not a colour block: setup `#1a1e29` / `#2c3242` / `#a3b6e8`, work `#172119` /
+`#28372c` / `#94c6a0`, tool `#1f1c28` / `#343041` / `#baafe0`. Shadows are black-based.
+
+Filament's own colours follow: its darkest grays (`--gray-950`, `--gray-900`, `--gray-800`) point at the
+canvas, surface and sunken tokens, and its primary, info, success, warning and danger shades 300 to 700 are
+redefined at the same lightness with lower chroma (OKLCH, in `theme.css`). A table row's actions name
+themselves in ink and keep their meaning in the icon's colour.
 
 ### Typography
 
