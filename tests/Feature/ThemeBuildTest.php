@@ -22,6 +22,18 @@ class ThemeBuildTest extends TestCase
         $this->assertTrue($assets->contains(fn ($f) => str_starts_with($f, 'geist-mono-latin-wght-normal')), 'Geist Mono is self-hosted');
     }
 
+    public function test_the_workspace_motion_is_bundled_not_fetched(): void
+    {
+        $manifest = public_path('build/manifest.json');
+        if (! file_exists($manifest)) {
+            $this->markTestSkipped('Assets not built; run npm run build.');
+        }
+
+        $this->assertStringContainsString('resources/js/workspace-motion.js', file_get_contents($manifest));
+        $this->assertStringContainsString("@vite('resources/js/workspace-motion.js')", file_get_contents(resource_path('views/filament/shell/workspace.blade.php')));
+        $this->assertStringNotContainsString('cdn', strtolower(file_get_contents(resource_path('js/workspace-motion.js'))));
+    }
+
     public function test_no_third_party_font_is_loaded(): void
     {
         $this->assertStringNotContainsString('bunny', file_get_contents(base_path('vite.config.js')));

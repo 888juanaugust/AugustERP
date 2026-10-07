@@ -1650,5 +1650,8 @@
     "You cannot deactivate your own account.": "Anda tidak dapat menonaktifkan akun Anda sendiri.",
     "You have already approved :number.": "Anda sudah menyetujui :number.",
     "Your account has been deactivated.": "Akun Anda telah dinonaktifkan.",
-    "Zakat or religious donations through the employer": "Zakat atau sumbangan keagamaan melalui pemberi kerja"
+    "Zakat or religious donations through the employer": "Zakat atau sumbangan keagamaan melalui pemberi kerja",
+    "No :records yet": "Belum ada :records",
+    "No :records match": "Tidak ada :records yang cocok",
+    "Change the search, the filters or the tab to see more.": "Ubah pencarian, filter, atau tab untuk melihat lainnya."
 }

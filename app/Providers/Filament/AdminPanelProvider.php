@@ -28,10 +28,12 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Tables\Table;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -81,6 +83,49 @@ class AdminPanelProvider extends PanelProvider
         // An upload field takes only a file uploaded through it: a path typed into its state (another file on the
         // private disk) is refused, never read, moved, signed for download or deleted. 20 MB at most.
         FileUpload::configureUsing(fn (FileUpload $upload) => $upload->preventFilePathTampering()->maxSize(20 * 1024));
+
+        // DESIGN.md: an empty list names the record. A list a search, filter or tab narrowed says so and how to widen it.
+        Table::configureUsing(fn (Table $table) => $table
+            ->emptyStateHeading(fn (Table $table): ?string => self::listRecords($table) === null ? null : (self::isNarrowed($table)
+                ? __('No :records match', ['records' => self::recordsLabel($table)])
+                : __('No :records yet', ['records' => self::recordsLabel($table)])))
+            ->emptyStateDescription(fn (Table $table): ?string => self::listRecords($table) !== null && self::isNarrowed($table)
+                ? __('Change the search, the filters or the tab to see more.')
+                : null)
+            ->emptyStateIcon(fn (Table $table): ?string => self::listRecords($table) === null ? null : (self::isNarrowed($table)
+                ? 'heroicon-o-magnifying-glass'
+                : 'heroicon-o-inbox')));
+    }
+
+    /** The list page a table sits on, if it is a resource's list. */
+    private static function listRecords(Table $table): ?ListRecords
+    {
+        $livewire = $table->getLivewire();
+
+        return $livewire instanceof ListRecords ? $livewire : null;
+    }
+
+    private static function isNarrowed(Table $table): bool
+    {
+        $list = self::listRecords($table);
+
+        if ($list === null) {
+            return false;
+        }
+
+        if (filled($list->getTableSearch()) || array_filter($list->getTableColumnSearches()) !== [] || $table->getActiveFiltersCount() > 0) {
+            return true;
+        }
+
+        return filled($list->activeTab) && $list->activeTab !== (string) $list->getDefaultActiveTab();
+    }
+
+    /** "faktur penjualan", "SPT PPN": lower case mid-sentence, except a word all in capitals. */
+    private static function recordsLabel(Table $table): string
+    {
+        return collect(explode(' ', $table->getPluralModelLabel()))
+            ->map(fn (string $word): string => mb_strlen($word) > 1 && mb_strtoupper($word) === $word ? $word : mb_strtolower($word))
+            ->implode(' ');
     }
 
     public function panel(Panel $panel): Panel

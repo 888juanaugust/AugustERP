@@ -21,6 +21,10 @@
     },
     "dependencies": {
         "@fontsource-variable/geist": "^5.3.0",
-        "@fontsource-variable/geist-mono": "^5.3.0"
+        "@fontsource-variable/geist-mono": "^5.3.0",
+        "gsap": "^3.15.0"
+    },
+    "overrides": {
+        "shell-quote": "1.12.0"
     }
 }

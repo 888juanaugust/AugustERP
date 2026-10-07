@@ -16,13 +16,18 @@
     --ae-surface: #ffffff;
     --ae-surface-sunken: #f6f6f3;
     --ae-ink: #1d2433;
-    --ae-muted: #6b7280;
+    /* 4.7:1 on the canvas, 5.9:1 on white: muted text sits on both. */
+    --ae-muted: #5d6475;
+    --ae-placeholder: #6b7280;
     --ae-line: #e9e4da;
     --ae-card-edge: #f2efe9;
     --ae-input-edge: #d1d0ce;
     --ae-accent: #2f5bea;
+    --ae-accent-strong: color-mix(in oklab, var(--ae-accent) 84%, black);
+    --ae-on-accent: #ffffff;
     --ae-accent-soft: #e6ebfc;
     --ae-focus-ring: #dae1fb;
+    --ae-backdrop: rgb(15 18 25 / 0.35);
 
     /* Status badges: background / text */
     --ae-success-bg: #e4f6ea;
@@ -57,6 +62,8 @@
     --ae-rail-width: 56px;
     --ae-rail-bg: var(--ae-ink);
     --ae-rail-icon: #c3cbdc;
+    --ae-rail-icon-active: #ffffff;
+    --ae-rail-hover: rgb(255 255 255 / 0.12);
     --ae-topbar-height: 56px;
     --ae-tabstrip-height: 38px;
     --ae-side-tabs-width: 48px;
@@ -71,6 +78,42 @@
     --ae-tile-tool-bg: #f2edfd;
     --ae-tile-tool-edge: #d7c9f6;
     --ae-tile-tool-fg: #6941c6;
+
+    /*
+     * Motion: the transitions.dev token scale (.claude/skills/transitions-polish).
+     * Pick a token by what the motion does, not by the nearest number.
+     */
+    --duration-stagger: 40ms;   /* per-item stagger offset */
+    --duration-micro: 80ms;     /* tooltip intent delay */
+    --duration-quick: 150ms;    /* modal/dropdown close, tooltip appear, hover */
+    --duration-fast: 250ms;     /* dropdown/modal open, tab slide */
+    --duration-medium: 350ms;   /* panel close */
+    --duration-slow: 400ms;     /* panel open */
+    --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out: ease-out;
+    --scale-large: 0.96;        /* modal open / close, press */
+    --scale-medium: 0.97;       /* dropdown open */
+    --scale-small: 0.98;        /* tooltip open */
+    --scale-tiny: 0.99;         /* dropdown close */
+
+    /* The module menu opens as a transitions.dev menu dropdown. */
+    --dropdown-open-dur: var(--duration-fast);
+    --dropdown-close-dur: var(--duration-quick);
+    --dropdown-pre-scale: var(--scale-medium);
+    --dropdown-closing-scale: var(--scale-tiny);
+    --dropdown-ease: var(--ease-smooth-out);
+
+    /* The rail's labels: one transitions.dev tooltip that travels between buttons. */
+    --tt-in-dur: var(--duration-quick);
+    --tt-out-dur: 50ms;
+    --tt-scale: var(--scale-small);
+    --tt-delay: var(--duration-micro);
+    --tt-in-ease: var(--ease-out);
+    --tt-out-ease: var(--ease-out);
+    --tt-move-dur: 160ms;
+    --tt-move-ease: var(--ease-smooth-out);
+    --tt-bg: var(--ae-ink);
+    --tt-fg: var(--ae-surface);
 }
 
 /* Proposed dark palette (DESIGN.md), not yet reviewed: dark mode stays off. */
@@ -95,6 +138,27 @@
     color: var(--ae-ink);
     font-size: 13.5px;
     line-height: 20px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fi-body ::selection {
+    background: var(--ae-accent-soft);
+    color: var(--ae-ink);
+}
+
+.fi-header-heading,
+.fi-section-header-heading,
+.fi-modal-heading,
+.ae-flyout-title {
+    text-wrap: balance;
+}
+
+.fi-header-subheading,
+.fi-section-header-description,
+.fi-fo-field-wrp-helper-text,
+.fi-ta-empty-state-description {
+    text-wrap: pretty;
 }
 
 .fi-body :is(table, .fi-ta-cell, .fi-wi-stats-overview-stat-value, .fi-in-text, .fi-fo-field-wrp input[inputmode='decimal'], input[inputmode='numeric']) {
@@ -126,7 +190,12 @@
     color: var(--ae-ink);
 }
 
+/* DESIGN.md: one line of context under the title, not a second headline. */
 .fi-header-subheading {
+    margin-top: 2px;
+    max-width: 70ch;
+    font-size: 13.5px;
+    line-height: 20px;
     color: var(--ae-muted);
 }
 
@@ -170,11 +239,10 @@
 
 /* ---------- Tables: clean, hover, sunken header ---------- */
 
+/* The header cell carries the label itself (Filament 5); a sortable one wraps it in a button. */
 .fi-ta-header-cell {
+    padding-block: 10px;
     background: var(--ae-surface-sunken);
-}
-
-.fi-ta-header-cell-label {
     font-size: 11px;
     line-height: 16px;
     font-weight: 600;
@@ -183,12 +251,28 @@
     color: var(--ae-muted);
 }
 
+.fi-ta-header-cell .fi-ta-header-cell-sort-btn {
+    text-transform: inherit;
+    letter-spacing: inherit;
+}
+
+.fi-ta-header-cell.fi-ta-header-cell-sorted {
+    color: var(--ae-ink);
+}
+
 .fi-ta-table {
     font-variant-numeric: tabular-nums;
 }
 
-.fi-ta-cell {
+/* DESIGN.md: 11px by 14px per cell. Filament pads the content, not the cell, so the content gets it. */
+.fi-ta-cell :is(.fi-ta-text, .fi-ta-icon, .fi-ta-color, .fi-ta-image, .fi-ta-checkbox, .fi-ta-select):not(.fi-inline) {
     padding: 11px 14px;
+}
+
+@media (max-width: 639.98px) {
+    .fi-ta-table-stacked-on-mobile .fi-ta-cell :is(.fi-ta-text, .fi-ta-icon, .fi-ta-color, .fi-ta-image, .fi-ta-checkbox, .fi-ta-select):not(.fi-inline) {
+        padding: 0;
+    }
 }
 
 .fi-ta-row:not(.fi-ta-row-not-clickable):hover,
@@ -239,19 +323,71 @@
 .fi-badge.fi-color-info    { background: var(--ae-info-bg);    color: var(--ae-info-fg); }
 .fi-badge.fi-color-primary { background: var(--ae-accent-soft); color: var(--ae-accent); }
 
+/* A count is not a status: the dot stays off counts on tabs and filter triggers. */
+.fi-tabs-item .fi-badge.fi-color::before,
+.fi-icon-btn-badge-ctn .fi-badge.fi-color::before {
+    content: none;
+}
+
 /* ---------- Buttons ---------- */
 
 .fi-btn {
     border-radius: var(--ae-radius-md);
     padding: 8px 14px;
     font-weight: 600;
+    transition-property: color, background-color, border-color, box-shadow, scale;
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-smooth-out);
 }
 
 .fi-btn.fi-size-sm { padding: 6px 10px; }
 .fi-btn.fi-size-xs { padding: 4px 8px; }
 
+/*
+ * DESIGN.md: accent fill, white text. Filament derives a lighter shade with dark
+ * text from the accent, which reads as a disabled button; the tokens win.
+ */
 .fi-btn:not(.fi-outlined).fi-color-primary:not(label) {
+    background: var(--ae-accent);
+    color: var(--ae-on-accent);
     box-shadow: var(--ae-shadow-btn);
+}
+
+.fi-btn:not(.fi-outlined).fi-color-primary:not(label):hover {
+    background: var(--ae-accent-strong);
+}
+
+.fi-btn:not(.fi-outlined).fi-color-primary:not(label) > .fi-icon {
+    color: inherit;
+}
+
+/* DESIGN.md: danger is a #a11d1d fill, in confirm modals. */
+.fi-btn:not(.fi-outlined).fi-color-danger:not(label) {
+    background: var(--ae-danger-fg);
+    color: var(--ae-on-accent);
+}
+
+.fi-btn:not(.fi-outlined).fi-color-danger:not(label) > .fi-icon {
+    color: inherit;
+}
+
+/* Press feedback: a small scale, never below 0.96. */
+.fi-btn:not(:disabled):not(.fi-disabled):active,
+.fi-icon-btn:not(:disabled):not(.fi-disabled):active {
+    scale: var(--scale-large);
+}
+
+.fi-icon-btn {
+    transition-property: color, background-color, scale;
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-smooth-out);
+}
+
+.fi-btn:focus-visible,
+.fi-icon-btn:focus-visible,
+.fi-tabs-item:focus-visible {
+    outline: 2px solid var(--ae-accent);
+    outline-offset: 2px;
 }
 
 .fi-btn.fi-outlined,
@@ -276,6 +412,14 @@
 
 .fi-input-wrp.fi-disabled {
     background: var(--ae-surface-sunken);
+}
+
+/* Placeholders stay readable: 4.8:1 on white. */
+.fi-input::placeholder,
+.fi-fo-textarea textarea::placeholder,
+.fi-select-input-placeholder {
+    color: var(--ae-placeholder);
+    opacity: 1;
 }
 
 .fi-fo-field-wrp-label .fi-fo-field-wrp-label-text,
@@ -314,6 +458,9 @@
 .fi-tabs-item {
     border-radius: var(--ae-radius-sm);
     padding: 6px 12px;
+    transition-property: background-color, color;
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-out);
 }
 
 .fi-tabs-item:not(.fi-active) .fi-tabs-item-label {
@@ -341,8 +488,34 @@
 }
 
 .fi-modal > .fi-modal-close-overlay {
-    background: rgb(15 18 25 / 0.35);
+    background: var(--ae-backdrop);
     backdrop-filter: blur(2px);
+}
+
+/*
+ * transitions.dev modal: scale up from 0.96 on the smooth-out curve, quicker on
+ * the way out. Slide-overs are panels: 400ms in, 350ms out.
+ */
+.fi-modal-window.fi-transition-enter {
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-smooth-out);
+}
+
+.fi-modal-window.fi-transition-leave {
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-smooth-out);
+}
+
+.fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window:is(.fi-transition-enter-start, .fi-transition-leave-end) {
+    scale: var(--scale-large);
+}
+
+.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window.fi-transition-enter {
+    transition-duration: var(--duration-slow);
+}
+
+.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window.fi-transition-leave {
+    transition-duration: var(--duration-medium);
 }
 
 .fi-dropdown-panel {
@@ -394,13 +567,29 @@
     max-width: 100%;
 }
 
-/* The grid keeps a working width and scrolls inside its card. */
-.fi-fo-table-repeater > table {
-    min-width: 1280px;
+/*
+ * The grid keeps a working width and scrolls inside its card. Only where it is
+ * a table: below that Filament stacks each line's fields, which must fit the screen.
+ */
+@media (min-width: 1024px) {
+    .fi-fo-table-repeater > table {
+        min-width: 1280px;
+    }
+
+    .fi-fo-table-repeater td:first-child {
+        min-width: 18rem;
+    }
 }
 
-.fi-fo-table-repeater td:first-child {
-    min-width: 18rem;
+/* The line grid's header reads like a list's: small capitals, muted, on the sunken row. */
+.fi-fo-table-repeater > table > thead th {
+    background: var(--ae-surface-sunken);
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ae-muted);
 }
 
 /* Cells have no room for helper text; the column header and placeholders carry the meaning. */
@@ -413,21 +602,21 @@
     min-width: 6.5rem;
 }
 
-/* A select cell never wraps its chosen option: the cell grows instead. */
-.fi-fo-table-repeater td:has(.fi-select-input),
-.fi-fo-table-repeater td:has(.choices) {
-    min-width: 11rem;
-    white-space: nowrap;
-}
-
-.fi-fo-table-repeater .choices__list--single .choices__item {
-    white-space: nowrap;
+/* A select cell never wraps its placeholder or chosen option: it ends in an ellipsis. */
+.fi-fo-table-repeater :is(.fi-select-input-placeholder, .fi-select-input-value-label) {
     overflow: hidden;
+    white-space: nowrap;
     text-overflow: ellipsis;
 }
 
-.fi-fo-table-repeater td:first-child .fi-select-input {
-    min-width: 16rem;
+@media (min-width: 1024px) {
+    .fi-fo-table-repeater td:has(.fi-select-input) {
+        min-width: 11rem;
+    }
+
+    .fi-fo-table-repeater td:first-child .fi-select-input {
+        min-width: 16rem;
+    }
 }
 
 /* ---------- Document totals under a line grid ---------- */
@@ -444,15 +633,15 @@
 .ae-totals-row {
     display: flex;
     justify-content: space-between;
-    color: var(--ae-text-muted, #6b7280);
+    color: var(--ae-muted);
     font-size: 13px;
 }
 
 .ae-totals-grand {
     margin-top: 6px;
     padding-top: 8px;
-    border-top: 1px solid var(--ae-card-edge);
-    color: var(--ae-text, #0f1219);
+    border-top: 1px solid var(--ae-line);
+    color: var(--ae-ink);
     font-size: 15px;
     font-weight: 600;
 }
@@ -460,14 +649,14 @@
 /* Report tables: totals bold on a sunken row, headings as section labels. */
 .fi-ta-row.ae-report-total > td {
     font-weight: 600;
-    background: var(--ae-sunken, #f4f6fb);
+    background: var(--ae-surface-sunken);
 }
 
 .fi-ta-row.ae-report-heading > td {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: var(--ae-muted, #6b7280);
+    color: var(--ae-muted);
     padding-top: 14px;
 }
 
@@ -505,15 +694,26 @@
     height: 40px;
     border-radius: var(--ae-radius-md);
     color: var(--ae-rail-icon);
-    transition: background-color 120ms, color 120ms;
+    transition-property: background-color, color, scale;
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-out);
 }
 
 .ae-rail-btn:hover,
 .ae-rail-btn:focus-visible,
 .ae-rail-btn.is-open {
-    background: rgb(255 255 255 / 0.12);
-    color: #ffffff;
+    background: var(--ae-rail-hover);
+    color: var(--ae-rail-icon-active);
     outline: none;
+}
+
+/* Keyboard focus is a ring, not just a lighter square: the rail is dark. */
+.ae-rail-btn:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--ae-rail-icon-active);
+}
+
+.ae-rail-btn:active {
+    scale: var(--scale-large);
 }
 
 .ae-rail-icon {
@@ -525,23 +725,58 @@
     width: 24px;
     height: 1px;
     margin-block: 4px;
-    background: rgb(255 255 255 / 0.16);
+    background: var(--ae-rail-hover);
 }
 
-.ae-rail-btn[data-tip]:hover::after {
-    content: attr(data-tip);
-    position: absolute;
-    inset-inline-start: calc(100% + 10px);
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 4px 8px;
+/*
+ * The rail's labels: one transitions.dev tooltip (17-tooltip), shared by every
+ * rail button. It sits outside the scrolling bar so nothing clips it; rail.js
+ * writes its y and width. Delayed in, instant out, travels between buttons.
+ */
+.ae-tt {
+    position: fixed;
+    top: 0;
+    inset-inline-start: calc(var(--ae-rail-width) + 8px);
+    z-index: 41;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0;
+    overflow: hidden;
+    translate: 0 var(--tt-y, 0px);
+    scale: var(--tt-scale);
+    transform-origin: 0 50%;
+    padding: 6px 10px;
     border-radius: var(--ae-radius-sm);
-    background: var(--ae-ink);
-    color: #ffffff;
+    background: var(--tt-bg);
+    color: var(--tt-fg);
     font-size: 12px;
+    line-height: 16px;
+    font-weight: 500;
     white-space: nowrap;
-    pointer-events: none;
     box-shadow: var(--ae-shadow-pop);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity var(--tt-out-dur) var(--tt-out-ease),
+        scale var(--tt-out-dur) var(--tt-out-ease),
+        translate var(--tt-move-dur) var(--tt-move-ease),
+        width var(--tt-move-dur) var(--tt-move-ease);
+}
+
+.ae-tt[data-show='true'] {
+    opacity: 1;
+    scale: 1;
+    transition:
+        opacity var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+        scale var(--tt-in-dur) var(--tt-in-ease) var(--tt-delay),
+        translate var(--tt-move-dur) var(--tt-move-ease),
+        width var(--tt-move-dur) var(--tt-move-ease);
+}
+
+.ae-tt-text {
+    white-space: nowrap;
 }
 
 .ae-flyout {
@@ -556,6 +791,38 @@
     border: 1px solid var(--ae-card-edge);
     border-radius: var(--ae-radius);
     box-shadow: var(--ae-shadow-pop);
+    transform-origin: top left;
+}
+
+/*
+ * The module menu grows from the rail: transitions.dev menu dropdown (05),
+ * driven by Alpine's x-transition classes instead of .is-open/.is-closing.
+ */
+.ae-pop-enter {
+    transition:
+        transform var(--dropdown-open-dur) var(--dropdown-ease),
+        opacity var(--dropdown-open-dur) var(--dropdown-ease);
+}
+
+.ae-pop-leave {
+    transition:
+        transform var(--dropdown-close-dur) var(--dropdown-ease),
+        opacity var(--dropdown-close-dur) var(--dropdown-ease);
+}
+
+.ae-pop-from {
+    transform: scale(var(--dropdown-pre-scale));
+    opacity: 0;
+}
+
+.ae-pop-to {
+    transform: scale(1);
+    opacity: 1;
+}
+
+.ae-pop-out {
+    transform: scale(var(--dropdown-closing-scale));
+    opacity: 0;
 }
 
 .ae-flyout-title {
@@ -584,15 +851,24 @@
     border: 1px solid;
     border-radius: var(--ae-radius-md);
     text-align: center;
-    transition: box-shadow 120ms, transform 120ms;
+    transition-property: box-shadow, translate, scale;
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-smooth-out);
 }
 
-.ae-tile:hover,
+.ae-tile:hover {
+    box-shadow: var(--ae-shadow-card);
+    translate: 0 -1px;
+}
+
 .ae-tile:focus-visible {
     box-shadow: var(--ae-shadow-card);
-    transform: translateY(-1px);
-    outline: 3px solid var(--ae-focus-ring);
-    outline-offset: 0;
+    outline: 2px solid var(--ae-accent);
+    outline-offset: 2px;
+}
+
+.ae-tile:active {
+    scale: var(--scale-large);
 }
 
 .ae-tile-icon {
@@ -608,20 +884,27 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-wrap: balance;
 }
 
 .ae-tile-setup { background: var(--ae-tile-setup-bg); border-color: var(--ae-tile-setup-edge); color: var(--ae-tile-setup-fg); }
 .ae-tile-work  { background: var(--ae-tile-work-bg);  border-color: var(--ae-tile-work-edge);  color: var(--ae-tile-work-fg); }
 .ae-tile-tool  { background: var(--ae-tile-tool-bg);  border-color: var(--ae-tile-tool-edge);  color: var(--ae-tile-tool-fg); }
 
+/* A touch control on narrow screens: 44px. */
 .ae-menu-btn {
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
-    margin-inline-end: 8px;
-    border-radius: var(--ae-radius-sm);
+    width: 44px;
+    height: 44px;
+    margin-inline: -4px 4px;
+    border-radius: var(--ae-radius-md);
     color: var(--ae-ink);
+}
+
+.ae-menu-btn:focus-visible {
+    outline: 2px solid var(--ae-accent);
+    outline-offset: 0;
 }
 
 .ae-menu-btn-icon {
@@ -708,6 +991,11 @@
     color: var(--ae-ink);
 }
 
+.ae-tab:focus-visible {
+    outline: 2px solid var(--ae-accent);
+    outline-offset: -2px;
+}
+
 .ae-tab.is-active {
     background: var(--ae-surface);
     border-color: var(--ae-card-edge);
@@ -726,19 +1014,36 @@
 }
 
 .ae-tab-close {
+    position: relative;
     display: grid;
     place-items: center;
+    flex: none;
     width: 20px;
     height: 20px;
     border-radius: var(--ae-radius-full);
-    font-size: 15px;
-    line-height: 1;
     color: var(--ae-muted);
+    transition-property: background-color, color;
+    transition-duration: var(--duration-quick);
+    transition-timing-function: var(--ease-out);
 }
 
-.ae-tab-close:hover {
+/* A 32px hit area around the 20px button; the tab's own padding keeps it clear of the title. */
+.ae-tab-close::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+}
+
+.ae-tab-close-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.ae-tab-close:hover,
+.ae-tab-close:focus-visible {
     background: var(--ae-neutral-bg);
     color: var(--ae-ink);
+    outline: none;
 }
 
 .ae-frames {
@@ -802,3 +1107,48 @@ html.ae-framed .fi-main {
     min-width: 0;
 }
 
+
+/* Phones: the icon tabs run across the top of the form instead of eating its width. */
+@media (max-width: 639.98px) {
+    .fi-sc-tabs.fi-vertical:not(.ae-tabs-labelled) {
+        flex-direction: column;
+    }
+
+    .fi-sc-tabs.fi-vertical:not(.ae-tabs-labelled) > .fi-tabs {
+        flex: none;
+        flex-direction: row;
+        gap: 4px;
+        width: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        border-inline-end: 0;
+        border-bottom: 1px solid var(--ae-line);
+    }
+
+    .fi-sc-tabs.fi-vertical:not(.ae-tabs-labelled) > .fi-sc-tabs-tab.fi-active {
+        margin-inline-start: 0;
+    }
+}
+
+/* ---------- Reduced motion: state changes stay, travel and scale go ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .ae-tt,
+    .ae-pop-enter,
+    .ae-pop-leave {
+        transition: none !important;
+    }
+
+    .fi-btn:active,
+    .fi-icon-btn:active,
+    .ae-rail-btn:active,
+    .ae-tile:active,
+    .ae-tile:hover {
+        scale: none;
+        translate: none;
+    }
+
+    .fi-modal:not(.fi-modal-slide-over) > .fi-modal-window-ctn > .fi-modal-window:is(.fi-transition-enter-start, .fi-transition-leave-end) {
+        scale: none;
+    }
+}

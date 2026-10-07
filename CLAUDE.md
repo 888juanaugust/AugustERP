@@ -83,7 +83,9 @@ equivalent in daily use (`giro`, `faktur pajak`, `NPWP`, `NITKU`) stay as they a
 `docs/design/DESIGN.md` is the visual system; `resources/css/filament/admin/theme.css`
 implements its tokens and `AdminPanelProvider` its settings, with the colours overridable
 per client in `config/client.php`. Components use tokens, never raw hex. Geist is
-self-hosted; no font or asset is loaded from a third party. Dark mode is off.
+self-hosted; no font or asset is loaded from a third party. Dark mode is off. Motion uses the
+token scale in `theme.css` (DESIGN.md, Motion); the one JavaScript animation is the tab strip's GSAP Flip
+(`resources/js/workspace-motion.js`, bundled by Vite).
 
 **The shell is the workspace** (`App\Filament\Pages\Workspace`, the panel's home): a dark
 icon rail of the module groups, a tile menu per group built by `App\Filament\Shell\Menu`

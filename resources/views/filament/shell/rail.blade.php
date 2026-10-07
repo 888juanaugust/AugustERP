@@ -9,7 +9,7 @@
     x-on:ae-menu-toggle.window="toggleMobile()"
     aria-label="{{ __('Modules') }}"
 >
-    <div class="ae-rail-bar">
+    <div class="ae-rail-bar" x-ref="bar" x-on:pointerover="tipFor($event)" x-on:focusin="tipFor($event)" x-on:pointerleave="hideTip()" x-on:focusout="hideTip($event)">
         <button type="button" class="ae-rail-btn" x-on:click="home()" aria-label="{{ __('Dashboard') }}" data-tip="{{ __('Dashboard') }}">
             <x-filament::icon icon="heroicon-o-home" class="ae-rail-icon" />
         </button>
@@ -30,6 +30,8 @@
             </button>
         @endforeach
     </div>
+    {{-- The buttons carry their names; this bubble only shows them to the eye. --}}
+    <span class="ae-tt" x-ref="tip" aria-hidden="true" data-show="false"><span class="ae-tt-text"></span></span>
 
     @foreach ($groups as $group)
         <div
@@ -37,7 +39,12 @@
             data-group="{{ $group['key'] }}"
             x-show="openGroup === @js($group['key'])"
             x-cloak
-            x-transition.opacity.duration.120ms
+            x-transition:enter="ae-pop-enter"
+            x-transition:enter-start="ae-pop-from"
+            x-transition:enter-end="ae-pop-to"
+            x-transition:leave="ae-pop-leave"
+            x-transition:leave-start="ae-pop-to"
+            x-transition:leave-end="ae-pop-out"
             x-on:keydown="moveFocus($event)"
             role="dialog"
             aria-label="{{ $group['label'] }}"

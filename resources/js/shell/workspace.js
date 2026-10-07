@@ -97,7 +97,7 @@ window.aeWorkspace = function (cfg) {
             }
 
             var id = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-            this.tabs.push({ id: id, url: url, src: url, title: title || this.labels.loading, pinned: false });
+            this.animateStrip(() => this.tabs.push({ id: id, url: url, src: url, title: title || this.labels.loading, pinned: false }));
             this.activate(id);
         },
 
@@ -106,6 +106,44 @@ window.aeWorkspace = function (cfg) {
                 this.active = id;
                 this.save();
             }
+        },
+
+        // A tab opening or closing slides the others into place (workspace-motion.js,
+        // when loaded); the change itself never waits for the animation.
+        animateStrip(change) {
+            var motion = window.aeMotion;
+            var strip = this.$refs.strip;
+            var state = motion ? motion.capture(strip) : null;
+            var result = change();
+
+            if (state) {
+                this.$nextTick(() => motion.play(state, strip));
+            }
+
+            return result;
+        },
+
+        // The strip is a tablist: arrow keys, Home and End move between tabs and show them.
+        stripKey(event) {
+            var moves = { ArrowRight: 1, ArrowLeft: -1, Home: 'first', End: 'last' };
+
+            if (!(event.key in moves) || !event.target.matches('.ae-tab')) {
+                return;
+            }
+
+            var index = this.tabs.findIndex((tab) => tab.id === event.target.dataset.tab);
+            var move = moves[event.key];
+            var next = move === 'first' ? 0 : move === 'last' ? this.tabs.length - 1 : (index + move + this.tabs.length) % this.tabs.length;
+
+            event.preventDefault();
+            this.activate(this.tabs[next].id);
+            this.$nextTick(() => {
+                var target = this.$refs.strip.querySelector('.ae-tab[data-tab="' + this.tabs[next].id + '"]');
+
+                if (target) {
+                    target.focus();
+                }
+            });
         },
 
         frameOf(id) {
@@ -130,7 +168,7 @@ window.aeWorkspace = function (cfg) {
             }
 
             var index = this.tabs.indexOf(tab);
-            this.tabs.splice(index, 1);
+            this.animateStrip(() => this.tabs.splice(index, 1));
 
             if (this.active === id) {
                 var next = this.tabs[index] || this.tabs[index - 1] || this.tabs[0];

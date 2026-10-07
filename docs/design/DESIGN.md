@@ -26,13 +26,20 @@ All values are CSS custom properties. `theme.css` defines them; components only 
 | `--ae-surface` | `#ffffff` | Cards, sidebar, table, modal, dropdown |
 | `--ae-surface-sunken` | `#f6f6f3` | Table header row, read-only fields, code blocks |
 | `--ae-ink` | `#1d2433` | Primary text, headings, numbers |
-| `--ae-muted` | `#6b7280` | Labels, helper text, secondary column text |
+| `--ae-muted` | `#5d6475` | Labels, helper text, secondary column text (4.7:1 on the canvas, 5.9:1 on white) |
+| `--ae-placeholder` | `#6b7280` | Input placeholders (4.8:1 on white) |
 | `--ae-line` | `#e9e4da` | Dividers, table row lines |
 | `--ae-card-edge` | `#f2efe9` | 1px card border (very faint, warm) |
 | `--ae-input-edge` | `#d1d0ce` | Input border at rest |
 | `--ae-accent` | `#2f5bea` | Primary buttons, active nav, links, focus |
+| `--ae-accent-strong` | accent mixed 84% with black | Primary button hover |
+| `--ae-on-accent` | `#ffffff` | Text and icons on an accent or danger fill |
 | `--ae-accent-soft` | `#e6ebfc` | Active nav background, active tab, row hover, selected chips |
-| `--ae-focus-ring` | `#dae1fb` | 3px focus ring around inputs and buttons |
+| `--ae-focus-ring` | `#dae1fb` | 3px soft ring around a focused input (with its accent border) |
+| `--ae-backdrop` | `rgb(15 18 25 / .35)` | Behind modals and slide-overs |
+
+A client's `primary` colour in `config/client.php` replaces `--ae-accent` (and the soft, focus and info
+colours derived from it) as well as Filament's palette.
 
 Status colors (badge background / text). These are separate from the accent; never use the accent to mean "success".
 
@@ -52,7 +59,9 @@ Trend text: up `#15803d`, down `#b42318`.
 |---|---|---|
 | `--ae-rail-width` | `56px` | The icon rail on the left |
 | `--ae-rail-bg` | `--ae-ink` | Rail background |
-| `--ae-rail-icon` | `#c3cbdc` | Rail icons at rest (white when open or hovered) |
+| `--ae-rail-icon` | `#c3cbdc` | Rail icons at rest |
+| `--ae-rail-icon-active` | `#ffffff` | Rail icon open, hovered or focused; the 2px keyboard ring |
+| `--ae-rail-hover` | `rgb(255 255 255 / .12)` | Rail button background when open or hovered |
 | `--ae-topbar-height` | `56px` | Topbar of the workspace |
 | `--ae-tabstrip-height` | `38px` | Strip of open screens under the topbar |
 | `--ae-side-tabs-width` | `48px` | Column of icon tabs at the left of a form |
@@ -122,6 +131,28 @@ Base radius `--ae-radius: 14px`. Derived sizes keep shapes nested correctly:
 | `--ae-shadow-btn` | `inset 0 1px 0 rgb(255 255 255 / .2), 0 2px 6px rgb(47 91 234 / .35)` | Primary button only |
 
 Every card = white surface + 1px `--ae-card-edge` border + `--ae-shadow-card`. Nothing else gets a shadow.
+
+### Motion
+
+The transitions.dev token scale (`.claude/skills/transitions-polish`), in `theme.css`. Pick the token by what the
+motion does, never by the nearest number. Closing is quicker than opening; nothing bounces.
+
+| Token | Value | Used for |
+|---|---|---|
+| `--duration-micro` | 80ms | Tooltip intent delay |
+| `--duration-quick` | 150ms | Dropdown and modal close, tooltip in, hovers and presses |
+| `--duration-fast` | 250ms | Dropdown and modal open, tabs sliding into place |
+| `--duration-medium` / `--duration-slow` | 350ms / 400ms | Slide-over close / open |
+| `--ease-smooth-out` | `cubic-bezier(0.22, 1, 0.36, 1)` | Every surface that opens, closes or moves |
+| `--scale-large` / `-medium` / `-small` / `-tiny` | .96 / .97 / .98 / .99 | Modal and press / dropdown open / tooltip / dropdown close |
+
+- **Module menu**: a menu dropdown growing from the rail (scale .97 to 1, 250ms; out to .99, 150ms).
+- **Rail labels**: one tooltip shared by the rail buttons: 80ms intent delay, out at once, and it travels
+  between buttons instead of popping again. Keyboard focus shows it too; touch does not.
+- **Workspace tabs**: when a tab opens or closes, the others slide to their places (GSAP Flip, 250ms). The one
+  JavaScript animation, because CSS cannot move siblings when one leaves; GSAP is bundled by Vite, never a CDN.
+- **Press**: buttons, tiles and rail buttons scale to .96 while pressed.
+- **Reduced motion**: the state still changes (colour, visibility), travel and scale do not.
 
 ---
 
@@ -242,12 +273,14 @@ Label (12px muted) → value (22px bold, tabular) → trend line (12px, green or
 
 ### Tabs
 Pill tabs: active = `--ae-accent-soft` fill + accent text; inactive = muted text. Show counts in a lighter weight.
+On a phone the form's icon tabs run across the top of the form instead of down its side.
 Form tabs (lines, other info, other charges, addresses…) stand down the left side of the form as a 48px
 column of icons, the tab name as a tooltip (`App\Filament\Support\SideTabIcons` holds one icon per tab
 name). Status tabs above a list stay as pills on top. Preferences keeps its tab names visible.
 
 ### Badges
-Pill, 3px 9px padding, 6px colored dot before label, status colors from section 1.
+Pill, 3px 9px padding, 6px colored dot before label, status colors from section 1. A count (on a tab or a
+filter button) is not a status: no dot.
 
 ### Modals and slide-overs
 Surface white, radius 14, `--ae-shadow-pop`, backdrop `rgb(15 18 25 / .35)` with 2px blur. Destructive confirm: title states the action ("Void invoice INV-0412?"), body states the effect, buttons "Cancel" and "Void invoice".
@@ -258,7 +291,8 @@ Surface white, radius 14, `--ae-shadow-pop`, backdrop `rgb(15 18 25 / .35)` with
 
 - Interface language default: Indonesian or English per client; keep one language per panel.
 - Buttons are verbs that say what happens: "Save order", "Record payment", "Post journal". Never "Submit" or "OK".
-- Empty states name the record and the first action: "No purchase orders yet. Create the first one."
+- Empty states name the record: "No purchase orders yet." A list narrowed by a search, filter or tab says
+  "No purchase orders match" and how to see more (the panel's default for every resource list).
 - Document numbers: `SO-YYMM-####`, `PO-YYMM-####`, `INV-YYMM-####`, `DO-YYMM-####`, `GR-YYMM-####`.
 
 ---
