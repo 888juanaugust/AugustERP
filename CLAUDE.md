@@ -94,6 +94,20 @@ other screens as new tabs and reports the tab's title. Form tabs stand down the 
 icons; a new form tab name needs its icon in `App\Filament\Support\SideTabIcons`
 (`ShellMenuTest` fails otherwise). `npm run smoke:shell` drives the shell in Chromium.
 
+**UI work uses the design skills in `.claude/skills/`**: `impeccable`, `make-interfaces-feel-better`,
+`transitions-dev`, `transitions-polish` and the eight `gsap-*` skills (sources and licences
+in `.claude/skills/SOURCES.md`). Before a session builds or changes anything a person sees
+(a website page, a panel screen, a print view, CSS or motion), it makes sure they are
+loaded and uses the ones that fit. A session opened in this repository has them already.
+A session opened in another repository installs them first, with `mkdir -p ~/.claude/skills
+&& cp -r <this repository>/.claude/skills/*/ ~/.claude/skills/`, and runs Impeccable's
+launcher with the three `env` values of `.claude/settings.json` exported: they switch off
+its update check and telemetry, and stay set.
+This file wins over any skill: tokens from DESIGN.md, Geist only and nothing loaded from a
+third party, dark mode off, every string through `__()`, and the content security policy.
+Motion respects `prefers-reduced-motion`. GSAP is added only when CSS cannot do the job, and
+only as an npm dependency bundled by Vite, never from a CDN.
+
 ## Invariants
 
 If a change appears to require breaking one, stop and ask.
