@@ -83,7 +83,8 @@ equivalent in daily use (`giro`, `faktur pajak`, `NPWP`, `NITKU`) stay as they a
 `docs/design/DESIGN.md` is the visual system; `resources/css/filament/admin/theme.css`
 implements its tokens and `AdminPanelProvider` its settings, with the colours overridable
 per client in `config/client.php`. Components use tokens, never raw hex. Geist is
-self-hosted; no font or asset is loaded from a third party. Dark mode is off. Motion uses the
+self-hosted; no font or asset is loaded from a third party. Light by default; each user picks Light, Dark
+or System in the user menu (dark tokens under `.dark` in `theme.css`; prints stay white). Motion uses the
 token scale in `theme.css` (DESIGN.md, Motion); the one JavaScript animation is the tab strip's GSAP Flip
 (`resources/js/workspace-motion.js`, bundled by Vite).
 
@@ -106,7 +107,7 @@ A session opened in another repository installs them first, with `mkdir -p ~/.cl
 launcher with the three `env` values of `.claude/settings.json` exported: they switch off
 its update check and telemetry, and stay set.
 This file wins over any skill: tokens from DESIGN.md, Geist only and nothing loaded from a
-third party, dark mode off, every string through `__()`, and the content security policy.
+third party, both themes checked, every string through `__()`, and the content security policy.
 Motion respects `prefers-reduced-motion`. GSAP is added only when CSS cannot do the job, and
 only as an npm dependency bundled by Vite, never from a CDN.
 

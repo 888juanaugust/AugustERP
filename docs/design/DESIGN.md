@@ -75,21 +75,33 @@ Tiles in a module menu are coloured by what the screen is for (`MenuKey::kind()`
 | Work | `#e7f6ec` | `#b7e0c3` | `#166534` | Documents and processes: orders, invoices, payments, month-end |
 | Tool | `#f2edfd` | `#d7c9f6` | `#6941c6` | Inquiries, tools and reports: stock inquiries, calendar, activity log, reports |
 
-### Color (dark mode, proposed, not yet reviewed)
+### Color (dark mode)
 
-| Token | Value |
-|---|---|
-| `--ae-canvas` | `#0f1219` |
-| `--ae-surface` | `#171b25` |
-| `--ae-surface-sunken` | `#1d2230` |
-| `--ae-ink` | `#e7eaf2` |
-| `--ae-muted` | `#9aa3b5` |
-| `--ae-line` | `#262c3a` |
-| `--ae-card-edge` | `#232937` |
-| `--ae-input-edge` | `#343b4d` |
-| `--ae-accent` | `#7d9bff` |
-| `--ae-accent-soft` | `#1f2a4d` |
-| `--ae-focus-ring` | `#2a3a70` |
+Light is the default. Each user picks Light, Dark or System in the user menu (Filament's theme switcher);
+the choice is kept in the browser and every open workspace tab follows at once. Printed documents stay
+white. Every text and badge pair below meets WCAG AA (4.5:1 or better).
+
+| Token | Value | Note |
+|---|---|---|
+| `--ae-canvas` | `#0f1219` | |
+| `--ae-surface` | `#171b25` | |
+| `--ae-surface-sunken` | `#1d2230` | |
+| `--ae-ink` | `#e7eaf2` | |
+| `--ae-muted` | `#9aa3b5` | 6.3:1 or better on every surface |
+| `--ae-placeholder` | `#8a93a6` | |
+| `--ae-line` / `--ae-card-edge` / `--ae-input-edge` | `#262c3a` / `#232937` / `#343b4d` | |
+| `--ae-accent` | `#7d9bff` | Text, links, active tab and focus |
+| `--ae-accent-fill` | `#3b63e6` | Primary button fill (white text 5.1:1); in light it is the accent |
+| `--ae-accent-soft` / `--ae-focus-ring` | `#1f2a4d` / `#2a3a70` | |
+| `--ae-rail-bg` | `#0b0e14` | The rail stays dark in both themes (light: `#1d2433`) |
+| `--ae-tabstrip-line` | `#2a3142` | |
+
+Status badges (background / text): success `#10291a` / `#86efac`, warning `#33260a` / `#fcd34d`, danger
+`#3a1518` / `#fca5a5`, neutral `#232937` / `#c0c7d4`, info `#1f2a4d` / `#a5b8ff`. Danger buttons keep the
+`#a11d1d` fill (`--ae-danger-fill`). Tiles: setup `#18224a` / `#2c3d7a` / `#a5b8ff`, work `#102619` /
+`#1f4a30` / `#86efac`, tool `#221a3d` / `#3d2f6b` / `#c4b5fd`. Shadows are black-based. Filament's own dark
+surfaces come from its gray palette, so `--gray-950`, `--gray-900` and `--gray-800` point at the canvas,
+surface and sunken tokens.
 
 ### Typography
 
@@ -163,7 +175,7 @@ motion does, never by the nearest number. Closing is quicker than opening; nothi
 
 ```
 +--------------------------------------------------------------------------+
-| +----+ Topbar: company name ....................... [search] [avatar]   |
+| +----+ Topbar: company name ......... [search] [bell] Name/Role [avatar]|
 | |RAIL| [Dashboard] [Sales Invoices x] [Items & Services x] [Warehouses x]|  <- tab strip
 | |    | +---------------------------------------------------------------+ |
 | |home| | the active tab: a live screen in its own frame                | |
@@ -188,7 +200,9 @@ motion does, never by the nearest number. Closing is quicker than opening; nothi
   (bookmark, email link) opens as a tab of the workspace.
 - **Inside a tab** the page has no topbar or rail of its own: page header, then content.
 - **Narrow screens** (< 1024px): the rail is hidden; a menu button in the topbar opens it as a sheet.
-- Topbar sits on the canvas (no white bar): company name left, global search and user menu right.
+- Topbar sits on the canvas (no white bar): company name left; global search, the approvals bell (the
+  documents waiting for this user's approval, each opening as a tab; red count when there are any), the
+  user's name over their role (access groups, or Administrator; from 768px wide) and the user menu right.
 - Page header: title (and one-line context such as period or warehouse) on the left, actions on the right. Max one primary button per page, placed rightmost.
 - Content max width: full width for list and report pages; 1100px for create/edit forms.
 

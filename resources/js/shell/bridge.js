@@ -25,6 +25,15 @@
     });
     document.addEventListener('livewire:navigated', markFramed);
 
+    // The theme is picked in the workspace's user menu; every open tab follows at once.
+    if (framed) {
+        window.addEventListener('storage', function (event) {
+            if (event.key === 'theme' && event.newValue) {
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: event.newValue }));
+            }
+        });
+    }
+
     function clean(path) {
         path = String(path || '').replace(/\/+$/, '');
 

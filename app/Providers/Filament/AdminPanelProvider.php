@@ -19,6 +19,7 @@ use App\Http\Middleware\RequirePasswordChange;
 use App\Http\Middleware\SetLocale;
 use Filament\Actions\DeleteAction;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
+use Filament\Enums\ThemeMode;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -152,7 +153,9 @@ class AdminPanelProvider extends PanelProvider
             ->font('Geist Variable', provider: LocalFontProvider::class)
             ->monoFont('Geist Mono Variable', provider: LocalFontProvider::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
-            ->darkMode(false)
+            // Light unless the user picks Dark or System in the user menu (DESIGN.md, dark mode).
+            ->darkMode(true)
+            ->defaultThemeMode(ThemeMode::Light)
             ->navigation(false)
             ->maxContentWidth(Width::Full)
             ->spa()
@@ -184,6 +187,7 @@ class AdminPanelProvider extends PanelProvider
             )
             // The topbar is its own component and renders hooks without page scopes; the button shows on narrow screens only.
             ->renderHook(PanelsRenderHook::TOPBAR_START, fn (): View => view('filament.shell.menu-button'))
+            ->renderHook(PanelsRenderHook::USER_MENU_BEFORE, fn (): View => view('filament.shell.user-bar'))
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
